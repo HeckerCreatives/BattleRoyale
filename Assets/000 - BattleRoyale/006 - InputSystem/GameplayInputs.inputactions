@@ -1,0 +1,60 @@
+{
+    "name": "GameplayInputs",
+    "maps": [
+        {
+            "name": "Gameplay",
+            "id": "640bdb68-6f17-488e-abe7-543198a86e5f",
+            "actions": [
+                {
+                    "name": "Touch",
+                    "type": "Value",
+                    "id": "0dec95d9-2371-4d54-ad4b-a2b1b9e2c097",
+                    "expectedControlType": "Touch",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "Movement",
+                    "type": "Value",
+                    "id": "ab79f117-792b-44f2-a8a3-798b08c1e3a0",
+                    "expectedControlType": "Stick",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "9914eafb-f180-4aa9-87e9-aaf4b0652b98",
+                    "path": "<Touchscreen>/delta",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Android",
+                    "action": "Touch",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f463ee61-9f22-4ebd-bc03-4c2c98c910c7",
+                    "path": "<Gamepad>/leftStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Android",
+                    "action": "Movement",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "Android",
+            "bindingGroup": "Android",
+            "devices": []
+        }
+    ]
+}
