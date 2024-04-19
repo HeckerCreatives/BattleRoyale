@@ -4,29 +4,21 @@ using UnityEngine;
 
 public class GroundState : PlayerStatemachine
 {
-    public GroundState(PlayerStateChanger changer, MovementData movementData,
-        PlayerStateController controller, GameplayController gameController, PlayerEnvironment environment, string animationName) :
-        base(changer, movementData, controller, gameController, environment, animationName)
+    public GroundState(PlayerStateChanger changer, MovementData movementData, Animator playerAnimator, PlayerStateController controller, GameplayController gameController, PlayerEnvironment environment, string animationName) :
+        base(changer, movementData, playerAnimator, controller, gameController, environment, animationName)
     {
-    }
-
-    public override void Enter()
-    {
-        base.Enter();
     }
 
     public override void LogicUpdate()
     {
         base.LogicUpdate();
 
-        // AIR STATE HERE
-        if (!AnimationExiting)
-        {
-            if (!Environment.Grounded)
-            {
-                //  PUT IN AIR HERE
-                //Changer.ChangeState(Controller.InAir);
-            }
-        }
+        if (AnimationExiting) return;
+
+        if (AnimationFinished) return;
+
+        if (Environment.Grounded) return;
+
+        Changer.ChangeState(Controller.Air);
     }
 }

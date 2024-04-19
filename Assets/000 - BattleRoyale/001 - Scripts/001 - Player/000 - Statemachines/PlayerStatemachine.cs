@@ -10,6 +10,8 @@ public class PlayerStatemachine
     public GameplayController GameControl { get; private set; }
     public PlayerEnvironment Environment { get; private set; }
 
+    public Animator PlayerAnimator { get; private set; }
+
     //  ======================================
 
     public bool AnimationFinished { get; private set; }
@@ -19,11 +21,12 @@ public class PlayerStatemachine
 
     //  ======================================
     
-    public PlayerStatemachine(PlayerStateChanger changer, MovementData movementData,
+    public PlayerStatemachine(PlayerStateChanger changer, MovementData movementData, Animator playerAnimator,
         PlayerStateController controller, GameplayController gameController, PlayerEnvironment environment, string animationName)
     {
         Changer = changer;
         MovementData = movementData;
+        PlayerAnimator = playerAnimator;
         AnimationName = animationName;
         Controller = controller;
         GameControl = gameController;
@@ -36,7 +39,7 @@ public class PlayerStatemachine
 
         DoChecks();
 
-        //Controller.PlayerAnimator.SetBool(AnimationName, true);
+        Controller.PlayerAnimator.SetBool(AnimationName, true);
         AnimationFinished = false;
         AnimationExiting = false;
     }
@@ -44,7 +47,7 @@ public class PlayerStatemachine
     public virtual void Exit()
     {
         TimeEnter = 0f;
-        //Controller.PlayerAnimator.SetBool(AnimationName, false);
+        Controller.PlayerAnimator.SetBool(AnimationName, false);
 
         AnimationExiting = true;
     }
@@ -71,5 +74,10 @@ public class PlayerStatemachine
 
     public virtual void AnimationTrigger() { }
 
-    public virtual void AnimationFinishTrigger() => AnimationFinished = true;
+    public virtual void AnimationFinishTrigger()
+    {
+        Debug.Log($"Finish animation {AnimationName}");
+        AnimationFinished = true;
+        Debug.Log($"is animation finished: {AnimationFinished}");
+    }
 }

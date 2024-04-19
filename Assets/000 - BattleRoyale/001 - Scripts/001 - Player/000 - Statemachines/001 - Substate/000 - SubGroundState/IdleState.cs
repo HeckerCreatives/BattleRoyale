@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class IdleState : GroundState
 {
-    public IdleState(PlayerStateChanger changer, MovementData movementData, PlayerStateController controller, GameplayController gameController, PlayerEnvironment environment, string animationName) :
-        base(changer, movementData, controller, gameController, environment, animationName)
+    public IdleState(PlayerStateChanger changer, MovementData movementData, Animator playerAnimator, PlayerStateController controller, GameplayController gameController, PlayerEnvironment environment, string animationName) :
+        base(changer, movementData, playerAnimator, controller, gameController, environment, animationName)
     {
     }
 
@@ -22,33 +22,20 @@ public class IdleState : GroundState
         AnimationChanger();
     }
 
-    public override void PhysicsUpdate()
-    {
-        base.PhysicsUpdate();
-
-        //Environment.PlayerRB.rotation = Quaternion.identity;
-    }
-
     private void AnimationChanger()
     {
-        if (!AnimationExiting)
+        if (AnimationExiting) return;
+
+        if (AnimationFinished) return;
+
+        if (Environment.Grounded)
         {
-            if (Environment.Grounded)
-            {
-                //if (GameControl.Jump)
-                //{
-                //    Changer.ChangeState(Controller.Jump);
-                //}
-                if (GameControl.MovementDirection != Vector2.zero)
-                {
-                    //Direction.FlipPlayer(GameControl.MovementDirection);
-                    Changer.ChangeState(Controller.Move);
-                }
-            }
-            else
-            {
-                //Changer.ChangeState(Controller.InAir);
-            }
+            if (GameControl.Jump)
+                Changer.ChangeState(Controller.Jump);
+            if (GameControl.MovementDirection != Vector2.zero)
+                Changer.ChangeState(Controller.Move);
         }
+        else
+            Changer.ChangeState(Controller.Air);
     }
 }

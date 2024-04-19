@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class PlayerEnvironment : MonoBehaviour
@@ -59,6 +58,12 @@ public class PlayerEnvironment : MonoBehaviour
     public void SetVelocityMovement(Vector3 velocity)
     {
         workspace.Set(velocity.x, playerRB.velocity.y, velocity.z);
+        playerRB.velocity = workspace;
+        currentVelocity = workspace;
+    }
+    public void SetVelocityY(float value)
+    {
+        workspace.Set(currentVelocity.x, value, currentVelocity.z);
         playerRB.velocity = workspace;
         currentVelocity = workspace;
     }

@@ -6,8 +6,8 @@ public class MoveState : GroundState
 {
     Vector3 inputVector;
 
-    public MoveState(PlayerStateChanger changer, MovementData movementData, PlayerStateController controller, GameplayController gameController, PlayerEnvironment environment, string animationName) :
-        base(changer, movementData, controller, gameController, environment, animationName)
+    public MoveState(PlayerStateChanger changer, MovementData movementData, Animator playerAnimator, PlayerStateController controller, GameplayController gameController, PlayerEnvironment environment, string animationName) :
+        base(changer, movementData, playerAnimator, controller, gameController, environment, animationName)
     {
     }
 
@@ -33,7 +33,6 @@ public class MoveState : GroundState
     private void MovePlayer()
     {
         inputVector = new Vector3(GameControl.MovementDirection.x, 0f, GameControl.MovementDirection.y).normalized;
-        Debug.Log(inputVector);
         inputVector = GameControl.mainCamera.transform.TransformDirection(inputVector);
         inputVector.y = 0f;
         inputVector = inputVector.normalized;
@@ -48,16 +47,12 @@ public class MoveState : GroundState
 
     private void ChangeAnimation()
     {
-        if (!AnimationExiting)
-        {
-            //if (GameControl.Jump)
-            //{
-            //    Changer.ChangeState(Controller.Jump);
-            //}
-            if (GameControl.MovementDirection == Vector2.zero)
-            {
-                Changer.ChangeState(Controller.Idle);
-            }
-        }
+        if (AnimationExiting) return;
+
+
+        if (GameControl.Jump)
+            Changer.ChangeState(Controller.Jump);
+        else if (GameControl.MovementDirection == Vector2.zero)
+            Changer.ChangeState(Controller.Idle);
     }
 }
