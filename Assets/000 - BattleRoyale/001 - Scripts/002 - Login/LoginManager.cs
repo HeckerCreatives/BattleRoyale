@@ -3,28 +3,162 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
+using UnityEngine.Networking;
+using Newtonsoft.Json;
+using System;
+using CandyCoded.env;
 
 public class LoginManager : MonoBehaviour
 {
+    [SerializeField] private UserData userData;
     [SerializeField] private TMP_InputField username;
     [SerializeField] private TMP_InputField password;
     [SerializeField] private Toggle rememberMe;
+
+    private void Awake()
+    {
+        GameManager.Instance.SceneController.AddActionLoadinList(CheckRememberMe());
+        GameManager.Instance.SceneController.AddActionLoadinList(userData.CheckControlSettingSave());
+        GameManager.Instance.SceneController.ActionPass = true;
+    }
+
+    private IEnumerator CheckRememberMe()
+    {
+        if (!userData.RememberMe) yield break;
+
+        username.text = userData.Username;
+        password.text = userData.Password;
+    }
+
+    IEnumerator LoginUser()
+    {
+        GameManager.Instance.NoBGLoading.SetActive(true);
+
+        UnityWebRequest apiRquest;
+
+        if (env.TryParseEnvironmentVariable("API_URL", out string httpRequest))
+        {
+            apiRquest = UnityWebRequest.Get($"{httpRequest}/auth/login?username={username.text}&password={password.text}");
+        }
+        else
+        {
+            //  ERROR PANEL HERE
+            Debug.Log("Error API CALL! Error Code: ENV FAILED TO PARSE");
+            GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later", null);
+            yield break;
+        }
+        apiRquest.SetRequestHeader("Content-Type", "application/json");
+
+        yield return apiRquest.SendWebRequest();
+
+        if (apiRquest.result == UnityWebRequest.Result.Success)
+        {
+            string response = apiRquest.downloadHandler.text;
+
+            if (response[0] == '{' && response[response.Length - 1] == '}')
+            {
+                try
+                {
+                    Dictionary<string, object> apiresponse = JsonConvert.DeserializeObject<Dictionary<string, object>>(response);
+
+                    if (!apiresponse.ContainsKey("message"))
+                    {
+                        //  ERROR PANEL HERE
+                        Debug.Log("Error API CALL! Error Code: " + response);
+                        GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later.", null);
+                        GameManager.Instance.NoBGLoading.SetActive(false);
+                        yield break;
+                    }
+
+                    if (apiresponse["message"].ToString() != "success")
+                    {
+                        //  ERROR PANEL HERE
+                        Debug.Log("Error API CALL! Error Code: " + apiresponse["data"].ToString());
+                        GameManager.Instance.NotificationController.ShowError($"{apiresponse["data"]}", null);
+                        GameManager.Instance.NoBGLoading.SetActive(false);
+                        yield break;
+                    }
+
+                    if (!apiresponse.ContainsKey("data"))
+                    {
+                        //  ERROR PANEL HERE
+                        Debug.Log("Error API CALL! Error Code: " + apiresponse["message"].ToString());
+                        GameManager.Instance.NotificationController.ShowError($"{apiresponse["data"]}", null);
+                        GameManager.Instance.NoBGLoading.SetActive(false);
+                        yield break;
+                    }
+
+                    Dictionary<string, object> dataresponse = JsonConvert.DeserializeObject<Dictionary<string, object>>(apiresponse["data"].ToString());
+
+                    if (!dataresponse.ContainsKey("token"))
+                    {
+                        //  ERROR PANEL HERE
+                        Debug.Log("Error API CALL! Error Code: " + apiresponse["data"].ToString());
+                        GameManager.Instance.NotificationController.ShowError($"{apiresponse["data"]}", null);
+                        GameManager.Instance.NoBGLoading.SetActive(false);
+                        yield break;
+                    }
+
+                    userData.UserToken = dataresponse["token"].ToString();
+
+                    if (rememberMe.isOn)
+                    {
+                        userData.RememberMe = true;
+                        userData.Username = username.text;
+                        userData.Password = password.text;
+                    }
+
+                    GameManager.Instance.NoBGLoading.SetActive(false);
+                    GameManager.Instance.SceneController.CurrentScene = "Lobby";
+                }
+                catch (Exception ex)
+                {
+                    //  ERROR PANEL HERE
+                    Debug.Log("Error API CALL! Error Code: " + ex.Message);
+                    Debug.Log("API response: " + response);
+                    GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please contact customer support for more details.", null);
+                    GameManager.Instance.NoBGLoading.SetActive(false);
+                }
+            }
+            else
+            {
+                //  ERROR PANEL HERE
+                Debug.Log("Error API CALL! Error Code: " + response);
+                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please contact customer support for more details.", null);
+                GameManager.Instance.NoBGLoading.SetActive(false);
+            }
+        }
+        else
+        {
+            try
+            {
+                Dictionary<string, object> apiresponse = JsonConvert.DeserializeObject<Dictionary<string, object>>(apiRquest.downloadHandler.text);
+
+                GameManager.Instance.NotificationController.ShowError($"{apiresponse["data"]}", null);
+            }
+            catch (Exception ex)
+            {
+                Debug.Log("Error API CALL! Error Code: " + apiRquest.result + ", " + apiRquest.downloadHandler.text);
+                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please contact customer support for more details.", null);
+                GameManager.Instance.NoBGLoading.SetActive(false);
+            }
+        }
+    }
 
     public void Login()
     {
         if (username.text == "")
         {
-            Debug.Log("no username");
+            GameManager.Instance.NotificationController.ShowError("Please enter your username first and try again!", null);
             return;
         }
 
         if (password.text == "")
         {
-            Debug.Log("no password");
+            GameManager.Instance.NotificationController.ShowError("Please enter your password first and try again!", null);
             return;
         }
 
-        SceneManager.LoadScene("CharacterCreation");
+        StartCoroutine(LoginUser());
     }
 }

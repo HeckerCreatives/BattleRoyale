@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 public class ButtonSelector : MonoBehaviour
 {
+    [SerializeField] private RectTransform buttonRT;
     [SerializeField] private Sprite unselected;
     [SerializeField] private Sprite selected;
     [SerializeField] private Image btnImg;
@@ -23,21 +24,21 @@ public class ButtonSelector : MonoBehaviour
     {
         selectorObj.SetActive(true);
         btnImg.sprite = selected;
-        transform.position = new Vector3(selectedPos, transform.position.y, transform.position.z);
+        buttonRT.anchoredPosition = new Vector3(selectedPos, buttonRT.anchoredPosition.y);
     }
 
     public void UnselectedBtn()
     {
         selectorObj.SetActive(false);
         btnImg.sprite = unselected;
-        transform.position = new Vector3(unselectedPos, transform.position.y, transform.position.z);
+        buttonRT.anchoredPosition = new Vector3(unselectedPos, buttonRT.anchoredPosition.y);
     }
 
     public void PressBtn()
     {
         selectorObj.SetActive(true);
         btnImg.sprite = selected;
-        transform.position = new Vector3(selectedPos, transform.position.y, transform.position.z);
+        buttonRT.anchoredPosition = new Vector3(selectedPos, buttonRT.anchoredPosition.y);
         SceneManager.LoadScene(nextScene);
     }
 }
