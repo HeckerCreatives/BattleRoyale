@@ -7,7 +7,7 @@ public class ControllerSettingDataRetriever : MonoBehaviour
 {
     [SerializeField] private UserData userData;
     [SerializeField] private RectTransform uiRT;
-    [SerializeField] private Image uiImg;
+    [SerializeField] private CanvasGroup uiImg;
 
     private void Awake()
     {
@@ -18,7 +18,7 @@ public class ControllerSettingDataRetriever : MonoBehaviour
     {
         uiRT.anchoredPosition = new Vector2(userData.ControlSetting[gameObject.name].localPositionX, userData.ControlSetting[gameObject.name].localPositionY);
         uiRT.sizeDelta = new Vector2(userData.ControlSetting[gameObject.name].sizeDeltaX, userData.ControlSetting[gameObject.name].sizeDeltaY);
-        uiImg.color = new Color(uiImg.color.r, uiImg.color.g, uiImg.color.b, userData.ControlSetting[gameObject.name].opacity);
+        uiImg.alpha = userData.ControlSetting[gameObject.name].opacity;
     }
 
     public float UILocalPosition(bool isY)
@@ -33,5 +33,5 @@ public class ControllerSettingDataRetriever : MonoBehaviour
         else return uiRT.sizeDelta.y;
     }
 
-    public float UIOpacity() => uiImg.color.a;
+    public float UIOpacity() => uiImg.alpha;
 }

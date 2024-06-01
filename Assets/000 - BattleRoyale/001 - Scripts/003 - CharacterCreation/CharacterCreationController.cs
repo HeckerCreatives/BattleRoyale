@@ -13,6 +13,10 @@ public class CharacterCreationController : MonoBehaviour
     [SerializeField] private List<Sprite> clothingColorList;
     [SerializeField] private List<Sprite> skinColorList;
 
+    [Header("HAIR")]
+    [SerializeField] private List<GameObject> hairStyles;
+    [SerializeField] private List<MeshRenderer> hairMR;
+
     [Header("IMAGES")]
     [SerializeField] private Image hairStyleImg;
     [SerializeField] private Image hairColorImg;
@@ -26,7 +30,6 @@ public class CharacterCreationController : MonoBehaviour
 
     [Header("CHARACTER")]
     [SerializeField] private SkinnedMeshRenderer bodyColorMR;
-    [SerializeField] private SkinnedMeshRenderer hairColorMR;
     [SerializeField] private SkinnedMeshRenderer upperClothingMR;
     [SerializeField] private SkinnedMeshRenderer lowerClothingMR;
 
@@ -51,7 +54,9 @@ public class CharacterCreationController : MonoBehaviour
         clothingColorImg.sprite = clothingColorList[clothingColorIndex];
         skinColorImg.sprite = skinColorList[skinColorIndex];
 
-        hairColorMR.material.SetColor("_BaseColor", hairColor[hairColorIndex]);
+        hairStyles[hairStyleIndex].SetActive(true);
+
+        hairMR[hairStyleIndex].material.SetColor("_BaseColor", hairColor[hairColorIndex]);
         upperClothingMR.material.SetColor("_BaseColor", clothingColor[clothingColorIndex]);
         lowerClothingMR.materials[0].SetColor("_BaseColor", clothingColor[clothingColorIndex]);
         lowerClothingMR.materials[1].SetColor("_BaseColor", clothingColor[clothingColorIndex]);
@@ -70,6 +75,8 @@ public class CharacterCreationController : MonoBehaviour
 
     public void ChangeHairStyle(bool isNext)
     {
+        hairStyles[hairStyleIndex].SetActive(false);
+
         if (isNext)
         {
             if (hairStyleIndex >= hairStyleList.Count - 1)
@@ -85,6 +92,8 @@ public class CharacterCreationController : MonoBehaviour
                 hairStyleIndex--;
         }
         CheckSettingsForSaveButton();
+        hairStyles[hairStyleIndex].SetActive(true);
+        hairMR[hairStyleIndex].material.SetColor("_BaseColor", hairColor[hairColorIndex]);
         hairStyleImg.sprite = hairStyleList[hairStyleIndex];
     }
 
@@ -106,7 +115,7 @@ public class CharacterCreationController : MonoBehaviour
                 hairColorIndex--;
         }
         CheckSettingsForSaveButton();
-        hairColorMR.material.SetColor("_BaseColor", hairColor[hairColorIndex]);
+        hairMR[hairStyleIndex].material.SetColor("_BaseColor", hairColor[hairColorIndex]);
         hairColorImg.sprite = hairColorList[hairColorIndex];
     }
 
@@ -175,6 +184,7 @@ public class CharacterCreationController : MonoBehaviour
             }, () =>
             {
                 GameManager.Instance.NoBGLoading.SetActive(false);
+                saveBtn.gameObject.SetActive(false);
             }));
         }, null);
     }

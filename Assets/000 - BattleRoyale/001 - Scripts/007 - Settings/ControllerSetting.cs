@@ -29,7 +29,7 @@ public class ControllerSetting : MonoBehaviour
             SelectedUIRTChange?.Invoke(this, EventArgs.Empty);
         }
     }
-    public Image SelectedUIImg
+    public CanvasGroup SelectedUIImg
     {
         get => selectedUIImg;
         set => selectedUIImg = value;
@@ -56,7 +56,7 @@ public class ControllerSetting : MonoBehaviour
 
     [Header("DEBUGGER")]
     [ReadOnly][SerializeField] private RectTransform selectedUIRT;
-    [ReadOnly][SerializeField] private Image selectedUIImg;
+    [ReadOnly][SerializeField] private CanvasGroup selectedUIImg;
     [ReadOnly][SerializeField] private float initialWidth;
     [ReadOnly][SerializeField] private float initialHeight;
     [ReadOnly][SerializeField] private float initialOpacity;
@@ -90,7 +90,7 @@ public class ControllerSetting : MonoBehaviour
     {
         initialWidth = SelectedUIRT.sizeDelta.x;
         initialHeight = SelectedUIRT.sizeDelta.y;
-        initialOpacity = SelectedUIImg.color.a;
+        initialOpacity = SelectedUIImg.alpha;
 
         sizeSlider.value = (initialHeight - minYSize) / (maxYSize - minYSize) * (1f - 0f) + 0f;
         opacitySlider.value = (initialOpacity - minOpacity) / (maxOpacity - minOpacity) * (1f - 0f) + 0f;
@@ -106,9 +106,8 @@ public class ControllerSetting : MonoBehaviour
     public void OnOpacitySliderChange()
     {
         float newOpacity = Mathf.Lerp(minOpacity, maxOpacity, opacitySlider.value);
-        Color elementColor = SelectedUIImg.color;
-        elementColor.a = (newOpacity - minOpacity) / (maxOpacity - minOpacity) * (1f - 0f) + 0f;
-        SelectedUIImg.color = elementColor;
+        float elementColor = (newOpacity - minOpacity) / (maxOpacity - minOpacity) * (1f - 0f) + 0f;
+        SelectedUIImg.alpha = elementColor;
     }
 
     public void ClearUIValues()

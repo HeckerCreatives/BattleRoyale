@@ -80,6 +80,60 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Crouch"",
+                    ""type"": ""Button"",
+                    ""id"": ""59e81cad-6dec-498b-9f98-7843631f0fb0"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Prone"",
+                    ""type"": ""Button"",
+                    ""id"": ""204bfd16-fe84-4878-bcb4-3efd12dec256"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SwitchHands"",
+                    ""type"": ""Button"",
+                    ""id"": ""b881bd1c-df73-4f0a-be79-25e49bb0596e"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SwitchPrimary"",
+                    ""type"": ""Button"",
+                    ""id"": ""a65ac0d8-866e-434b-a530-2b70da2bd715"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SwitchSecondary"",
+                    ""type"": ""Button"",
+                    ""id"": ""df55e760-276b-4116-947a-8e15dc7b014c"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""SwitchTrap"",
+                    ""type"": ""Button"",
+                    ""id"": ""75845407-53d0-4714-a0dc-3fddebc411f1"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -247,6 +301,138 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""action"": ""Look"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""68c7cf87-1c3b-4abc-8a18-b6386dbfe08a"",
+                    ""path"": ""<Gamepad>/buttonEast"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Android"",
+                    ""action"": ""Crouch"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3901f946-19bf-49aa-9a4b-9bc86c66f1ed"",
+                    ""path"": ""<Keyboard>/leftCtrl"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""KeyboardMouse"",
+                    ""action"": ""Crouch"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""a9fc4cb8-fc0c-46f5-b7bd-39cbcf74fcba"",
+                    ""path"": ""<Gamepad>/buttonNorth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Android"",
+                    ""action"": ""Prone"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5bde6d3a-281c-42a4-9d0c-cef0f31e0c08"",
+                    ""path"": ""<Keyboard>/c"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""KeyboardMouse"",
+                    ""action"": ""Prone"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""441783b1-12fc-4b04-938e-94edf0225162"",
+                    ""path"": ""<Gamepad>/dpad/down"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Android"",
+                    ""action"": ""SwitchHands"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""12a6a670-d148-4dc7-98cd-8fbe313ad73f"",
+                    ""path"": ""<Keyboard>/1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""KeyboardMouse"",
+                    ""action"": ""SwitchHands"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""cc17a3e6-83db-4768-adda-1f22b9a38a6c"",
+                    ""path"": ""<Gamepad>/dpad/left"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Android"",
+                    ""action"": ""SwitchPrimary"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2c56b628-6579-47fa-8114-b3c1e876041d"",
+                    ""path"": ""<Keyboard>/2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""KeyboardMouse"",
+                    ""action"": ""SwitchPrimary"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""bb3b835e-41ee-46a6-aed2-e6427f8f2562"",
+                    ""path"": ""<Gamepad>/dpad/right"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Android"",
+                    ""action"": ""SwitchSecondary"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""7cffb620-6237-4e43-9ba6-1c3f06950084"",
+                    ""path"": ""<Keyboard>/3"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""KeyboardMouse"",
+                    ""action"": ""SwitchSecondary"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5948f054-77a1-4709-810c-aba1864a83dc"",
+                    ""path"": ""<Gamepad>/dpad/up"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Android"",
+                    ""action"": ""SwitchTrap"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""13fb4623-c25d-42fd-8548-8bd7a394fd56"",
+                    ""path"": ""<Keyboard>/4"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""KeyboardMouse"",
+                    ""action"": ""SwitchTrap"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -278,6 +464,12 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
         m_Gameplay_Aim = m_Gameplay.FindAction("Aim", throwIfNotFound: true);
         m_Gameplay_Shoot = m_Gameplay.FindAction("Shoot", throwIfNotFound: true);
         m_Gameplay_Look = m_Gameplay.FindAction("Look", throwIfNotFound: true);
+        m_Gameplay_Crouch = m_Gameplay.FindAction("Crouch", throwIfNotFound: true);
+        m_Gameplay_Prone = m_Gameplay.FindAction("Prone", throwIfNotFound: true);
+        m_Gameplay_SwitchHands = m_Gameplay.FindAction("SwitchHands", throwIfNotFound: true);
+        m_Gameplay_SwitchPrimary = m_Gameplay.FindAction("SwitchPrimary", throwIfNotFound: true);
+        m_Gameplay_SwitchSecondary = m_Gameplay.FindAction("SwitchSecondary", throwIfNotFound: true);
+        m_Gameplay_SwitchTrap = m_Gameplay.FindAction("SwitchTrap", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -345,6 +537,12 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Gameplay_Aim;
     private readonly InputAction m_Gameplay_Shoot;
     private readonly InputAction m_Gameplay_Look;
+    private readonly InputAction m_Gameplay_Crouch;
+    private readonly InputAction m_Gameplay_Prone;
+    private readonly InputAction m_Gameplay_SwitchHands;
+    private readonly InputAction m_Gameplay_SwitchPrimary;
+    private readonly InputAction m_Gameplay_SwitchSecondary;
+    private readonly InputAction m_Gameplay_SwitchTrap;
     public struct GameplayActions
     {
         private @GameplayInputs m_Wrapper;
@@ -355,6 +553,12 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
         public InputAction @Aim => m_Wrapper.m_Gameplay_Aim;
         public InputAction @Shoot => m_Wrapper.m_Gameplay_Shoot;
         public InputAction @Look => m_Wrapper.m_Gameplay_Look;
+        public InputAction @Crouch => m_Wrapper.m_Gameplay_Crouch;
+        public InputAction @Prone => m_Wrapper.m_Gameplay_Prone;
+        public InputAction @SwitchHands => m_Wrapper.m_Gameplay_SwitchHands;
+        public InputAction @SwitchPrimary => m_Wrapper.m_Gameplay_SwitchPrimary;
+        public InputAction @SwitchSecondary => m_Wrapper.m_Gameplay_SwitchSecondary;
+        public InputAction @SwitchTrap => m_Wrapper.m_Gameplay_SwitchTrap;
         public InputActionMap Get() { return m_Wrapper.m_Gameplay; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -382,6 +586,24 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
             @Look.started += instance.OnLook;
             @Look.performed += instance.OnLook;
             @Look.canceled += instance.OnLook;
+            @Crouch.started += instance.OnCrouch;
+            @Crouch.performed += instance.OnCrouch;
+            @Crouch.canceled += instance.OnCrouch;
+            @Prone.started += instance.OnProne;
+            @Prone.performed += instance.OnProne;
+            @Prone.canceled += instance.OnProne;
+            @SwitchHands.started += instance.OnSwitchHands;
+            @SwitchHands.performed += instance.OnSwitchHands;
+            @SwitchHands.canceled += instance.OnSwitchHands;
+            @SwitchPrimary.started += instance.OnSwitchPrimary;
+            @SwitchPrimary.performed += instance.OnSwitchPrimary;
+            @SwitchPrimary.canceled += instance.OnSwitchPrimary;
+            @SwitchSecondary.started += instance.OnSwitchSecondary;
+            @SwitchSecondary.performed += instance.OnSwitchSecondary;
+            @SwitchSecondary.canceled += instance.OnSwitchSecondary;
+            @SwitchTrap.started += instance.OnSwitchTrap;
+            @SwitchTrap.performed += instance.OnSwitchTrap;
+            @SwitchTrap.canceled += instance.OnSwitchTrap;
         }
 
         private void UnregisterCallbacks(IGameplayActions instance)
@@ -404,6 +626,24 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
             @Look.started -= instance.OnLook;
             @Look.performed -= instance.OnLook;
             @Look.canceled -= instance.OnLook;
+            @Crouch.started -= instance.OnCrouch;
+            @Crouch.performed -= instance.OnCrouch;
+            @Crouch.canceled -= instance.OnCrouch;
+            @Prone.started -= instance.OnProne;
+            @Prone.performed -= instance.OnProne;
+            @Prone.canceled -= instance.OnProne;
+            @SwitchHands.started -= instance.OnSwitchHands;
+            @SwitchHands.performed -= instance.OnSwitchHands;
+            @SwitchHands.canceled -= instance.OnSwitchHands;
+            @SwitchPrimary.started -= instance.OnSwitchPrimary;
+            @SwitchPrimary.performed -= instance.OnSwitchPrimary;
+            @SwitchPrimary.canceled -= instance.OnSwitchPrimary;
+            @SwitchSecondary.started -= instance.OnSwitchSecondary;
+            @SwitchSecondary.performed -= instance.OnSwitchSecondary;
+            @SwitchSecondary.canceled -= instance.OnSwitchSecondary;
+            @SwitchTrap.started -= instance.OnSwitchTrap;
+            @SwitchTrap.performed -= instance.OnSwitchTrap;
+            @SwitchTrap.canceled -= instance.OnSwitchTrap;
         }
 
         public void RemoveCallbacks(IGameplayActions instance)
@@ -447,5 +687,11 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
         void OnAim(InputAction.CallbackContext context);
         void OnShoot(InputAction.CallbackContext context);
         void OnLook(InputAction.CallbackContext context);
+        void OnCrouch(InputAction.CallbackContext context);
+        void OnProne(InputAction.CallbackContext context);
+        void OnSwitchHands(InputAction.CallbackContext context);
+        void OnSwitchPrimary(InputAction.CallbackContext context);
+        void OnSwitchSecondary(InputAction.CallbackContext context);
+        void OnSwitchTrap(InputAction.CallbackContext context);
     }
 }

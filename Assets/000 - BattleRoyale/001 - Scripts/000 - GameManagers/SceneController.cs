@@ -53,6 +53,26 @@ public class SceneController : MonoBehaviour
         actionLoading.Add(action);
     }
 
+    private event EventHandler MultiplayerSceneChange;
+    public event EventHandler OnMultuplayerSceneChange
+    {
+        add
+        {
+            if (MultiplayerSceneChange == null || !MultiplayerSceneChange.GetInvocationList().Contains(value))
+                MultiplayerSceneChange += value;
+        }
+        remove { MultiplayerSceneChange -= value; }
+    }
+    public bool MultiplayerScene
+    {
+        get => multiplayerScene;
+        set
+        {
+            multiplayerScene = value;
+            MultiplayerSceneChange?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
     public bool DoneLoading
     {
         get => doneLoading;
@@ -83,6 +103,7 @@ public class SceneController : MonoBehaviour
     [Header("DEBUGGER")]
     [ReadOnly][SerializeField] private bool doneLoading;
     [ReadOnly][SerializeField] private bool firstLoading;
+    [ReadOnly][SerializeField] private bool multiplayerScene;
     [ReadOnly][SerializeField] private string currentScene;
     [ReadOnly][SerializeField] private string previousScene;
     [ReadOnly][SerializeField] private bool actionPass;
@@ -91,7 +112,7 @@ public class SceneController : MonoBehaviour
     private List<IEnumerator> actionLoading;
     AsyncOperation scenesLoading;
 
-    Coroutine LoadingCoroutine;
+    Coroutine LoadingCoroutine, MultiplayerLoadingCoroutine;
 
     private void Awake()
     {
@@ -101,17 +122,95 @@ public class SceneController : MonoBehaviour
         scenesLoading = new AsyncOperation();
 
         onSceneChange += SceneChange;
+        OnMultuplayerSceneChange += MultiplayerChangeScene;
     }
 
     private void OnDisable()
     {
         onSceneChange -= SceneChange;
+        OnMultuplayerSceneChange -= MultiplayerChangeScene;
+    }
+
+    private void MultiplayerChangeScene(object sender, EventArgs e)
+    {
+        if (MultiplayerLoadingCoroutine != null) StopCoroutine(MultiplayerLoadingCoroutine);
+        MultiplayerLoadingCoroutine = StartCoroutine(MultiplayerLoading());
     }
 
     private void SceneChange(object sender, EventArgs e)
     {
-        LoadingCoroutine = StartCoroutine(Loading());
+        if (!MultiplayerScene)
+            LoadingCoroutine = StartCoroutine(Loading());
     }
+
+    public IEnumerator MultiplayerLoading()
+    {
+        Debug.Log("multiplayer loading");
+        doneLoading = false;
+
+        loadingScreenBGObj.SetActive(true);
+
+        loadingScreenBGObj.SetActive(true);
+
+        loadingSlider.value = 0f;
+
+        LeanTween.alphaCanvas(loadingCG, 1f, speed).setEase(easeType);
+
+        yield return new WaitWhile(() => loadingCG.alpha != 1f);
+
+        LastScene = CurrentScene;
+        currentScene = SceneManager.GetActiveScene().name;
+
+        LeanTween.alphaCanvas(loadingCG, 1f, speed).setEase(easeType);
+
+        yield return new WaitWhile(() => loadingCG.alpha != 1f);
+
+        while (!actionPass) yield return null;
+
+        actionPass = false; //  THIS IS FOR RESET
+
+        for (int a = 0; a < GetActionLoadingList.Count; a++)
+        {
+            yield return StartCoroutine(GetActionLoadingList[a]);
+
+            int index = a + 1;
+
+            totalSceneProgress = (float)index / (1 + GetActionLoadingList.Count);
+
+            LeanTween.value(loadingSlider.gameObject, a => loadingSlider.value = a, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
+
+            yield return new WaitWhile(() => loadingSlider.value != totalSceneProgress);
+
+            yield return null;
+        }
+
+        totalSceneProgress = scenesLoading.progress;
+
+        LeanTween.value(loadingSlider.gameObject, a => loadingSlider.value = a, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
+
+        yield return new WaitForSecondsRealtime(loadingBarSpeed);
+
+        LeanTween.alphaCanvas(loadingCG, 0f, speed).setEase(easeType);
+
+        yield return new WaitWhile(() => loadingCG.alpha != 0f);
+
+        currentScene = SceneManager.GetActiveScene().name;
+
+        loadingScreenBGObj.SetActive(false);
+
+        GetActionLoadingList.Clear();
+
+        loadingSlider.value = 0f;
+
+        totalSceneProgress = 0f;
+
+        MultiplayerScene = false;
+
+        doneLoading = true;
+
+        MultiplayerLoadingCoroutine = null;
+    }
+
 
     public IEnumerator Loading()
     {

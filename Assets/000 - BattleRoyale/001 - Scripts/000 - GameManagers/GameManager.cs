@@ -8,6 +8,9 @@ using UnityEngine;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
 using System.Text;
+using Fusion;
+using System.Threading.Tasks;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -24,6 +27,8 @@ public class GameManager : MonoBehaviour
     [Header("LOADING")]
     [SerializeField] private string startSceneName;
 
+    [SerializeField] private NetworkRunner instanceRunner;
+
     [field: Header("CAMERA")]
     [field: SerializeField] public Camera UICamera { get; private set; }
     [field: SerializeField] public Camera Camera { get; private set; }
@@ -34,6 +39,7 @@ public class GameManager : MonoBehaviour
     [field: SerializeField] public AudioManager AudioController { get; private set; }
     [field: SerializeField] public NotificationController NotificationController { get; private set; }
     [field: SerializeField] public GameObject NoBGLoading { get; private set; }
+
 
     private void Awake()
     {
@@ -49,6 +55,7 @@ public class GameManager : MonoBehaviour
 
         SceneController.CurrentScene = startSceneName;
     }
+
 
     public IEnumerator GetRequest(string route, string query, bool loaderEndState, System.Action<System.Object> callback, System.Action errorAction)
     {

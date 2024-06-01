@@ -9,7 +9,7 @@ using UnityEngine.UI;
 public class SettingsControlGameplayController : MonoBehaviour, IPointerDownHandler, IDragHandler
 {
     [SerializeField] private RectTransform uiElementRectTransform;
-    [SerializeField] private Image uiImg;
+    [SerializeField] private CanvasGroup uiImg;
     [SerializeField] private ControllerSetting controllerSetting;
 
     private Vector2 pointerOffset;
