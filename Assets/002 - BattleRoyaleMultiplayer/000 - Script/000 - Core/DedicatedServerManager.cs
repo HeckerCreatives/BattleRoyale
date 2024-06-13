@@ -42,7 +42,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
 
     [Networked, Capacity(10)] private NetworkDictionary<PlayerRef, PlayerNetworkCore> Players => default;
-
     //  =================
 
     private void Awake()
@@ -219,6 +218,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             NetworkObject playerCharacter = Runner.Spawn(playerNetowrkCore.PlayerCharacterObj, Vector3.up, Quaternion.identity, player);
 
+            playerNetowrkCore.ServerManager = Object;
             playerNetowrkCore.PlayerCharacterSpawnedObj = playerCharacter;
 
             playerCharacter.GetComponent<SimpleKCC>().SetPosition(playerNetowrkCore.SpawnPosition);

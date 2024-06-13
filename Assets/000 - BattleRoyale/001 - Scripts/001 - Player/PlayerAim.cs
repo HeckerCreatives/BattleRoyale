@@ -12,56 +12,64 @@ public class PlayerAim : NetworkBehaviour
 
     //  =====================
 
+    [SerializeField] private PlayerController playerController;
+
     [Header("RIG AIM")]
-    [SerializeField] private Transform aimTF;
-    [SerializeField] private LayerMask aimLayerMask;
     [SerializeField] private Rig hipsRig;
 
     [field: Header("DEBUGGER")]
     [field: MyBox.ReadOnly] [field: SerializeField] public CinemachineVirtualCamera AimVCam { get; set; }
+    [field: MyBox.ReadOnly] [field: SerializeField] [Networked] public NetworkBool IsAim { get; private set; }
 
     //  ====================
 
     [Networked] public NetworkButtons ButtonsPrevious { get; set; }
+    [Networked] public NetworkButtons Released { get; set; }
+    [Networked] public NetworkButtons Pressed { get; set; }
 
     //  ====================
 
     public override void FixedUpdateNetwork()
     {
+        NetworkAim();
+    }
+
+    private void NetworkAim()
+    {
+        if (GetInput<MyInput>(out var input) == false) return;
+
+        if (input.Buttons.WasPressed(ButtonsPrevious, InputButton.Aim))
+            IsAim = !IsAim;
+
         PlayerAimCamera();
-        RigTargetAim();
+        HipsWeightNetwork();
+
+        ButtonsPrevious = input.Buttons;
     }
 
     private void PlayerAimCamera()
     {
         if (!HasInputAuthority) return;
 
-        if (GetInput<MyInput>(out var input) == false) return;
+        if (AimVCam == null) return;
 
-        var pressed = input.Buttons.GetPressed(ButtonsPrevious);
-        var release = input.Buttons.GetReleased(ButtonsPrevious);
-
-        ButtonsPrevious = input.Buttons;
-
-        if (pressed.IsSet(InputButton.Aim))
-        {
+        if (IsAim)
             AimVCam.gameObject.SetActive(true);
-            hipsRig.weight = 1f;
-        }
-        if (release.IsSet(InputButton.Aim))
-        {
+        else
             AimVCam.gameObject.SetActive(false);
-            hipsRig.weight = 0f;
-        }
     }
 
-    private void RigTargetAim()
+    private void HipsWeightNetwork()
     {
-        if (!HasInputAuthority) return;
+        if (playerController.IsProne)
+        {
+            hipsRig.weight = 0f;
+            return;
+        }
 
-        Vector2 screenCenterPoint = new Vector2(Screen.width / 2, Screen.height / 2);
-        Ray ray = GameManager.Instance.Camera.ScreenPointToRay(screenCenterPoint);
-        if (Physics.Raycast(ray, out RaycastHit raycastHit, 999f, aimLayerMask))
-            aimTF.position = raycastHit.point;
+        if (IsAim)
+            hipsRig.weight = 1f;
+        else
+            hipsRig.weight = 0f;
     }
 }

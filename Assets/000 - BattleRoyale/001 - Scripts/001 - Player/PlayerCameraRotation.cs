@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
+using UnityEngine.UIElements;
 
 public class PlayerCameraRotation : NetworkBehaviour
 {
@@ -23,82 +24,59 @@ public class PlayerCameraRotation : NetworkBehaviour
     [SerializeField] private float crouchCamHeight;
     [SerializeField] private float proneCamHeight;
 
+    [Header("CAMERA LOOK TARGET")]
+    [SerializeField] private Transform aimTF;
+    [SerializeField] private LayerMask aimLayerMask;
+    [field: SerializeField][Networked] public float AimDistance { get; private set; }
+
     [Header("Parameters")]
-    [SerializeField] private float Sensitivity = 1f;
-    [SerializeField] private float TopClamp = 70.0f;
-    [SerializeField] private float BottomClamp = -30.0f;
-    [SerializeField] private float CameraAngleOverride = 0.0f;
+    [field: SerializeField][Networked] public float Sensitivity { get; private set; }
+    [field: SerializeField][Networked] public float TopClamp { get; private set; }
+    [field: SerializeField][Networked] public float BottomClamp { get; private set; }
+    [field: SerializeField][Networked] public float CameraAngleOverride { get; private set; }
 
-    [Header("DEBUGGER")]
-    [MyBox.ReadOnly][SerializeField] private float _threshold = 0.01f;
-    [MyBox.ReadOnly][SerializeField] private float _cinemachineTargetYaw;
-    [MyBox.ReadOnly][SerializeField] private float _cinemachineTargetPitch;
+[Header("DEBUGGER")]
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public float _threshold { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public float _cinemachineTargetYaw { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public float _cinemachineTargetPitch { get; private set; }
 
-    //  =============================
-
-    private Dictionary<int, bool> touchOverUI = new Dictionary<int, bool>();
-
-    [Networked] private NetworkButtons PreviousButtons { get; set; }
-
-    //  =============================
+    private void Start()
+    {
+        _threshold = 0.01f;
+    }
 
     public override void FixedUpdateNetwork()
     {
         HandleMobileCameraInput();
     }
 
-        private void LateUpdate()
+    private void LateUpdate()
     {
         CameraHeight();
     }
 
     private void HandleMobileCameraInput()
     {
-        if (!HasInputAuthority) return;
-
-#if UNITY_EDITOR
         if (GetInput<MyInput>(out var input) == false) return;
 
         if (input.LookDirection.sqrMagnitude >= _threshold)
         {
-            _cinemachineTargetYaw += input.LookDirection.x * Time.deltaTime * Sensitivity;
-            _cinemachineTargetPitch += -input.LookDirection.y * Time.deltaTime * Sensitivity;
+            _cinemachineTargetYaw += input.LookDirection.x * Runner.DeltaTime * Sensitivity;
+            _cinemachineTargetPitch += -input.LookDirection.y * Runner.DeltaTime * Sensitivity;
         }
 
         _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
         _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
 
-        playerObj.SetLookRotation(_cinemachineTargetPitch, _cinemachineTargetYaw);
-        //playerObj.transform.rotation = Quaternion.Euler(0.0f, _cinemachineTargetYaw, 0.0f);
-        //playerObj.Transform.rotation = Quaternion.Euler(0.0f, _cinemachineTargetYaw, 0.0f);
+        Vector3 Direction = new Vector3(
+            Mathf.Cos(_cinemachineTargetPitch * Mathf.Deg2Rad) * Mathf.Sin(_cinemachineTargetYaw * Mathf.Deg2Rad),
+            Mathf.Sin(-_cinemachineTargetPitch * Mathf.Deg2Rad),
+            Mathf.Cos(_cinemachineTargetPitch * Mathf.Deg2Rad) * Mathf.Cos(_cinemachineTargetYaw * Mathf.Deg2Rad)
+        );
+
+        playerObj.SetLookRotation(_cinemachineTargetPitch + CameraAngleOverride, _cinemachineTargetYaw);
         target.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride, _cinemachineTargetYaw, 0.0f);
-
-        PreviousButtons = input.Buttons;
-#else
-        foreach (var touch in Touchscreen.current.touches)
-        {
-            int touchId = touch.touchId.ReadValue();
-            if (touch.phase.ReadValue() == UnityEngine.InputSystem.TouchPhase.Began)
-                touchOverUI[touchId] = IsTouchOverUI(touch.position);
-
-            if (touchOverUI.ContainsKey(touchId) && touchOverUI[touchId])
-                continue;
-
-            Vector2 touchDelta = touch.delta.ReadValue();
-
-            if (touchDelta.sqrMagnitude >= _threshold)
-            {
-                _cinemachineTargetYaw += touchDelta.x * Time.deltaTime * Sensitivity;
-                _cinemachineTargetPitch += -touchDelta.y * Time.deltaTime * Sensitivity;
-            }
-
-            _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
-            _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
-
-            target.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride, _cinemachineTargetYaw, 0.0f);
-            playerObj.transform.rotation = Quaternion.Euler(0.0f, _cinemachineTargetYaw, 0.0f);
-        }
-#endif
+        aimTF.position = transform.position + Direction * AimDistance;
     }
 
     private void CameraHeight()
@@ -108,21 +86,10 @@ public class PlayerCameraRotation : NetworkBehaviour
         else target.transform.localPosition = new Vector3(target.transform.localPosition.x, standCamHeight, target.transform.localPosition.z);
     }
 
-    private bool IsTouchOverUI(Vector2Control touchPosition)
-    {
-        Vector2 touchPos = touchPosition.ReadValue();
-
-        PointerEventData eventData = new PointerEventData(EventSystem.current);
-        eventData.position = touchPos;
-
-        return EventSystem.current.IsPointerOverGameObject(eventData.pointerId);
-    }
-
     private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
     {
         if (lfAngle < -360f) lfAngle += 360f;
         if (lfAngle > 360f) lfAngle -= 360f;
         return Mathf.Clamp(lfAngle, lfMin, lfMax);
     }
-
 }

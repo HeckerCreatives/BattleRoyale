@@ -18,6 +18,7 @@ public class PlayerNetworkCore : NetworkBehaviour
 
     [field: Header("DEBUGGER PUBLIC")]
     [Networked][field: SerializeField][field: MyBox.ReadOnly] public NetworkObject PlayerCharacterSpawnedObj { get; set; }
+    [Networked][field: SerializeField][field: MyBox.ReadOnly] public NetworkObject ServerManager { get; set; }
 
     private void Awake()
     {
@@ -27,6 +28,10 @@ public class PlayerNetworkCore : NetworkBehaviour
     IEnumerator Initialize()
     {
         while (Runner == null) yield return null;
+
+        while (!PlayerCharacterSpawnedObj) yield return null;
+
+        PlayerCharacterSpawnedObj.GetComponent<PlayerInventory>().DedicatedServer = ServerManager;
 
         if (!HasInputAuthority) yield break;
 

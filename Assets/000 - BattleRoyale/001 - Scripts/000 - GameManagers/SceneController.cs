@@ -84,6 +84,9 @@ public class SceneController : MonoBehaviour
     [SerializeField] private Slider loadingSlider;
     [SerializeField] private CanvasGroup loadingCG;
     [SerializeField] private GameObject splashScreenObj;
+    [SerializeField] private TextMeshProUGUI loadingPercentageTMP;
+    [SerializeField] private Image loadingBGImg;
+    [SerializeField] private List<Sprite> loadingBGSprite;
 
     //[Header("TRIVIA")]
     //[SerializeField] private float triviaTransitionSpeed;
@@ -148,6 +151,10 @@ public class SceneController : MonoBehaviour
         Debug.Log("multiplayer loading");
         doneLoading = false;
 
+        int random = UnityEngine.Random.Range(0, loadingBGSprite.Count);
+
+        loadingBGImg.sprite = loadingBGSprite[random];
+
         loadingScreenBGObj.SetActive(true);
 
         loadingScreenBGObj.SetActive(true);
@@ -177,6 +184,10 @@ public class SceneController : MonoBehaviour
 
             totalSceneProgress = (float)index / (1 + GetActionLoadingList.Count);
 
+            LeanTween.value(loadingPercentageTMP.gameObject, 0f, totalSceneProgress, loadingBarSpeed).setOnUpdate((float val) =>
+            {
+                loadingPercentageTMP.text = $"{val}%";
+            }).setEase(easeType);
             LeanTween.value(loadingSlider.gameObject, a => loadingSlider.value = a, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
 
             yield return new WaitWhile(() => loadingSlider.value != totalSceneProgress);
@@ -214,6 +225,9 @@ public class SceneController : MonoBehaviour
 
     public IEnumerator Loading()
     {
+        int random = UnityEngine.Random.Range(0, loadingBGSprite.Count);
+
+        loadingBGImg.sprite = loadingBGSprite[random];
 
         doneLoading = false;
 
@@ -266,6 +280,10 @@ public class SceneController : MonoBehaviour
 
                 if (!firstLoading)
                 {
+                    LeanTween.value(loadingPercentageTMP.gameObject, 0f, loadingSlider.value, loadingBarSpeed).setOnUpdate((float val) =>
+                    {
+                        loadingPercentageTMP.text = $"{val * 100f}%";
+                    }).setEase(easeType);
                     LeanTween.value(loadingSlider.gameObject, a => loadingSlider.value = a, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
 
                     yield return new WaitWhile(() => loadingSlider.value != totalSceneProgress);

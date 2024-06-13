@@ -9,6 +9,7 @@ public class Loader : MonoBehaviour
 {
     [SerializeField] private bool isServer;
     [SerializeField] private bool debugMode;
+    [SerializeField] private UserData userData;
     [ConditionalField("debugMode")][SerializeField] private string sceneName;
 
     private void Awake()
@@ -16,6 +17,7 @@ public class Loader : MonoBehaviour
         if (isServer)
         {
             Application.targetFrameRate = 30;
+            userData.Username = "Server";
             SceneManager.LoadScene(sceneName);
         }
         else

@@ -6,6 +6,9 @@ using UnityEngine.UI;
 public class CharacterCreationController : MonoBehaviour
 {
     [SerializeField] private UserData userData;
+    [SerializeField] private RectTransform customizerTF;
+    [SerializeField] private LeanTweenType easeType;
+    [SerializeField] private float easeDuration;
 
     [Header("SPRITES")]
     [SerializeField] private List<Sprite> hairStyleList;
@@ -37,10 +40,17 @@ public class CharacterCreationController : MonoBehaviour
     [SerializeField] private Button saveBtn;
 
     [Header("DEBUGGER")]
+    [ReadOnly][SerializeField] private bool customIsOn;
     [ReadOnly][SerializeField] private int hairStyleIndex;
     [ReadOnly][SerializeField] private int hairColorIndex;
     [ReadOnly][SerializeField] private int clothingColorIndex;
     [ReadOnly][SerializeField] private int skinColorIndex;
+
+    //  =======================
+
+    int customizerLT;
+
+    //  =======================
 
     public void InitializeCharacterSettings(int hairStyleIndex, int hairColorIndex, int clothingColorIndex, int skinColorIndex)
     {
@@ -187,5 +197,27 @@ public class CharacterCreationController : MonoBehaviour
                 saveBtn.gameObject.SetActive(false);
             }));
         }, null);
+    }
+
+    public void CustomizerOpener()
+    {
+        if (customizerLT != 0) LeanTween.cancel(customizerLT);
+
+        customIsOn = !customIsOn;
+
+        if (customIsOn)
+        {
+            customizerLT = LeanTween.value(customizerTF.gameObject, customizerTF.anchoredPosition.x, 0f, easeDuration).setOnUpdate((float val) =>
+            {
+                customizerTF.anchoredPosition = new Vector3(val, customizerTF.anchoredPosition.y, 0f);
+            }).setEase(easeType).id;
+        }
+        else
+        {
+            customizerLT = LeanTween.value(customizerTF.gameObject, customizerTF.anchoredPosition.x, 370f, easeDuration).setOnUpdate((float val) =>
+            {
+                customizerTF.anchoredPosition = new Vector3(val, customizerTF.anchoredPosition.y, 0f);
+            }).setEase(easeType).id;
+        }
     }
 }

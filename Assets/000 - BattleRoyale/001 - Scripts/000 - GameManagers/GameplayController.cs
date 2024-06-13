@@ -5,8 +5,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Unity.Services.Matchmaker.Models;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.EnhancedTouch;
+using UnityEngine.UIElements;
 
 public enum InputButton
 {
@@ -37,26 +41,31 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     [SerializeField] private float jumpHoldTime;
 
     [Header("DEBUGGER")]
-    [SerializeField] private float currentJumpTime;
-    [SerializeField] private bool cursorLocked = true;
+    [MyBox.ReadOnly][SerializeField] private float currentJumpTime;
+    [MyBox.ReadOnly][SerializeField] private bool cursorLocked = true;
+    [MyBox.ReadOnly][SerializeField] private float _threshold = 0.01f;
 
     [field: Header("DEBUGGER GLOBAL")]
     [field: MyBox.ReadOnly][field: SerializeField] public Vector2 MovementDirection { get; private set; }
     [field: MyBox.ReadOnly][field: SerializeField] public Vector2 LookDirection { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public bool Jump { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public bool Aim { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public bool Shoot { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public bool Crouch { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public bool Prone { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public bool SwitchHands { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public bool SwitchPrimary { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public bool SwitchSecondary { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public bool SwitchTrap { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField] public NetworkBool Jump { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField] public NetworkBool Aim { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField] public NetworkBool Shoot { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField] public NetworkBool Crouch { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField] public NetworkBool Prone { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField] public NetworkBool SwitchHands { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField] public NetworkBool SwitchPrimary { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField] public NetworkBool SwitchSecondary { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField] public NetworkBool SwitchTrap { get; private set; }
+    [MyBox.ReadOnly][SerializeField] private bool resetInput;
 
 
     //  =========================
 
     private GameplayInputs gameplayInputs;
+    private Dictionary<int, bool> touchOverUI = new Dictionary<int, bool>();
+
+    MyInput myInput;
 
     //  =========================
 
@@ -73,6 +82,8 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
         if (Runner != null)
         {
+            myInput = new MyInput();
+
             Debug.Log($"Starting init controls");
             gameplayInputs = new GameplayInputs();
             gameplayInputs.Enable();
@@ -80,6 +91,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.Movement.performed += _ => MovementStart();
             gameplayInputs.Gameplay.Movement.canceled += _ => MovementStop();
             gameplayInputs.Gameplay.Jump.started += _ => JumpStart();
+            gameplayInputs.Gameplay.Jump.canceled += _ => JumpTurnOff();
             gameplayInputs.Gameplay.Aim.started += _ => AimStart();
             gameplayInputs.Gameplay.Aim.canceled += _ => AimStop();
             gameplayInputs.Gameplay.Shoot.started += _ => ShootStart();
@@ -97,7 +109,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.SwitchTrap.started += _ => SwitchTrapStart();
             gameplayInputs.Gameplay.SwitchTrap.canceled += _ => SwitchTrapStop();
 
-#if UNITY_EDITOR
+#if !UNITY_ANDROID
             gameplayInputs.Gameplay.Look.performed += _ => LookStart();
             gameplayInputs.Gameplay.Look.canceled += _ => LookStop();
 #endif
@@ -114,6 +126,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.Movement.performed -= _ => MovementStart();
             gameplayInputs.Gameplay.Movement.canceled -= _ => MovementStop();
             gameplayInputs.Gameplay.Jump.started -= _ => JumpStart();
+            gameplayInputs.Gameplay.Jump.canceled -= _ => JumpTurnOff();
             gameplayInputs.Gameplay.Aim.started -= _ => AimStart();
             gameplayInputs.Gameplay.Aim.canceled -= _ => AimStop();
             gameplayInputs.Gameplay.Shoot.started -= _ => ShootStart();
@@ -131,7 +144,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.SwitchTrap.started -= _ => SwitchTrapStart();
             gameplayInputs.Gameplay.SwitchTrap.canceled -= _ => SwitchTrapStop();
 
-#if UNITY_EDITOR
+#if !UNITY_ANDROID
             gameplayInputs.Gameplay.Look.performed -= _ => LookStart();
             gameplayInputs.Gameplay.Look.canceled -= _ => LookStop();
 #endif
@@ -143,16 +156,11 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
     #region LOCAL INPUTS
 
-#if !UNITY_IOS || !UNITY_ANDROID
-
-    private void OnApplicationFocus(bool hasFocus)
-    {
-        SetCursorState(cursorLocked);
-    }
+#if !UNITY_ANDROID
 
     private void SetCursorState(bool newState)
     {
-        Cursor.lockState = newState ? CursorLockMode.Locked : CursorLockMode.None;
+        UnityEngine.Cursor.lockState = newState ? CursorLockMode.Locked : CursorLockMode.None;
     }
 
 #endif
@@ -274,6 +282,51 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
     public void BeforeUpdate()
     {
+        if (resetInput)
+        {
+            resetInput = false;
+            myInput = default;
+        }
+
+#if !UNITY_ANDROID
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard != null && (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame || keyboard.escapeKey.wasPressedThisFrame))
+        {
+
+        }
+#endif
+
+#if UNITY_ANDROID
+        foreach (var touch in Touchscreen.current.touches)
+        {
+            int touchId = touch.touchId.ReadValue();
+
+            if (touch.phase.ReadValue() == UnityEngine.InputSystem.TouchPhase.Began)
+                touchOverUI[touchId] = EventSystem.current.IsPointerOverGameObject(touchId);
+
+            if (touchOverUI.ContainsKey(touchId) && touchOverUI[touchId])
+                continue;
+
+            myInput.LookDirection += touch.delta.ReadValue();
+        }
+#endif
+
+        myInput.MovementDirection.Set(MovementDirection.x, MovementDirection.y);
+
+#if !UNITY_ANDROID
+
+        myInput.LookDirection += LookDirection;
+#endif
+
+        myInput.Buttons.Set(InputButton.Jump, Jump);
+        myInput.Buttons.Set(InputButton.Aim, Aim);
+        myInput.Buttons.Set(InputButton.Shoot, Shoot);
+        myInput.Buttons.Set(InputButton.Crouch, Crouch);
+        myInput.Buttons.Set(InputButton.Prone, Prone);
+        myInput.Buttons.Set(InputButton.SwitchHands, SwitchHands);
+        myInput.Buttons.Set(InputButton.SwitchPrimary, SwitchPrimary);
+        myInput.Buttons.Set(InputButton.SwitchSecondary, SwitchSecondary);
+        myInput.Buttons.Set(InputButton.SwitchTrap, SwitchTrap);
     }
 
     public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player)
@@ -286,6 +339,12 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
     {
+#if !UNITY_ANDROID
+        if (player == runner.LocalPlayer)
+        {
+            SetCursorState(true);
+        }
+#endif
     }
 
     public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
@@ -294,24 +353,11 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
     public void OnInput(NetworkRunner runner, NetworkInput input)
     {
-        var myInput = new MyInput();
-
-        myInput.MovementDirection.Set(MovementDirection.x, MovementDirection.y);
-        myInput.LookDirection.Set(LookDirection.x, LookDirection.y);
-        myInput.Buttons.Set(InputButton.Jump, Jump);
-        myInput.Buttons.Set(InputButton.Aim, Aim);
-        myInput.Buttons.Set(InputButton.Shoot, Shoot);
-        myInput.Buttons.Set(InputButton.Crouch, Crouch);
-        myInput.Buttons.Set(InputButton.Prone, Prone);
-        myInput.Buttons.Set(InputButton.SwitchHands, SwitchHands);
-        myInput.Buttons.Set(InputButton.SwitchPrimary, SwitchPrimary);
-        myInput.Buttons.Set(InputButton.SwitchSecondary, SwitchSecondary);
-        myInput.Buttons.Set(InputButton.SwitchTrap, SwitchTrap);
-
         input.Set(myInput);
 
+        resetInput = true;
+        //myInput.MovementDirection = default;
         myInput.LookDirection = default;
-        myInput.MovementDirection = default;
     }
 
     public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input)
@@ -320,6 +366,9 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
     {
+#if !UNITY_ANDROID
+        SetCursorState(false);
+#endif
     }
 
     public void OnConnectedToServer(NetworkRunner runner)

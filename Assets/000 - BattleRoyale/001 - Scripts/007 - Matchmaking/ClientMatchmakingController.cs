@@ -41,7 +41,7 @@ public class ClientMatchmakingController : MonoBehaviour
 
         secondsFindMatch = (currentTime % 60).ToString("00");
 
-        timerTMP.text = "FINDING GAME:  " + string.Format("{0}:{1}", minutesFindMatch, secondsFindMatch);
+        timerTMP.text = string.Format("{0} : {1}", minutesFindMatch, secondsFindMatch);
     }
 
     public void ConnectToServer()
@@ -70,7 +70,7 @@ public class ClientMatchmakingController : MonoBehaviour
 
                 if (sessionResult.Ok)
                 {
-                    timerTMP.text = "MATCH FOUND! JOINING GAME...";
+                    timerTMP.text = "CONFIRMING MATCH!";
                     matchFound = true;
                     findingMatch = false;
                     //GameManager.Instance.SceneController.MultiplayerScene = true;

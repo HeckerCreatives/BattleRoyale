@@ -1,19 +1,13 @@
 using Fusion;
 using MyBox;
+using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
-public class PlayerInventory : MonoBehaviour
+public class PlayerInventory : NetworkBehaviour
 {
-    public int WeaponIndex
-    {
-        get => weaponIndex;
-        set => weaponIndex = value;
-    }
-
-    [Networked][field: MyBox.ReadOnly][field: SerializeField] public GameplayController Controller { get; set; }
-
     //  ==========================
 
     [SerializeField] private UserData userData;
@@ -40,76 +34,102 @@ public class PlayerInventory : MonoBehaviour
     [SerializeField] private List<GameObject> trapWeapons;
 
     [Header("DEBUGGER")]
-    [MyBox.ReadOnly][SerializeField] private int weaponIndex;
-    [MyBox.ReadOnly][SerializeField] private int tempLastIndex;
-    [MyBox.ReadOnly][SerializeField] private int hairStyleIndex;
-    [MyBox.ReadOnly][SerializeField] private int hairColorIndex;
-    [MyBox.ReadOnly][SerializeField] private int clothingColorIndex;
-    [MyBox.ReadOnly][SerializeField] private int skinColorIndex;
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkObject DedicatedServer { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public int WeaponIndex { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public int TempLastIndex { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public int HairStyle { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public int HairColorIndex { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public int ClothingColorIndex { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public int SkinColorIndex { get; set; }
 
-    private void Awake()
+    private ChangeDetector _changeDetector;
+
+    //private void Update()
+    //{
+    //    SetHandsItem();
+    //    SetPrimaryItem();
+    //    AnimateSwitch();
+    //}
+
+    async private void Awake()
     {
-        weaponIndex = 1; 
-        InitializeCharacterSettings(userData.CharacterSetting.hairstyle, userData.CharacterSetting.haircolor, userData.CharacterSetting.clothingcolor, userData.CharacterSetting.skincolor);
+        while (!Runner) await Task.Delay(1000);
+
+        if (!HasInputAuthority && !HasStateAuthority) ApplySkins();
     }
 
-
-    private void Update()
+    public override void Spawned()
     {
-        SetHandsItem();
-        SetPrimaryItem();
-        AnimateSwitch();
+        base.Spawned();
+
+        if (HasInputAuthority)
+        {
+            RPC_SendPlayerDataToServer(JsonConvert.SerializeObject(userData.CharacterSetting));
+        }
     }
 
-    public void InitializeCharacterSettings(int hairStyleIndex, int hairColorIndex, int clothingColorIndex, int skinColorIndex)
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_SendPlayerDataToServer(string data)
     {
-        this.hairStyleIndex = hairStyleIndex;
-        this.hairColorIndex = hairColorIndex;
-        this.clothingColorIndex = clothingColorIndex;
-        this.skinColorIndex = skinColorIndex;
-
-        hairStyles[hairStyleIndex].SetActive(true);
-
-        hairMR[hairStyleIndex].material.SetColor("_BaseColor", hairColor[hairColorIndex]);
-        upperClothingMR.material.SetColor("_BaseColor", clothingColor[clothingColorIndex]);
-        lowerClothingMR.materials[0].SetColor("_BaseColor", clothingColor[clothingColorIndex]);
-        lowerClothingMR.materials[1].SetColor("_BaseColor", clothingColor[clothingColorIndex]);
-        bodyColorMR.material.SetColor("_BaseColor", skinColor[skinColorIndex]);
+        Debug.Log($"Send player to server: {data}");
+        RPC_BroadcastPlayerColor(data);
     }
 
-    private void AnimateSwitch()
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    private void RPC_BroadcastPlayerColor(string data)
     {
-        animator.SetLayerWeight(tempLastIndex, Mathf.Lerp(animator.GetLayerWeight(tempLastIndex), 0f, Time.deltaTime * 13f));
-        animator.SetLayerWeight(weaponIndex, Mathf.Lerp(animator.GetLayerWeight(weaponIndex), 1f, Time.deltaTime * 13f));
+        Debug.Log($"send to all player: {data}");
+        PlayerCharacterSetting characterSetting = JsonConvert.DeserializeObject<PlayerCharacterSetting>(data);
+        HairStyle = characterSetting.hairstyle;
+        HairColorIndex = characterSetting.haircolor;
+        ClothingColorIndex = characterSetting.clothingcolor;
+        SkinColorIndex = characterSetting.skincolor;
+        ApplySkins();
     }
 
-    private void SetHandsItem()
+    private void ApplySkins()
     {
-        if (!Controller.SwitchHands) return;
-
-        if (weaponIndex == 1) return;
-
-        tempLastIndex = weaponIndex;
-        weaponIndex = 1;
-
-        animator.SetTrigger("switchweapon");
-
-        Controller.SwitchHandsStop();
+        hairStyles[HairStyle].SetActive(true);
+        hairMR[HairStyle].material.SetColor("_BaseColor", hairColor[HairColorIndex]);
+        upperClothingMR.material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
+        lowerClothingMR.materials[0].SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
+        lowerClothingMR.materials[1].SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
+        bodyColorMR.material.SetColor("_BaseColor", skinColor[SkinColorIndex]);
     }
 
-    private void SetPrimaryItem()
-    {
-        if (!Controller.SwitchPrimary) return;
+    //private void AnimateSwitch()
+    //{
+    //    animator.SetLayerWeight(tempLastIndex, Mathf.Lerp(animator.GetLayerWeight(tempLastIndex), 0f, Time.deltaTime * 13f));
+    //    animator.SetLayerWeight(weaponIndex, Mathf.Lerp(animator.GetLayerWeight(weaponIndex), 1f, Time.deltaTime * 13f));
+    //}
 
-        if (weaponIndex == 2) return;
+    //private void SetHandsItem()
+    //{
+    //    if (!Controller.SwitchHands) return;
 
-        tempLastIndex = weaponIndex;
-        weaponIndex = 2;
+    //    if (weaponIndex == 1) return;
 
-        animator.SetTrigger("switchweapon");
+    //    tempLastIndex = weaponIndex;
+    //    weaponIndex = 1;
 
-        Controller.SwitchPrimaryStop();
-    }
+    //    animator.SetTrigger("switchweapon");
 
-    public void ResetTriggerSwitch() => animator.ResetTrigger("switchweapon");
+    //    Controller.SwitchHandsStop();
+    //}
+
+    //private void SetPrimaryItem()
+    //{
+    //    if (!Controller.SwitchPrimary) return;
+
+    //    if (weaponIndex == 2) return;
+
+    //    tempLastIndex = weaponIndex;
+    //    weaponIndex = 2;
+
+    //    animator.SetTrigger("switchweapon");
+
+    //    Controller.SwitchPrimaryStop();
+    //}
+
+    //public void ResetTriggerSwitch() => animator.ResetTrigger("switchweapon");
 }
