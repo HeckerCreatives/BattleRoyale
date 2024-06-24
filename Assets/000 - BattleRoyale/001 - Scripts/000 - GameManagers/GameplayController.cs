@@ -16,7 +16,7 @@ public enum InputButton
 {
     Jump,
     Aim,
-    Shoot,
+    Melee,
     Crouch,
     Prone,
     SwitchHands,
@@ -25,9 +25,15 @@ public enum InputButton
     SwitchTrap
 }
 
+public enum HoldInputButtons
+{
+    Shoot
+}
+
 public struct MyInput : INetworkInput
 {
     public NetworkButtons Buttons;
+    public NetworkButtons HoldInputButtons;
     public Vector2 MovementDirection;
     public Vector2 LookDirection;
 }
@@ -37,26 +43,21 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
     //  =========================
 
-    [Header("SETTINGS")]
-    [SerializeField] private float jumpHoldTime;
-
     [Header("DEBUGGER")]
-    [MyBox.ReadOnly][SerializeField] private float currentJumpTime;
     [MyBox.ReadOnly][SerializeField] private bool cursorLocked = true;
-    [MyBox.ReadOnly][SerializeField] private float _threshold = 0.01f;
 
-    [field: Header("DEBUGGER GLOBAL")]
-    [field: MyBox.ReadOnly][field: SerializeField] public Vector2 MovementDirection { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public Vector2 LookDirection { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public NetworkBool Jump { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public NetworkBool Aim { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public NetworkBool Shoot { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public NetworkBool Crouch { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public NetworkBool Prone { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public NetworkBool SwitchHands { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public NetworkBool SwitchPrimary { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public NetworkBool SwitchSecondary { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public NetworkBool SwitchTrap { get; private set; }
+    [Header("DEBUGGER GLOBAL")]
+    [MyBox.ReadOnly][SerializeField] public Vector2 MovementDirection;
+    [MyBox.ReadOnly][SerializeField] public Vector2 LookDirection;
+    [MyBox.ReadOnly][SerializeField] public bool Jump;
+    [MyBox.ReadOnly][SerializeField] public bool Aim;
+    [MyBox.ReadOnly][SerializeField] public bool Shoot;
+    [MyBox.ReadOnly][SerializeField] public bool Crouch;
+    [MyBox.ReadOnly][SerializeField] public bool Prone;
+    [MyBox.ReadOnly][SerializeField] public bool SwitchHands;
+    [MyBox.ReadOnly][SerializeField] public bool SwitchPrimary;
+    [MyBox.ReadOnly][SerializeField] public bool SwitchSecondary;
+    [MyBox.ReadOnly][SerializeField] public bool SwitchTrap;
     [MyBox.ReadOnly][SerializeField] private bool resetInput;
 
 
@@ -188,7 +189,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     private void JumpStart()
     {
         Jump = true;
-        currentJumpTime = Time.time;
     }
 
     public void JumpTurnOff()
@@ -211,9 +211,10 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         Shoot = true;
     }
 
-    private void ShootStop()
+    public void ShootStop()
     {
         Shoot = false;
+        myInput.HoldInputButtons = default;
     }
 
     private void CrouchStart()
@@ -285,7 +286,8 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         if (resetInput)
         {
             resetInput = false;
-            myInput = default;
+            myInput.MovementDirection = default;
+            myInput.Buttons = default;
         }
 
 #if !UNITY_ANDROID
@@ -320,13 +322,14 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
         myInput.Buttons.Set(InputButton.Jump, Jump);
         myInput.Buttons.Set(InputButton.Aim, Aim);
-        myInput.Buttons.Set(InputButton.Shoot, Shoot);
+        myInput.Buttons.Set(InputButton.Melee, Shoot);
         myInput.Buttons.Set(InputButton.Crouch, Crouch);
         myInput.Buttons.Set(InputButton.Prone, Prone);
         myInput.Buttons.Set(InputButton.SwitchHands, SwitchHands);
         myInput.Buttons.Set(InputButton.SwitchPrimary, SwitchPrimary);
         myInput.Buttons.Set(InputButton.SwitchSecondary, SwitchSecondary);
         myInput.Buttons.Set(InputButton.SwitchTrap, SwitchTrap);
+        myInput.HoldInputButtons.Set(HoldInputButtons.Shoot, Shoot);
     }
 
     public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player)
@@ -342,7 +345,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 #if !UNITY_ANDROID
         if (player == runner.LocalPlayer)
         {
-            SetCursorState(true);
+            //SetCursorState(true);
         }
 #endif
     }
@@ -367,7 +370,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
     {
 #if !UNITY_ANDROID
-        SetCursorState(false);
+        //SetCursorState(false);
 #endif
     }
 

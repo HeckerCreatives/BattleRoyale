@@ -27,15 +27,15 @@ public class PlayerCameraRotation : NetworkBehaviour
     [Header("CAMERA LOOK TARGET")]
     [SerializeField] private Transform aimTF;
     [SerializeField] private LayerMask aimLayerMask;
-    [field: SerializeField][Networked] public float AimDistance { get; private set; }
 
     [Header("Parameters")]
+    [field: SerializeField][Networked] public float AimDistance { get; private set; }
     [field: SerializeField][Networked] public float Sensitivity { get; private set; }
     [field: SerializeField][Networked] public float TopClamp { get; private set; }
     [field: SerializeField][Networked] public float BottomClamp { get; private set; }
     [field: SerializeField][Networked] public float CameraAngleOverride { get; private set; }
 
-[Header("DEBUGGER")]
+    [Header("DEBUGGER")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float _threshold { get; private set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float _cinemachineTargetYaw { get; private set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float _cinemachineTargetPitch { get; private set; }

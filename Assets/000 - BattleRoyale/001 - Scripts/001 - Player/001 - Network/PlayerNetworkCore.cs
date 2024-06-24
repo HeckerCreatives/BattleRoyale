@@ -15,6 +15,8 @@ public class PlayerNetworkCore : NetworkBehaviour
     [Header("DEBUGGER")]
     [MyBox.ReadOnly][SerializeField] private CinemachineVirtualCamera playerVCam;
     [MyBox.ReadOnly][SerializeField] private CinemachineVirtualCamera aimPlayerVCam;
+    [MyBox.ReadOnly][SerializeField] private GameObject pickupItemButton;
+    [MyBox.ReadOnly][SerializeField] private GameObject pickupItemList;
 
     [field: Header("DEBUGGER PUBLIC")]
     [Networked][field: SerializeField][field: MyBox.ReadOnly] public NetworkObject PlayerCharacterSpawnedObj { get; set; }
@@ -40,6 +42,9 @@ public class PlayerNetworkCore : NetworkBehaviour
         playerVCam = GameObject.FindGameObjectWithTag("PlayerVCam").GetComponent<CinemachineVirtualCamera>();
         aimPlayerVCam = GameObject.FindGameObjectWithTag("AimVCam").GetComponent<CinemachineVirtualCamera>();
 
+        pickupItemButton = GameObject.FindGameObjectWithTag("PickupButton");
+        pickupItemList = GameObject.FindGameObjectWithTag("PickupItemList");
+
         playerVCam.Follow = PlayerCharacterSpawnedObj.transform.GetChild(2);
         playerVCam.LookAt = PlayerCharacterSpawnedObj.transform.GetChild(2);
 
@@ -47,7 +52,13 @@ public class PlayerNetworkCore : NetworkBehaviour
         aimPlayerVCam.LookAt = PlayerCharacterSpawnedObj.transform.GetChild(2);
 
         aimPlayerVCam.gameObject.SetActive(false);
+        pickupItemButton.SetActive(false);
+        pickupItemList.SetActive(false);
 
         PlayerCharacterSpawnedObj.GetComponent<PlayerAim>().AimVCam = aimPlayerVCam;
+        PlayerCharacterSpawnedObj.GetComponent<PlayerPickupWeaponController>().PickupItemBtn = pickupItemButton;
+        PlayerCharacterSpawnedObj.GetComponent<PlayerPickupWeaponController>().PickupItemList = pickupItemList;
+
+        PlayerCharacterSpawnedObj.GetComponent<PlayerPickupWeaponController>().InitializeContentTF();
     }
 }

@@ -91,9 +91,11 @@
     <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.Interactions.cs" />
     <Compile Include="Assets\002 - BattleRoyaleMultiplayer\000 - Script\000 - Core\CommandLineUtils.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralEventsListeners.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\000 - Weapons\WeaponData.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Extensions\KCCQuaternionExtensions.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\AudioManager.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\Core\ScriptableKCCProcessor.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\000 - StatemachineBehaviour\ShootBowEnd.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkEnum.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Stages\Core\IKCCStage.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Samples\Animation Rigging\1.2.0\Animation Rigging Constraint Samples\Scripts\mParent.cs" />
@@ -108,7 +110,9 @@
     <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.Events.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\005 - ScriptableObjects\000 - Player\MovementData.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingIssue.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerPickupWeaponController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\TestingZLegacyExt.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\001 - Crates\CrateController.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Data\Collections\KCCFastStack.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingMaxTweens.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.Sampling.cs" />
@@ -124,6 +128,7 @@
     <Compile Include="Assets\Photon\FusionAddons\KCC\Stages\AfterMoveStep.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralSimpleUI.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkVector2.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\000 - StatemachineBehaviour\ReloadEnd.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Data\Collections\KCCInteractions.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Data\Collections\KCCModifiers.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\KCCResolver.cs" />
@@ -140,6 +145,7 @@
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Scripts\YuME_editorPreferences.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\009 - Messages\InboxItem.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\Following.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\005 - ScriptableObjects\001 - Weapons\WeaponSpawnData.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\Debug\CallbackLogger.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\SceneController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LTSeq.cs" />
@@ -151,6 +157,7 @@
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LeanTweenExt.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\Recorders\PlayerRecorder.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\NotificationController.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\000 - Weapons\WeaponListUIController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Colorful_World\Important, Resoucres\Scripts\Rotator.cs" />
     <Compile Include="Assets\001 - ExternalAssets\FlexibleColorPicker\Scripts\FlexibleColorPicker.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\Accumulators\Vector3Accumulator.cs" />
@@ -159,12 +166,14 @@
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralAdvancedTechniques.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\StepUpProcessor.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCCInterestProxy.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerWeaponChanger.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\PathSplines.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkQuaternion.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\PathBezier.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\FollowingTests.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\000 - StatemachineBehaviour\MeleeAttackEnd.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\PathSplineTrack.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\000 - Weapons\WeaponItem.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\Core\NetworkTRSPProcessorProvider.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\Testing248.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\007 - Settings\ControllerSettingDataRetriever.cs" />
@@ -203,7 +212,6 @@
     <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\SmoothValues\SmoothVector2.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Extensions\KCCIListExtensions.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Attributes\KCCProcessorReferenceAtribute.cs" />
-    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\PickupItemController.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Data\KCCTraceInfo.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkProperty.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.Methods.cs" />
@@ -234,6 +242,7 @@
     <Compile Include="Assets\Photon\FusionAddons\KCC\Extensions\KCCFloatExtensions.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\Core\ScriptableKCCProcessorProvider.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Samples\Animation Rigging\1.2.0\Animation Rigging Constraint Samples\Info\Scripts\Readme.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\000 - StatemachineBehaviour\SwitchingEnd.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\007 - Settings\GameSettingButtons.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\Testing243.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\Core\GenericKCCProcessorProvider.cs" />

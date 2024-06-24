@@ -55,6 +55,12 @@ public class MessageController : MonoBehaviour
     [ReadOnly][SerializeField] private MessageItem selectedItem;
     [ReadOnly][SerializeField] private bool canAction;
 
+    //  =====================
+
+    Coroutine getMessages;
+
+    //  =====================
+
     public IEnumerator SetMessageInboxItemSet()
     {
         itemListLoader.SetActive(true);
@@ -98,9 +104,10 @@ public class MessageController : MonoBehaviour
                     itemContentLoader.SetActive(false);
 
                     CanAction = true;
+                    getMessages = null;
                 }
             }
-        }, () => { }));
+        }, () => { CanAction = true; }));
     }
 
     IEnumerator InstantiateItems(List<MessageItem> items)
@@ -153,15 +160,17 @@ public class MessageController : MonoBehaviour
 
     public void ShowMessages()
     {
-        CanAction = false;
+        //CanAction = false;
 
-        StartCoroutine(SetMessageInboxItemSet());
+        getMessages = StartCoroutine(SetMessageInboxItemSet());
         messageObj.SetActive(true);
     }
 
     public void CloseMessages()
     {
         if (!CanAction) return;
+
+        if (getMessages != null) StopCoroutine(getMessages);
 
         messageObj.SetActive(false);
     }

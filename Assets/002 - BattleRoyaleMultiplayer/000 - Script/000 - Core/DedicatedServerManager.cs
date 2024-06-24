@@ -1,4 +1,5 @@
 using Cinemachine;
+using ExitGames.Client.Photon.StructWrapping;
 using Fusion;
 using Fusion.Addons.SimpleKCC;
 using Fusion.Sample.DedicatedServer;
@@ -6,12 +7,14 @@ using Fusion.Sockets;
 using MyBox;
 using NUnit.Framework;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Services.Core;
 using Unity.Services.Matchmaker.Models;
 #if UNITY_SERVER || UNITY_EDITOR
 using Unity.Services.Multiplay;
+using Unity.VisualScripting.Antlr3.Runtime;
 #endif
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -26,6 +29,10 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
     [Header("CLIENT")]
     [SerializeField] private List<GameObject> clientObjs;
+
+    [Header("CRATES")]
+    [SerializeField] private NetworkObject createNO;
+    [SerializeField] private List<Transform> createSpawnLocations;
 
     [Header("DEBUGGER")]
     [MyBox.ReadOnly][SerializeField] private NetworkRunner networkRunner;
@@ -181,6 +188,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             Debug.Log($"Done Setting up photon server");
 
+            Debug.Log($"Spawning Crates");
+            StartCoroutine(SpawnCrates());
+
             return;
         }
 
@@ -204,6 +214,87 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         });
 
         Debug.Log($"Done Setting up photon server");
+
+        Debug.Log($"Spawning Crates");
+        StartCoroutine(SpawnCrates());
+    }
+
+    Dictionary<string, int> GenerateRandomItems()
+    {
+        List<string> itemPool = new List<string>
+        {
+            "rifle", "rifle", "rifle", "rifle", "rifle", // 5%
+            "bow", "bow", "bow", "bow", "bow", // 5%
+            "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", // 15%
+            "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", // 15%
+            "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo",
+            "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo",
+            "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo",
+            "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", // 60% total ammo, divided into rifle and bow ammo
+            "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo",
+            "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo"
+        };
+
+        Dictionary<string, string> itemIDMap = new Dictionary<string, string>
+        {
+            { "sword", "001" },
+            { "spear", "002" },
+            { "rifle", "003" },
+            { "bow", "004" },
+            { "rifle ammo", "005" },
+            { "bow ammo", "006" }
+        };
+
+        Dictionary<string, int> selectedItems = new Dictionary<string, int>();
+
+        int itemListQTY = UnityEngine.Random.Range(1, 11);
+
+        for (int i = 0; i < itemListQTY; i++)
+        {
+            string selectedItem = itemPool[UnityEngine.Random.Range(0, itemPool.Count)];
+            string itemID = itemIDMap[selectedItem];
+
+            if (selectedItem == "rifle ammo" || selectedItem == "bow ammo")
+            {
+                if (selectedItems.ContainsKey(itemID))
+                {
+                    selectedItems[itemID] += UnityEngine.Random.Range(1, 61); // Add a random quantity between 1 and 60
+                }
+                else
+                {
+                    selectedItems[itemID] = UnityEngine.Random.Range(1, 61); // Set a random quantity between 1 and 60
+                }
+            }
+            else
+            {
+                if (!selectedItems.ContainsKey(itemID))
+                {
+                    selectedItems[itemID] = 1; // Set quantity to 1 for non-ammo items
+                }
+            }
+        }
+
+        return selectedItems;
+    }
+
+    IEnumerator SpawnCrates()
+    {
+        while (!Runner) yield return null;
+
+        int index = 1;
+
+        foreach(var spawnLocations in createSpawnLocations)
+        {
+            var gameobject = Runner.Spawn(createNO, spawnLocations.transform.position, Quaternion.identity, null);
+
+            gameobject.GetComponent<CrateController>().SetDatas(GenerateRandomItems());
+
+            index++;
+
+            yield return null;
+        }
+
+        Runner.SessionInfo.Properties.TryAdd("IsOpen", true);
     }
 
     #region PLAYER JOIN LEAVE

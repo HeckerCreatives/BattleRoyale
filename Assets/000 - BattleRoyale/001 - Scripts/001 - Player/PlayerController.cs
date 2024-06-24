@@ -12,11 +12,15 @@ using UnityEngine.Windows;
 
 public class PlayerController : NetworkBehaviour
 {
+    [SerializeField] private PlayerInventory inventory;
     [SerializeField] private SimpleKCC characterController;
 
     [Header("PLAYER")]
     [SerializeField] private Animator animator;
+
+    [Header("RIGS")]
     [SerializeField] private Rig hipsRig;
+    [SerializeField] private Rig headRig;
 
     [Header("PLAYER MOVEMENTS")]
     [SerializeField] private float moveSpeed;
@@ -34,25 +38,27 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float groundedRadius;
     [SerializeField] private LayerMask groundLayers;
 
-    [Header("ITEMS")]
-    [SerializeField] private GameObject pickupItemList;
-
     [Header("DEBUGGER PLAYER")]
     [MyBox.ReadOnly][SerializeField] private float _verticalVelocity;
     [MyBox.ReadOnly][SerializeField] private float _terminalVelocity = 53.0f;
     [MyBox.ReadOnly][SerializeField] private float currentCrouchToProneHoldTime;
     [MyBox.ReadOnly][SerializeField] private float jumpDelay;
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public Vector3 MoveDirection { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public float JumpImpulse { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsAttacking { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsProne { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsCrouch { get; private set; }
 
     [Header("DEBUGGER ENVIRONMENT")]
     [MyBox.ReadOnly][SerializeField] private Vector3 spherePosition;
     [MyBox.ReadOnly][SerializeField] private float _jumpTimeoutDelta;
     [MyBox.ReadOnly][SerializeField] private float _fallTimeoutDelta;
     [MyBox.ReadOnly][SerializeField] private bool isJumping;
+
+    [field: Header("DEBUGGER PLAYER NETWORK")]
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public Vector3 MoveDirection { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public float JumpImpulse { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsAttacking { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsShooting { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsProne { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsCrouch { get; private set; }
+
+    [field: Header("DEBUGGER ENVIRONMENT NETWORK")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool Grounded { get; private set; }
 
     //  ======================
@@ -63,21 +69,7 @@ public class PlayerController : NetworkBehaviour
 
     //  ======================
 
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.gameObject.tag == "ItemPickup")
-        {
-            pickupItemList.SetActive(true);
-        }
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.gameObject.tag == "ItemPickup")
-        {
-            pickupItemList.SetActive(false);
-        }
-    }
+    #region NETWORK
 
     public override void Spawned()
     {
@@ -90,11 +82,16 @@ public class PlayerController : NetworkBehaviour
         InputControlls();
     }
 
+    #endregion
+
     private void Update()
     {
         GroundCheck();
         SetToFreeFall();
+        LayerAndWeight();
     }
+
+    #region CONTROLLERS
 
     private void InputControlls()
     {
@@ -104,6 +101,7 @@ public class PlayerController : NetworkBehaviour
 
         Move();
         Attack();
+        Shoot();
         Crouch();
         Prone();
         PlayerRotateAnimation();
@@ -114,10 +112,6 @@ public class PlayerController : NetworkBehaviour
     private void GroundCheck()
     {
         Grounded = Physics.CheckSphere(transform.position, groundedRadius, groundLayers);
-    }
-
-    public void AnimationJump()
-    {
     }
 
     public void ResetAnimationJump()
@@ -148,6 +142,8 @@ public class PlayerController : NetworkBehaviour
             {
                 IsCrouch = false;
                 IsProne = false;
+                animator.SetBool("prone", false);
+                animator.SetBool("crouch", false);
                 return;
             }
             JumpImpulse = jumpHeight;
@@ -160,23 +156,6 @@ public class PlayerController : NetworkBehaviour
         characterController.Move(MoveDirection, JumpImpulse);
         animator.SetFloat("x", controllerInput.MovementDirection.x);
         animator.SetFloat("y", controllerInput.MovementDirection.y);
-    }
-
-    private void Attack()
-    {
-        if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Shoot)) return;
-
-        if (IsAttacking) return;
-
-        IsAttacking = true;
-
-        animator.SetTrigger("meleeattack");
-    }
-
-    public void ResetAttack()
-    {
-        IsAttacking = false;
-        animator.ResetTrigger("meleeattack");
     }
 
     private void Crouch()
@@ -224,13 +203,68 @@ public class PlayerController : NetworkBehaviour
             animator.SetBool("crouch", false);
             animator.SetBool("prone", true);
             hipsRig.weight = 0;
+            headRig.weight = 0;
+            animator.SetLayerWeight(1, 0f);
         }
         else
         {
             IsProne = false;
             animator.SetBool("prone", false);
-            hipsRig.weight = 1;
+            headRig.weight = 1f;
+            animator.SetLayerWeight(1, 1f);
         }
+    }
+
+    private void Attack()
+    {
+        if (inventory.WeaponIndex != 1 && inventory.WeaponIndex != 2 && inventory.WeaponIndex != 3 && inventory.WeaponIndex != 4)
+        {
+            ResetAttack();
+            return;
+        }
+
+        if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Melee)) return;
+
+        if (IsAttacking) return;
+
+        if (IsProne)
+        {
+            animator.ResetTrigger("meleeattack");
+            return;
+        }
+
+        IsAttacking = true;
+
+        animator.SetTrigger("meleeattack");
+    }
+
+    private void Shoot()
+    {
+        if (inventory.WeaponIndex != 5)
+        {
+            IsShooting = false;
+            animator.SetBool("shootHold", false);
+            return;
+        }
+
+        if (controllerInput.HoldInputButtons.WasPressed(PreviousButtons, HoldInputButtons.Shoot))
+        {
+            if (IsShooting) return;
+
+            IsShooting = true;
+
+            animator.SetBool("shootHold", true);
+        }
+        else
+        {
+            if (!IsShooting) return;
+
+            IsShooting = false;
+
+            animator.SetBool("shootHold", false);
+        }
+
+        if (IsShooting) return;
     }
 
     private void PlayerRotateAnimation()
@@ -256,6 +290,44 @@ public class PlayerController : NetworkBehaviour
         animator.SetBool("turning", true);
         animator.SetFloat("rightleftturn", controllerInput.LookDirection.x);
     }
+
+    private void LayerAndWeight()
+    {
+        if (IsProne)
+        {
+            headRig.weight = 0f;
+
+            if (inventory.WeaponIndex == 1)
+                animator.SetLayerWeight(inventory.WeaponIndex, 0f);
+            else
+                animator.SetLayerWeight(inventory.WeaponIndex, 1f);
+        }
+        else
+        {
+            headRig.weight = 1f;
+
+            animator.SetLayerWeight(inventory.WeaponIndex, 1f);
+        }
+    }
+
+    #endregion
+
+    #region RESET
+
+    public void ResetAttack()
+    {
+        IsAttacking = false;
+        animator.ResetTrigger("meleeattack");
+    }
+
+    public void ResetSwitching()
+    {
+        IsAttacking = false;
+        animator.ResetTrigger("switchweapon");
+    }
+
+
+    #endregion
 
     private void OnDrawGizmos()
     {
