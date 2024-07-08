@@ -757,6 +757,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 425614880}
+  - component: {fileID: 425614885}
   - component: {fileID: 425614884}
   - component: {fileID: 425614883}
   - component: {fileID: 425614882}
@@ -894,6 +895,19 @@ MonoBehaviour:
   <AudioController>k__BackingField: {fileID: 425614881}
   <NotificationController>k__BackingField: {fileID: 425614882}
   <NoBGLoading>k__BackingField: {fileID: 688634266}
+--- !u!114 &425614885
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 425614879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3ac0e352c8466343b7c7bb0a09feb19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  doShow: 0
 --- !u!1 &432989998
 GameObject:
   m_ObjectHideFlags: 0
@@ -1611,15 +1625,15 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
-  far clip plane: 1000
-  field of view: 60
+  near clip plane: 0.1
+  far clip plane: 5000
+  field of view: 30
   orthographic: 0
-  orthographic size: 5
+  orthographic size: 10
   m_Depth: 1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 599
+    m_Bits: 6743
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -1639,8 +1653,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1151185118}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.024333723, y: 0.8688383, z: 0.042916585, w: 0.4926318}
-  m_LocalPosition: {x: 257.22, y: 25.85, z: 185.24}
+  m_LocalRotation: {x: 0, y: -1, z: 0, w: 0}
+  m_LocalPosition: {x: 3.8209019, y: 3.0580003, z: 84.53525}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

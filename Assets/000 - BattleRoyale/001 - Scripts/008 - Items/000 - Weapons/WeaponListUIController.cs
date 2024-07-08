@@ -1,3 +1,4 @@
+using Fusion;
 using MyBox;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,12 +20,14 @@ public class WeaponListUIController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI qtyTMP;
 
     [Header("DEBUGGER")]
-    [ReadOnly][SerializeField] private int index;
+    [MyBox.ReadOnly][SerializeField] private int index;
+    [MyBox.ReadOnly] public NetworkObject noCrateWeaponObj;
     
-    public void InitializeData(Sprite weaponSprite, string weaponName, string qty)
+    public void InitializeData(Sprite weaponSprite, string weaponName, string qty, NetworkObject noCrateWeaponObj = null)
     {
         weaponImg.sprite = weaponSprite;
         weaponNameTMP.text = weaponName;
         qtyTMP.text = qty;
+        this.noCrateWeaponObj = noCrateWeaponObj; 
     }
 }

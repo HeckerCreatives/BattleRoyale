@@ -10,6 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 8434683174179855962}
   - component: {fileID: 3651206356916146639}
+  - component: {fileID: 3626306552113172421}
+  - component: {fileID: -2778161225506478653}
+  - component: {fileID: -5006153413612280128}
   - component: {fileID: 2517031885327026080}
   m_Layer: 0
   m_Name: PlayerCore
@@ -45,12 +48,72 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81dbd030a021dda4185d0d9227222a0a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  killCounterController: {fileID: 3626306552113172421}
+  waitingAreaTimerController: {fileID: -2778161225506478653}
+  spawnLocationController: {fileID: -5006153413612280128}
   <PlayerCharacterObj>k__BackingField:
     RawGuidValue: 2361a168157a7b346ae13c5eb86574f1
-  <SpawnPosition>k__BackingField: {x: 117.3, y: 20, z: 143.9}
+  <SpawnPosition>k__BackingField: {x: -16887.2, y: 0, z: 100.2}
   playerVCam: {fileID: 0}
   aimPlayerVCam: {fileID: 0}
+  pickupItemButton: {fileID: 0}
+  pickupItemList: {fileID: 0}
+  handBtn: {fileID: 0}
+  primaryBtn: {fileID: 0}
+  secondaryBtn: {fileID: 0}
   _PlayerCharacterSpawnedObj: {fileID: 0}
+  _ServerManager: {fileID: 0}
+  _SpawnPositionBattlefield: {x: 0, y: 0, z: 0}
+--- !u!114 &3626306552113172421
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1288065502070250971}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ab412f8f8bf8124ab290c3d26fa8229, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  core: {fileID: 3651206356916146639}
+  isDoneInitialize: 0
+  <PlayerCount>k__BackingField: {fileID: 0}
+--- !u!114 &-2778161225506478653
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1288065502070250971}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 541f634b73231d84eb9372f423ebfc2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  core: {fileID: 3651206356916146639}
+  doneInitialize: 0
+  timerTMP: {fileID: 0}
+  <Timer>k__BackingField: {fileID: 0}
+--- !u!114 &-5006153413612280128
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1288065502070250971}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5e82ee515d77d9446ba9212b196de191, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  networkCore: {fileID: 3651206356916146639}
+  isInitialized: 0
+  doneWaitingArea: 0
+  tempTime: 0
+  inventory: {fileID: 0}
+  playerKCC: {fileID: 0}
+  <ServerManager>k__BackingField: {fileID: 0}
 --- !u!114 &2517031885327026080
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -69,3 +132,6 @@ MonoBehaviour:
   NestedObjects: []
   NetworkedBehaviours:
   - {fileID: 3651206356916146639}
+  - {fileID: 3626306552113172421}
+  - {fileID: -2778161225506478653}
+  - {fileID: -5006153413612280128}

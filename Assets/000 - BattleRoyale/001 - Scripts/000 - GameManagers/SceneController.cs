@@ -78,6 +78,26 @@ public class SceneController : MonoBehaviour
         get => doneLoading;
     }
 
+    private event EventHandler SpawnArenaLoadingChange;
+    public event EventHandler OnSpawnArenaLoadingChange
+    {
+        add
+        {
+            if (SpawnArenaLoadingChange == null || !SpawnArenaLoadingChange.GetInvocationList().Contains(value))
+                SpawnArenaLoadingChange += value;
+        }
+        remove {  SpawnArenaLoadingChange -= value; }
+    }
+    public bool SpawnArenaLoading
+    {
+        get => spawnArenaLoading;
+        set
+        {
+            spawnArenaLoading = value;
+            SpawnArenaLoadingChange?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
     //  ======================================================
 
     [SerializeField] private GameObject loadingScreenBGObj;
@@ -111,6 +131,7 @@ public class SceneController : MonoBehaviour
     [ReadOnly][SerializeField] private string previousScene;
     [ReadOnly][SerializeField] private bool actionPass;
     [ReadOnly][SerializeField] private float totalSceneProgress;
+    [ReadOnly][SerializeField] private bool spawnArenaLoading;
 
     private List<IEnumerator> actionLoading;
     AsyncOperation scenesLoading;
@@ -126,24 +147,107 @@ public class SceneController : MonoBehaviour
 
         onSceneChange += SceneChange;
         OnMultuplayerSceneChange += MultiplayerChangeScene;
+        OnSpawnArenaLoadingChange += SpawnArenaStateChange;
     }
 
     private void OnDisable()
     {
         onSceneChange -= SceneChange;
         OnMultuplayerSceneChange -= MultiplayerChangeScene;
+        OnSpawnArenaLoadingChange -= SpawnArenaStateChange;
+    }
+
+    private void SpawnArenaStateChange(object sender, EventArgs e)
+    {
+        if (SpawnArenaLoading)
+        {
+            StartCoroutine(SpawnArenaLoad());
+        }
     }
 
     private void MultiplayerChangeScene(object sender, EventArgs e)
     {
-        if (MultiplayerLoadingCoroutine != null) StopCoroutine(MultiplayerLoadingCoroutine);
-        MultiplayerLoadingCoroutine = StartCoroutine(MultiplayerLoading());
+        if (MultiplayerScene)
+        {
+            if (MultiplayerLoadingCoroutine != null) StopCoroutine(MultiplayerLoadingCoroutine);
+            MultiplayerLoadingCoroutine = StartCoroutine(MultiplayerLoading());
+        }
     }
 
     private void SceneChange(object sender, EventArgs e)
     {
-        if (!MultiplayerScene)
-            LoadingCoroutine = StartCoroutine(Loading());
+        LoadingCoroutine = StartCoroutine(Loading());
+    }
+
+    public IEnumerator SpawnArenaLoad()
+    {
+        Debug.Log("spawn arena loading");
+        doneLoading = false;
+
+        int random = UnityEngine.Random.Range(0, loadingBGSprite.Count);
+
+        loadingBGImg.sprite = loadingBGSprite[random];
+
+        loadingScreenBGObj.SetActive(true);
+
+        loadingScreenBGObj.SetActive(true);
+
+        loadingSlider.value = 0f;
+
+        LeanTween.alphaCanvas(loadingCG, 1f, speed).setEase(easeType);
+
+        yield return new WaitWhile(() => loadingCG.alpha != 1f);
+
+        LeanTween.alphaCanvas(loadingCG, 1f, speed).setEase(easeType);
+
+        yield return new WaitWhile(() => loadingCG.alpha != 1f);
+
+        while (!actionPass) yield return null;
+
+        actionPass = false; //  THIS IS FOR RESET
+
+        for (int a = 0; a < GetActionLoadingList.Count; a++)
+        {
+            yield return StartCoroutine(GetActionLoadingList[a]);
+
+            int index = a + 1;
+
+            totalSceneProgress = (float)index / (1 + GetActionLoadingList.Count);
+
+            LeanTween.value(loadingPercentageTMP.gameObject, 0f, totalSceneProgress, loadingBarSpeed).setOnUpdate((float val) =>
+            {
+                loadingPercentageTMP.text = $"{val}%";
+            }).setEase(easeType);
+            LeanTween.value(loadingSlider.gameObject, a => loadingSlider.value = a, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
+
+            yield return new WaitWhile(() => loadingSlider.value != totalSceneProgress);
+
+            yield return null;
+        }
+
+        totalSceneProgress = scenesLoading.progress;
+
+        LeanTween.value(loadingSlider.gameObject, a => loadingSlider.value = a, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
+
+        yield return new WaitForSecondsRealtime(loadingBarSpeed);
+
+        LeanTween.alphaCanvas(loadingCG, 0f, speed).setEase(easeType);
+
+        yield return new WaitWhile(() => loadingCG.alpha != 0f);
+
+        loadingScreenBGObj.SetActive(false);
+
+        GetActionLoadingList.Clear();
+
+        loadingSlider.value = 0f;
+
+        totalSceneProgress = 0f;
+
+        SpawnArenaLoading = false;
+
+        doneLoading = true;
+
+        MultiplayerLoadingCoroutine = null;
     }
 
     public IEnumerator MultiplayerLoading()
@@ -205,7 +309,6 @@ public class SceneController : MonoBehaviour
 
         yield return new WaitWhile(() => loadingCG.alpha != 0f);
 
-        currentScene = SceneManager.GetActiveScene().name;
 
         loadingScreenBGObj.SetActive(false);
 
@@ -225,6 +328,7 @@ public class SceneController : MonoBehaviour
 
     public IEnumerator Loading()
     {
+        Debug.Log("local loading");
         int random = UnityEngine.Random.Range(0, loadingBGSprite.Count);
 
         loadingBGImg.sprite = loadingBGSprite[random];

@@ -32,12 +32,24 @@ public class PlayerInventory : NetworkBehaviour
 
     [Header("WEAPON BACK HANDLE")]
     [SerializeField] private NetworkObject swordHandle;
+    [SerializeField] private NetworkObject spearHandle;
+    [SerializeField] private NetworkObject rifleHandle;
+    [SerializeField] private NetworkObject bowHandle;
+    [SerializeField] private NetworkObject arrowHandle;
 
     [Header("WEAPON HAND HANDLE")]
     [SerializeField] private NetworkObject swordHandHandle;
+    [SerializeField] private NetworkObject spearHandHandle;
+    [SerializeField] private NetworkObject rifleHandHandle;
+    [SerializeField] private NetworkObject bowHandHandle;
 
-    [Header("DEBUGGER")]
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkObject DedicatedServer { get; set; }
+    [Header("DEBUGGER LOCAL")]
+    [field: MyBox.ReadOnly][field: SerializeField] public WeaponEquipBtnController HandBtn { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField] public WeaponEquipBtnController PrimaryBtn { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField] public WeaponEquipBtnController SecondaryBtn { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField] public bool IsWeaponInitialize { get; set; }
+
+    [Header("DEBUGGER NETWORK")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsSkinReady { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int WeaponIndex { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int TempLastIndex { get; set; }
@@ -45,46 +57,77 @@ public class PlayerInventory : NetworkBehaviour
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int HairColorIndex { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int ClothingColorIndex { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int SkinColorIndex { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public string EquipWeaponType { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public WeaponItem PrimaryWeapon { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public WeaponItem SecondaryWeapon { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public WeaponItem AmmoObject { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public int BowAmmo { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public int RifleAmmo { get; set; }
 
-    async private void Awake()
+    private async void Awake()
     {
-        while (!Runner) await Task.Delay(1000);
+        while (!Runner)
+        {
+            await Task.Delay(1000);
+        }
 
         if (!HasInputAuthority && !HasStateAuthority)
         {
-            while (!IsSkinReady) await Task.Delay(1000);
+            while (!IsSkinReady)
+            {
+                await Task.Delay(1000);
+            }
 
             ApplySkins();
+
+            if (EquipWeaponType == "Primary") PrimaryWeapon.LocalActivateWeapon();
+            else if (EquipWeaponType == "Secondary") SecondaryWeapon.LocalActivateWeapon();
         }
     }
 
     public override void Spawned()
     {
-        base.Spawned();
-
         if (HasInputAuthority)
         {
+            SetWeaponOnStart();
             RPC_SendPlayerDataToServer(JsonConvert.SerializeObject(userData.CharacterSetting));
         }
-        //InitializeItemsInventory();
     }
 
-    #region INITIALIZE PLAYER SKIN
+    public IEnumerator CheckIfSkinIsReady()
+    {
+        while (!IsSkinReady) yield return null;
+    }
+
+    public IEnumerator CheckIfWeaponInitialize()
+    {
+        while (!IsWeaponInitialize) yield return null;
+    }
+
+    private async void SetWeaponOnStart()
+    {
+        while (HandBtn == null || PrimaryBtn == null || SecondaryBtn == null) await Task.Delay(1000);
+
+        WeaponHandChange();
+
+        IsWeaponInitialize = true;
+    }
+
+    #region Initialize Player Skin
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     private void RPC_SendPlayerDataToServer(string data)
     {
         Debug.Log($"Send player to server: {data}");
+        WeaponIndex = 1;
         RPC_BroadcastPlayerSkin(data);
     }
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     private void RPC_BroadcastPlayerSkin(string data)
     {
-        Debug.Log($"send to all player: {data}");
-        PlayerCharacterSetting characterSetting = JsonConvert.DeserializeObject<PlayerCharacterSetting>(data);
+        Debug.Log($"Send to all players: {data}");
+        var characterSetting = JsonConvert.DeserializeObject<PlayerCharacterSetting>(data);
         HairStyle = characterSetting.hairstyle;
         HairColorIndex = characterSetting.haircolor;
         ClothingColorIndex = characterSetting.clothingcolor;
@@ -105,56 +148,395 @@ public class PlayerInventory : NetworkBehaviour
 
     #endregion
 
-    #region PICKUP WEAPON
+    #region TELEPORT TO BATTLE FIELD
 
     [Rpc (RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    public void Rpc_SpawnWeaponForPlayer(string data, PlayerRef player)
+    public void Rpc_DropWeaponsAfterTeleportBattlefield()
     {
-        TempItemWeaponData weapondata = JsonConvert.DeserializeObject<TempItemWeaponData>(data);
+        #region WEAPONS
 
-        var weaponObject = Runner.Spawn(weaponSpawnData.GetItemObject(weapondata.itemID), Vector3.zero, Quaternion.identity, inputAuthority: player, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+        Debug.Log("start removing items");
+
+        if (PrimaryWeapon != null)
         {
-            obj.GetComponent<WeaponItem>().InitializeItem(weaponSpawnData.GetItemName(weapondata.itemID), weapondata.itemID, weaponSpawnData.GetItemAnimatorIndex(weapondata.itemID), obj, swordHandle, swordHandHandle, weapondata.ammo);
+            Debug.Log("remove primary");
+            Rpc_ChangeWeaponInPickup(PrimaryWeapon.AnimatorID);
+            Runner.Despawn(PrimaryWeapon.Object);
+        }
+        if (SecondaryWeapon != null)
+        {
+            Debug.Log("remove secondary");
+            Rpc_ChangeWeaponInPickup(SecondaryWeapon.AnimatorID);
+            Runner.Despawn(SecondaryWeapon.Object);
+        }
+        if (AmmoObject != null) Runner.Despawn(AmmoObject.Object);
 
-            if (weapondata.itemID == "001" || weapondata.itemID == "002")
-            {
-                PrimaryWeapon = obj.GetComponent<WeaponItem>();
-            }
-        });
+        PrimaryWeapon = null;
+        SecondaryWeapon = null;
+        AmmoObject = null;
+        EquipWeaponType = "";
+        WeaponIndex = 1;
+        TempLastIndex = 0;
+        BowAmmo = 0;
+        RifleAmmo = 0;
+
+        #endregion
+
+        Rpc_DropWeaponsByServerToPlayer();
+    }
+
+    [Rpc (RpcSources.StateAuthority, RpcTargets.InputAuthority)]
+    public void Rpc_DropWeaponsByServerToPlayer()
+    {
+        #region UI
+
+        WeaponHandChange();
+
+        PrimaryBtn.ResetUI();
+        SecondaryBtn.ResetUI();
+
+        #endregion
     }
 
     #endregion
 
-    #region WEAPON CHANGER
+    #region Pickup Weapon
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    public void Rpc_SpawnWeaponForPlayer(string data, PlayerRef player)
+    {
+        var weaponData = JsonConvert.DeserializeObject<TempItemWeaponData>(data);
+
+        if (weaponSpawnData.GetItemType(weaponData.itemID) == "RifleAmmo")
+        {
+            RifleAmmo += weaponData.ammo;
+            return;
+        }
+        else if (weaponSpawnData.GetItemType(weaponData.itemID) == "BowAmmo")
+        {
+            BowAmmo += weaponData.ammo;
+            return;
+        }
+
+        Runner.Spawn(
+            weaponSpawnData.GetItemObject(weaponData.itemID),
+            Vector3.zero,
+            Quaternion.identity,
+            inputAuthority: player,
+            onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+            {
+                obj.GetComponent<WeaponItem>().InitializeItem(
+                    weaponSpawnData.GetItemName(weaponData.itemID),
+                    weaponData.itemID,
+                    weaponSpawnData.GetItemAnimatorIndex(weaponData.itemID),
+                    Object,
+                    GetWeaponBackHandle(weaponData.itemID),
+                    GetWeaponHandHandle(weaponData.itemID),
+                    weaponData.ammo,
+                    weaponSpawnData.GetItemType(weaponData.itemID) == EquipWeaponType ? true : false);
+
+                HandleWeaponAssignment(weaponData, obj.GetComponent<WeaponItem>(), player);
+            });
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    public void Rpc_ReassignWeaponToPlayer(NetworkId objectId, PlayerRef player)
+    {
+        var weaponRunner = Runner.FindObject(objectId);
+
+        if (weaponRunner == null)
+        {
+            Debug.Log($"No weapon found for reassign player");
+            return;
+        }
+
+        WeaponItem weapon = weaponRunner.GetComponent<WeaponItem>();
+
+        WeaponItem tempWeapon = null;
+
+        if (weapon.WeaponID == "001" || weapon.WeaponID == "002")
+        {
+            Rpc_ChangePrimarySpriteWeapon(weapon.WeaponID);
+
+            tempWeapon = PrimaryWeapon;
+            if (PrimaryWeapon != null)
+            {
+                PrimaryWeapon.Object.RemoveInputAuthority();
+                PrimaryWeapon.Rpc_DropWeaponClients(transform.position);
+            }
+
+            PrimaryWeapon = weapon;
+            PrimaryWeapon.Object.AssignInputAuthority(player);
+        }
+        else if (weapon.WeaponID == "003" || weapon.WeaponID == "004")
+        {
+            Rpc_ChangeSecondarySpriteWeapon(weapon.WeaponID);
+
+            tempWeapon = SecondaryWeapon;
+            if (SecondaryWeapon != null)
+            {
+                SecondaryWeapon.Object.RemoveInputAuthority();
+                SecondaryWeapon.Rpc_DropWeaponClients(transform.position);
+            }
+
+            SecondaryWeapon = weapon;
+            SecondaryWeapon.Object.AssignInputAuthority(player);
+        }
+
+        if (weapon.WeaponID == "004")
+        {
+            var ammoObject = Runner.Spawn(
+            weaponSpawnData.GetItemObject("arrowcontainer"),
+            Vector3.zero,
+            Quaternion.identity,
+            inputAuthority: player,
+            onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+            {
+                obj.GetComponent<WeaponItem>().InitializeItem("", "0", 0, obj, arrowHandle, null, 0);
+            });
+        }
+
+        weapon.Rpc_ReassignParentPlayer(Object, GetWeaponBackHandle(weapon.WeaponID).Id, GetWeaponHandHandle(weapon.WeaponID).Id, weaponSpawnData.GetItemType(weapon.WeaponID) == EquipWeaponType ? true : false);
+
+        if (weaponSpawnData.GetItemType(weapon.WeaponID) == "Primary")
+        {
+            if (tempWeapon != null && EquipWeaponType == weaponSpawnData.GetItemType(weapon.WeaponID))
+            {
+                Rpc_ChangeWeaponInPickup(tempWeapon.AnimatorID);
+
+                WeaponPrimaryChange();
+            }
+        }
+        else if (weaponSpawnData.GetItemType(weapon.WeaponID) == "Secondary")
+        {
+            if (tempWeapon != null && EquipWeaponType == weaponSpawnData.GetItemType(weapon.WeaponID))
+            {
+                Rpc_ChangeWeaponInPickup(tempWeapon.AnimatorID);
+
+                WeaponSecondaryChange();
+            }
+        }
+    }
+
+    private void HandleWeaponAssignment(TempItemWeaponData weaponData, WeaponItem weaponItem, PlayerRef playerRef)
+    {
+        switch (weaponData.itemID)
+        {
+            case "001":
+            case "002":
+                ReplacePrimaryWeapon(weaponItem);
+                break;
+            case "003":
+                ReplaceSecondaryWeapon(weaponItem);
+                break;
+            case "004":
+                ReplaceWeaponWithAmmoObject(weaponItem, playerRef);
+                break;
+        }
+    }
+
+    private void ReplacePrimaryWeapon(WeaponItem weaponItem)
+    {
+        WeaponItem tempWeapon = null;
+
+        Rpc_ChangePrimarySpriteWeapon(weaponItem.WeaponID);
+
+        if (PrimaryWeapon != null)
+        {
+            tempWeapon = PrimaryWeapon;
+            PrimaryWeapon.Object.RemoveInputAuthority();
+            PrimaryWeapon.Rpc_DropWeaponClients(transform.position);
+        }
+
+        PrimaryWeapon = weaponItem;
+
+        if (EquipWeaponType == "Primary")
+        {
+            if (tempWeapon != null)
+                Rpc_ChangeWeaponInPickup(tempWeapon.AnimatorID);
+
+            WeaponPrimaryChange();
+        }
+    }
+
+    private void ReplaceSecondaryWeapon(WeaponItem weaponItem)
+    {
+        if (AmmoObject != null)
+        {
+            Runner.Despawn(AmmoObject.Object);
+            AmmoObject = null;
+        }
+
+        WeaponItem tempWeapon = null;
+
+        Rpc_ChangeSecondarySpriteWeapon(weaponItem.WeaponID);
+
+        if (SecondaryWeapon != null)
+        {
+            tempWeapon = SecondaryWeapon;
+            SecondaryWeapon.Object.RemoveInputAuthority();
+            SecondaryWeapon.Rpc_DropWeaponClients(transform.position);
+        }
+
+        SecondaryWeapon = weaponItem;
+
+        if (EquipWeaponType == "Secondary")
+        {
+            if (tempWeapon != null)
+                Rpc_ChangeWeaponInPickup(tempWeapon.AnimatorID);
+
+            WeaponSecondaryChange();
+        }
+    }
+
+    private void ReplaceWeaponWithAmmoObject(WeaponItem weaponItem, PlayerRef player)
+    {
+        if (AmmoObject != null)
+        {
+            Runner.Despawn(AmmoObject.Object);
+            AmmoObject = null;
+        }
+
+        WeaponItem tempWeapon = null;
+
+        Rpc_ChangeSecondarySpriteWeapon(weaponItem.WeaponID);
+
+        if (SecondaryWeapon != null)
+        {
+            tempWeapon = SecondaryWeapon;
+            SecondaryWeapon.Object.RemoveInputAuthority();
+            SecondaryWeapon.Rpc_DropWeaponClients(transform.position);
+        }
+
+        var ammoObject = Runner.Spawn(
+            weaponSpawnData.GetItemObject("arrowcontainer"),
+            Vector3.zero,
+            Quaternion.identity,
+            inputAuthority: player, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+            {
+                obj.GetComponent<WeaponItem>().InitializeItem(
+                    "",
+                    "",
+                    0,
+                    Object,
+                    arrowHandle,
+                    null,
+                    0,
+                    false);
+            });
+
+        AmmoObject = ammoObject.GetComponent<WeaponItem>();
+        SecondaryWeapon = weaponItem;
+
+        if (EquipWeaponType == "Secondary")
+        {
+            if (tempWeapon != null)
+                Rpc_ChangeWeaponInPickup(tempWeapon.AnimatorID);
+
+            WeaponSecondaryChange();
+        }
+    }
+
+    private NetworkObject GetWeaponBackHandle(string itemID)
+    {
+        return itemID switch
+        {
+            "001" => swordHandle,
+            "002" => spearHandle,
+            "003" => rifleHandle,
+            "004" => bowHandle,
+            _ => null
+        };
+    }
+
+    private NetworkObject GetWeaponHandHandle(string itemID)
+    {
+        return itemID switch
+        {
+            "001" => swordHandHandle,
+            "002" => spearHandHandle,
+            "003" => rifleHandHandle,
+            "004" => bowHandHandle,
+            _ => null
+        };
+    }
+
+    #endregion
+
+    #region Weapon Changer
+
+    [Rpc (RpcSources.StateAuthority, RpcTargets.InputAuthority)]
+    public void Rpc_ChangeWeaponInPickup(int tempWeapon)
+    {
+        playerAnimator.SetLayerWeight(tempWeapon, 0f);
+    }
 
     public void WeaponHandChange()
     {
+        EquipWeaponType = "";
         TempLastIndex = WeaponIndex;
-
         WeaponIndex = 1;
 
-        if (PrimaryWeapon != null)
-            PrimaryWeapon.Rpc_SheatWeapon();
+        if (HasInputAuthority)
+        {
+            HandBtn.SetIndicator(true);
+            PrimaryBtn.SetIndicator(false);
+            SecondaryBtn.SetIndicator(false);
+        }
+
+        PrimaryWeapon?.Rpc_SheatWeapon();
+        SecondaryWeapon?.Rpc_SheatWeapon();
     }
 
     public void WeaponPrimaryChange()
     {
+        EquipWeaponType = "Primary";
         TempLastIndex = WeaponIndex;
-
         WeaponIndex = PrimaryWeapon.AnimatorID;
+
+        if (HasInputAuthority)
+        {
+            PrimaryBtn.SetIndicator(true);
+            HandBtn.SetIndicator(false);
+            SecondaryBtn.SetIndicator(false);
+        }
+
         PrimaryWeapon.Rpc_ActivateWeapon();
+        SecondaryWeapon?.Rpc_SheatWeapon();
     }
 
     public void WeaponSecondaryChange()
     {
+        EquipWeaponType = "Secondary";
         TempLastIndex = WeaponIndex;
+        WeaponIndex = SecondaryWeapon.AnimatorID;
 
-        WeaponIndex = 5;
+        if (HasInputAuthority)
+        {
+            SecondaryBtn.SetIndicator(true);
+            HandBtn.SetIndicator(false);
+            PrimaryBtn.SetIndicator(false);
+        }
+
+        SecondaryWeapon.Rpc_ActivateWeapon();
+        PrimaryWeapon?.Rpc_SheatWeapon();
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority)]
+    public void Rpc_ChangePrimarySpriteWeapon(string itemID)
+    {
+        PrimaryBtn.ChangeSpriteButton(itemID);
+    }
+
+    [Rpc (RpcSources.StateAuthority, RpcTargets.InputAuthority)]
+    public void Rpc_ChangeSecondarySpriteWeapon(string itemID)
+    {
+        SecondaryBtn.ChangeSpriteButton(itemID);
     }
 
     #endregion
 
-    #region CHECK AMMO
+    #region Check Ammo
 
     public void Reload()
     {
@@ -165,46 +547,6 @@ public class PlayerInventory : NetworkBehaviour
     {
         playerAnimator.ResetTrigger("reload");
     }
-
-    #endregion
-
-    #region OLD CODE
-
-    //private void AnimateSwitch()
-    //{
-    //    animator.SetLayerWeight(tempLastIndex, Mathf.Lerp(animator.GetLayerWeight(tempLastIndex), 0f, Time.deltaTime * 13f));
-    //    animator.SetLayerWeight(weaponIndex, Mathf.Lerp(animator.GetLayerWeight(weaponIndex), 1f, Time.deltaTime * 13f));
-    //}
-
-    //private void SetHandsItem()
-    //{
-    //    if (!Controller.SwitchHands) return;
-
-    //    if (weaponIndex == 1) return;
-
-    //    tempLastIndex = weaponIndex;
-    //    weaponIndex = 1;
-
-    //    animator.SetTrigger("switchweapon");
-
-    //    Controller.SwitchHandsStop();
-    //}
-
-    //private void SetPrimaryItem()
-    //{
-    //    if (!Controller.SwitchPrimary) return;
-
-    //    if (weaponIndex == 2) return;
-
-    //    tempLastIndex = weaponIndex;
-    //    weaponIndex = 2;
-
-    //    animator.SetTrigger("switchweapon");
-
-    //    Controller.SwitchPrimaryStop();
-    //}
-
-    //public void ResetTriggerSwitch() => animator.ResetTrigger("switchweapon");
 
     #endregion
 }

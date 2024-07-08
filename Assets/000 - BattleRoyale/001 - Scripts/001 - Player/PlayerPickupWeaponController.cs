@@ -1,5 +1,8 @@
 using Fusion;
+using Fusion.Addons.SimpleKCC;
+using MyBox;
 using Newtonsoft.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,107 +11,261 @@ using UnityEngine.UI;
 
 public class PlayerPickupWeaponController : NetworkBehaviour
 {
+
     [SerializeField] private PlayerInventory playerInventory;
     [SerializeField] private WeaponSpawnData itemSpritesData;
     [SerializeField] private GameObject itemButton;
+    [SerializeField] private LayerMask objecMask;
+    [SerializeField] private float itemDetectorRadius;
 
     [field: Header("DEBUGGER")]
     [MyBox.ReadOnly][SerializeField] private Transform contentTF;
     [field: MyBox.ReadOnly][field: SerializeField] public GameObject PickupItemBtn { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField] public GameObject PickupItemList { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField] public NetworkObject CrateObject { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField] public GameObject CrateObjectDetector { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField] public List<GameObject> CrateObjectButtonList { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField] public List<NetworkObject> WeaponsPickup { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField] public List<GameObject> WeaponsPickupDetector { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField] public Dictionary<GameObject, GameObject> WeaponsPickupList { get; set; } = new Dictionary<GameObject, GameObject>();
 
     //  ========================
 
     Coroutine initialize;
     Coroutine destroy;
 
+    private List<Collider> currentColliders = new List<Collider>();
+    private List<Collider> previousColliders = new List<Collider>();
+
     //  ========================
 
-    public void InitializeContentTF()
+    private void Update()
     {
-        contentTF = PickupItemList.transform.GetChild(1).transform.GetChild(0).transform.GetChild(0);
+        CollisionEnter();
+        CollisionExit();
     }
-
-    private void OnTriggerEnter(Collider other)
+    private void CollisionEnter()
     {
-        if (other.gameObject.tag == "Crate")
+        if (!HasInputAuthority) return;
+
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, itemDetectorRadius, objecMask);
+
+        currentColliders.Clear();
+        currentColliders.AddRange(hitColliders);
+
+        foreach (var hit in hitColliders)
         {
-            if (!HasInputAuthority && !HasStateAuthority) return;
-
-            CrateObject = other.GetComponent<NetworkObject>();
-            CrateObject.GetComponent<CrateController>().OnItemListChange += ItemListChange;
-
-            if (PickupItemBtn == null && PickupItemList == null) return;
-
-            if (destroy != null) StopCoroutine(destroy);
-
-            initialize = StartCoroutine(SpawnListItems(other.GetComponent<CrateController>().Weapons));
+            if (hit.CompareTag("Crate"))
+            {
+                if (CrateObjectDetector != hit.gameObject)
+                {
+                    CrateObjectDetector = hit.gameObject;
+                    HandleCrateEnter(CrateObjectDetector);
+                }
+            }
+            else if (hit.CompareTag("Weapon"))
+            {
+                if (!WeaponsPickupDetector.Contains(hit.gameObject))
+                {
+                    WeaponsPickupDetector.Add(hit.gameObject);
+                    HandleWeaponEnter(hit.gameObject);  
+                }
+            }
         }
     }
 
-    private void OnTriggerExit(Collider other)
+    private void CollisionExit()
     {
-        if (other.gameObject.tag == "Crate")
+        if (!HasInputAuthority) return;
+
+        foreach (var previousCollider in previousColliders)
         {
-            if (!HasInputAuthority && !HasStateAuthority) return;
+            if (!currentColliders.Contains(previousCollider))
+            {
+                if (previousCollider.CompareTag("Crate"))
+                {
+                    CrateObjectDetector = null;
+                    HandleCrateExit();
+                }
+                else if (previousCollider.CompareTag("Weapon"))
+                {
+                    WeaponsPickupDetector.Remove(previousCollider.gameObject);
+                    HandleWeaponExit(previousCollider.gameObject);
+                }
+            }
+        }
 
-            CrateObject.GetComponent<CrateController>().OnItemListChange -= ItemListChange;
-            CrateObject = null;
+        // Update the previousColliders list to the current frame's colliders
+        previousColliders.Clear();
+        previousColliders.AddRange(currentColliders);
+    }
 
-            if (PickupItemBtn == null && PickupItemList == null) return;
+    private void HandleCrateEnter(GameObject other)
+    {
+        if (!HasInputAuthority && !HasStateAuthority) return;
 
-            CrateObject = null;
+        if (PickupItemBtn == null || PickupItemList == null) return;
 
+        CrateObject = other.GetComponent<NetworkObject>();
+        CrateObject.GetComponent<CrateController>().OnItemListChange += ItemListChange;
+
+        if (destroy != null) StopCoroutine(destroy);
+        initialize = StartCoroutine(SpawnListItems(other.gameObject.GetComponent<CrateController>().Weapons));
+    }
+
+    private void HandleWeaponEnter(GameObject other)
+    {
+        if (!HasInputAuthority) return;
+
+        if (other.GetComponent<WeaponItem>().IsPickedUp) return;
+
+        var weaponNetworkObject = other.GetComponent<NetworkObject>();
+        if (WeaponsPickup.Contains(weaponNetworkObject)) return;
+
+        WeaponsPickup.Add(weaponNetworkObject);
+
+        var item = Instantiate(itemButton, contentTF);
+        WeaponsPickupList.Add(other, item);
+
+        var weaponItem = other.GetComponent<WeaponItem>();
+        item.GetComponent<WeaponListUIController>().InitializeData(
+            itemSpritesData.GetItemListSprite(weaponItem.WeaponID),
+            itemSpritesData.GetItemName(weaponItem.WeaponID),
+            weaponItem.Ammo.ToString(),
+            weaponNetworkObject);
+
+        weaponItem.OnWeaponPickupChange += WeaponPickupChange;
+
+        item.GetComponent<Button>().onClick.AddListener(() =>
+        {
+            weaponItem.Rpc_SendPickupEvent(item.GetComponent<WeaponListUIController>().Index, other.GetComponent<NetworkObject>().Id);
+            playerInventory.Rpc_ReassignWeaponToPlayer(weaponItem.Object.Id, Runner.LocalPlayer);
+        });
+
+        if (CrateObject == null)
+        {
+            PickupItemBtn.SetActive(true);
+            PickupItemList.SetActive(true);
+        }
+    }
+
+    private void HandleCrateExit()
+    {
+        if (!HasInputAuthority && !HasStateAuthority) return;
+
+        if (PickupItemBtn == null || PickupItemList == null) return;
+
+        if (CrateObject == null) return;
+
+        CrateObject.GetComponent<CrateController>().OnItemListChange -= ItemListChange;
+        CrateObject = null;
+
+        if (WeaponsPickup.Count <= 0)
+        {
             PickupItemBtn.SetActive(false);
             PickupItemList.SetActive(false);
+        }
 
-            if (initialize != null) StopCoroutine(initialize);
+        if (initialize != null) StopCoroutine(initialize);
+        destroy = StartCoroutine(DestoryListItems());
+    }
 
-            destroy = StartCoroutine(DestoryListItems());
+    private void HandleWeaponExit(GameObject other)
+    {
+        if (!HasInputAuthority) return;
+
+        var weaponNetworkObject = other.gameObject.GetComponent<NetworkObject>();
+
+        if (!WeaponsPickup.Contains(weaponNetworkObject)) return;
+
+        if (!WeaponsPickupList.ContainsKey(other))
+        {
+            WeaponsPickup.Remove(weaponNetworkObject);
+
+            if (CrateObject == null)
+            {
+                PickupItemBtn.SetActive(false);
+                PickupItemList.SetActive(false);
+            }
+
+            return;
+        }
+
+        var itemToDestroy = WeaponsPickupList[other];
+
+        if (itemToDestroy != null)
+        {
+            WeaponsPickupList.Remove(other);
+            itemToDestroy.GetComponent<Button>().onClick.RemoveAllListeners();
+            Destroy(itemToDestroy);
+        }
+
+        WeaponsPickup.Remove(weaponNetworkObject);
+
+        if (CrateObject == null)
+        {
+            PickupItemBtn.SetActive(false);
+            PickupItemList.SetActive(false);
         }
     }
 
     private void ItemListChange(object sender, ItemListChangeEventArgs e)
     {
         if (!HasInputAuthority) return;
+        Destroy(contentTF.GetChild(e.Index).gameObject);
+    }
+
+    private void WeaponPickupChange(object sender, WeaponItemListChangeEventArgs e)
+    {
+        if (!HasInputAuthority) return;
+
+        if (WeaponsPickupDetector.Contains(contentTF.GetChild(e.Index).gameObject))
+            WeaponsPickupDetector.Remove(contentTF.GetChild(e.Index).gameObject);
+
+        if (Runner.TryFindObject(e.Objectid, out NetworkObject tempWeapon))
+        {
+            if (WeaponsPickupList.ContainsKey(tempWeapon.gameObject))
+                WeaponsPickupList.Remove(tempWeapon.gameObject);
+        }
 
         Destroy(contentTF.GetChild(e.Index).gameObject);
     }
 
+    public void InitializeContentTF()
+    {
+        contentTF = PickupItemList.transform.GetChild(1).transform.GetChild(0).transform.GetChild(0);
+    }
+
     private IEnumerator SpawnListItems(NetworkDictionary<NetworkString<_4>, int> data)
     {
-        while (contentTF.childCount > 0)
-        {
-            for (int a = 0; a < contentTF.childCount; a++)
-            {
-                Destroy(contentTF.GetChild(a).gameObject);
-                yield return null;
-            }
-
-            yield return null;
-        }
+        yield return ClearContentTF();
 
         if (data.Count <= 0) yield break;
 
-        for (int a = 0; a < data.Count; a++)
+        foreach (var item in data)
         {
-            GameObject item = Instantiate(itemButton, contentTF);
+            var newItem = Instantiate(itemButton, contentTF);
 
-            item.GetComponent<WeaponListUIController>().InitializeData(itemSpritesData.GetItemListSprite(data.ElementAt(a).Key.ToString()), itemSpritesData.GetItemName(data.ElementAt(a).Key.ToString()), data.ElementAt(a).Value.ToString());
-            item.GetComponent<Button>().onClick.AddListener(() =>
+            CrateObjectButtonList.Add(newItem);
+
+            newItem.GetComponent<WeaponListUIController>().InitializeData(
+                itemSpritesData.GetItemListSprite(item.Key.ToString()),
+                itemSpritesData.GetItemName(item.Key.ToString()),
+                item.Value.ToString());
+
+            newItem.GetComponent<Button>().onClick.AddListener(() =>
             {
-                int index = item.GetComponent<WeaponListUIController>().Index;
-
-                string weapondata = JsonConvert.SerializeObject(new TempItemWeaponData()
+                var index = newItem.GetComponent<WeaponListUIController>().Index;
+                var weaponData = new TempItemWeaponData
                 {
                     index = index,
-                    itemID = data.ElementAt(index).Key.ToString(),
-                    ammo = data.ElementAt(index).Value,
-                });
-
-                playerInventory.Rpc_SpawnWeaponForPlayer(weapondata, Runner.LocalPlayer);
-                Rpc_RemoveWeaponFromList(weapondata);
+                    itemID = item.Key.ToString(),
+                    ammo = item.Value,
+                    objectId = CrateObject.Id
+                };
+                CrateObjectButtonList.Remove(newItem);
+                playerInventory.Rpc_SpawnWeaponForPlayer(JsonConvert.SerializeObject(weaponData), Runner.LocalPlayer);
+                Rpc_RemoveWeaponFromList(JsonConvert.SerializeObject(weaponData));
             });
 
             yield return null;
@@ -116,21 +273,26 @@ public class PlayerPickupWeaponController : NetworkBehaviour
 
         PickupItemBtn.SetActive(true);
         PickupItemList.SetActive(true);
-
         initialize = null;
     }
 
     private IEnumerator DestoryListItems()
     {
-        while (contentTF.childCount > 0)
+        yield return ClearContentTF();
+    }
+
+    private IEnumerator ClearContentTF()
+    {
+        while (CrateObjectButtonList.Count > 0)
         {
-            for (int a = 0; a < contentTF.childCount; a++)
+            for (int i = 0; i < CrateObjectButtonList.Count; i++)
             {
-                contentTF.GetChild(a).GetComponent<Button>().onClick.RemoveAllListeners();
-                Destroy(contentTF.GetChild(a).gameObject);
+                var child = CrateObjectButtonList[i];
+                CrateObjectButtonList.Remove(child);
+                child.GetComponent<Button>().onClick.RemoveAllListeners();
+                Destroy(child.gameObject);
                 yield return null;
             }
-
             yield return null;
         }
     }
@@ -138,7 +300,16 @@ public class PlayerPickupWeaponController : NetworkBehaviour
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     public void Rpc_RemoveWeaponFromList(string data)
     {
-        CrateObject.GetComponent<CrateController>().Rpc_RemoveItemFromObject(data);
+        TempItemWeaponData weapondata = JsonConvert.DeserializeObject<TempItemWeaponData>(data);
+
+        if (Runner.TryFindObject(weapondata.objectId, out NetworkObject crateObj))
+            crateObj.GetComponent<CrateController>().Rpc_RemoveItemFromObject(data);
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawSphere(transform.position, itemDetectorRadius);
+        Gizmos.color = Color.blue;
     }
 }
 
@@ -148,4 +319,5 @@ public class TempItemWeaponData
     public int index;
     public string itemID;
     public int ammo;
+    public NetworkId objectId;
 }

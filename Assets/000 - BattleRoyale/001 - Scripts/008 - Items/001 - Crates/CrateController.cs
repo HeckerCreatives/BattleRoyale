@@ -37,7 +37,7 @@ public class CrateController : NetworkBehaviour
         TempItemWeaponData weaponData = JsonConvert.DeserializeObject<TempItemWeaponData>(data);
 
         if (HasStateAuthority)
-            Weapons.Remove(Weapons.ElementAt(weaponData.index).Key);
+            Weapons.Remove(weaponData.itemID);
 
         ItemListChange?.Invoke(this, new ItemListChangeEventArgs(weaponData.index, data));
     }

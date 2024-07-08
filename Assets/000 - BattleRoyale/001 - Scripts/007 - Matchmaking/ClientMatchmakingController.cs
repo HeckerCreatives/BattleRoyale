@@ -73,7 +73,7 @@ public class ClientMatchmakingController : MonoBehaviour
                     timerTMP.text = "CONFIRMING MATCH!";
                     matchFound = true;
                     findingMatch = false;
-                    //GameManager.Instance.SceneController.MultiplayerScene = true;
+                    GameManager.Instance.SceneController.MultiplayerScene = true;
                 }
                 else
                 {

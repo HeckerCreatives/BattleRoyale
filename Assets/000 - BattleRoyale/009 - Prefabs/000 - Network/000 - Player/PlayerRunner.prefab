@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4957224600459852802}
   - component: {fileID: 897126475038176706}
   - component: {fileID: -4826023333064389545}
+  - component: {fileID: 279779223495510489}
   - component: {fileID: 513454535896680548}
   - component: {fileID: 132834355057055865}
   m_Layer: 0
@@ -59,20 +60,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2dff5bf4d2c7d1c48a694f9bb964de91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  jumpHoldTime: 0
-  currentJumpTime: 0
   cursorLocked: 1
-  <MovementDirection>k__BackingField: {x: 0, y: 0}
-  <LookDirection>k__BackingField: {x: 0, y: 0}
-  <Jump>k__BackingField: 0
-  <Aim>k__BackingField: 0
-  <Shoot>k__BackingField: 0
-  <Crouch>k__BackingField: 0
-  <Prone>k__BackingField: 0
-  <SwitchHands>k__BackingField: 0
-  <SwitchPrimary>k__BackingField: 0
-  <SwitchSecondary>k__BackingField: 0
-  <SwitchTrap>k__BackingField: 0
+  MovementDirection: {x: 0, y: 0}
+  LookDirection: {x: 0, y: 0}
+  Jump: 0
+  Aim: 0
+  Shoot: 0
+  Crouch: 0
+  Prone: 0
+  SwitchHands: 0
+  SwitchPrimary: 0
+  SwitchSecondary: 0
+  SwitchTrap: 0
+  resetInput: 0
+  doneInitialize: 0
+--- !u!114 &279779223495510489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6671172727197241418}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfc03627f062ba24fa01da8b56dfe025, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameplayController: {fileID: -4826023333064389545}
+  doneLoadingScene: 0
 --- !u!114 &513454535896680548
 MonoBehaviour:
   m_ObjectHideFlags: 0

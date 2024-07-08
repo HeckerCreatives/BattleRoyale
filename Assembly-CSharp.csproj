@@ -67,6 +67,7 @@
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerCameraRotation.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.Physics.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingDescr.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\MinimapCamera.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.RPCs.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LeanSmooth.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\PathSplineEndless.cs" />
@@ -78,6 +79,7 @@
     <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCCCollider.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\007 - Settings\SettingsControlGameplayController.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\DeveloperConsole.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Extensions\KCCArrayExtensions.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.Properties.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\000 - StatemachineBehaviour\JumpEnd.cs" />
@@ -144,12 +146,13 @@
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LTDescr.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Scripts\YuME_editorPreferences.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\009 - Messages\InboxItem.cs" />
-    <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\Following.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\005 - ScriptableObjects\001 - Weapons\WeaponSpawnData.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\Following.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\Debug\CallbackLogger.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\SceneController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LTSeq.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\007 - Settings\ControllerSetting.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\011 - WaitingAreaTimer\WaitingAreaTimerController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralEasingTypes.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\003 - CharacterCreation\CharacterCreationController.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\GameManager.cs" />
@@ -192,6 +195,7 @@
     <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\Recorders\StatsWriter.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Attributes\KCCLayerAtribute.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\CanvasUICameraSetter.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerSpawnLocationController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Scripts\YuME_prefabSamplerData.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\Core\IKCCProcessorProvider.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralUISpace.cs" />
@@ -223,7 +227,9 @@
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingRotate.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralSequencer.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkProperties.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\000 - Weapons\WeaponEquipBtnController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\FlexibleColorPicker\ExampleScene\FCP_ExampleScript.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\PlayerMultiplayerEvents.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\KCCNetworkUtility.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkID.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\KCCPhysicsUtility.cs" />
@@ -259,6 +265,7 @@
     <Compile Include="Assets\Photon\FusionAddons\KCC\Data\KCCShapeCastHit.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LTDescrOptional.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\SmoothValues\SmoothVector3.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\010 - KillCount\KillCountCounterController.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkFloat.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\SmoothValues\SmoothFloat.cs" />
     <Compile Include="Assets\Photon\FusionAddons\KCC\Core\IKCCInteractionProvider.cs" />
@@ -1352,6 +1359,10 @@
       <HintPath>Library\ScriptAssemblies\Unity.Rider.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.AI.Navigation">
+      <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.Animation.Rigging.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.Animation.Rigging.Editor.dll</HintPath>
       <Private>False</Private>
@@ -1468,6 +1479,10 @@
       <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Core.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.AI.Navigation.Updater">
+      <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.Updater.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="CandyCoded.env">
       <HintPath>Library\ScriptAssemblies\CandyCoded.env.dll</HintPath>
       <Private>False</Private>
@@ -1504,12 +1519,16 @@
       <HintPath>Library\ScriptAssemblies\Cinemachine.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.Mathematics">
-      <HintPath>Library\ScriptAssemblies\Unity.Mathematics.dll</HintPath>
+    <Reference Include="Unity.AI.Navigation.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.RenderPipelines.Core.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Mathematics">
+      <HintPath>Library\ScriptAssemblies\Unity.Mathematics.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Toolchain.Win-x86_64-Linux-x86_64">
@@ -1530,6 +1549,10 @@
     </Reference>
     <Reference Include="Unity.2D.Sprite.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.2D.Sprite.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.AI.Navigation.Editor.ConversionSystem">
+      <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.Editor.ConversionSystem.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Sysroot.Linux_x86_64">

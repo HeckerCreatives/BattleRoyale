@@ -9,6 +9,7 @@ using NUnit.Framework;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Unity.Services.Core;
 using Unity.Services.Matchmaker.Models;
@@ -19,8 +20,43 @@ using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+public enum GameState
+{
+    WAITINGAREA,
+    ARENA,
+    DONE
+}
+
+public struct PlayerBattleSpawnPosition : INetworkStruct
+{
+    [Networked, Capacity(10)] public NetworkArray<Vector3> NetworkSpawnLocation => default;
+
+    public static PlayerBattleSpawnPosition Defaults
+    {
+        get
+        {
+            var result = new PlayerBattleSpawnPosition();
+            result.NetworkSpawnLocation.Set(0, Vector3.zero);
+            return result;
+        }
+    }
+}
+
 public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
 {
+    private event EventHandler<PlayerCountEvent> PlayerCountChange;
+    public event EventHandler<PlayerCountEvent> OnPlayerCountChange
+    {
+        add
+        {
+            if (PlayerCountChange == null || !PlayerCountChange.GetInvocationList().Contains(value))
+                PlayerCountChange += value;
+        }
+        remove { PlayerCountChange -= value; }
+    }
+
+    //  ===================================
+
     [Header("SERVER")]
     [SerializeField] NetworkPrefabRef playerPrefab;
     [SerializeField] private NetworkRunner serverNetworkRunnerPrefab;
@@ -34,8 +70,17 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [SerializeField] private NetworkObject createNO;
     [SerializeField] private List<Transform> createSpawnLocations;
 
+    [Header("SPAWN POSITIONS")]
+    [SerializeField] private List<Transform> spawnLocationsBattlefield;
+
     [Header("DEBUGGER")]
     [MyBox.ReadOnly][SerializeField] private NetworkRunner networkRunner;
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public GameState CurrentGameState { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public float WaitingAreaTimer { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool CanCountWaitingAreaTimer { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool DonePlayerBattlePositions { get; set; }
+    [Networked][UnitySerializeField] private PlayerBattleSpawnPosition PositionStruct { get; set; } = new PlayerBattleSpawnPosition();
+
 
     //  =================
 
@@ -47,8 +92,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
     public MatchmakingResults MatchmakingResults;
 
+    [Networked, Capacity(10)] public NetworkDictionary<PlayerRef, PlayerNetworkCore> Players => default;
 
-    [Networked, Capacity(10)] private NetworkDictionary<PlayerRef, PlayerNetworkCore> Players => default;
     //  =================
 
     private void Awake()
@@ -61,6 +106,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 gameObj.SetActive(false);
         }
     }
+
+    #region UNITY MATCHMAKING SERVICE
 
     private async void StartServer()
     {
@@ -146,6 +193,18 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
     //private async Task<MatchmakingResults> GetMatchmakerPayload()
 
+    #endregion
+
+    #region PHOTON FUSION
+
+    public override void FixedUpdateNetwork()
+    {
+        CountDownWaitingAreaTimer();
+        BattlePosition();
+    }
+
+    #region INITIALIZE
+
     private async Task StartGame()
     {
         Debug.Log($"Starting Photon Server");
@@ -191,6 +250,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             Debug.Log($"Spawning Crates");
             StartCoroutine(SpawnCrates());
 
+            Debug.Log($"Set Spawn Positions");
+            StartCoroutine(SetSpawnPositionPlayers());
             return;
         }
 
@@ -217,6 +278,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         Debug.Log($"Spawning Crates");
         StartCoroutine(SpawnCrates());
+
+        Debug.Log($"Set Spawn Positions");
+        StartCoroutine(SetSpawnPositionPlayers());
     }
 
     Dictionary<string, int> GenerateRandomItems()
@@ -297,24 +361,106 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         Runner.SessionInfo.Properties.TryAdd("IsOpen", true);
     }
 
+    IEnumerator SetSpawnPositionPlayers()
+    {
+        List<Transform> tempSpawnTF = spawnLocationsBattlefield;
+
+        yield return StartCoroutine(Shuffler.Shuffle(tempSpawnTF));
+
+        var tempPositionStruct = PositionStruct;
+
+        for (int a = 0; a < tempSpawnTF.Count; a++)
+        {
+            tempPositionStruct.NetworkSpawnLocation.Set(a, tempSpawnTF[a].position);
+            yield return null;
+        }
+
+        PositionStruct = tempPositionStruct;
+    }
+
+    #endregion
+
+    #region WAITING AREA
+
+    private void CountDownWaitingAreaTimer()
+    {
+        if (!HasStateAuthority) return;
+
+        if (CurrentGameState != GameState.WAITINGAREA) return;
+
+        if (!CanCountWaitingAreaTimer) return;
+
+        WaitingAreaTimer -= Runner.DeltaTime;
+
+        if (WaitingAreaTimer <= 0f)
+        {
+            CurrentGameState = GameState.ARENA;
+            CanCountWaitingAreaTimer = false;
+        }
+    }
+
+    private void BattlePosition()
+    {
+        if (DonePlayerBattlePositions) return;
+
+        if (!HasStateAuthority) return;
+
+        if (CurrentGameState != GameState.ARENA) return;
+
+        for (int a = 0; a < Players.Count; a++)
+        {
+            if (!Players.ElementAt(a).Value.DoneBattlePosition)
+            {
+                Players.ElementAt(a).Value.PlayerCharacterSpawnedObj.GetComponent<SimpleKCC>().SetPosition(PositionStruct.NetworkSpawnLocation[a]);
+                Players.ElementAt(a).Value.DoneBattlePosition = true;
+            }
+        }
+
+        for (int a = 0; a < Players.Count; a++)
+        {
+            if (!Players.ElementAt(a).Value.DoneBattlePosition)
+            {
+                return;
+            }
+        }
+
+        DonePlayerBattlePositions = true;
+    }
+
+    #endregion
+
     #region PLAYER JOIN LEAVE
 
     public void PlayerJoined(PlayerRef player)
     {
         if (HasStateAuthority)
         {
-            NetworkObject playerObj = Runner.Spawn(playerPrefab, Vector3.up, Quaternion.identity, player);
+            NetworkObject playerObj = Runner.Spawn(playerPrefab, Vector3.up, Quaternion.identity, player, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+            {
+                obj.GetComponent<PlayerNetworkCore>().ServerManager = Object;
+            });
 
             PlayerNetworkCore playerNetowrkCore = playerObj.GetComponent<PlayerNetworkCore>();
 
-            NetworkObject playerCharacter = Runner.Spawn(playerNetowrkCore.PlayerCharacterObj, Vector3.up, Quaternion.identity, player);
-
-            playerNetowrkCore.ServerManager = Object;
-            playerNetowrkCore.PlayerCharacterSpawnedObj = playerCharacter;
-
-            playerCharacter.GetComponent<SimpleKCC>().SetPosition(playerNetowrkCore.SpawnPosition);
+            NetworkObject playerCharacter = Runner.Spawn(playerNetowrkCore.PlayerCharacterObj, Vector3.up, Quaternion.identity, player, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+            {
+                playerNetowrkCore.GetComponent<PlayerNetworkCore>().PlayerCharacterSpawnedObj = obj;
+                obj.GetComponent<SimpleKCC>().SetPosition(playerNetowrkCore.SpawnPosition);
+            });
 
             Players.Add(player, playerObj.GetComponent<PlayerNetworkCore>());
+            Rpc_TriggerPlayerCount();
+
+            if (WaitingAreaTimer <= 0f)
+            {
+                WaitingAreaTimer = 90f;
+                CanCountWaitingAreaTimer = true;
+            }
+
+            if (CanCountWaitingAreaTimer && WaitingAreaTimer > 60 && Players.Count >= Players.Capacity)
+            {
+                WaitingAreaTimer = 60;
+            }
         }
     }
 
@@ -327,9 +473,33 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             Players.Remove(player);
             Runner.Despawn(clientPlayer.PlayerCharacterSpawnedObj);
             Runner.Despawn(clientPlayer.Object);
+            Rpc_TriggerPlayerCount();
+
+            if (Players.Count <= 0 && CanCountWaitingAreaTimer)
+            {
+                CanCountWaitingAreaTimer = false;
+            }
         }
     }
 
+    [Rpc (RpcSources.StateAuthority, RpcTargets.All)]
+    private void Rpc_TriggerPlayerCount()
+    {
+        PlayerCountChange?.Invoke(this, new PlayerCountEvent(Players.Count));
+    }
 
     #endregion
+
+    #endregion
+}
+
+
+public class PlayerCountEvent : EventArgs
+{
+    public int PlayerCount { get; }
+
+    public PlayerCountEvent(int playerCount)
+    {
+        PlayerCount = playerCount;
+    }
 }

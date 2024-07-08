@@ -65,7 +65,9 @@ public class PlayerWeaponChanger : NetworkBehaviour
 
     private void ChangeToSecondaryWeapon()
     {
-        if (inventory.WeaponIndex == 5) return;
+        if (inventory.SecondaryWeapon == null) return;
+
+        if (inventory.WeaponIndex == inventory.SecondaryWeapon.AnimatorID) return;
 
         if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchSecondary)) return;
 

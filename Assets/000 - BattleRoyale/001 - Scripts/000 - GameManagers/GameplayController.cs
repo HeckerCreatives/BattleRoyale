@@ -36,6 +36,7 @@ public struct MyInput : INetworkInput
     public NetworkButtons HoldInputButtons;
     public Vector2 MovementDirection;
     public Vector2 LookDirection;
+    public Vector2 PointerPosition;
 }
 
 public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, IBeforeUpdate
@@ -59,6 +60,8 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     [MyBox.ReadOnly][SerializeField] public bool SwitchSecondary;
     [MyBox.ReadOnly][SerializeField] public bool SwitchTrap;
     [MyBox.ReadOnly][SerializeField] private bool resetInput;
+    [MyBox.ReadOnly][SerializeField] private bool doneInitialize;
+
 
 
     //  =========================
@@ -70,14 +73,11 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
     //  =========================
 
-    private async void Start()
+    public IEnumerator InitializeControllers()
     {
-        if (GameManager.Instance != null)
-            GameManager.Instance.SceneController.ActionPass = true;
-
         Debug.Log("Starting To Initialize Controlls");
 
-        while (Runner == null) await Task.Delay(100);
+        while (Runner == null) yield return null;
 
         Debug.Log($"Is Runner null: {Runner == null}  Is Clien: {Runner.IsClient}");
 
@@ -118,11 +118,13 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             Runner.AddCallbacks(this);
             Debug.Log($"Done init controls");
         }
+
+        doneInitialize = true;
     }
 
     private void OnDisable()
     {
-        if (Runner != null)
+        if (doneInitialize && Runner != null)
         {
             gameplayInputs.Gameplay.Movement.performed -= _ => MovementStart();
             gameplayInputs.Gameplay.Movement.canceled -= _ => MovementStop();

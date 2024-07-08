@@ -12,6 +12,14 @@ public class WeaponSpawnData : ScriptableObject
     [SerializeField] private Sprite spearList;
     [SerializeField] private Sprite rifleList;
     [SerializeField] private Sprite bowList;
+    [SerializeField] private Sprite rifleAmmoList;
+    [SerializeField] private Sprite bowAmmoList;
+
+    [Header("ITEM BUTTON")]
+    [SerializeField] private Sprite swordBtn;
+    [SerializeField] private Sprite spearBtn;
+    [SerializeField] private Sprite rifleBtn;
+    [SerializeField] private Sprite bowBtn;
 
     [Header("ITEM SLOT")]
     [SerializeField] private Sprite swordSlot;
@@ -21,6 +29,26 @@ public class WeaponSpawnData : ScriptableObject
 
     [Header("ITEM OBJECT")]
     [SerializeField] private NetworkObject swordObject;
+    [SerializeField] private NetworkObject spearObject;
+    [SerializeField] private NetworkObject rifleObject;
+    [SerializeField] private NetworkObject bowObject;
+    [SerializeField] private NetworkObject arrowContainerObject;
+
+    public Sprite GetItemButtonSprite(string itemID)
+    {
+        switch (itemID)
+        {
+            case "001":
+                return swordBtn;
+            case "002":
+                return spearBtn;
+            case "003":
+                return rifleBtn;
+            case "004":
+                return bowBtn;
+            default: return null;
+        }
+    }
 
     public Sprite GetItemListSprite(string itemID)
     {
@@ -34,6 +62,10 @@ public class WeaponSpawnData : ScriptableObject
                 return rifleList;
             case "004":
                 return bowList;
+            case "005":
+                return rifleAmmoList;
+            case "006":
+                return bowAmmoList;
             default: return null;
         }
     }
@@ -65,11 +97,13 @@ public class WeaponSpawnData : ScriptableObject
             case "001":
                 return swordObject;
             case "002":
-                return swordObject;
+                return spearObject;
             case "003":
-                return swordObject;
+                return rifleObject;
             case "004":
-                return swordObject;
+                return bowObject;
+            case "arrowcontainer":
+                return arrowContainerObject;
             default: return null;
         }
     }
@@ -87,6 +121,24 @@ public class WeaponSpawnData : ScriptableObject
             case "004":
                 return 5;
             default: return 0;
+        }
+    }
+
+    public string GetItemType(string itemID)
+    {
+        switch (itemID)
+        {
+            case "001":
+            case "002":
+                return "Primary";
+            case "003":
+            case "004":
+                return "Secondary";
+            case "005":
+                return "RifleAmmo";
+            case "006":
+                return "BowAmmo";
+            default: return "";
         }
     }
 }

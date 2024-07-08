@@ -13,5 +13,6 @@ public abstract class WeaponData : NetworkBehaviour
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkObject WeaponObject { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkObject Parent { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkObject Hand { get; set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool IsInitialized { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool IsPickedUp { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool IsHand { get; set; }
 }
