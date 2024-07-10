@@ -56,227 +56,230 @@
   </PropertyGroup>
   <ItemGroup>
     <Analyzer Include="C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\FusionAddons\SimpleKCC\Fusion.Addons.SimpleKCC.Editor.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\Fusion\Plugins\NanoSockets\Metro\NanoSockets.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Runtime.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\Fusion\Plugins\NanoSockets\NanoSockets\Static\NanoSockets.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Realtime.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Sockets.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Common.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\Fusion\Plugins\NanoSockets\NanoSockets\Dynamic\NanoSockets.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\Fusion\Plugins\NanoSockets\WebGL\NanoSockets.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\FusionAddons\SimpleKCC\Fusion.Addons.SimpleKCC.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Log.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\PhotonLibs\netstandard2.0\Photon3Unity3D.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\2023.2.8f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.SourceGenerators.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\2023.2.8f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\2023.2.8f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Stages\PrepareData.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\StepUpProcessor.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Network\KCCNetworkInt.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\006 - Lobby\LobbyController.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Stages\Core\KCCStageInfo.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerCameraRotation.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.Physics.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\Recorders\TransformRecorder.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingDescr.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Extensions\KCCArrayExtensions.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\MinimapCamera.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.RPCs.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\Core\KCCProcessorProvider.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LeanSmooth.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\PathSplineEndless.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.Debug.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\PerformanceTests.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralBasics2d.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\007 - Settings\GameSettingController.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\Core\IKCCProcessorProvider.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\009 - Messages\MessageController.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCCCollider.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\007 - Settings\SettingsControlGameplayController.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\DeveloperConsole.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Extensions\KCCArrayExtensions.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.Properties.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\KCCTransformSampler.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\000 - StatemachineBehaviour\JumpEnd.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\Core\NetworkTRSPProcessor.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingSceneSwitching.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\KCCTransformSampler.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\TestingZLegacy.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Extensions\KCCGameObjectExtensions.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\Core\NetworkKCCProcessor.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\LogoCinematic.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.Interactions.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Core\KCC.RPCs.cs" />
     <Compile Include="Assets\002 - BattleRoyaleMultiplayer\000 - Script\000 - Core\CommandLineUtils.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralEventsListeners.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\000 - Weapons\WeaponData.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Extensions\KCCQuaternionExtensions.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Extensions\KCCComponentExtensions.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\AudioManager.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\Core\ScriptableKCCProcessor.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Extensions\KCCFloatExtensions.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Attributes\DisabledInPlayModeAttribute.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\000 - StatemachineBehaviour\ShootBowEnd.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkEnum.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Stages\Core\IKCCStage.cs" />
-    <Compile Include="Assets\001 - ExternalAssets\Samples\Animation Rigging\1.2.0\Animation Rigging Constraint Samples\Scripts\mParent.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\Recorders\StatsRecorder.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Data\KCCDebug.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkInt.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Attributes\KCCLayerAtribute.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Data\KCCTypes.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\Recorders\StatsWriter.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Network\KCCNetworkQuaternion.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\Core\GenericKCCProcessorProvider.cs" />
     <Compile Include="Assets\002 - BattleRoyaleMultiplayer\000 - Script\000 - Core\Loader.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.Depenetration.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Core\KCC.Methods.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Data\Collections\KCCInteractions.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\004 - MainMenu\ButtonSelector.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Stages\EndMove.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\Accumulators\Vector2Accumulator.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.Events.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\Debug\CallbackLogger.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Extensions\KCCVector2Extensions.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\005 - ScriptableObjects\000 - Player\MovementData.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Data\KCCSettings.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Stages\BeginMove.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Core\KCC.Depenetration.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingIssue.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerPickupWeaponController.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Core\KCCInterestProxy.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Core\KCC.Network.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Data\Collections\KCCCollisions.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Core\KCC.Interactions.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Extensions\KCCIListExtensions.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\TestingZLegacyExt.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\001 - Crates\CrateController.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Data\Collections\KCCFastStack.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingMaxTweens.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.Sampling.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.Network.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\SmoothValues\SmoothDouble.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Extensions\KCCVector2Extensions.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\Core\NetworkKCCProcessorProvider.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Stages\AfterMoveStep.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Network\KCCNetworkFloat.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\Accumulators\Vector3Accumulator.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\KCCTimer.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Network\KCCNetworkProperty.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Scripts\YuME_tilesetData.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\Core\KCCProcessor.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Data\KCCTypes.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\Recorders\CameraRecorder.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.Stages.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Stages\AfterMoveStep.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Data\KCCOverlapInfo.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Network\KCCNetworkID.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralSimpleUI.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkVector2.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Data\KCCOverlapHit.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\Core\IKCCProcessor.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\000 - StatemachineBehaviour\ReloadEnd.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Data\Collections\KCCInteractions.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Data\Collections\KCCModifiers.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\KCCResolver.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\PlatformProcessor.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Extensions\KCCVector3Extensions.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Data\KCCData.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\Recorders\StatsRecorder.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Scripts\YuME_importerSettings.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\PathBezier2d.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\PathSplinePerformance.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Scripts\YuME_editorData.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkBool.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkVector4.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\TestingUnitTests.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LTDescr.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Core\KCC.Sampling.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Core\KCC.Stages.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Stages\PrepareData.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Scripts\YuME_editorPreferences.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\009 - Messages\InboxItem.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Data\KCCShapeCastHit.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\005 - ScriptableObjects\001 - Weapons\WeaponSpawnData.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\Following.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\Debug\CallbackLogger.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\SceneController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LTSeq.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\TerrainTreeProcessor.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\007 - Settings\ControllerSetting.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\011 - WaitingAreaTimer\WaitingAreaTimerController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralEasingTypes.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\003 - CharacterCreation\CharacterCreationController.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\GameManager.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Extensions\KCCComponentExtensions.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\SmoothValues\SmoothDouble.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Network\KCCNetworkEnum.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\Core\KCCProcessor.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LeanTweenExt.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\Recorders\PlayerRecorder.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Core\KCCCollider.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Core\KCC.Debug.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\Recorders\KCCRecorder.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Extensions\KCCVector3Extensions.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\NotificationController.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\000 - Weapons\WeaponListUIController.cs" />
-    <Compile Include="Assets\001 - ExternalAssets\Colorful_World\Important, Resoucres\Scripts\Rotator.cs" />
-    <Compile Include="Assets\001 - ExternalAssets\FlexibleColorPicker\Scripts\FlexibleColorPicker.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\Accumulators\Vector3Accumulator.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\Recorders\TransformRecorder.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\EnvironmentProcessor.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralAdvancedTechniques.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\StepUpProcessor.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCCInterestProxy.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Data\Collections\KCCIgnores.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\KCCNetworkUtility.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Data\KCCDebug.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerWeaponChanger.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\PathSplines.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkQuaternion.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Data\KCCTraceInfo.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\PathBezier.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\FollowingTests.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Core\IKCCInteractionProvider.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Data\KCCShapeCastInfo.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\000 - StatemachineBehaviour\MeleeAttackEnd.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\PathSplineTrack.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\000 - Weapons\WeaponItem.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\Core\NetworkTRSPProcessorProvider.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Data\Collections\KCCFastStack.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\Testing248.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\007 - Settings\ControllerSettingDataRetriever.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Scripts\YuME_Preferences.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\Accumulators\Vector2Accumulator.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Stages\Core\KCCStageInfo.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\Core\NetworkTRSPProcessorProvider.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralCameraShake.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkFloatArray.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Core\KCC.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\GameplayController.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\001 - Network\PlayerNetworkCore.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Data\Collections\KCCIgnores.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\PlatformProcessorUpdater.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\EnvironmentProcessor.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerAim.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Stages\BeginMove.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LeanAudio.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Stages\EndMove.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\Scripts\LeanPool.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LeanTest.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\Recorders\StatsWriter.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Attributes\KCCLayerAtribute.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Extensions\KCCQuaternionExtensions.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\SmoothValues\SmoothFloat.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\CanvasUICameraSetter.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerSpawnLocationController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Scripts\YuME_prefabSamplerData.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\Core\IKCCProcessorProvider.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Core\KCC.Physics.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralUISpace.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerInventory.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Data\KCCOverlapHit.cs" />
-    <Compile Include="Assets\001 - ExternalAssets\Colorful_World\Important, Resoucres\Scripts\TextureScroll.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\Core\NetworkTRSPProcessor.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LeanTween.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\Core\KCCProcessorProvider.cs" />
     <Compile Include="Assets\002 - BattleRoyaleMultiplayer\000 - Script\000 - Core\DedicatedServerManager.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\Testing240.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\PathSpline.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Data\KCCShapeCastInfo.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Data\KCCSettings.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\Core\ScriptableKCCProcessorProvider.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Network\KCCNetworkBool.cs" />
     <Compile Include="Assets\000 - BattleRoyale\006 - InputSystem\GameplayInputs.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkFloatRange.cs" />
-    <Compile Include="Assets\001 - ExternalAssets\FlexibleColorPicker\Scripts\FCP_SpriteMeshEditor.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\Core\IKCCProcessor.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\SmoothValues\SmoothVector2.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Extensions\KCCIListExtensions.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Attributes\KCCProcessorReferenceAtribute.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Data\KCCTraceInfo.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkProperty.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Core\KCC.Methods.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Core\KCC.Properties.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\Recorders\CameraRecorder.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Network\KCCNetworkVector3.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Data\Collections\KCCHits.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Network\KCCNetworkVector4.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\007 - Matchmaking\ClientMatchmakingController.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\Core\NetworkKCCProcessor.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Scripts\YuME_GizmoGrid.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\GroundSnapProcessor.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingColorTweening.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Stages\Core\IKCCStage.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Scripts\YuME_tileGizmo.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\KCCUtility.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingRotate.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\KCCResolver.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\PlatformProcessorUpdater.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\SmoothValues\SmoothValue.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralSequencer.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkProperties.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\000 - Weapons\WeaponEquipBtnController.cs" />
-    <Compile Include="Assets\001 - ExternalAssets\FlexibleColorPicker\ExampleScene\FCP_ExampleScript.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Network\KCCNetworkFloatArray.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\PlayerMultiplayerEvents.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\KCCNetworkUtility.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkID.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\KCCPhysicsUtility.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Extensions\KCCGameObjectExtensions.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\SmoothValues\SmoothVector3.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Network\KCCNetworkProperties.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\Testing246.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkVector3.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralBasic.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Scripts\YuME_MapManager.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\KCCUtility.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Extensions\KCCTypesExtensions.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\Recorders\KCCRecorder.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\Recorders\PlayerRecorder.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\PathSpline2d.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Attributes\DisabledInPlayModeAttribute.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\002 - Login\LoginManager.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\GroundSnapProcessor.cs" />
     <Compile Include="Assets\002 - BattleRoyaleMultiplayer\000 - Script\000 - Core\DedicatedServerConfig.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Extensions\KCCFloatExtensions.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\Core\ScriptableKCCProcessorProvider.cs" />
-    <Compile Include="Assets\001 - ExternalAssets\Samples\Animation Rigging\1.2.0\Animation Rigging Constraint Samples\Info\Scripts\Readme.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\PlatformProcessor.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\KCCPhysicsUtility.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\SmoothValues\SmoothVector2.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\Core\NetworkKCCProcessorProvider.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\000 - StatemachineBehaviour\SwitchingEnd.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\007 - Settings\GameSettingButtons.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Attributes\KCCProcessorReferenceAtribute.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\Testing243.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\Core\GenericKCCProcessorProvider.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\KCCTimer.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Core\KCC.Events.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Extensions\KCCTypesExtensions.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\Accumulators\FloatAccumulator.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingSequencer.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Data\Collections\KCCCollisions.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Data\KCCData.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Data\KCCOverlapInfo.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\SmoothValues\SmoothValue.cs" />
-    <Compile Include="Assets\001 - ExternalAssets\FlexibleColorPicker\Scripts\FCP_Persistence.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\005 - ScriptableObjects\000 - Player\UserData.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\Accumulators\FloatAccumulator.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Data\Collections\KCCHits.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Data\KCCShapeCastHit.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Network\KCCNetworkFloatRange.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\Core\ScriptableKCCProcessor.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LTDescrOptional.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\SmoothValues\SmoothVector3.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Network\KCCNetworkVector2.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\010 - KillCount\KillCountCounterController.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Network\KCCNetworkFloat.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Utilities\SmoothValues\SmoothFloat.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Core\IKCCInteractionProvider.cs" />
-    <Compile Include="Assets\Photon\FusionAddons\KCC\Processors\TerrainTreeProcessor.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Data\Collections\KCCModifiers.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingIssue2.cs" />
-    <Compile Include="Assets\001 - ExternalAssets\Colorful_World\Important, Resoucres\Scripts\BobbingObject.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingOptionalCancel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMPro.cginc" />
-    <None Include="Assets\Photon\PhotonLibs\netstandard2.0\Photon3Unity3D.xml" />
+    <None Include="Assets\001 - ExternalAssets\Photon\PhotonLibs\netstandard2.0\Photon3Unity3D.xml" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Overlay.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile-2-Pass.shader" />
     <None Include="Assets\001 - ExternalAssets\LeanTween\ReadMe.txt" />
@@ -284,54 +287,53 @@
     <None Include="Assets\001 - ExternalAssets\Fantasy Skybox FREE\Readme.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Mobile.cginc" />
     <None Include="Assets\001 - ExternalAssets\LeanTween\License.txt" />
-    <None Include="Assets\Photon\FusionAddons\KCC\kcc_build_info.txt" />
+    <None Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\kcc_build_info.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
-    <None Include="Assets\Photon\Fusion\Assemblies\Fusion.Common.dll" />
-    <None Include="Assets\Photon\FusionAddons\SimpleKCC\Fusion.Addons.SimpleKCC.Editor.dll" />
-    <None Include="Assets\Photon\Fusion\Assemblies\Fusion.Runtime.xml" />
-    <None Include="Assets\Photon\Fusion\Plugins\NanoSockets\NanoSockets\Static\NanoSockets.dll" />
-    <None Include="Assets\Photon\FusionAddons\SimpleKCC\release_history.txt" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Common.dll" />
+    <None Include="Assets\001 - ExternalAssets\Photon\FusionAddons\SimpleKCC\Fusion.Addons.SimpleKCC.Editor.dll" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Runtime.xml" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Plugins\NanoSockets\NanoSockets\Static\NanoSockets.dll" />
+    <None Include="Assets\001 - ExternalAssets\Photon\FusionAddons\SimpleKCC\release_history.txt" />
     <None Include="Assets\001 - ExternalAssets\Fantasy Skybox FREE\ReleaseNotes.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
-    <None Include="Assets\Photon\Fusion\Assemblies\Fusion.Sockets.dll" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Sockets.dll" />
     <None Include="Assets\TextMesh Pro\Shaders\SDFFunctions.hlsl" />
-    <None Include="Assets\Photon\Fusion\release_history.txt" />
-    <None Include="Assets\Photon\Fusion\Plugins\NanoSockets\NanoSockets\Dynamic\NanoSockets.dll" />
-    <None Include="Assets\Photon\FusionAddons\SimpleKCC\Fusion.Addons.SimpleKCC.dll" />
-    <None Include="Assets\Photon\Fusion\Assemblies\Fusion.Log.dll" />
-    <None Include="Assets\Photon\Fusion\Assemblies\Fusion.Runtime.dll" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\release_history.txt" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Plugins\NanoSockets\NanoSockets\Dynamic\NanoSockets.dll" />
+    <None Include="Assets\001 - ExternalAssets\Photon\FusionAddons\SimpleKCC\Fusion.Addons.SimpleKCC.dll" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Log.dll" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Runtime.dll" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface.shader" />
-    <None Include="Assets\Photon\Fusion\Plugins\NanoSockets\Metro\NanoSockets.dll" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Plugins\NanoSockets\Metro\NanoSockets.dll" />
     <None Include="Assets\TextMesh Pro\Sprites\EmojiOne Attribution.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Custom-Atlas.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD.shader" />
-    <None Include="Assets\Photon\PhotonLibs\changes-library.txt" />
+    <None Include="Assets\001 - ExternalAssets\Photon\PhotonLibs\changes-library.txt" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
-    <None Include="Assets\Photon\FusionAddons\KCC\Utilities\Recorders\Readme.txt" />
+    <None Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\Recorders\Readme.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Properties.cginc" />
-    <None Include="Assets\Photon\Fusion\Plugins\NanoSockets\Metro\x64\libnanosockets.dll" />
-    <None Include="Assets\Photon\Fusion\Assemblies\Fusion.Common.xml" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Plugins\NanoSockets\Metro\x64\libnanosockets.dll" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Common.xml" />
     <None Include="Assets\TextMesh Pro\Shaders\TMPro_Surface.cginc" />
-    <None Include="Assets\Photon\Fusion\Plugins\NanoSockets\Metro\x86\libnanosockets.dll" />
-    <None Include="Assets\Photon\FusionAddons\KCC\release_history.txt" />
-    <None Include="Assets\Photon\PhotonLibs\netstandard2.0\Photon3Unity3D.dll" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Plugins\NanoSockets\Metro\x86\libnanosockets.dll" />
+    <None Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\release_history.txt" />
+    <None Include="Assets\001 - ExternalAssets\Photon\PhotonLibs\netstandard2.0\Photon3Unity3D.dll" />
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
-    <None Include="Assets\Photon\Fusion\Plugins\NanoSockets\Windows\nanosockets.dll" />
-    <None Include="Assets\Photon\Fusion\Assemblies\Fusion.Sockets.xml" />
-    <None Include="Assets\001 - ExternalAssets\FlexibleColorPicker\Materials\FCP_Gradient.shader" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Plugins\NanoSockets\Windows\nanosockets.dll" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Sockets.xml" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
-    <None Include="Assets\Photon\Fusion\build_info.txt" />
-    <None Include="Assets\Photon\Fusion\Assemblies\Fusion.Realtime.dll" />
-    <None Include="Assets\Photon\Fusion\Plugins\NanoSockets\Metro\ARM64\libnanosockets.dll" />
-    <None Include="Assets\Photon\Fusion\Plugins\NanoSockets\WebGL\NanoSockets.dll" />
-    <None Include="Assets\Photon\Fusion\Assemblies\Fusion.Realtime.xml" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\build_info.txt" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Realtime.dll" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Plugins\NanoSockets\Metro\ARM64\libnanosockets.dll" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Plugins\NanoSockets\WebGL\NanoSockets.dll" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Realtime.xml" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF Overlay.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
-    <None Include="Assets\Photon\FusionAddons\SimpleKCC\simple_kcc_build_info.txt" />
+    <None Include="Assets\001 - ExternalAssets\Photon\FusionAddons\SimpleKCC\simple_kcc_build_info.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile.shader" />
-    <None Include="Assets\Photon\Fusion\Plugins\NanoSockets\Metro\ARM\libnanosockets.dll" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Plugins\NanoSockets\Metro\ARM\libnanosockets.dll" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Sprite.shader" />
   </ItemGroup>
   <ItemGroup>
@@ -788,31 +790,31 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Fusion.Common">
-      <HintPath>Assets\Photon\Fusion\Assemblies\Fusion.Common.dll</HintPath>
+      <HintPath>Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Common.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Fusion.Addons.SimpleKCC.Editor">
-      <HintPath>Assets\Photon\FusionAddons\SimpleKCC\Fusion.Addons.SimpleKCC.Editor.dll</HintPath>
+      <HintPath>Assets\001 - ExternalAssets\Photon\FusionAddons\SimpleKCC\Fusion.Addons.SimpleKCC.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="NanoSockets">
-      <HintPath>Assets\Photon\Fusion\Plugins\NanoSockets\NanoSockets\Dynamic\NanoSockets.dll</HintPath>
+      <HintPath>Assets\001 - ExternalAssets\Photon\Fusion\Plugins\NanoSockets\NanoSockets\Dynamic\NanoSockets.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Fusion.Sockets">
-      <HintPath>Assets\Photon\Fusion\Assemblies\Fusion.Sockets.dll</HintPath>
+      <HintPath>Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Sockets.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Fusion.Addons.SimpleKCC">
-      <HintPath>Assets\Photon\FusionAddons\SimpleKCC\Fusion.Addons.SimpleKCC.dll</HintPath>
+      <HintPath>Assets\001 - ExternalAssets\Photon\FusionAddons\SimpleKCC\Fusion.Addons.SimpleKCC.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Fusion.Log">
-      <HintPath>Assets\Photon\Fusion\Assemblies\Fusion.Log.dll</HintPath>
+      <HintPath>Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Log.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Fusion.Runtime">
-      <HintPath>Assets\Photon\Fusion\Assemblies\Fusion.Runtime.dll</HintPath>
+      <HintPath>Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.Antlr3.Runtime">
@@ -820,7 +822,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Photon3Unity3D">
-      <HintPath>Assets\Photon\PhotonLibs\netstandard2.0\Photon3Unity3D.dll</HintPath>
+      <HintPath>Assets\001 - ExternalAssets\Photon\PhotonLibs\netstandard2.0\Photon3Unity3D.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json">
@@ -832,7 +834,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Fusion.Realtime">
-      <HintPath>Assets\Photon\Fusion\Assemblies\Fusion.Realtime.dll</HintPath>
+      <HintPath>Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Realtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEditor.iOS.Extensions.Xcode">
@@ -1609,6 +1611,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="GPUInstancer.Editor.csproj">
+      <Project>{92D432CF-7A11-C58B-CAAB-6F07E6CEC897}</Project>
+      <Name>GPUInstancer.Editor</Name>
+    </ProjectReference>
     <ProjectReference Include="Fusion.Unity.csproj">
       <Project>{53DC816B-CC41-35F4-39F1-DCCAF5A7D306}</Project>
       <Name>Fusion.Unity</Name>
@@ -1617,21 +1623,17 @@
       <Project>{1CBED70B-07CF-FF1F-EAB9-39B68024B59C}</Project>
       <Name>GPUInstancer</Name>
     </ProjectReference>
-    <ProjectReference Include="Fusion.Addons.Physics.Editor.csproj">
-      <Project>{4826551E-4477-53B1-089B-B5EDC640A3E9}</Project>
-      <Name>Fusion.Addons.Physics.Editor</Name>
+    <ProjectReference Include="Fusion.Unity.Editor.csproj">
+      <Project>{39DD10B8-5E09-AA4F-A9BF-DB8C3491909F}</Project>
+      <Name>Fusion.Unity.Editor</Name>
     </ProjectReference>
     <ProjectReference Include="Fusion.Addons.Physics.csproj">
       <Project>{169A227D-2383-7537-765C-BD1D5FDEB1BA}</Project>
       <Name>Fusion.Addons.Physics</Name>
     </ProjectReference>
-    <ProjectReference Include="GPUInstancer.Editor.csproj">
-      <Project>{92D432CF-7A11-C58B-CAAB-6F07E6CEC897}</Project>
-      <Name>GPUInstancer.Editor</Name>
-    </ProjectReference>
-    <ProjectReference Include="Fusion.Unity.Editor.csproj">
-      <Project>{39DD10B8-5E09-AA4F-A9BF-DB8C3491909F}</Project>
-      <Name>Fusion.Unity.Editor</Name>
+    <ProjectReference Include="Fusion.Addons.Physics.Editor.csproj">
+      <Project>{4826551E-4477-53B1-089B-B5EDC640A3E9}</Project>
+      <Name>Fusion.Addons.Physics.Editor</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

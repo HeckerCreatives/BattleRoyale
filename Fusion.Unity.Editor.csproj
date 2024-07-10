@@ -56,22 +56,34 @@
   </PropertyGroup>
   <ItemGroup>
     <Analyzer Include="C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\FusionAddons\SimpleKCC\Fusion.Addons.SimpleKCC.Editor.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\Fusion\Plugins\NanoSockets\Metro\NanoSockets.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Runtime.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\Fusion\Plugins\NanoSockets\NanoSockets\Static\NanoSockets.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Realtime.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Sockets.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Common.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\Fusion\Plugins\NanoSockets\NanoSockets\Dynamic\NanoSockets.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\Fusion\Plugins\NanoSockets\WebGL\NanoSockets.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\FusionAddons\SimpleKCC\Fusion.Addons.SimpleKCC.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Log.dll" />
+    <Analyzer Include="C:\Users\ganielleDOTexe\Desktop\CBS Game Dev\BattleRoyale\Assets\001 - ExternalAssets\Photon\PhotonLibs\netstandard2.0\Photon3Unity3D.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\2023.2.8f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.SourceGenerators.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\2023.2.8f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\2023.2.8f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Photon\Fusion\Editor\FusionEditorSkin.cs" />
-    <Compile Include="Assets\Photon\Fusion\Editor\FusionRunnerVisibilityControlsWindow.cs" />
-    <Compile Include="Assets\Photon\Fusion\Editor\FusionHubWindow.cs" />
-    <Compile Include="Assets\Photon\Fusion\Editor\NetworkProjectConfigImporterEditor.cs" />
-    <Compile Include="Assets\Photon\Fusion\Editor\Fusion.Unity.Editor.cs" />
-    <Compile Include="Assets\Photon\Fusion\Editor\NetworkProjectConfigImporter.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\Fusion\Editor\FusionEditorSkin.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\Fusion\Editor\NetworkProjectConfigImporterEditor.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\Fusion\Editor\Fusion.Unity.Editor.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\Fusion\Editor\FusionHubWindow.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\Fusion\Editor\NetworkProjectConfigImporter.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\Photon\Fusion\Editor\FusionRunnerVisibilityControlsWindow.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Photon\Fusion\Editor\EditorResources\Fusion.Unity.xml" />
-    <None Include="Assets\Photon\Fusion\Editor\EditorResources\Fonts\OFL.txt" />
-    <None Include="Assets\Photon\Fusion\Editor\Fusion.Unity.Editor.asmdef" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Editor\EditorResources\Fusion.Unity.xml" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Editor\EditorResources\Fonts\OFL.txt" />
+    <None Include="Assets\001 - ExternalAssets\Photon\Fusion\Editor\Fusion.Unity.Editor.asmdef" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
@@ -563,19 +575,19 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Fusion.Common">
-      <HintPath>Assets\Photon\Fusion\Assemblies\Fusion.Common.dll</HintPath>
+      <HintPath>Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Common.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Fusion.Runtime">
-      <HintPath>Assets\Photon\Fusion\Assemblies\Fusion.Runtime.dll</HintPath>
+      <HintPath>Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Runtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Fusion.Realtime">
-      <HintPath>Assets\Photon\Fusion\Assemblies\Fusion.Realtime.dll</HintPath>
+      <HintPath>Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Realtime.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Fusion.Log">
-      <HintPath>Assets\Photon\Fusion\Assemblies\Fusion.Log.dll</HintPath>
+      <HintPath>Assets\001 - ExternalAssets\Photon\Fusion\Assemblies\Fusion.Log.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEditor.iOS.Extensions.Xcode">
