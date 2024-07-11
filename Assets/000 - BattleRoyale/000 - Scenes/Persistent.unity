@@ -842,9 +842,7 @@ MonoBehaviour:
   loadingPercentageTMP: {fileID: 1540048191}
   loadingBGImg: {fileID: 1709111236}
   loadingBGSprite:
-  - {fileID: 21300000, guid: d6602ea07c80a0e468f18c516ff42683, type: 3}
-  - {fileID: 21300000, guid: e74c174bfa904584c9ec694c769a5c9d, type: 3}
-  - {fileID: 21300000, guid: 5be0041ee2833ad45b2d29bb6acbc965, type: 3}
+  - {fileID: 21300000, guid: 2cffedcdeb7a22c4a9160aca1690d985, type: 3}
   speed: 0.25
   loadingBarSpeed: 0.15
   easeType: 16
@@ -855,6 +853,7 @@ MonoBehaviour:
   previousScene: 
   actionPass: 0
   totalSceneProgress: 0
+  spawnArenaLoading: 0
 --- !u!114 &425614884
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1625,11 +1624,11 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.1
-  far clip plane: 5000
-  field of view: 30
+  near clip plane: 0.3
+  far clip plane: 1000
+  field of view: 60
   orthographic: 0
-  orthographic size: 10
+  orthographic size: 5
   m_Depth: 1
   m_CullingMask:
     serializedVersion: 2
@@ -1653,8 +1652,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1151185118}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -1, z: 0, w: 0}
-  m_LocalPosition: {x: 3.8209019, y: 3.0580003, z: 84.53525}
+  m_LocalRotation: {x: -0.024333723, y: 0.8688383, z: 0.042916585, w: 0.4926318}
+  m_LocalPosition: {x: 257.22, y: 25.85, z: 185.24}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1685,7 +1684,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0

@@ -53,7 +53,7 @@ MonoBehaviour:
   spawnLocationController: {fileID: -5006153413612280128}
   <PlayerCharacterObj>k__BackingField:
     RawGuidValue: 2361a168157a7b346ae13c5eb86574f1
-  <SpawnPosition>k__BackingField: {x: -16887.2, y: 0, z: 100.2}
+  <SpawnPosition>k__BackingField: {x: 47.39746, y: 32.99762, z: 37594.38}
   playerVCam: {fileID: 0}
   aimPlayerVCam: {fileID: 0}
   pickupItemButton: {fileID: 0}
@@ -63,7 +63,7 @@ MonoBehaviour:
   secondaryBtn: {fileID: 0}
   _PlayerCharacterSpawnedObj: {fileID: 0}
   _ServerManager: {fileID: 0}
-  _SpawnPositionBattlefield: {x: 0, y: 0, z: 0}
+  _DoneBattlePosition: 0
 --- !u!114 &3626306552113172421
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -110,9 +110,9 @@ MonoBehaviour:
   networkCore: {fileID: 3651206356916146639}
   isInitialized: 0
   doneWaitingArea: 0
+  localDoneWaitingArea: 0
   tempTime: 0
   inventory: {fileID: 0}
-  playerKCC: {fileID: 0}
   <ServerManager>k__BackingField: {fileID: 0}
 --- !u!114 &2517031885327026080
 MonoBehaviour:
