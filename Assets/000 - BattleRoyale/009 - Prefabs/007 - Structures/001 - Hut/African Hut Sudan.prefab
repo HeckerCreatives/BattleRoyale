@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4663670355385085651}
   - component: {fileID: 6592603649433315551}
   - component: {fileID: 624898050514266951}
+  - component: {fileID: 5315455918312998579}
   m_Layer: 0
   m_Name: African Hut Sudan
   m_TagString: Untagged
@@ -26,13 +27,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6531455175021197543}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.64819205, y: 0.28257206, z: 0.282572, w: 0.6481922}
+  m_LocalRotation: {x: -0.6481934, y: 0.2825692, z: 0.2825692, w: 0.6481934}
   m_LocalPosition: {x: 54.570297, y: 0.0059638657, z: 126.97617}
   m_LocalScale: {x: 609.8633, y: 609.8633, z: 609.86316}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 47.108}
 --- !u!33 &6592603649433315551
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -85,3 +86,25 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &5315455918312998579
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6531455175021197543}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 9195854729270721870, guid: 936c65ea138dc3a48b55e841367d8d54, type: 3}

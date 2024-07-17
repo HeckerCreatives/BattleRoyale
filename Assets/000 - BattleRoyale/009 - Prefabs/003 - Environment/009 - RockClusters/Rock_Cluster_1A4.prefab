@@ -97,6 +97,7 @@ GameObject:
   - component: {fileID: 33239476295636148}
   - component: {fileID: 23702754879725926}
   - component: {fileID: 205494991587517096}
+  - component: {fileID: 198664174112186301}
   m_Layer: 0
   m_Name: Rock_Cluster_1A4
   m_TagString: Untagged
@@ -112,7 +113,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1921486873979678}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -23.71544, y: 0.21635053, z: -17.327236}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -195,3 +196,25 @@ LODGroup:
     renderers:
     - renderer: {fileID: 23588691529601838}
   m_Enabled: 1
+--- !u!64 &198664174112186301
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1921486873979678}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4300026, guid: f32bfa225f13a0941adde5571059037a, type: 3}
