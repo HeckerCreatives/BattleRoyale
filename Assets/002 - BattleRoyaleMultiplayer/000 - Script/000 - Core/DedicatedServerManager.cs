@@ -453,7 +453,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             if (WaitingAreaTimer <= 0f)
             {
-                WaitingAreaTimer = 20f;
+                WaitingAreaTimer = 120f;
                 CanCountWaitingAreaTimer = true;
             }
 
