@@ -29,7 +29,7 @@ public enum GameState
 
 public struct PlayerBattleSpawnPosition : INetworkStruct
 {
-    [Networked, Capacity(10)] public NetworkArray<Vector3> NetworkSpawnLocation => default;
+    [Networked, Capacity(36)] public NetworkArray<Vector3> NetworkSpawnLocation => default;
 
     public static PlayerBattleSpawnPosition Defaults
     {
