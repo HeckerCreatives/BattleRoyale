@@ -51,6 +51,46 @@ public class AudioManager : MonoBehaviour
         get => bgSource.isPlaying;
     }
 
+    private event EventHandler MusicVolumeChange;
+    public event EventHandler OnMusicVolumeChange
+    {
+        add
+        {
+            if (MusicVolumeChange == null || !MusicVolumeChange.GetInvocationList().Contains(value))
+                MusicVolumeChange += value;
+        }
+        remove { MusicVolumeChange -= value; }
+    }
+    public float CurrentMusicVolume
+    {
+        get => musicVolume;
+        set
+        {
+            musicVolume = value;
+            MusicVolumeChange?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private event EventHandler AmbientVolumeChange;
+    public event EventHandler OnAmbientVolumeChange
+    {
+        add
+        {
+            if (AmbientVolumeChange == null || !AmbientVolumeChange.GetInvocationList().Contains(value))
+                AmbientVolumeChange += value;
+        }
+        remove { AmbientVolumeChange -= value; }
+    }
+    public float CurrentAmbientVolume
+    {
+        get => ambientVolume;
+        set
+        {
+            ambientVolume = value;
+            AmbientVolumeChange?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
     public AudioSource SfxLoopSource
     {
         get => sfxLoopSource;
@@ -58,11 +98,14 @@ public class AudioManager : MonoBehaviour
 
     [SerializeField] private AudioSource bgSource;
     [SerializeField] private AudioSource sfxSource;
+    [SerializeField] private AudioSource ambientSource;
     [SerializeField] private AudioSource sfxLoopSource;
 
     [Header("DEBUGGER")]
     [ReadOnly][SerializeField] private float currentVolume;
+    [ReadOnly][SerializeField] private float musicVolume;
     [ReadOnly][SerializeField] private float sfxVolume;
+    [ReadOnly][SerializeField] private float ambientVolume;
 
     private void Awake()
     {
@@ -100,6 +143,14 @@ public class AudioManager : MonoBehaviour
         else
             CurrentVolume = PlayerPrefs.GetFloat("BGVolume");
 
+        if (!PlayerPrefs.HasKey("MusicVolume"))
+        {
+            CurrentMusicVolume = 1;
+            PlayerPrefs.SetFloat("MusicVolume", 1);
+        }
+        else
+            CurrentMusicVolume = PlayerPrefs.GetFloat("MusicVolume");
+
 
         if (!PlayerPrefs.HasKey("SFXVolume"))
         {
@@ -108,6 +159,14 @@ public class AudioManager : MonoBehaviour
         }
         else
             CurrentSFXVolume = PlayerPrefs.GetFloat("SFXVolume");
+
+        if (!PlayerPrefs.HasKey("AmbientVolume"))
+        {
+            CurrentAmbientVolume = 1;
+            PlayerPrefs.SetFloat("AmbientVolume", 1);
+        }
+        else
+            CurrentAmbientVolume = PlayerPrefs.GetFloat("AmbientVolume");
     }
 
     public void SaveBGVolume()
@@ -118,6 +177,16 @@ public class AudioManager : MonoBehaviour
     public void SaveSFXVolume()
     {
         PlayerPrefs.SetFloat("SFXVolume", CurrentSFXVolume);
+    }
+
+    public void SaveAmbientVolume()
+    {
+        PlayerPrefs.SetFloat("AmbientVolume", CurrentAmbientVolume);
+    }
+
+    public void SaveMusicVolume()
+    {
+        PlayerPrefs.SetFloat("MusicVolume", CurrentMusicVolume);
     }
 
     public void SetBGMusic(AudioClip clip)

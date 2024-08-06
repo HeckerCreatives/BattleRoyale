@@ -29,7 +29,7 @@ public enum GameState
 
 public struct PlayerBattleSpawnPosition : INetworkStruct
 {
-    [Networked, Capacity(36)] public NetworkArray<Vector3> NetworkSpawnLocation => default;
+    [Networked, Capacity(43)] public NetworkArray<Vector3> NetworkSpawnLocation => default;
 
     public static PlayerBattleSpawnPosition Defaults
     {
@@ -453,7 +453,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             if (WaitingAreaTimer <= 0f)
             {
-                WaitingAreaTimer = 120f;
+                WaitingAreaTimer = 20;
                 CanCountWaitingAreaTimer = true;
             }
 
