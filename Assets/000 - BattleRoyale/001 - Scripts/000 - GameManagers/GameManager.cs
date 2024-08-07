@@ -37,6 +37,7 @@ public class GameManager : MonoBehaviour
     [field: Header("SCRIPTS")]
     [field: SerializeField] public SceneController SceneController { get; private set; }
     [field: SerializeField] public AudioManager AudioController { get; private set; }
+    [field: SerializeField] public GraphicsController GraphicsManager { get; private set; }
     [field: SerializeField] public NotificationController NotificationController { get; private set; }
     [field: SerializeField] public GameObject NoBGLoading { get; private set; }
 

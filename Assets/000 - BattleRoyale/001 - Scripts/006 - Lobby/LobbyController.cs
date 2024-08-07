@@ -8,7 +8,9 @@ public class LobbyController : MonoBehaviour
 {
     [SerializeField] private UserData userData;
     [SerializeField] private CharacterCreationController characterCreationController;
+    [SerializeField] private GameSettingController gameSettingController;
     [SerializeField] private ControllerSetting controllerSetting;
+    [SerializeField] private AudioClip bgMusicClip;
 
     private void Awake()
     {
@@ -34,7 +36,9 @@ public class LobbyController : MonoBehaviour
             GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 2", null);
             GameManager.Instance.SceneController.CurrentScene = "Login";
         }));
-
+        GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetVolumeSlidersOnStart());
+        GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetGraphicsOnStart());
+        GameManager.Instance.AudioController.SetBGMusic(bgMusicClip);
         GameManager.Instance.SceneController.ActionPass = true;
     }
 

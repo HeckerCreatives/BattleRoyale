@@ -214,11 +214,11 @@ public class SceneController : MonoBehaviour
 
             totalSceneProgress = (float)index / (1 + GetActionLoadingList.Count);
 
-            LeanTween.value(loadingPercentageTMP.gameObject, 0f, totalSceneProgress, loadingBarSpeed).setOnUpdate((float val) =>
+            LeanTween.value(loadingPercentageTMP.gameObject, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setOnUpdate((float val) =>
             {
-                loadingPercentageTMP.text = $"{val}%";
+                loadingPercentageTMP.text = $"{val * 100:n0}%";
             }).setEase(easeType);
-            LeanTween.value(loadingSlider.gameObject, a => loadingSlider.value = a, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
+            LeanTween.value(loadingSlider.gameObject, a => { loadingSlider.value = a; loadingPercentageTMP.text = $"{a * 100:n0}%"; }, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
 
             yield return new WaitWhile(() => loadingSlider.value != totalSceneProgress);
 
@@ -227,7 +227,7 @@ public class SceneController : MonoBehaviour
 
         totalSceneProgress = scenesLoading.progress;
 
-        LeanTween.value(loadingSlider.gameObject, a => loadingSlider.value = a, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
+        LeanTween.value(loadingSlider.gameObject, a => { loadingSlider.value = a; loadingPercentageTMP.text = $"{a * 100:n0}%"; }, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
 
         yield return new WaitForSecondsRealtime(loadingBarSpeed);
 
@@ -288,11 +288,7 @@ public class SceneController : MonoBehaviour
 
             totalSceneProgress = (float)index / (1 + GetActionLoadingList.Count);
 
-            LeanTween.value(loadingPercentageTMP.gameObject, 0f, totalSceneProgress, loadingBarSpeed).setOnUpdate((float val) =>
-            {
-                loadingPercentageTMP.text = $"{val}%";
-            }).setEase(easeType);
-            LeanTween.value(loadingSlider.gameObject, a => loadingSlider.value = a, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
+            LeanTween.value(loadingSlider.gameObject, a => { loadingSlider.value = a; loadingPercentageTMP.text = $"{a * 100:n0}%"; }, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
 
             yield return new WaitWhile(() => loadingSlider.value != totalSceneProgress);
 
@@ -301,7 +297,7 @@ public class SceneController : MonoBehaviour
 
         totalSceneProgress = scenesLoading.progress;
 
-        LeanTween.value(loadingSlider.gameObject, a => loadingSlider.value = a, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
+        LeanTween.value(loadingSlider.gameObject, a => { loadingSlider.value = a; loadingPercentageTMP.text = $"{a * 100:n0}%"; }, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
 
         yield return new WaitForSecondsRealtime(loadingBarSpeed);
 
@@ -384,11 +380,10 @@ public class SceneController : MonoBehaviour
 
                 if (!firstLoading)
                 {
-                    LeanTween.value(loadingPercentageTMP.gameObject, 0f, loadingSlider.value, loadingBarSpeed).setOnUpdate((float val) =>
-                    {
-                        loadingPercentageTMP.text = $"{val * 100f}%";
-                    }).setEase(easeType);
-                    LeanTween.value(loadingSlider.gameObject, a => loadingSlider.value = a, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
+                    LeanTween.value(loadingSlider.gameObject, a => {
+                        loadingSlider.value = a;
+                        loadingPercentageTMP.text = $"{a * 100:n0}%";
+                    }, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
 
                     yield return new WaitWhile(() => loadingSlider.value != totalSceneProgress);
                 }
@@ -399,13 +394,16 @@ public class SceneController : MonoBehaviour
             totalSceneProgress = scenesLoading.progress;
 
             if (!firstLoading)
-                LeanTween.value(loadingSlider.gameObject, a => loadingSlider.value = a, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
+                LeanTween.value(loadingSlider.gameObject, a => {
+                    loadingSlider.value = a;
+                    loadingPercentageTMP.text = $"{a * 100:n0}%";
+                }, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
         }
         else
         {
             totalSceneProgress = 1f;
 
-            LeanTween.value(loadingSlider.gameObject, a => loadingSlider.value = a, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
+            LeanTween.value(loadingSlider.gameObject, a => { loadingSlider.value = a; loadingPercentageTMP.text = $"{a * 100:n0}%"; }, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
 
             yield return new WaitWhile(() => loadingSlider.value != totalSceneProgress);
         }

@@ -7,6 +7,8 @@ using UnityEngine.Networking;
 using Newtonsoft.Json;
 using System;
 using CandyCoded.env;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 public class LoginManager : MonoBehaviour
 {
@@ -14,9 +16,26 @@ public class LoginManager : MonoBehaviour
     [SerializeField] private TMP_InputField username;
     [SerializeField] private TMP_InputField password;
     [SerializeField] private Toggle rememberMe;
+    [SerializeField] private AudioClip bgMusic;
+
+    [Header("BRIGHTNESS")]
+    [SerializeField] private float maxBrightness;
+    [SerializeField] private Volume postProcessing;
+
+    //  ============================
+
+    ColorAdjustments colorAdjustments;
+
+    //  ============================
 
     private void Awake()
     {
+        if (postProcessing.profile.TryGet<ColorAdjustments>(out colorAdjustments))
+        {
+            colorAdjustments.postExposure.value = maxBrightness * GameManager.Instance.GraphicsManager.CurrentBrightness;
+        }
+
+        GameManager.Instance.AudioController.SetBGMusic(bgMusic);
         GameManager.Instance.SceneController.AddActionLoadinList(CheckRememberMe());
         GameManager.Instance.SceneController.AddActionLoadinList(userData.CheckControlSettingSave());
         GameManager.Instance.SceneController.ActionPass = true;

@@ -106,30 +106,56 @@ public class AudioManager : MonoBehaviour
     [ReadOnly][SerializeField] private float musicVolume;
     [ReadOnly][SerializeField] private float sfxVolume;
     [ReadOnly][SerializeField] private float ambientVolume;
+    [ReadOnly][SerializeField] private float initialBGVolume;
+    [ReadOnly][SerializeField] private float initialSFXVolume;
+    [ReadOnly][SerializeField] private float initialAmbientVolume;
 
     private void Awake()
     {
         CheckVolumeSaveData();
         OnVolumeChange += VolumeCheck;
+        OnMusicVolumeChange += MusicVolumeCheck;
         OnSFXChange += SFXCheck;
+        OnAmbientVolumeChange += AmbientCheck;
     }
 
     private void OnDisable()
     {
         OnVolumeChange -= VolumeCheck;
+        OnMusicVolumeChange -= MusicVolumeCheck;
         OnSFXChange -= SFXCheck;
+        OnAmbientVolumeChange -= AmbientCheck;
+    }
+
+    private void AmbientCheck(object sender, EventArgs e)
+    {
+        initialAmbientVolume = CurrentAmbientVolume;
+        ambientSource.volume = initialAmbientVolume * CurrentVolume;
+        SaveAmbientVolume();
+    }
+
+    private void MusicVolumeCheck(object sender, EventArgs e)
+    {
+        initialBGVolume = CurrentMusicVolume;
+        bgSource.volume = initialBGVolume * CurrentVolume;
+        SaveMusicVolume();
     }
 
     private void SFXCheck(object sender, EventArgs e)
     {
-        sfxSource.volume = CurrentSFXVolume;
-        sfxLoopSource.volume = CurrentSFXVolume;
+        initialSFXVolume = CurrentSFXVolume;
+        sfxSource.volume = initialSFXVolume * CurrentVolume;
+        sfxLoopSource.volume = initialSFXVolume * CurrentVolume;
         SaveSFXVolume();
     }
 
     private void VolumeCheck(object sender, EventArgs e)
     {
-        bgSource.volume = CurrentVolume;
+        bgSource.volume = initialBGVolume * CurrentVolume;
+        sfxSource.volume = initialSFXVolume * CurrentVolume;
+        sfxLoopSource.volume = initialSFXVolume * CurrentVolume;
+        ambientSource.volume = initialAmbientVolume * CurrentVolume;
+
         SaveBGVolume();
     }
 
@@ -146,27 +172,44 @@ public class AudioManager : MonoBehaviour
         if (!PlayerPrefs.HasKey("MusicVolume"))
         {
             CurrentMusicVolume = 1;
+            initialBGVolume = 1;
             PlayerPrefs.SetFloat("MusicVolume", 1);
         }
         else
+        {
             CurrentMusicVolume = PlayerPrefs.GetFloat("MusicVolume");
+            initialBGVolume = CurrentMusicVolume;
+        }
 
 
         if (!PlayerPrefs.HasKey("SFXVolume"))
         {
             CurrentSFXVolume = 1;
+            initialSFXVolume = 1;
             PlayerPrefs.SetFloat("SFXVolume", 1);
         }
         else
+        {
             CurrentSFXVolume = PlayerPrefs.GetFloat("SFXVolume");
+            initialSFXVolume = CurrentSFXVolume;
+        }
 
         if (!PlayerPrefs.HasKey("AmbientVolume"))
         {
             CurrentAmbientVolume = 1;
+            initialAmbientVolume = 1;
             PlayerPrefs.SetFloat("AmbientVolume", 1);
         }
         else
+        {
             CurrentAmbientVolume = PlayerPrefs.GetFloat("AmbientVolume");
+            initialAmbientVolume = CurrentAmbientVolume;
+        }
+
+        bgSource.volume = initialBGVolume * CurrentVolume;
+        sfxSource.volume = initialSFXVolume * CurrentVolume;
+        sfxLoopSource.volume = initialSFXVolume * CurrentVolume;
+        ambientSource.volume = initialAmbientVolume * CurrentVolume;
     }
 
     public void SaveBGVolume()
@@ -191,7 +234,7 @@ public class AudioManager : MonoBehaviour
 
     public void SetBGMusic(AudioClip clip)
     {
-        LeanTween.value(gameObject, CurrentVolume, 0f, 0.25f).setEase(LeanTweenType.easeOutCubic).setOnUpdate((float val) =>
+        LeanTween.value(gameObject, bgSource.volume, 0f, 0.25f).setEase(LeanTweenType.easeOutCubic).setOnUpdate((float val) =>
         {
             bgSource.volume = val;
         }).setOnComplete(() =>
@@ -199,22 +242,22 @@ public class AudioManager : MonoBehaviour
             bgSource.Stop();
             bgSource.clip = clip;
             bgSource.Play();
-            LeanTween.value(gameObject, 0f, CurrentVolume, 0.25f).setEase(LeanTweenType.easeOutCubic).setOnUpdate((float val) =>
+            LeanTween.value(gameObject, 0f, initialBGVolume * CurrentVolume, 0.25f).setEase(LeanTweenType.easeOutCubic).setOnUpdate((float val) =>
             {
                 bgSource.volume = val;
             }).setOnComplete(() =>
             {
-                bgSource.volume = CurrentVolume;
+                bgSource.volume = initialBGVolume * CurrentVolume;
             });
         });
     }
 
-    public void PauseBGMusic() => LeanTween.value(gameObject, CurrentVolume, 0f, 0.25f).setEase(LeanTweenType.easeOutCubic).setOnUpdate((float val) =>
+    public void PauseBGMusic() => LeanTween.value(gameObject, bgSource.volume, 0f, 0.25f).setEase(LeanTweenType.easeOutCubic).setOnUpdate((float val) =>
     {
         bgSource.volume = val;
     });
 
-    public void ResumeBGMusic() => LeanTween.value(gameObject, 0f, CurrentVolume, 0.25f).setEase(LeanTweenType.easeOutCubic).setOnUpdate((float val) =>
+    public void ResumeBGMusic() => LeanTween.value(gameObject, 0f, initialBGVolume * CurrentVolume, 0.25f).setEase(LeanTweenType.easeOutCubic).setOnUpdate((float val) =>
     {
         bgSource.volume = val;
     });
