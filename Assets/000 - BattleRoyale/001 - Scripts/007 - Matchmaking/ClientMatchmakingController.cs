@@ -46,9 +46,13 @@ public class ClientMatchmakingController : MonoBehaviour
 
     public void ConnectToServer()
     {
-        currentRunnerInstance = Instantiate(instanceRunner);
+        if (findingMatch) return;
 
         findingMatch = true;
+
+        cancelBtn.interactable = true;
+
+        currentRunnerInstance = Instantiate(instanceRunner);
 
         JoinDropballSession();
     }
@@ -57,8 +61,6 @@ public class ClientMatchmakingController : MonoBehaviour
     {
         if (findingMatch)
         {
-            currentTime = 0f;
-
             //  JOIN SESSION HERE
             var result = await JoinLobby("AsiaBR");
 
@@ -90,6 +92,9 @@ public class ClientMatchmakingController : MonoBehaviour
 
     public async void Reconnect()
     {
+        if (!findingMatch)
+            return;
+
         if (currentRunnerInstance != null)
         {
             await currentRunnerInstance.Shutdown(true);
@@ -99,6 +104,9 @@ public class ClientMatchmakingController : MonoBehaviour
             currentRunnerInstance = null;
 
             await Task.Delay(4000);
+
+            if (!findingMatch)
+                return;
 
             ConnectToServer();
         }
@@ -114,37 +122,47 @@ public class ClientMatchmakingController : MonoBehaviour
        GameMode gameMode
      )
     {
-        SceneRef sceneRef = default;
-
-        var scenePath = SceneManager.GetActiveScene().path;
-
-        Debug.Log($"scene path: {scenePath}");
-
-        scenePath = scenePath.Substring("Assets/".Length, scenePath.Length - "Assets/".Length - ".unity".Length);
-        int sceneIndex = SceneUtility.GetBuildIndexByScenePath(scenePath);
-
-        if (sceneIndex >= 0)
+        if (currentRunnerInstance != null)
         {
-            sceneRef = SceneRef.FromIndex(sceneIndex);
+            SceneRef sceneRef = default;
+
+            var scenePath = SceneManager.GetActiveScene().path;
+
+            Debug.Log($"scene path: {scenePath}");
+
+            scenePath = scenePath.Substring("Assets/".Length, scenePath.Length - "Assets/".Length - ".unity".Length);
+            int sceneIndex = SceneUtility.GetBuildIndexByScenePath(scenePath);
+
+            if (sceneIndex >= 0)
+            {
+                sceneRef = SceneRef.FromIndex(sceneIndex);
+            }
+
+            NetworkSceneInfo networkSceneInfo = new NetworkSceneInfo();
+
+            if (sceneRef != null)
+            {
+                if (sceneRef.IsValid == true)
+                {
+                    networkSceneInfo.AddSceneRef(sceneRef, LoadSceneMode.Single, LocalPhysicsMode.None, true);
+                }
+
+                return runner.StartGame(new StartGameArgs()
+                {
+                    GameMode = gameMode,
+                    SceneManager = runner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
+                    Scene = sceneRef,
+                });
+            }
         }
 
-        NetworkSceneInfo networkSceneInfo = new NetworkSceneInfo();
-
-        if (sceneRef.IsValid == true)
-        {
-            networkSceneInfo.AddSceneRef(sceneRef, LoadSceneMode.Single, LocalPhysicsMode.None, true);
-        }
-
-        return runner.StartGame(new StartGameArgs()
-        {
-            GameMode = gameMode,
-            SceneManager = runner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
-            Scene = sceneRef,
-        });
+        return null;
     }
 
     public void CancelMatch()
     {
+        currentTime = 0f;
+
         findingMatch = false;
         matchFound = false;
 
@@ -157,6 +175,12 @@ public class ClientMatchmakingController : MonoBehaviour
 
     private async void ShutdownServer()
     {
+        if (currentRunnerInstance == null)
+        {
+            matchmakingObj.SetActive(false);
+            return;
+        }
+
         await currentRunnerInstance.Shutdown(true);
 
         Destroy(currentRunnerInstance.gameObject);

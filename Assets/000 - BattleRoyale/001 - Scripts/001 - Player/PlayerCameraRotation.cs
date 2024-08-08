@@ -39,10 +39,14 @@ public class PlayerCameraRotation : NetworkBehaviour
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float _threshold { get; private set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float _cinemachineTargetYaw { get; private set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float _cinemachineTargetPitch { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public float CurrentSensitivity { get; private set; }
 
     private void Start()
     {
         _threshold = 0.01f;
+
+        if (HasInputAuthority)
+            Rpc_HandleSensitivity(GameManager.Instance.GameSettingManager.CurrentLookSensitivity);
     }
 
     public override void FixedUpdateNetwork()
@@ -55,14 +59,26 @@ public class PlayerCameraRotation : NetworkBehaviour
         CameraHeight();
     }
 
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void Rpc_HandleSensitivity(float lookSensitivity)
+    {
+        CurrentSensitivity = Sensitivity * lookSensitivity;
+    }
+
+    //[Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    //private void Rpc_SetSensitivityToAll(float lookSensitivity)
+    //{
+    //    CurrentSensitivity = Sensitivity * lookSensitivity;
+    //}
+
     private void HandleMobileCameraInput()
     {
         if (GetInput<MyInput>(out var input) == false) return;
 
         if (input.LookDirection.sqrMagnitude >= _threshold)
         {
-            _cinemachineTargetYaw += input.LookDirection.x * Runner.DeltaTime * Sensitivity;
-            _cinemachineTargetPitch += -input.LookDirection.y * Runner.DeltaTime * Sensitivity;
+            _cinemachineTargetYaw += input.LookDirection.x * Runner.DeltaTime * CurrentSensitivity;
+            _cinemachineTargetPitch += -input.LookDirection.y * Runner.DeltaTime * CurrentSensitivity;
         }
 
         _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);

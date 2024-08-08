@@ -96,6 +96,13 @@ public class AudioManager : MonoBehaviour
         get => sfxLoopSource;
     }
 
+    public float InitialAmbientVolume
+    {
+        get => initialAmbientVolume;
+    }
+
+    //  ==============================
+
     [SerializeField] private AudioSource bgSource;
     [SerializeField] private AudioSource sfxSource;
     [SerializeField] private AudioSource ambientSource;
@@ -256,6 +263,11 @@ public class AudioManager : MonoBehaviour
     {
         bgSource.volume = val;
     });
+
+    public void StopBGMusic()
+    {
+        bgSource.Stop();
+    }
 
     public void ResumeBGMusic() => LeanTween.value(gameObject, 0f, initialBGVolume * CurrentVolume, 0.25f).setEase(LeanTweenType.easeOutCubic).setOnUpdate((float val) =>
     {

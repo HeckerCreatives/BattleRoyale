@@ -1014,8 +1014,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 851.5414, y: -140.36499}
-  m_SizeDelta: {x: 1703.0828, y: 167.93}
+  m_AnchoredPosition: {x: 851.1313, y: -140.36499}
+  m_SizeDelta: {x: 1702.2626, y: 167.93}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &72001752
 MonoBehaviour:
@@ -1693,8 +1693,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 851.5414, y: -25}
-  m_SizeDelta: {x: 1703.0828, y: 50}
+  m_AnchoredPosition: {x: 851.1313, y: -25}
+  m_SizeDelta: {x: 1702.2626, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &106874426
 MonoBehaviour:
@@ -2272,8 +2272,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 851.5414, y: -255.73}
-  m_SizeDelta: {x: 1703.0828, y: 50}
+  m_AnchoredPosition: {x: 851.1313, y: -255.73}
+  m_SizeDelta: {x: 1702.2626, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &153835976
 MonoBehaviour:
@@ -4537,10 +4537,22 @@ MonoBehaviour:
   m_MinValue: 0
   m_MaxValue: 1
   m_WholeNumbers: 0
-  m_Value: 0.29
+  m_Value: 1
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1747119145}
+        m_TargetAssemblyTypeName: GameSettingController, Assembly-CSharp
+        m_MethodName: LookSensitivityChange
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &274880797
 GameObject:
   m_ObjectHideFlags: 0
@@ -6936,6 +6948,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_ShowMaskGraphic: 0
+--- !u!1 &363077477
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 363077478}
+  m_Layer: 0
+  m_Name: ==============
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &363077478
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 363077477}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &365366638
 GameObject:
   m_ObjectHideFlags: 0
@@ -7173,6 +7216,135 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 371099711}
   m_CullTransparentMesh: 1
+--- !u!1 &371454557
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 371454559}
+  - component: {fileID: 371454558}
+  m_Layer: 0
+  m_Name: Ambiance
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!82 &371454558
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 371454557}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: f1617269cca8127409c1199392d55e0e, type: 3}
+  m_Resource: {fileID: 8300000, guid: f1617269cca8127409c1199392d55e0e, type: 3}
+  m_PlayOnAwake: 1
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 1
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 3.8
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!4 &371454559
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 371454557}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 257.73, y: 28.03, z: 186.1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &373455071
 GameObject:
   m_ObjectHideFlags: 0
@@ -7248,8 +7420,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1284.3446, y: 0}
-  m_SizeDelta: {x: 837.4764, y: 167.93}
+  m_AnchoredPosition: {x: 1283.7295, y: 0}
+  m_SizeDelta: {x: 837.0663, y: 167.93}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &374756664
 MonoBehaviour:
@@ -7322,8 +7494,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.25}
   m_AnchorMax: {x: 1, y: 0.75}
-  m_AnchoredPosition: {x: 1.8117065, y: -1.2248993}
-  m_SizeDelta: {x: -33.6233, y: -3.9812}
+  m_AnchoredPosition: {x: -2.5, y: -1.2248993}
+  m_SizeDelta: {x: -25, y: -3.9812}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &381082322
 GameObject:
@@ -8035,7 +8207,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1434940032}
   m_HandleRect: {fileID: 1434940031}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -14880,7 +15052,7 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 0
-  m_FillAmount: 0.29
+  m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
@@ -15270,8 +15442,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 851.5414, y: -287.13}
-  m_SizeDelta: {x: 1703.0828, y: 163.37}
+  m_AnchoredPosition: {x: 851.1313, y: -287.13}
+  m_SizeDelta: {x: 1702.2626, y: 163.37}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &831019039
 MonoBehaviour:
@@ -16465,8 +16637,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 851.5414, y: 0}
-  m_SizeDelta: {x: 1703.0828, y: 163.37}
+  m_AnchoredPosition: {x: 851.1313, y: 0}
+  m_SizeDelta: {x: 1702.2626, y: 163.37}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &871323624
 MonoBehaviour:
@@ -17026,7 +17198,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 911147709}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1747119145}
+        m_TargetAssemblyTypeName: GameSettingController, Assembly-CSharp
+        m_MethodName: AddReduceLookAdsSensitivityButton
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
 --- !u!114 &911147709
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18512,7 +18696,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 979485710}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1747119145}
+        m_TargetAssemblyTypeName: GameSettingController, Assembly-CSharp
+        m_MethodName: AddReduceLookSensitivityButton
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &979485710
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19990,8 +20186,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 467337891}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.29, y: 0}
-  m_AnchorMax: {x: 0.29, y: 1}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -1.3000183, y: 0}
   m_SizeDelta: {x: 24.1375, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -20174,8 +20370,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 418.7382, y: 0}
-  m_SizeDelta: {x: 837.4764, y: 167.93}
+  m_AnchoredPosition: {x: 418.53314, y: 0}
+  m_SizeDelta: {x: 837.0663, y: 167.93}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1067130116
 MonoBehaviour:
@@ -20845,7 +21041,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1097053422}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1747119145}
+        m_TargetAssemblyTypeName: GameSettingController, Assembly-CSharp
+        m_MethodName: AddReduceLookSensitivityButton
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
 --- !u!114 &1097053422
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21909,8 +22117,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 373455072}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.29, y: 0}
-  m_AnchorMax: {x: 0.29, y: 1}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -1.3000488, y: 0}
   m_SizeDelta: {x: 24.1375, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -28643,7 +28851,7 @@ MonoBehaviour:
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 0
-  m_FillAmount: 0.29
+  m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
@@ -34171,6 +34379,7 @@ GameObject:
   - component: {fileID: 1747119142}
   - component: {fileID: 1747119143}
   - component: {fileID: 1747119144}
+  - component: {fileID: 1747119146}
   m_Layer: 0
   m_Name: LobbyController
   m_TagString: Untagged
@@ -34209,7 +34418,7 @@ MonoBehaviour:
   characterCreationController: {fileID: 1747119141}
   gameSettingController: {fileID: 1747119145}
   controllerSetting: {fileID: 1747119142}
-  bgMusicClip: {fileID: 8300000, guid: 3df1b1d71c4bacb46b136909cce08e4d, type: 3}
+  bgMusicClip: {fileID: 8300000, guid: 4d217fcb06b6333449cca7eeeca30ec8, type: 3}
 --- !u!114 &1747119141
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -34483,8 +34692,30 @@ MonoBehaviour:
   brightnessTMP: {fileID: 862251441}
   brightnessReduce: {fileID: 501437191}
   brightnessAdd: {fileID: 1439952470}
+  lookSensitivitySlider: {fileID: 267928052}
+  lookAdsSensitivitySlider: {fileID: 1911151952}
+  lookSensitivityTMP: {fileID: 1458417905}
+  lookAdsSensitivityTMP: {fileID: 1335648497}
+  lookSensitivityReduce: {fileID: 979485709}
+  lookSensitivityAdd: {fileID: 1097053421}
+  lookAdsSensitivityReduce: {fileID: 2144742083}
+  lookAdsSensitivityAdd: {fileID: 911147708}
   currentState: 0
   lastCurrentState: 0
+--- !u!114 &1747119146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1747119137}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 697fea4eb4bc51041b565378c2a8c26b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ambienceSources:
+  - {fileID: 371454558}
 --- !u!1001 &1748495659
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -36399,10 +36630,22 @@ MonoBehaviour:
   m_MinValue: 0
   m_MaxValue: 1
   m_WholeNumbers: 0
-  m_Value: 0.29
+  m_Value: 1
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1747119145}
+        m_TargetAssemblyTypeName: GameSettingController, Assembly-CSharp
+        m_MethodName: LookAdsSensitivityChange
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1911490852
 GameObject:
   m_ObjectHideFlags: 0
@@ -37203,8 +37446,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.25}
   m_AnchorMax: {x: 1, y: 0.75}
-  m_AnchoredPosition: {x: 1.8117065, y: -1.2248993}
-  m_SizeDelta: {x: -33.6233, y: -3.9812}
+  m_AnchoredPosition: {x: -2.4998932, y: -1.2248993}
+  m_SizeDelta: {x: -25, y: -3.9812}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1935799069
 GameObject:
@@ -41927,7 +42170,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2144742084}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1747119145}
+        m_TargetAssemblyTypeName: GameSettingController, Assembly-CSharp
+        m_MethodName: AddReduceLookAdsSensitivityButton
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2144742084
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -42237,3 +42492,5 @@ SceneRoots:
   - {fileID: 1350447890}
   - {fileID: 769915214}
   - {fileID: 1570149404}
+  - {fileID: 363077478}
+  - {fileID: 371454559}

@@ -38,6 +38,7 @@ public class LobbyController : MonoBehaviour
         }));
         GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetVolumeSlidersOnStart());
         GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetGraphicsOnStart());
+        GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetLookSensitivityOnStart());
         GameManager.Instance.AudioController.SetBGMusic(bgMusicClip);
         GameManager.Instance.SceneController.ActionPass = true;
     }
