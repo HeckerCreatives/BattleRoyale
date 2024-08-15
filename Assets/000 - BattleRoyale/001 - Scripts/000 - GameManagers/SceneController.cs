@@ -247,6 +247,8 @@ public class SceneController : MonoBehaviour
 
         doneLoading = true;
 
+        loadingPercentageTMP.text = "0%";
+
         MultiplayerLoadingCoroutine = null;
     }
 
@@ -317,6 +319,8 @@ public class SceneController : MonoBehaviour
         MultiplayerScene = false;
 
         doneLoading = true;
+
+        loadingPercentageTMP.text = "0%";
 
         MultiplayerLoadingCoroutine = null;
     }
@@ -437,6 +441,8 @@ public class SceneController : MonoBehaviour
         doneLoading = true;
 
         LoadingCoroutine = null;
+
+        loadingPercentageTMP.text = "0%";
 
         Time.timeScale = 1f;
     }
