@@ -15,6 +15,9 @@ public class UserData : ScriptableObject
     [field: Header("CHARACTER")]
     [field: ReadOnly][field: SerializeField] public PlayerCharacterSetting CharacterSetting { get; set; }
 
+    [field: Header("GAME USER DETAILS")]
+    [field: ReadOnly][field: SerializeField] public GameUserDetails GameDetails { get; set; }
+
     //  ===========================
 
     //  SETTINGS

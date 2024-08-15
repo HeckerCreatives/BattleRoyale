@@ -10,6 +10,7 @@ public class LobbyController : MonoBehaviour
     [SerializeField] private CharacterCreationController characterCreationController;
     [SerializeField] private GameSettingController gameSettingController;
     [SerializeField] private ControllerSetting controllerSetting;
+    [SerializeField] private LobbyUserProfile userProfile;
     [SerializeField] private AudioClip bgMusicClip;
 
     private void Awake()
@@ -36,6 +37,48 @@ public class LobbyController : MonoBehaviour
             GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 2", null);
             GameManager.Instance.SceneController.CurrentScene = "Login";
         }));
+        GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/usergamedetail/getusergamedetails", "", false, (response) =>
+        {
+            try
+            {
+                GameUserDetails gameUserDetails = JsonConvert.DeserializeObject<GameUserDetails>(response.ToString());
+
+                userData.GameDetails = gameUserDetails;
+                userProfile.SetData();
+            }
+            catch (Exception ex)
+            {
+                GameManager.Instance.SceneController.StopLoading();
+                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
+                GameManager.Instance.SceneController.CurrentScene = "Login";
+            }
+        }, () =>
+        {
+            GameManager.Instance.SceneController.StopLoading();
+            GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
+            GameManager.Instance.SceneController.CurrentScene = "Login";
+        }));
+        //GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/leaderboard/getleaderboard", "", false, (response) =>
+        //{
+        //    try
+        //    {
+        //        GameUserDetails gameUserDetails = JsonConvert.DeserializeObject<GameUserDetails>(response.ToString());
+
+        //        userData.GameDetails = gameUserDetails;
+        //        userProfile.SetData();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        GameManager.Instance.SceneController.StopLoading();
+        //        GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
+        //        GameManager.Instance.SceneController.CurrentScene = "Login";
+        //    }
+        //}, () =>
+        //{
+        //    GameManager.Instance.SceneController.StopLoading();
+        //    GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
+        //    GameManager.Instance.SceneController.CurrentScene = "Login";
+        //}));
         GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetVolumeSlidersOnStart());
         GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetGraphicsOnStart());
         GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetLookSensitivityOnStart());
