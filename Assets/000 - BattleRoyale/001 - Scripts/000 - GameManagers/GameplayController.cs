@@ -4,11 +4,13 @@ using Fusion.Sockets;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Unity.Services.Matchmaker.Models;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Controls;
 using UnityEngine.InputSystem.EnhancedTouch;
 using UnityEngine.UIElements;
 
@@ -22,7 +24,8 @@ public enum InputButton
     SwitchHands,
     SwitchPrimary,
     SwitchSecondary,
-    SwitchTrap
+    SwitchTrap,
+    ActiveTouch
 }
 
 public enum HoldInputButtons
@@ -59,6 +62,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     [MyBox.ReadOnly][SerializeField] public bool SwitchPrimary;
     [MyBox.ReadOnly][SerializeField] public bool SwitchSecondary;
     [MyBox.ReadOnly][SerializeField] public bool SwitchTrap;
+    [MyBox.ReadOnly][SerializeField] public int ActiveTouch;
     [MyBox.ReadOnly][SerializeField] private bool resetInput;
     [MyBox.ReadOnly][SerializeField] private bool doneInitialize;
 
@@ -66,8 +70,8 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
     //  =========================
 
-    private GameplayInputs gameplayInputs;
-    private Dictionary<int, bool> touchOverUI = new Dictionary<int, bool>();
+    private GameplayInputs gameplayInputs; 
+    private Dictionary<int, bool> fingerUIStatus = new Dictionary<int, bool>();
 
     MyInput myInput;
 
@@ -110,10 +114,8 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.SwitchTrap.started += _ => SwitchTrapStart();
             gameplayInputs.Gameplay.SwitchTrap.canceled += _ => SwitchTrapStop();
 
-#if !UNITY_ANDROID
             gameplayInputs.Gameplay.Look.performed += _ => LookStart();
             gameplayInputs.Gameplay.Look.canceled += _ => LookStop();
-#endif
 
             Runner.AddCallbacks(this);
             Debug.Log($"Done init controls");
@@ -146,16 +148,14 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.SwitchSecondary.canceled -= _ => SwitchSecondaryStop();
             gameplayInputs.Gameplay.SwitchTrap.started -= _ => SwitchTrapStart();
             gameplayInputs.Gameplay.SwitchTrap.canceled -= _ => SwitchTrapStop();
-
-#if !UNITY_ANDROID
             gameplayInputs.Gameplay.Look.performed -= _ => LookStart();
             gameplayInputs.Gameplay.Look.canceled -= _ => LookStop();
-#endif
 
             gameplayInputs.Disable();
             Runner.RemoveCallbacks(this);
         }
     }
+
 
     #region LOCAL INPUTS
 
@@ -170,12 +170,10 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
     private void LookStart()
     {
-        LookDirection = gameplayInputs.Gameplay.Look.ReadValue<Vector2>();
     }
 
     private void LookStop()
     {
-        LookDirection = Vector2.zero;
     }
 
     private void MovementStart()
@@ -279,7 +277,20 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         SwitchHands = true;
     }
 
-    #endregion
+    private bool IsTouchOverUI(Vector2 touchPosition)
+    {
+        PointerEventData pointerEventData = new PointerEventData(EventSystem.current)
+        {
+            position = touchPosition
+        };
+
+        List<RaycastResult> raycastResults = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerEventData, raycastResults);
+
+        return raycastResults.Count > 0;  // Return true if UI was hit
+    }
+
+#endregion
 
     #region NETWORK
 
@@ -300,28 +311,39 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         }
 #endif
 
-#if UNITY_ANDROID
         foreach (var touch in Touchscreen.current.touches)
         {
-            int touchId = touch.touchId.ReadValue();
-
             if (touch.phase.ReadValue() == UnityEngine.InputSystem.TouchPhase.Began)
-                touchOverUI[touchId] = EventSystem.current.IsPointerOverGameObject(touchId);
+            {
+                Debug.Log($"finger id: {touch.touchId.ReadValue()}  status: {EventSystem.current.IsPointerOverGameObject(touch.touchId.ReadValue())}");
 
-            if (touchOverUI.ContainsKey(touchId) && touchOverUI[touchId])
-                continue;
+                bool isOverUI = EventSystem.current.IsPointerOverGameObject(touch.touchId.ReadValue());
 
-            myInput.LookDirection += touch.delta.ReadValue();
+                fingerUIStatus[touch.touchId.ReadValue()] = isOverUI;
+
+                if (!isOverUI) myInput.LookDirection += touch.delta.ReadValue();
+            }
+            if (touch.phase.ReadValue() == UnityEngine.InputSystem.TouchPhase.Moved || touch.phase.ReadValue() == UnityEngine.InputSystem.TouchPhase.Stationary)
+            {
+                if (fingerUIStatus.ContainsKey(touch.touchId.ReadValue()) && !fingerUIStatus[touch.touchId.ReadValue()]) myInput.LookDirection += touch.delta.ReadValue();
+            }
+            if (touch.phase.ReadValue() == UnityEngine.InputSystem.TouchPhase.Ended || touch.phase.ReadValue() == UnityEngine.InputSystem.TouchPhase.Canceled || touch.phase.ReadValue() == UnityEngine.InputSystem.TouchPhase.None)
+            {
+                // Reset LookDirection if the touch is not over UI
+                if (fingerUIStatus.ContainsKey(touch.touchId.ReadValue()) && !fingerUIStatus[touch.touchId.ReadValue()])
+                {
+                    myInput.LookDirection = Vector2.zero;
+                }
+
+                // Remove the fingerId from tracking as the touch ended
+                if (fingerUIStatus.ContainsKey(touch.touchId.ReadValue()))
+                {
+                    fingerUIStatus.Remove(touch.touchId.ReadValue());
+                }
+            }
         }
-#endif
 
         myInput.MovementDirection.Set(MovementDirection.x, MovementDirection.y);
-
-#if !UNITY_ANDROID
-
-        myInput.LookDirection += LookDirection;
-#endif
-
         myInput.Buttons.Set(InputButton.Jump, Jump);
         myInput.Buttons.Set(InputButton.Aim, Aim);
         myInput.Buttons.Set(InputButton.Melee, Shoot);
