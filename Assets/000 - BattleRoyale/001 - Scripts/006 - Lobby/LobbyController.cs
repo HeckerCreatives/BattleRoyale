@@ -29,6 +29,7 @@ public class LobbyController : MonoBehaviour
             catch (Exception ex)
             {
                 GameManager.Instance.SceneController.StopLoading();
+                Debug.Log(ex.ToString());
                 GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 1", null);
                 GameManager.Instance.SceneController.CurrentScene = "Login";
             }
@@ -50,6 +51,7 @@ public class LobbyController : MonoBehaviour
             catch (Exception ex)
             {
                 GameManager.Instance.SceneController.StopLoading();
+                Debug.Log(ex.ToString());
                 GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
                 GameManager.Instance.SceneController.CurrentScene = "Login";
             }
@@ -63,7 +65,11 @@ public class LobbyController : MonoBehaviour
         {
             try
             {
-                Dictionary<string, LeaderboardData> tempdata = JsonConvert.DeserializeObject<Dictionary<string, LeaderboardData>>(response.ToString());
+                Dictionary<string, object> responsetempdata = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.ToString());
+
+                if (responsetempdata.Count <= 0) return;
+
+                Dictionary<string, LeaderboardData> tempdata = JsonConvert.DeserializeObject<Dictionary<string, LeaderboardData>>(responsetempdata["leaderboard"].ToString());
 
                 for (int a = 0; a < leaderboardItems.Count; a++)
                 {
@@ -80,6 +86,7 @@ public class LobbyController : MonoBehaviour
             catch (Exception ex)
             {
                 GameManager.Instance.SceneController.StopLoading();
+                Debug.Log(ex.ToString());
                 GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
                 GameManager.Instance.SceneController.CurrentScene = "Login";
             }
