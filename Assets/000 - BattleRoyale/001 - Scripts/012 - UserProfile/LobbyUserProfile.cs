@@ -9,12 +9,14 @@ public class LobbyUserProfile : MonoBehaviour
 
     [Header("LOBBY")]
     [SerializeField] private TextMeshProUGUI usernameTMP;
-    [SerializeField] private TextMeshProUGUI levelXPTMP;
+    [SerializeField] private TextMeshProUGUI levelTMP;
+    [SerializeField] private TextMeshProUGUI xpTMP;
     [SerializeField] private GameObject userDetailsObj;
 
     [Header("PROFILE")]
     [SerializeField] private TextMeshProUGUI usernameProfileTMP;
-    [SerializeField] private TextMeshProUGUI levelXPProfileTMP;
+    [SerializeField] private TextMeshProUGUI levelProfileTMP;
+    [SerializeField] private TextMeshProUGUI xpProfileTMP;
     [SerializeField] private TextMeshProUGUI killProfileTMP;
     [SerializeField] private TextMeshProUGUI deathProfileTMP;
     [SerializeField] private TextMeshProUGUI rankProfileTMP;
@@ -22,12 +24,14 @@ public class LobbyUserProfile : MonoBehaviour
     public void SetData()
     {
         usernameTMP.text = userData.Username;
-        levelXPTMP.text = $"Level: {userData.GameDetails.level}   XP: {userData.GameDetails.xp} / 20";
+        levelTMP.text = $"Level: {userData.GameDetails.level:n0}";
+        xpTMP.text = $"XP: {userData.GameDetails.xp:n0} / 20";
 
         usernameProfileTMP.text = userData.Username;
-        levelXPProfileTMP.text = $"Level: {userData.GameDetails.level}   XP: {userData.GameDetails.xp} / 20";
-        killProfileTMP.text = $"Kill: {userData.GameDetails.kill:n0}";
-        deathProfileTMP.text = $"Death: {userData.GameDetails.death:n0}";
+        levelProfileTMP.text = $"{userData.GameDetails.level:n0}";
+        xpProfileTMP.text = $"{userData.GameDetails.xp:n0} / 20";
+        killProfileTMP.text = $"{userData.GameDetails.kill:n0}";
+        deathProfileTMP.text = $"{userData.GameDetails.death:n0}";
     }
 }
 

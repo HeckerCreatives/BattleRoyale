@@ -98,6 +98,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
     private void Awake()
     {
+        //  DELETE THIS
+        Debug.Log($"Set Spawn Positions");
+        StartCoroutine(SetSpawnPositionPlayers());
         if (GameManager.Instance == null)
         {
             StartServer();
@@ -404,13 +407,15 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         if (DonePlayerBattlePositions) return;
 
         if (!HasStateAuthority) return;
-
+        Debug.Log(CurrentGameState);
         if (CurrentGameState != GameState.ARENA) return;
-
+        Debug.Log("helloooooo");
         for (int a = 0; a < Players.Count; a++)
         {
+            Debug.Log(Players.ElementAt(a).Value.DoneBattlePosition);
             if (!Players.ElementAt(a).Value.DoneBattlePosition)
             {
+                Debug.Log(PositionStruct.NetworkSpawnLocation[a]);
                 Players.ElementAt(a).Value.PlayerCharacterSpawnedObj.GetComponent<SimpleKCC>().SetPosition(PositionStruct.NetworkSpawnLocation[a]);
                 Players.ElementAt(a).Value.DoneBattlePosition = true;
             }
@@ -453,7 +458,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             if (WaitingAreaTimer <= 0f)
             {
-                WaitingAreaTimer = 120;
+                WaitingAreaTimer = 10;
                 CanCountWaitingAreaTimer = true;
             }
 

@@ -202,8 +202,8 @@ public class GraphicsController : MonoBehaviour
         }
         else
         {
-            CurrentGraphicsQualityIndex = 1;
-            PlayerPrefs.SetInt("GraphicsQuality", 1);
+            CurrentGraphicsQualityIndex = 0;
+            PlayerPrefs.SetInt("GraphicsQuality", 0);
             QualitySettings.SetQualityLevel(CurrentGraphicsQualityIndex, false);
         }
 
@@ -214,7 +214,7 @@ public class GraphicsController : MonoBehaviour
         }
         else
         {
-            CurrentResolutionIndex = 1;
+            CurrentResolutionIndex = 0;
             ChangeResolution();
         }
 

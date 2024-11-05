@@ -66,7 +66,7 @@ public class ClientMatchmakingController : MonoBehaviour
 
             if (result.Ok)
             {
-                var sessionResult = await StartSimulation(currentRunnerInstance, GameMode.Client);
+                var sessionResult = await StartSimulation(currentRunnerInstance, GameMode.Single);
 
                 cancelBtn.interactable = false;
 
@@ -135,7 +135,7 @@ public class ClientMatchmakingController : MonoBehaviour
 
             if (sceneIndex >= 0)
             {
-                sceneRef = SceneRef.FromIndex(sceneIndex);
+                sceneRef = SceneRef.FromIndex(5);
             }
 
             NetworkSceneInfo networkSceneInfo = new NetworkSceneInfo();
