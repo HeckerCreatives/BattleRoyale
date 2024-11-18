@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,10 +19,12 @@ public class PlayerPickupWeaponController : NetworkBehaviour
     [SerializeField] private LayerMask objecMask;
     [SerializeField] private float itemDetectorRadius;
 
+    [field: Space]
+    [field: SerializeField] private GameObject PickupItemBtn { get; set; }
+    [field: SerializeField] private GameObject PickupItemList { get; set; }
+    [SerializeField] private Transform contentTF;
+
     [field: Header("DEBUGGER")]
-    [MyBox.ReadOnly][SerializeField] private Transform contentTF;
-    [field: MyBox.ReadOnly][field: SerializeField] public GameObject PickupItemBtn { get; set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public GameObject PickupItemList { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField] public NetworkObject CrateObject { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField] public GameObject CrateObjectDetector { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField] public List<GameObject> CrateObjectButtonList { get; set; }
@@ -38,6 +41,16 @@ public class PlayerPickupWeaponController : NetworkBehaviour
     private List<Collider> previousColliders = new List<Collider>();
 
     //  ========================
+
+    async public override void Spawned()
+    {
+        while (!Runner) await Task.Delay(100);
+
+        if (!HasInputAuthority) return;
+
+        PickupItemBtn.SetActive(false);
+        PickupItemList.SetActive(false);
+    }
 
     private void Update()
     {
@@ -229,11 +242,6 @@ public class PlayerPickupWeaponController : NetworkBehaviour
         }
 
         Destroy(contentTF.GetChild(e.Index).gameObject);
-    }
-
-    public void InitializeContentTF()
-    {
-        contentTF = PickupItemList.transform.GetChild(1).transform.GetChild(0).transform.GetChild(0);
     }
 
     private IEnumerator SpawnListItems(NetworkDictionary<NetworkString<_4>, int> data)

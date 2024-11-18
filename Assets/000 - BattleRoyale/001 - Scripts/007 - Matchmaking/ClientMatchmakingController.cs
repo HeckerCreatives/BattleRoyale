@@ -66,13 +66,17 @@ public class ClientMatchmakingController : MonoBehaviour
 
             if (result.Ok)
             {
-                var sessionResult = await StartSimulation(currentRunnerInstance, GameMode.Single);
+                timerTMP.text = "CONFIRMING MATCH!";
+
+                cancelBtn.interactable = false;
+
+                var sessionResult = await StartSimulation(currentRunnerInstance, GameMode.Client);
 
                 cancelBtn.interactable = false;
 
                 if (sessionResult.Ok)
                 {
-                    timerTMP.text = "CONFIRMING MATCH!";
+                    timerTMP.text = "MATCH FOUND!";
                     matchFound = true;
                     findingMatch = false;
                     GameManager.Instance.SceneController.MultiplayerScene = true;

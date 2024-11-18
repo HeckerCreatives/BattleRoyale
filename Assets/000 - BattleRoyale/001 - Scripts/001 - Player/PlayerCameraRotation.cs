@@ -4,6 +4,7 @@ using Fusion.Addons.SimpleKCC;
 using MyBox;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -15,6 +16,7 @@ public class PlayerCameraRotation : NetworkBehaviour
     //  ==================
 
     [Header("References")]
+    [SerializeField] private PlayerHealth playerHealth;
     [SerializeField] private PlayerController playerController;
     [SerializeField] private GameObject target;
     [SerializeField] private SimpleKCC playerObj;
@@ -41,12 +43,19 @@ public class PlayerCameraRotation : NetworkBehaviour
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float _cinemachineTargetPitch { get; private set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float CurrentSensitivity { get; private set; }
 
-    private void Start()
+    async public override void Spawned()
     {
-        _threshold = 0.01f;
+        while (!Runner) await Task.Delay(100);
+
+        if (HasStateAuthority)
+        {
+            _threshold = 0.01f;
+        }
 
         if (HasInputAuthority)
+        {
             Rpc_HandleSensitivity(GameManager.Instance.GameSettingManager.CurrentLookSensitivity);
+        }
     }
 
     public override void FixedUpdateNetwork()
@@ -65,15 +74,11 @@ public class PlayerCameraRotation : NetworkBehaviour
         CurrentSensitivity = Sensitivity * lookSensitivity;
     }
 
-    //[Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    //private void Rpc_SetSensitivityToAll(float lookSensitivity)
-    //{
-    //    CurrentSensitivity = Sensitivity * lookSensitivity;
-    //}
-
     private void HandleMobileCameraInput()
     {
         if (GetInput<MyInput>(out var input) == false) return;
+
+        if (playerHealth.CurrentHealth <= 0) return;
 
         if (input.LookDirection.sqrMagnitude >= _threshold)
         {

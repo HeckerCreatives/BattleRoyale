@@ -63,9 +63,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [SerializeField] private bool debugMode;
     [ConditionalField("debugMode")][SerializeField] private string lobby;
 
-    [Header("CLIENT")]
-    [SerializeField] private List<GameObject> clientObjs;
-
     [Header("CRATES")]
     [SerializeField] private NetworkObject createNO;
     [SerializeField] private List<Transform> createSpawnLocations;
@@ -93,20 +90,16 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     public MatchmakingResults MatchmakingResults;
 
     [Networked, Capacity(10)] public NetworkDictionary<PlayerRef, PlayerNetworkCore> Players => default;
+    [Networked, Capacity(10)] public NetworkDictionary<PlayerRef, PlayerNetworkCore> RemainingPlayers => default;
 
     //  =================
 
     private void Awake()
     {
         //  DELETE THIS
-        Debug.Log($"Set Spawn Positions");
-        StartCoroutine(SetSpawnPositionPlayers());
         if (GameManager.Instance == null)
         {
             StartServer();
-
-            foreach (GameObject gameObj in clientObjs)
-                gameObj.SetActive(false);
         }
     }
 
@@ -407,9 +400,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         if (DonePlayerBattlePositions) return;
 
         if (!HasStateAuthority) return;
-        Debug.Log(CurrentGameState);
         if (CurrentGameState != GameState.ARENA) return;
-        Debug.Log("helloooooo");
+
         for (int a = 0; a < Players.Count; a++)
         {
             Debug.Log(Players.ElementAt(a).Value.DoneBattlePosition);
@@ -456,9 +448,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             Players.Add(player, playerObj.GetComponent<PlayerNetworkCore>());
             Rpc_TriggerPlayerCount();
 
-            if (WaitingAreaTimer <= 0f)
+            if (WaitingAreaTimer <= 0f && !CanCountWaitingAreaTimer)
             {
-                WaitingAreaTimer = 10;
+                WaitingAreaTimer = 160;
                 CanCountWaitingAreaTimer = true;
             }
 
@@ -472,6 +464,13 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     public void PlayerLeft(PlayerRef player)
     {
         if (!HasStateAuthority) return;
+
+        if (Players.TryGet(player, out PlayerNetworkCore remainingPlayer))
+        {
+            RemainingPlayers.Remove(player);
+            Rpc_TriggerPlayerCount();
+        }
+
 
         if (Players.TryGet(player, out PlayerNetworkCore clientPlayer))
         {

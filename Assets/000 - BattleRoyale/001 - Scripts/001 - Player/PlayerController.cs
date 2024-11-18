@@ -12,6 +12,7 @@ using UnityEngine.Windows;
 
 public class PlayerController : NetworkBehaviour
 {
+    [SerializeField] private PlayerHealth playerHealth;
     [SerializeField] private PlayerInventory inventory;
     [SerializeField] private SimpleKCC characterController;
 
@@ -130,6 +131,8 @@ public class PlayerController : NetworkBehaviour
 
     private void Move()
     {
+        if (playerHealth.CurrentHealth <= 0) return;
+
         MoveDirection = characterController.TransformRotation * new Vector3(controllerInput.MovementDirection.x, 0f, controllerInput.MovementDirection.y) * (IsCrouch ? crouchMoveSpeed : IsProne ? proneMoveSpeed : isJumping ? 250 : moveSpeed) * Runner.DeltaTime;
 
         JumpImpulse = 0f;
@@ -160,6 +163,8 @@ public class PlayerController : NetworkBehaviour
 
     private void Crouch()
     {
+        if (playerHealth.CurrentHealth <= 0) return;
+
         // Ensure we're on the ground
         if (!Grounded)
         {
@@ -186,6 +191,8 @@ public class PlayerController : NetworkBehaviour
 
     private void Prone()
     {
+        if (playerHealth.CurrentHealth <= 0) return;
+
         // Ensure we're on the ground
         if (!Grounded)
         {
@@ -217,6 +224,8 @@ public class PlayerController : NetworkBehaviour
 
     private void Attack()
     {
+        if (playerHealth.CurrentHealth <= 0) return;
+
         if (inventory.WeaponIndex != 1 && inventory.WeaponIndex != 2 && inventory.WeaponIndex != 3 && inventory.WeaponIndex != 4)
         {
             ResetAttack();

@@ -43,14 +43,14 @@ public class PlayerInventory : NetworkBehaviour
     [SerializeField] private NetworkObject rifleHandHandle;
     [SerializeField] private NetworkObject bowHandHandle;
 
-    [Header("DEBUGGER LOCAL")]
-    [field: MyBox.ReadOnly][field: SerializeField] public WeaponEquipBtnController HandBtn { get; set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public WeaponEquipBtnController PrimaryBtn { get; set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public WeaponEquipBtnController SecondaryBtn { get; set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public bool IsWeaponInitialize { get; set; }
+    [Header("WEAPON EQUIP BUTTONS")]
+    [SerializeField] private WeaponEquipBtnController HandBtn;
+    [SerializeField] private WeaponEquipBtnController PrimaryBtn;
+    [SerializeField] private WeaponEquipBtnController SecondaryBtn;
 
     [Header("DEBUGGER NETWORK")]
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsSkinReady { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsSkinInitialized { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsWeaponInitialize { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int WeaponIndex { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int TempLastIndex { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int HairStyle { get; set; }
@@ -64,50 +64,101 @@ public class PlayerInventory : NetworkBehaviour
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int BowAmmo { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int RifleAmmo { get; set; }
 
-    private async void Awake()
+    //  =========================
+
+    private ChangeDetector _changeDetector;
+
+    //  =========================
+
+    public override async void Spawned()
     {
-        while (!Runner)
-        {
-            await Task.Delay(1000);
-        }
+        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
 
-        if (!HasInputAuthority && !HasStateAuthority)
-        {
-            while (!IsSkinReady)
-            {
-                await Task.Delay(1000);
-            }
+        while (!Runner) await Task.Delay(100);
 
-            ApplySkins();
-
-            if (EquipWeaponType == "Primary") PrimaryWeapon.LocalActivateWeapon();
-            else if (EquipWeaponType == "Secondary") SecondaryWeapon.LocalActivateWeapon();
-        }
-    }
-
-    public override void Spawned()
-    {
-        if (HasInputAuthority)
+        if (HasStateAuthority)
         {
             SetWeaponOnStart();
+        }
+
+        if (HasInputAuthority)
+        {
             RPC_SendPlayerDataToServer(JsonConvert.SerializeObject(userData.CharacterSetting));
+        }
+        else if (!HasInputAuthority && !HasStateAuthority)
+        {
+            while(!IsSkinInitialized) await Task.Delay(100);
+
+            InitializeSkinOnStart();
         }
     }
 
-    public IEnumerator CheckIfSkinIsReady()
+    public override async void Render()
     {
-        while (!IsSkinReady) yield return null;
+        while (!Runner) await Task.Delay(100);
+
+        foreach (var change in _changeDetector.DetectChanges(this))
+        {
+            switch (change)
+            {
+                case nameof(IsSkinInitialized):
+                    hairStyles[HairStyle].SetActive(true);
+                    hairMR[HairStyle].material.SetColor("_BaseColor", hairColor[HairColorIndex]);
+                    upperClothingMR.material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
+                    lowerClothingMR.materials[0].SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
+                    lowerClothingMR.materials[1].SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
+                    bodyColorMR.material.SetColor("_BaseColor", skinColor[SkinColorIndex]);
+                    break;
+                case nameof(HairStyle):
+
+                    while (!IsSkinInitialized) await Task.Delay(100);
+                    Debug.Log(hairStyles[HairStyle].name);
+                    hairStyles[HairStyle].SetActive(true);
+                    break;
+                case nameof(HairColorIndex):
+                    while (!IsSkinInitialized) await Task.Delay(100);
+
+                    hairMR[HairStyle].material.SetColor("_BaseColor", hairColor[HairColorIndex]);
+                    break;
+                case nameof(ClothingColorIndex):
+                    while (!IsSkinInitialized) await Task.Delay(100);
+
+                    upperClothingMR.material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
+                    lowerClothingMR.materials[0].SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
+                    lowerClothingMR.materials[1].SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
+                    break;
+                case nameof(SkinColorIndex):
+                    while (!IsSkinInitialized) await Task.Delay(100);
+
+                    bodyColorMR.material.SetColor("_BaseColor", skinColor[SkinColorIndex]);
+                    break;
+                case nameof(WeaponIndex):
+
+                    if (!HasInputAuthority) break;
+
+                    while (!IsWeaponInitialize) await Task.Delay(100);
+
+                    while (!HandBtn.gameObject.activeInHierarchy && !PrimaryBtn.gameObject.activeInHierarchy && !SecondaryBtn.gameObject.activeInHierarchy) await Task.Delay(100);
+
+                    HandBtn.SetIndicator(WeaponIndex == 1 ? true : false);
+                    PrimaryBtn.SetIndicator(PrimaryWeapon != null ? WeaponIndex == PrimaryWeapon.AnimatorID ? true : false : false);
+                    SecondaryBtn.SetIndicator(SecondaryWeapon != null ? WeaponIndex == SecondaryWeapon.AnimatorID ? true : false : false);
+                    break;
+                case nameof(IsWeaponInitialize):
+                    if (!HasInputAuthority) break;
+
+                    while (!HandBtn.gameObject.activeInHierarchy && !PrimaryBtn.gameObject.activeInHierarchy && !SecondaryBtn.gameObject.activeInHierarchy) await Task.Delay(100);
+
+                    HandBtn.SetIndicator(WeaponIndex == 1 ? true : false);
+                    PrimaryBtn.SetIndicator(PrimaryWeapon != null ? WeaponIndex == PrimaryWeapon.AnimatorID ? true : false : false);
+                    SecondaryBtn.SetIndicator(SecondaryWeapon != null ? WeaponIndex == SecondaryWeapon.AnimatorID ? true : false : false);
+                    break;
+            }
+        }
     }
 
-    public IEnumerator CheckIfWeaponInitialize()
+    private void SetWeaponOnStart()
     {
-        while (!IsWeaponInitialize) yield return null;
-    }
-
-    private async void SetWeaponOnStart()
-    {
-        while (HandBtn == null || PrimaryBtn == null || SecondaryBtn == null) await Task.Delay(1000);
-
         WeaponHandChange();
 
         IsWeaponInitialize = true;
@@ -119,24 +170,16 @@ public class PlayerInventory : NetworkBehaviour
     private void RPC_SendPlayerDataToServer(string data)
     {
         Debug.Log($"Send player to server: {data}");
-        WeaponIndex = 1;
-        RPC_BroadcastPlayerSkin(data);
-    }
 
-    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    private void RPC_BroadcastPlayerSkin(string data)
-    {
-        Debug.Log($"Send to all players: {data}");
         var characterSetting = JsonConvert.DeserializeObject<PlayerCharacterSetting>(data);
         HairStyle = characterSetting.hairstyle;
         HairColorIndex = characterSetting.haircolor;
         ClothingColorIndex = characterSetting.clothingcolor;
         SkinColorIndex = characterSetting.skincolor;
-        IsSkinReady = true;
-        ApplySkins();
+        IsSkinInitialized = true;
     }
 
-    private void ApplySkins()
+    private void InitializeSkinOnStart()
     {
         hairStyles[HairStyle].SetActive(true);
         hairMR[HairStyle].material.SetColor("_BaseColor", hairColor[HairColorIndex]);
@@ -477,13 +520,6 @@ public class PlayerInventory : NetworkBehaviour
         TempLastIndex = WeaponIndex;
         WeaponIndex = 1;
 
-        if (HasInputAuthority)
-        {
-            HandBtn.SetIndicator(true);
-            PrimaryBtn.SetIndicator(false);
-            SecondaryBtn.SetIndicator(false);
-        }
-
         PrimaryWeapon?.Rpc_SheatWeapon();
         SecondaryWeapon?.Rpc_SheatWeapon();
     }
@@ -494,13 +530,6 @@ public class PlayerInventory : NetworkBehaviour
         TempLastIndex = WeaponIndex;
         WeaponIndex = PrimaryWeapon.AnimatorID;
 
-        if (HasInputAuthority)
-        {
-            PrimaryBtn.SetIndicator(true);
-            HandBtn.SetIndicator(false);
-            SecondaryBtn.SetIndicator(false);
-        }
-
         PrimaryWeapon.Rpc_ActivateWeapon();
         SecondaryWeapon?.Rpc_SheatWeapon();
     }
@@ -510,13 +539,6 @@ public class PlayerInventory : NetworkBehaviour
         EquipWeaponType = "Secondary";
         TempLastIndex = WeaponIndex;
         WeaponIndex = SecondaryWeapon.AnimatorID;
-
-        if (HasInputAuthority)
-        {
-            SecondaryBtn.SetIndicator(true);
-            HandBtn.SetIndicator(false);
-            PrimaryBtn.SetIndicator(false);
-        }
 
         SecondaryWeapon.Rpc_ActivateWeapon();
         PrimaryWeapon?.Rpc_SheatWeapon();

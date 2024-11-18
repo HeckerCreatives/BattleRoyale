@@ -15,17 +15,15 @@ public class PlayerAim : NetworkBehaviour
     [SerializeField] private PlayerController playerController;
 
     [Header("RIG AIM")]
+    [SerializeField] private CinemachineVirtualCamera aimVcam;
     [SerializeField] private Rig hipsRig;
 
     [field: Header("DEBUGGER")]
-    [field: MyBox.ReadOnly] [field: SerializeField] public CinemachineVirtualCamera AimVCam { get; set; }
     [field: MyBox.ReadOnly] [field: SerializeField] [Networked] public NetworkBool IsAim { get; private set; }
 
     //  ====================
 
     [Networked] public NetworkButtons ButtonsPrevious { get; set; }
-    [Networked] public NetworkButtons Released { get; set; }
-    [Networked] public NetworkButtons Pressed { get; set; }
 
     //  ====================
 
@@ -51,12 +49,10 @@ public class PlayerAim : NetworkBehaviour
     {
         if (!HasInputAuthority) return;
 
-        if (AimVCam == null) return;
-
         if (IsAim)
-            AimVCam.gameObject.SetActive(true);
+            aimVcam.gameObject.SetActive(true);
         else
-            AimVCam.gameObject.SetActive(false);
+            aimVcam.gameObject.SetActive(false);
     }
 
     private void HipsWeightNetwork()
