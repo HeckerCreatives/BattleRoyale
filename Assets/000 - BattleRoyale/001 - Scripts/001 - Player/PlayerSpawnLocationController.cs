@@ -1,48 +1,45 @@
 using Fusion;
 using Fusion.Addons.SimpleKCC;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class PlayerSpawnLocationController : NetworkBehaviour
 {
-    [SerializeField] private PlayerNetworkCore networkCore;
+    [SerializeField] public PlayerInventory inventory;
 
     [Header("DEBUGGER")]
-    [MyBox.ReadOnly][SerializeField] private bool isInitialized;
-    [MyBox.ReadOnly][SerializeField] private bool doneWaitingArea;
-    [MyBox.ReadOnly][SerializeField] private bool localDoneWaitingArea;
-    [MyBox.ReadOnly][SerializeField] private float tempTime;
-    [MyBox.ReadOnly][SerializeField] public PlayerInventory inventory;
-    [field: MyBox.ReadOnly][field: SerializeField] public DedicatedServerManager ServerManager { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField] [Networked] public DedicatedServerManager ServerManager { get; set; }
 
-    public IEnumerator InitializeSpawnLocation()
+    public async override void Spawned()
     {
-        while (ServerManager == null || inventory == null) yield return null;
-        tempTime = 0.5f;
-        isInitialized = true;
+        while (ServerManager == null) await Task.Delay(100);
+        ServerManager.OnCurrentStateChange += StateChange;
     }
 
-    public override void FixedUpdateNetwork()
+    private void OnDisable()
     {
+        ServerManager.OnCurrentStateChange -= StateChange;
     }
 
-    private void Update()
+    private void StateChange(object sender, EventArgs e)
     {
-        if (HasInputAuthority)
+        if (ServerManager.CurrentGameState == GameState.ARENA)
         {
-            if (isInitialized)
+            if (HasStateAuthority)
             {
-                if (!localDoneWaitingArea && ServerManager.CurrentGameState == GameState.ARENA)
-                {
-                    GameManager.Instance.SceneController.SpawnArenaLoading = true;
-                    GameManager.Instance.SceneController.AddActionLoadinList(Inventory());
-                    GameManager.Instance.SceneController.AddActionLoadinList(ReadyForBattle());
-                    GameManager.Instance.SceneController.ActionPass = true;
+                Debug.Log("Start dropping items");
+                inventory.Rpc_DropWeaponsAfterTeleportBattlefield();
+            }
 
-                    inventory.Rpc_DropWeaponsAfterTeleportBattlefield();
-                    localDoneWaitingArea = true;
-                }
+            if (HasInputAuthority)
+            {
+                GameManager.Instance.SceneController.SpawnArenaLoading = true;
+                GameManager.Instance.SceneController.AddActionLoadinList(ReadyForBattle());
+                GameManager.Instance.SceneController.AddActionLoadinList(Inventory());
+                GameManager.Instance.SceneController.ActionPass = true;
             }
         }
     }

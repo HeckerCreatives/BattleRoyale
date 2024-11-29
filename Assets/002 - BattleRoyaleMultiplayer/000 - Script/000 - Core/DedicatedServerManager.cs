@@ -1,22 +1,12 @@
-using Cinemachine;
-using ExitGames.Client.Photon.StructWrapping;
 using Fusion;
 using Fusion.Addons.SimpleKCC;
-using Fusion.Sample.DedicatedServer;
 using Fusion.Sockets;
 using MyBox;
-using NUnit.Framework;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Unity.Services.Core;
-using Unity.Services.Matchmaker.Models;
-#if UNITY_SERVER || UNITY_EDITOR
-using Unity.Services.Multiplay;
-using Unity.VisualScripting.Antlr3.Runtime;
-#endif
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -44,8 +34,10 @@ public struct PlayerBattleSpawnPosition : INetworkStruct
 
 public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLeft
 {
-    private event EventHandler<PlayerCountEvent> PlayerCountChange;
-    public event EventHandler<PlayerCountEvent> OnPlayerCountChange
+    //  ====================================
+
+    private event EventHandler PlayerCountChange;
+    public event EventHandler OnPlayerCountChange
     {
         add
         {
@@ -55,13 +47,28 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         remove { PlayerCountChange -= value; }
     }
 
+    private event EventHandler CurrentStateChange;
+    public event EventHandler OnCurrentStateChange
+    {
+        add
+        {
+            if (CurrentStateChange == null || !CurrentStateChange.GetInvocationList().Contains(value))
+                CurrentStateChange += value;
+        }
+        remove { CurrentStateChange -= value; }
+    }
+
     //  ===================================
 
+    [SerializeField] private string lobby;
+
     [Header("SERVER")]
-    [SerializeField] NetworkPrefabRef playerPrefab;
     [SerializeField] private NetworkRunner serverNetworkRunnerPrefab;
-    [SerializeField] private bool debugMode;
-    [ConditionalField("debugMode")][SerializeField] private string lobby;
+    [SerializeField] private List<Transform> spawnWaitingAreaPositions;
+    [SerializeField] private List<Transform> spawnBattleAreaPositions;
+
+    [Header("PLAYER")]
+    [SerializeField] private NetworkObject playerObj;
 
     [Header("CRATES")]
     [SerializeField] private NetworkObject createNO;
@@ -71,228 +78,51 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [SerializeField] private List<Transform> spawnLocationsBattlefield;
 
     [Header("DEBUGGER")]
+    [MyBox.ReadOnly][SerializeField] private string sessionName;
+    [MyBox.ReadOnly][SerializeField] private bool doneSpawnCrates;
+    [MyBox.ReadOnly][SerializeField] private bool doneSetupBattlePos;
     [MyBox.ReadOnly][SerializeField] private NetworkRunner networkRunner;
+
+
+    [field: Space]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public GameState CurrentGameState { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float WaitingAreaTimer { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool CanCountWaitingAreaTimer { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool DonePlayerBattlePositions { get; set; }
-    [Networked][UnitySerializeField] private PlayerBattleSpawnPosition PositionStruct { get; set; } = new PlayerBattleSpawnPosition();
-
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool StartBattleRoyale { get; set; }
 
     //  =================
 
-#if UNITY_SERVER || UNITY_EDITOR
-    private IMultiplayService _multiplayService;
-    private MultiplayEventCallbacks _multiplayEventCallbacks;
-    private IServerEvents _serverEvents;
-#endif
-
-    public MatchmakingResults MatchmakingResults;
-
-    [Networked, Capacity(10)] public NetworkDictionary<PlayerRef, PlayerNetworkCore> Players => default;
-    [Networked, Capacity(10)] public NetworkDictionary<PlayerRef, PlayerNetworkCore> RemainingPlayers => default;
+    private ChangeDetector _changeDetector;
+    [Networked, Capacity(10)] public NetworkDictionary<PlayerRef, NetworkObject> Players => default;
+    [Networked, Capacity(10)] public NetworkDictionary<PlayerRef, NetworkObject> RemainingPlayers => default;
 
     //  =================
 
     private void Awake()
     {
-        //  DELETE THIS
         if (GameManager.Instance == null)
         {
-            StartServer();
+            StartGame();
         }
     }
 
-    #region UNITY MATCHMAKING SERVICE
-
-    private async void StartServer()
-    {
-        var config = DedicatedServerConfig.Resolve();
-
-        Debug.Log($"Start Initializing Unity Services");
-
-        if (debugMode)
-        {
-            await StartGame();
-        }
-        else 
-        {
-#if UNITY_SERVER || UNITY_EDITOR
-            if (UnityServices.State == ServicesInitializationState.Uninitialized)
-            {
-                await UnityServices.InitializeAsync();
-            }
-
-            Debug.Log($"Unity Services State: {UnityServices.State}");
-
-            try
-            {
-                _multiplayService = MultiplayService.Instance;
-                await _multiplayService.StartServerQueryHandlerAsync(10, serverName: "n/a", gameType: "n/a", buildId: "0", map: "n/a");
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning($"Something wrong with multiplay service {ex}");
-
-                Application.Quit();
-            }
-
-            Debug.Log($"Is Multiplay Service null: {_multiplayService == null}");
-
-            if (_multiplayService != null)
-            {
-                Debug.Log($"Start Setting up for allocation events and callbacks");
-
-                // Setup allocations
-                _multiplayEventCallbacks = new MultiplayEventCallbacks();
-                _multiplayEventCallbacks.Allocate += OnAllocate;
-                _multiplayEventCallbacks.Deallocate += OnDeallocate;
-                _multiplayEventCallbacks.Error += OnError;
-                _serverEvents = await MultiplayService.Instance.SubscribeToServerEventsAsync(_multiplayEventCallbacks);
-            }
-#endif
-        }
-    }
-
-#if UNITY_SERVER || UNITY_EDITOR
-    private async void OnAllocate(MultiplayAllocation allocation)
-    {
-        Debug.Log($"Done allocation");
-        LogServerConfig();
-
-        await StartGame();
-    }
-
-    private void OnDeallocate(MultiplayDeallocation deallocation)
-    {
-        Debug.Log("Deallocated");
-        LogServerConfig();
-
-        MatchmakingResults = null;
-
-        // Hack for now, just exit the application on deallocate
-        Application.Quit();
-    }
-
-    private void OnError(MultiplayError error)
-    {
-        LogServerConfig();
-        throw new NotImplementedException();
-    }
-
-    private void LogServerConfig()
-    {
-        var serverConfig = MultiplayService.Instance.ServerConfig;
-        Debug.Log($"Server ID[{serverConfig.ServerId}], AllocationId[{serverConfig.AllocationId}], Port[{serverConfig.Port}], QueryPort[{serverConfig.QueryPort}], LogDirectory[{serverConfig.ServerLogDirectory}]");
-    }
-#endif
-
-    //private async Task<MatchmakingResults> GetMatchmakerPayload()
-
-    #endregion
-
-    #region PHOTON FUSION
-
-    public override void FixedUpdateNetwork()
-    {
-        CountDownWaitingAreaTimer();
-        BattlePosition();
-    }
-
-    #region INITIALIZE
-
-    private async Task StartGame()
-    {
-        Debug.Log($"Starting Photon Server");
-
-        networkRunner = Instantiate(serverNetworkRunnerPrefab);
-
-        SceneRef sceneRef = default;
-
-        var scenePath = SceneManager.GetActiveScene().path;
-
-        scenePath = scenePath.Substring("Assets/".Length, scenePath.Length - "Assets/".Length - ".unity".Length);
-        int sceneIndex = SceneUtility.GetBuildIndexByScenePath(scenePath);
-
-        if (sceneIndex >= 0)
-        {
-            sceneRef = SceneRef.FromIndex(sceneIndex);
-        }
-
-        NetworkSceneInfo networkSceneInfo = new NetworkSceneInfo();
-
-        if (sceneRef.IsValid == true)
-        {
-            networkSceneInfo.AddSceneRef(sceneRef, LoadSceneMode.Single, LocalPhysicsMode.None, true);
-        }
-
-        if (debugMode)
-        {
-            await networkRunner.StartGame(new StartGameArgs()
-            {
-                SessionName = Guid.NewGuid().ToString(),
-                GameMode = GameMode.Server,
-                IsVisible = true,
-                IsOpen = true,
-                SceneManager = networkRunner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
-                Scene = networkSceneInfo,
-                PlayerCount = 10,
-                Address = NetAddress.Any(),
-                CustomLobbyName = lobby
-            });
-
-            Debug.Log($"Done Setting up photon server");
-
-            Debug.Log($"Spawning Crates");
-            StartCoroutine(SpawnCrates());
-
-            Debug.Log($"Set Spawn Positions");
-            StartCoroutine(SetSpawnPositionPlayers());
-            return;
-        }
-
-        var config = DedicatedServerConfig.Resolve();
-
-        var sessionName = Guid.NewGuid().ToString();
-
-        Debug.Log($"Server command lines \n\n Session Name: {sessionName} \n Lobby: {config.Lobby} \n SceneIndex: {config.SceneIndex}");
-
-        await networkRunner.StartGame(new StartGameArgs()
-        {
-            SessionName = sessionName,
-            GameMode = GameMode.Server,
-            IsVisible = true,
-            IsOpen = true,
-            SceneManager = networkRunner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
-            Scene = networkSceneInfo,
-            PlayerCount = 10,
-            Address = NetAddress.Any(),
-            CustomLobbyName = config.Lobby
-        });
-
-        Debug.Log($"Done Setting up photon server");
-
-        Debug.Log($"Spawning Crates");
-        StartCoroutine(SpawnCrates());
-
-        Debug.Log($"Set Spawn Positions");
-        StartCoroutine(SetSpawnPositionPlayers());
-    }
+    #region GAME INITIALIZE
 
     Dictionary<string, int> GenerateRandomItems()
     {
         List<string> itemPool = new List<string>
         {
-            "rifle", "rifle", "rifle", "rifle", "rifle", // 5%
-            "bow", "bow", "bow", "bow", "bow", // 5%
+            //"rifle", "rifle", "rifle", "rifle", "rifle", // 5%
+            //"bow", "bow", "bow", "bow", "bow", // 5%
             "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", // 15%
             "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", // 15%
-            "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo",
-            "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo",
-            "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo",
-            "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", // 60% total ammo, divided into rifle and bow ammo
-            "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo",
-            "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo"
+            //"rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo",
+            //"rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo",
+            //"rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo",
+            //"rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", // 60% total ammo, divided into rifle and bow ammo
+            //"bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo",
+            //"bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo"
         };
 
         Dictionary<string, string> itemIDMap = new Dictionary<string, string>
@@ -343,7 +173,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         int index = 1;
 
-        foreach(var spawnLocations in createSpawnLocations)
+        foreach (var spawnLocations in createSpawnLocations)
         {
             var gameobject = Runner.Spawn(createNO, spawnLocations.transform.position, Quaternion.identity, null);
 
@@ -354,29 +184,109 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             yield return null;
         }
 
-        Runner.SessionInfo.Properties.TryAdd("IsOpen", true);
+        doneSpawnCrates = true;
     }
 
     IEnumerator SetSpawnPositionPlayers()
     {
-        List<Transform> tempSpawnTF = spawnLocationsBattlefield;
+        yield return StartCoroutine(Shuffler.Shuffle(spawnBattleAreaPositions));
 
-        yield return StartCoroutine(Shuffler.Shuffle(tempSpawnTF));
-
-        var tempPositionStruct = PositionStruct;
-
-        for (int a = 0; a < tempSpawnTF.Count; a++)
-        {
-            tempPositionStruct.NetworkSpawnLocation.Set(a, tempSpawnTF[a].position);
-            yield return null;
-        }
-
-        PositionStruct = tempPositionStruct;
+        doneSetupBattlePos = true;
     }
 
     #endregion
 
-    #region WAITING AREA
+    #region SERVER INITIALIZE
+
+    private async Task StartGame()
+    {
+        Debug.Log($"Starting Photon Server");
+
+        networkRunner = Instantiate(serverNetworkRunnerPrefab);
+
+        SceneRef sceneRef = default;
+
+        var scenePath = SceneManager.GetActiveScene().path;
+
+        scenePath = scenePath.Substring("Assets/".Length, scenePath.Length - "Assets/".Length - ".unity".Length);
+        int sceneIndex = SceneUtility.GetBuildIndexByScenePath(scenePath);
+
+        if (sceneIndex >= 0)
+        {
+            sceneRef = SceneRef.FromIndex(sceneIndex);
+        }
+
+        NetworkSceneInfo networkSceneInfo = new NetworkSceneInfo();
+
+        if (sceneRef.IsValid == true)
+        {
+            networkSceneInfo.AddSceneRef(sceneRef, LoadSceneMode.Single, LocalPhysicsMode.None, true);
+        }
+
+
+        await networkRunner.StartGame(new StartGameArgs()
+        {
+            SessionName = sessionName,
+            GameMode = GameMode.Server,
+            IsVisible = false,
+            IsOpen = false,
+            SceneManager = networkRunner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
+            Scene = networkSceneInfo,
+            PlayerCount = 10,
+            Address = NetAddress.Any(),
+            CustomLobbyName = lobby,
+        });
+
+        Debug.Log($"Done Setting up photon server");
+
+        Debug.Log($"Spawning Crates");
+        StartCoroutine(SpawnCrates());
+
+        Debug.Log($"Set Spawn Positions");
+        StartCoroutine(SetSpawnPositionPlayers());
+
+        while (!doneSetupBattlePos || !doneSpawnCrates) await Task.Delay(100);
+
+        networkRunner.SessionInfo.IsOpen = true;
+        networkRunner.SessionInfo.IsVisible = true;
+
+        Debug.Log("ALL PLAYERS CAN NOW JOIN");
+    }
+
+    #endregion
+
+    public override async void Spawned()
+    {
+        while (!Runner) await Task.Delay(100);
+
+        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+    }
+
+    public override void Render()
+    {
+        foreach (var change in _changeDetector.DetectChanges(this))
+        {
+            switch (change)
+            {
+                case nameof(CurrentGameState):
+
+                    CurrentStateChange?.Invoke(this, EventArgs.Empty);
+
+                    break;
+                case nameof(RemainingPlayers):
+                    PlayerCountChange?.Invoke(this, EventArgs.Empty);
+                    break;
+            }
+        }
+    }
+
+    public override void FixedUpdateNetwork()
+    {
+        CountDownWaitingAreaTimer();
+        BattlePosition();
+    }
+
+    #region GAME LOGIC
 
     private void CountDownWaitingAreaTimer()
     {
@@ -388,76 +298,84 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         WaitingAreaTimer -= Runner.DeltaTime;
 
+
+        if (WaitingAreaTimer <= 60f && networkRunner.SessionInfo.IsOpen)
+        {
+            networkRunner.SessionInfo.IsOpen = false;
+            networkRunner.SessionInfo.IsVisible = false;
+        }
+
         if (WaitingAreaTimer <= 0f)
         {
             CurrentGameState = GameState.ARENA;
             CanCountWaitingAreaTimer = false;
+            CurrentStateChange?.Invoke(this, EventArgs.Empty);
         }
     }
 
     private void BattlePosition()
     {
-        if (DonePlayerBattlePositions) return;
-
         if (!HasStateAuthority) return;
+
         if (CurrentGameState != GameState.ARENA) return;
 
+        if (DonePlayerBattlePositions) return;
+
+        bool allPlayersInPosition = true;
+
         for (int a = 0; a < Players.Count; a++)
         {
-            Debug.Log(Players.ElementAt(a).Value.DoneBattlePosition);
-            if (!Players.ElementAt(a).Value.DoneBattlePosition)
-            {
-                Debug.Log(PositionStruct.NetworkSpawnLocation[a]);
-                Players.ElementAt(a).Value.PlayerCharacterSpawnedObj.GetComponent<SimpleKCC>().SetPosition(PositionStruct.NetworkSpawnLocation[a]);
-                Players.ElementAt(a).Value.DoneBattlePosition = true;
-            }
+            Debug.Log($"Player: {Players.ElementAt(a).Key.PlayerId}  Pos: {spawnBattleAreaPositions[a].position}");
+
+            // Set player position
+            Players.ElementAt(a).Value.GetComponent<SimpleKCC>().SetPosition(spawnBattleAreaPositions[a].position);
         }
 
         for (int a = 0; a < Players.Count; a++)
         {
-            if (!Players.ElementAt(a).Value.DoneBattlePosition)
+            if (Players.ElementAt(a).Value.transform.position != spawnBattleAreaPositions[a].position)
             {
-                return;
+                Debug.Log($"Player: {Players.ElementAt(a).Key.PlayerId} not in the Pos: {spawnBattleAreaPositions[a].position}");
+                allPlayersInPosition = false;
+                break;
             }
         }
 
-        DonePlayerBattlePositions = true;
+        if (allPlayersInPosition)
+            DonePlayerBattlePositions = true;
     }
 
     #endregion
 
-    #region PLAYER JOIN LEAVE
+    #region SERVER LOGIC
 
-    public void PlayerJoined(PlayerRef player)
+    public async void PlayerJoined(PlayerRef player)
     {
         if (HasStateAuthority)
         {
-            NetworkObject playerObj = Runner.Spawn(playerPrefab, Vector3.up, Quaternion.identity, player, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+            int tempspawnpos = UnityEngine.Random.Range(0, spawnWaitingAreaPositions.Count);
+
+            NetworkObject playerCharacter = Runner.Spawn(playerObj, Vector3.up, Quaternion.identity, player, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
             {
-                obj.GetComponent<PlayerNetworkCore>().ServerManager = Object;
+                obj.GetComponent<SimpleKCC>().SetPosition(spawnWaitingAreaPositions[tempspawnpos].position);
+                obj.GetComponent<KillCountCounterController>().ServerManager = this;
+                obj.GetComponent<WaitingAreaTimerController>().ServerManager = this;
+                obj.GetComponent<PlayerHealth>().ServerManager = this;
+                obj.GetComponent<PlayerSpawnLocationController>().ServerManager = this;
             });
 
-            PlayerNetworkCore playerNetowrkCore = playerObj.GetComponent<PlayerNetworkCore>();
-
-            NetworkObject playerCharacter = Runner.Spawn(playerNetowrkCore.PlayerCharacterObj, Vector3.up, Quaternion.identity, player, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
-            {
-                playerNetowrkCore.GetComponent<PlayerNetworkCore>().PlayerCharacterSpawnedObj = obj;
-                obj.GetComponent<SimpleKCC>().SetPosition(playerNetowrkCore.SpawnPosition);
-            });
-
-            Players.Add(player, playerObj.GetComponent<PlayerNetworkCore>());
-            Rpc_TriggerPlayerCount();
+            Players.Add(player, playerCharacter);
+            PlayerCountChange?.Invoke(this, EventArgs.Empty);
 
             if (WaitingAreaTimer <= 0f && !CanCountWaitingAreaTimer)
             {
-                WaitingAreaTimer = 160;
+                WaitingAreaTimer = 150;
                 CanCountWaitingAreaTimer = true;
+                StartBattleRoyale = true;
             }
 
             if (CanCountWaitingAreaTimer && WaitingAreaTimer > 60 && Players.Count >= Players.Capacity)
-            {
                 WaitingAreaTimer = 60;
-            }
         }
     }
 
@@ -465,45 +383,26 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     {
         if (!HasStateAuthority) return;
 
-        if (Players.TryGet(player, out PlayerNetworkCore remainingPlayer))
+        if (Players.TryGet(player, out NetworkObject remainingPlayer))
         {
             RemainingPlayers.Remove(player);
-            Rpc_TriggerPlayerCount();
         }
 
-
-        if (Players.TryGet(player, out PlayerNetworkCore clientPlayer))
+        if (Players.TryGet(player, out NetworkObject clientPlayer))
         {
             Players.Remove(player);
-            Runner.Despawn(clientPlayer.PlayerCharacterSpawnedObj);
-            Runner.Despawn(clientPlayer.Object);
-            Rpc_TriggerPlayerCount();
+            Runner.Despawn(clientPlayer);
 
             if (Players.Count <= 0 && CanCountWaitingAreaTimer)
             {
                 CanCountWaitingAreaTimer = false;
             }
         }
-    }
 
-    [Rpc (RpcSources.StateAuthority, RpcTargets.All)]
-    private void Rpc_TriggerPlayerCount()
-    {
-        PlayerCountChange?.Invoke(this, new PlayerCountEvent(Players.Count));
+        
+
+        PlayerCountChange?.Invoke(this, EventArgs.Empty);
     }
 
     #endregion
-
-    #endregion
-}
-
-
-public class PlayerCountEvent : EventArgs
-{
-    public int PlayerCount { get; }
-
-    public PlayerCountEvent(int playerCount)
-    {
-        PlayerCount = playerCount;
-    }
 }

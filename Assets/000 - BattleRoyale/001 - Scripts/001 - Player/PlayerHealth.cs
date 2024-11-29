@@ -2,11 +2,15 @@ using Fusion;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class PlayerHealth : NetworkBehaviour
 {
+    [SerializeField] private UserData userData;
+
+    [Space]
     [SerializeField] private float startingHealth;
     [SerializeField] private float startingArmor;
 
@@ -27,10 +31,18 @@ public class PlayerHealth : NetworkBehaviour
     [SerializeField] private GameObject winMessageObj;
     [SerializeField] private GameObject loseMessageObj;
 
+    [Space]
+    [SerializeField] private TextMeshProUGUI usernameResultTMP;
+    [SerializeField] private TextMeshProUGUI playerCountResultTMP;
+    [SerializeField] private TextMeshProUGUI rankResultTMP;
+
     [field: Header("DEBUGGER")]
     [Networked] [field: SerializeField] public float CurrentHealth { get; set; }
     [Networked][field: SerializeField] public float CurrentArmor { get; set; }
+    [Networked][field: SerializeField] public bool GetHit { get; set; }
 
+    [field: Space]
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
 
     //  =========================
 
@@ -49,38 +61,36 @@ public class PlayerHealth : NetworkBehaviour
 
     public override async void Render()
     {
-        while (!Runner) await Task.Delay(100);
-
         foreach (var change in _changeDetector.DetectChanges(this))
         {
             switch (change)
             {
                 case nameof(CurrentHealth):
 
-                    if (!HasInputAuthority) return;
-
-                    healthSlider.value = CurrentHealth / 100f;
-
-                    if (damageIndicatorLT != 0) LeanTween.cancel(damageIndicatorLT);
-
-                    damageIndicatorLT = LeanTween.color(damageIndicator.rectTransform, new Color(255f, 255f, 255f, 255f), 0.12f).setEase(LeanTweenType.easeInOutSine).setOnComplete(() =>
+                    if (HasInputAuthority)
                     {
-                        damageIndicatorLT = LeanTween.color(damageIndicator.rectTransform, new Color(255f, 255f, 255f, 0), 5f).setEase(LeanTweenType.easeInSine).setDelay(2f).id;
-                    }).id;
+                        healthSlider.value = CurrentHealth / 100f;
+
+                        if (CurrentHealth <= 0)
+                        {
+                            await Task.Delay(1500);
+
+                            usernameResultTMP.text = userData.Username;
+                            playerCountResultTMP.text = $"<color=yellow><size=\"55\">#{ServerManager.RemainingPlayers.Count}</size></color> <size=\"50\"> / {ServerManager.RemainingPlayers.Count}</size>";
+                            rankResultTMP.text = "1";
+
+                            controllerObj.SetActive(false);
+                            pauseObj.SetActive(false);
+
+                            winMessageObj.SetActive(false);
+                            loseMessageObj.SetActive(true);
+                            gameOverPanelObj.SetActive(true);
+                        }
+                    }
 
                     if (CurrentHealth <= 0)
                     {
                         playerAnimator.SetTrigger("died");
-                        RPC_DeadBoy();
-
-                        await Task.Delay(1500);
-
-                        controllerObj.SetActive(false);
-                        pauseObj.SetActive(false);
-
-                        winMessageObj.SetActive(false);
-                        loseMessageObj.SetActive(true);
-                        gameOverPanelObj.SetActive(true);
                     }
 
                     break;
@@ -89,6 +99,20 @@ public class PlayerHealth : NetworkBehaviour
                     if (!HasInputAuthority) return;
 
                     armorSlider.value = CurrentArmor / 100f;
+                    break;
+                case nameof(GetHit):
+
+                    if (HasInputAuthority && GetHit)
+                    {
+                        if (damageIndicatorLT != 0) LeanTween.cancel(damageIndicatorLT);
+
+                        damageIndicatorLT = LeanTween.color(damageIndicator.rectTransform, new Color(255f, 255f, 255f, 255f), 0.12f).setEase(LeanTweenType.easeInOutSine).setOnComplete(() =>
+                        {
+                            damageIndicatorLT = LeanTween.color(damageIndicator.rectTransform, new Color(255f, 255f, 255f, 0), 5f).setEase(LeanTweenType.easeInSine).setDelay(2f).id;
+                        }).id;
+                    }
+
+                    GetHit = false;
                     break;
             }
         }
@@ -109,16 +133,20 @@ public class PlayerHealth : NetworkBehaviour
         }
     }
 
-    public void ReduceHealth(float damage)
+    public void ReduceHealth(float damage, NetworkObject nobject)
     {
         if (CurrentHealth <= 0) return;
 
-        CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - damage);
-    }
+        GetHit = true;
 
-    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    private void RPC_DeadBoy()
-    {
-        playerAnimator.SetTrigger("died");
+        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+
+        CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - damage);
+
+        if (CurrentHealth <= 0)
+        {
+            ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
+            nobject.GetComponent<KillCountCounterController>().KillCount++;
+        }
     }
 }

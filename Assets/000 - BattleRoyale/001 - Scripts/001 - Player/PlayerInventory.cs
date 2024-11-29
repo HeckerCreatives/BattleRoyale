@@ -193,7 +193,6 @@ public class PlayerInventory : NetworkBehaviour
 
     #region TELEPORT TO BATTLE FIELD
 
-    [Rpc (RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     public void Rpc_DropWeaponsAfterTeleportBattlefield()
     {
         #region WEAPONS

@@ -11,7 +11,7 @@ public class PlayerMultiplayerEvents : SimulationBehaviour, INetworkRunnerCallba
     [SerializeField] private GameplayController gameplayController;
 
     [Header("DEBUGGER")]
-    [MyBox.ReadOnly][SerializeField] private bool doneLoadingScene;
+    [MyBox.ReadOnly] public bool doneLoadingScene;
 
     #region LOADING SCENE
 
@@ -85,7 +85,6 @@ public class PlayerMultiplayerEvents : SimulationBehaviour, INetworkRunnerCallba
     public void OnSceneLoadDone(NetworkRunner runner)
     {
         GameManager.Instance.SceneController.AddActionLoadinList(gameplayController.InitializeControllers());
-        doneLoadingScene = true;
     }
 
     public void OnSceneLoadStart(NetworkRunner runner)

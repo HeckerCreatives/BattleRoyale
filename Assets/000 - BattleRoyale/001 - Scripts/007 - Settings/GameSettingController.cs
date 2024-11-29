@@ -1,3 +1,4 @@
+using Fusion;
 using MyBox;
 using System;
 using System.Collections;
@@ -44,6 +45,12 @@ public class GameSettingController : MonoBehaviour
         set => lastCurrentState = value;
     }
 
+    //  ================================
+
+    [SerializeField] private bool insideGame;
+    [MyBox.ConditionalField("insideGame")][SerializeField] private NetworkObject player;
+
+    [Space]
     [SerializeField] private List<GameObject> settingPanels;
 
     [Header("AUDIOS")]
@@ -101,8 +108,8 @@ public class GameSettingController : MonoBehaviour
     [SerializeField] private Button lookAdsSensitivityAdd;
 
     [Header("DEBUGGER")]
-    [ReadOnly][SerializeField] private SettingsState currentState;
-    [ReadOnly][SerializeField] private SettingsState lastCurrentState;
+    [MyBox.ReadOnly][SerializeField] private SettingsState currentState;
+    [MyBox.ReadOnly][SerializeField] private SettingsState lastCurrentState;
 
     //  ============================
 
@@ -133,6 +140,20 @@ public class GameSettingController : MonoBehaviour
 
     public IEnumerator SetGraphicsOnStart()
     {
+        if (insideGame)
+        {
+            while (!player.Runner) yield return null;
+
+            if (!player.HasInputAuthority) yield break;
+
+            while(postProcesing == null)
+            {
+                postProcesing = GameObject.FindGameObjectWithTag("Postprocessing").GetComponent<Volume>();
+
+                yield return null;
+            }
+        }
+
         graphicsDropdown.value = GameManager.Instance.GraphicsManager.CurrentGraphicsQualityIndex;
         graphicsDropdown.RefreshShownValue();
 

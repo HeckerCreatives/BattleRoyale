@@ -1,14 +1,15 @@
+using Fusion;
 using MyBox;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
-using static UnityEngine.Rendering.DebugUI;
 
-public class ControllerSetting : MonoBehaviour
+public class ControllerSetting : Fusion.Behaviour
 {
     private event EventHandler SelectedUIRTChange;
     public event EventHandler OnSelectedUIRTChange
@@ -37,7 +38,9 @@ public class ControllerSetting : MonoBehaviour
 
     //  ==============================
 
-    [SerializeField] private UserData userData; 
+    [SerializeField] private UserData userData;
+    [SerializeField] private bool insideGame;
+    [MyBox.ConditionalField("insideGame")] [SerializeField] private NetworkObject player;
 
     [Header("SIZE")]
     [SerializeField] private float minXSize;
@@ -55,19 +58,33 @@ public class ControllerSetting : MonoBehaviour
     [SerializeField] private List<ControllerSettingDataRetriever> controllerDataRetriever;
 
     [Header("DEBUGGER")]
-    [ReadOnly][SerializeField] private RectTransform selectedUIRT;
-    [ReadOnly][SerializeField] private CanvasGroup selectedUIImg;
-    [ReadOnly][SerializeField] private float initialWidth;
-    [ReadOnly][SerializeField] private float initialHeight;
-    [ReadOnly][SerializeField] private float initialOpacity;
+    [MyBox.ReadOnly][SerializeField] private RectTransform selectedUIRT;
+    [MyBox.ReadOnly][SerializeField] private CanvasGroup selectedUIImg;
+    [MyBox.ReadOnly][SerializeField] private float initialWidth;
+    [MyBox.ReadOnly][SerializeField] private float initialHeight;
+    [MyBox.ReadOnly][SerializeField] private float initialOpacity;
 
-    private void Awake()
+    private async void Awake()
     {
+        if (insideGame)
+        {
+            while (!player.Runner) await Task.Delay(100);
+
+            if (!player.HasInputAuthority) return;
+        }
+
         OnSelectedUIRTChange += UIChange;
     }
 
-    private void OnDisable()
+    private async void OnDisable()
     {
+        if (insideGame)
+        {
+            while (!player.Runner) await Task.Delay(100);
+
+            if (!player.HasInputAuthority) return;
+        }
+
         OnSelectedUIRTChange -= UIChange;
     }
 

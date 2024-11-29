@@ -31,7 +31,7 @@ public class FistWeaponHandler : NetworkBehaviour
         // Use the runner to get lag-compensated overlap sphere results
         int hitCount = Runner.LagCompensation.OverlapSphere(
                 impactFirstFistPoint.position,
-                0.5f,
+                attackRadius,
                 Object.InputAuthority,
                 hitsFirstFist,
                 enemyLayerMask,
@@ -94,7 +94,7 @@ public class FistWeaponHandler : NetworkBehaviour
         // Use the runner to get lag-compensated overlap sphere results
         int hitCount = Runner.LagCompensation.OverlapSphere(
                 impactSecondFistPoint.position,
-                0.5f,
+                attackRadius,
                 Object.InputAuthority,
                 hitsSecondFist,
                 enemyLayerMask,
@@ -151,7 +151,7 @@ public class FistWeaponHandler : NetworkBehaviour
 
         PlayerHealth health = enemy.GetComponent<PlayerHealth>();
 
-        health.ReduceHealth(damage);
+        health.ReduceHealth(damage, Object);
     }
 
     public void ResetFirstAttack()

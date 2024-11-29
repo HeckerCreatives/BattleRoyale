@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &789551355360307124
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7638595848337183244}
+  m_Layer: 12
+  m_Name: HitPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7638595848337183244
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 789551355360307124}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.091, y: 0.423, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6175662577263270886}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7616198628887366643
 GameObject:
   m_ObjectHideFlags: 0
@@ -11,6 +42,7 @@ GameObject:
   - component: {fileID: 6175662577263270886}
   - component: {fileID: 2511843833045033619}
   - component: {fileID: 1209081772464881890}
+  - component: {fileID: 8128101794879521815}
   - component: {fileID: 3200345005151495415}
   - component: {fileID: -6896107499734453323}
   - component: {fileID: 3207388781055745948}
@@ -31,10 +63,11 @@ Transform:
   m_GameObject: {fileID: 7616198628887366643}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -0.014, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 7638595848337183244}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &2511843833045033619
@@ -89,6 +122,31 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &8128101794879521815
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7616198628887366643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f6ed8a34d7cc344b84e7d5d4351da07, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackRadius: {x: 0.37, y: 1.09, z: 0.03}
+  attackRotation: {x: 0, y: 0, z: 0}
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 8192
+  impactPoint: {fileID: 7638595848337183244}
+  headDamage: 50
+  bodyDamge: 25
+  thighDamage: 15
+  shinDamage: 10
+  footDamage: 5
+  armDamage: 15
+  forearmDamage: 10
 --- !u!114 &3200345005151495415
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -129,6 +187,7 @@ MonoBehaviour:
   Flags: 262145
   NestedObjects: []
   NetworkedBehaviours:
+  - {fileID: 8128101794879521815}
   - {fileID: 3200345005151495415}
   - {fileID: 3207388781055745948}
 --- !u!114 &3207388781055745948

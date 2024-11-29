@@ -15545,7 +15545,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1747119143}
         m_TargetAssemblyTypeName: ClientMatchmakingController, Assembly-CSharp
-        m_MethodName: ConnectToServer
+        m_MethodName: FindMatch
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -39770,6 +39770,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
+  insideGame: 0
+  player: {fileID: 0}
   minXSize: 50
   maxXSize: 1000
   minYSize: 50
@@ -39813,6 +39815,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a6607ab3aa2c3d24fb3cc687ddf47775, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   instanceRunner: {fileID: 897126475038176706, guid: c557b32efdd62aa41ba7a3de1a60bbfe,
     type: 3}
   timerTMP: {fileID: 332907016}
@@ -39870,6 +39873,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff2bb344790aec14fa086308a9ea15db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  insideGame: 0
+  player: {fileID: 0}
   settingPanels:
   - {fileID: 1370469681}
   - {fileID: 1789271350}

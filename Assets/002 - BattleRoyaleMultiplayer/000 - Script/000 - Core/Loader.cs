@@ -8,9 +8,11 @@ using UnityEngine.SceneManagement;
 public class Loader : MonoBehaviour
 {
     [SerializeField] private bool isServer;
-    [SerializeField] private bool debugMode;
     [SerializeField] private UserData userData;
+    [SerializeField] private bool debugMode;
     [ConditionalField("debugMode")][SerializeField] private string sceneName;
+
+    //  Lobby: AsiaBR
 
     private void Awake()
     {

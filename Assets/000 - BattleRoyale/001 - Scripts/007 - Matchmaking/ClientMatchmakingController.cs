@@ -1,4 +1,5 @@
 using Fusion;
+using Fusion.Sockets;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -7,9 +8,17 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Unity.Services.Matchmaker;
+using System;
+using Unity.Services.Matchmaker.Models;
+using Unity.Services.Core;
+using Unity.Services.Authentication;
 
 public class ClientMatchmakingController : MonoBehaviour
 {
+    [SerializeField] private UserData userData;
+
+    [Space]
     //  delete this after today's presentation
     [SerializeField] private NetworkRunner instanceRunner;
     [SerializeField] private TextMeshProUGUI timerTMP;
@@ -23,6 +32,12 @@ public class ClientMatchmakingController : MonoBehaviour
     [ReadOnly][SerializeField] private bool matchFound;
     [ReadOnly][SerializeField] string minutesFindMatch;
     [ReadOnly][SerializeField] string secondsFindMatch;
+
+    //  =====================
+
+    CreateTicketResponse ticketResponse;
+
+    //  =====================
 
     private void Update()
     {
@@ -44,9 +59,19 @@ public class ClientMatchmakingController : MonoBehaviour
         timerTMP.text = string.Format("{0} : {1}", minutesFindMatch, secondsFindMatch);
     }
 
-    public void ConnectToServer()
+    public async void FindMatch()
     {
         if (findingMatch) return;
+
+        if (UnityServices.State == ServicesInitializationState.Uninitialized)
+        {
+            await UnityServices.InitializeAsync();
+        }
+
+        if (!AuthenticationService.Instance.IsSignedIn)
+        {
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        }
 
         findingMatch = true;
 
@@ -54,43 +79,94 @@ public class ClientMatchmakingController : MonoBehaviour
 
         currentRunnerInstance = Instantiate(instanceRunner);
 
-        JoinDropballSession();
+        var players = new List<Unity.Services.Matchmaker.Models.Player>
+        {
+            new Unity.Services.Matchmaker.Models.Player(userData.Username, new Dictionary<string, object>())
+        };
+
+        var options = new CreateTicketOptions(
+              "BattleRoyale", // The name of the queue defined in the previous step,
+              new Dictionary<string, object>());
+
+        Debug.Log("JOINING LOBBY");
+
+        await JoinLobby("AsiaBR");
+
+        Debug.Log("DONE JOINING LOBBY, RECEIVING TICKET RESPONSE");
+
+        ticketResponse = await MatchmakerService.Instance.CreateTicketAsync(players, options);
+
+        Debug.Log($"ticket id: {ticketResponse.Id}");
+
+        MultiplayAssignment assignment = null;
+        bool gotAssignment = false;
+        bool matchfound = false;
+
+        do
+        {
+            //Rate limit delay
+            await Task.Delay(TimeSpan.FromSeconds(1f));
+
+            // Poll ticket
+            var ticketStatus = await MatchmakerService.Instance.GetTicketAsync(ticketResponse.Id);
+
+            if (ticketStatus == null)
+            {
+                continue;
+            }
+
+            //Convert to platform assignment data (IOneOf conversion)
+            if (ticketStatus.Type == typeof(MultiplayAssignment))
+            {
+                assignment = ticketStatus.Value as MultiplayAssignment;
+            }
+
+            switch (assignment?.Status)
+            {
+                case MultiplayAssignment.StatusOptions.Found:
+                    gotAssignment = true;
+                    matchfound = true;
+                    break;
+                case MultiplayAssignment.StatusOptions.InProgress:
+                    //...
+                    break;
+                case MultiplayAssignment.StatusOptions.Failed:
+                    gotAssignment = true;
+                    Debug.LogError("Failed to get ticket status. Error: " + assignment.Message);
+                    break;
+                case MultiplayAssignment.StatusOptions.Timeout:
+                    Debug.LogError("Failed to get ticket status. Ticket timed out. Retrying to find match");
+                    break;
+                default:
+                    throw new InvalidOperationException();
+            }
+        } while (!gotAssignment && findingMatch);
+
+        if (matchfound)
+        {
+            Debug.Log($"Server IP: {assignment.Ip}   Port: {(ushort)assignment.Port}");
+
+            JoinDropballSession();
+        }
     }
 
     private async void JoinDropballSession()
     {
-        if (findingMatch)
+        cancelBtn.interactable = false;
+
+        var sessionResult = await StartSimulation(currentRunnerInstance, GameMode.Client);
+
+        if (sessionResult.Ok)
         {
-            //  JOIN SESSION HERE
-            var result = await JoinLobby("AsiaBR");
-
-            if (result.Ok)
-            {
-                timerTMP.text = "CONFIRMING MATCH!";
-
-                cancelBtn.interactable = false;
-
-                var sessionResult = await StartSimulation(currentRunnerInstance, GameMode.Client);
-
-                cancelBtn.interactable = false;
-
-                if (sessionResult.Ok)
-                {
-                    timerTMP.text = "MATCH FOUND!";
-                    matchFound = true;
-                    findingMatch = false;
-                    GameManager.Instance.SceneController.MultiplayerScene = true;
-                }
-                else
-                {
-                    cancelBtn.interactable = true;
-                    Reconnect();
-                }
-            }
-            //else
-            //{
-            //    Reconnect();
-            //}
+            timerTMP.text = "MATCH FOUND!";
+            matchFound = true;
+            findingMatch = false;
+            GameManager.Instance.SceneController.MultiplayerScene = true;
+        }
+        else
+        {
+            cancelBtn.interactable = true;
+            Reconnect();
         }
     }
 
@@ -112,7 +188,13 @@ public class ClientMatchmakingController : MonoBehaviour
             if (!findingMatch)
                 return;
 
-            ConnectToServer();
+            currentRunnerInstance = Instantiate(instanceRunner);
+
+            Debug.Log("REJOINING LOBBY");
+
+            await JoinLobby("AsiaBR");
+
+            JoinDropballSession();
         }
     }
 
@@ -121,10 +203,7 @@ public class ClientMatchmakingController : MonoBehaviour
         return currentRunnerInstance.JoinSessionLobby(SessionLobby.Custom, lobbyName);
     }
 
-    public Task<StartGameResult> StartSimulation(
-       NetworkRunner runner,
-       GameMode gameMode
-     )
+    public Task<StartGameResult> StartSimulation(NetworkRunner runner, GameMode gameMode)
     {
         if (currentRunnerInstance != null)
         {
@@ -155,7 +234,7 @@ public class ClientMatchmakingController : MonoBehaviour
                 {
                     GameMode = gameMode,
                     SceneManager = runner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
-                    Scene = sceneRef,
+                    Scene = sceneRef
                 });
             }
         }
@@ -179,6 +258,9 @@ public class ClientMatchmakingController : MonoBehaviour
 
     private async void ShutdownServer()
     {
+        if (ticketResponse != null)
+            await MatchmakerService.Instance.DeleteTicketAsync(ticketResponse.Id);
+
         if (currentRunnerInstance == null)
         {
             matchmakingObj.SetActive(false);

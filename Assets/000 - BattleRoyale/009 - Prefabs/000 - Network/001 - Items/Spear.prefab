@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4845959772131871043}
   - component: {fileID: 7597264622304753617}
   - component: {fileID: 4929590429377642367}
+  - component: {fileID: 1438292863188594731}
   - component: {fileID: 141857838824564323}
   - component: {fileID: 7258497585221354807}
   - component: {fileID: 340040335221564200}
@@ -34,7 +35,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 7662138281644343327}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &7597264622304753617
@@ -89,6 +91,30 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1438292863188594731
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1146007469215679106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 686ba26dd27e49b43af76f6c0336e0e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackRadius: 0.15
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 8192
+  impactPoint: {fileID: 7662138281644343327}
+  headDamage: 50
+  bodyDamge: 25
+  thighDamage: 15
+  shinDamage: 10
+  footDamage: 5
+  armDamage: 15
+  forearmDamage: 10
 --- !u!114 &141857838824564323
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -110,6 +136,7 @@ MonoBehaviour:
   _Parent: {fileID: 0}
   _Hand: {fileID: 0}
   _IsPickedUp: 0
+  _IsHand: 0
   dropRotation: {x: 0, y: 90, z: 90}
 --- !u!114 &7258497585221354807
 MonoBehaviour:
@@ -128,6 +155,7 @@ MonoBehaviour:
   Flags: 262145
   NestedObjects: []
   NetworkedBehaviours:
+  - {fileID: 1438292863188594731}
   - {fileID: 141857838824564323}
   - {fileID: 340040335221564200}
 --- !u!114 &340040335221564200
@@ -167,3 +195,34 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.07173507, y: 2.082522, z: 0.14573482}
   m_Center: {x: 0, y: 0.3017121, z: 0.0051292814}
+--- !u!1 &6933197138993100872
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7662138281644343327}
+  m_Layer: 12
+  m_Name: HitPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7662138281644343327
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6933197138993100872}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.171, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4845959772131871043}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

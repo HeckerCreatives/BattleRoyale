@@ -1,50 +1,32 @@
 using Fusion;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
 public class WaitingAreaTimerController : NetworkBehaviour
 {
-    [SerializeField] private PlayerNetworkCore core;
+    [SerializeField] public GameObject Timer;
+    [SerializeField] private TextMeshProUGUI timerTMP; 
 
-    [Header("DEBUGGER")]
-    [MyBox.ReadOnly][SerializeField] private bool doneInitialize;
-    [field: MyBox.ReadOnly][field: SerializeField] private TextMeshProUGUI timerTMP;
-    [MyBox.ReadOnly][SerializeField] private DedicatedServerManager ServerManager { get; set; }
-    [field: MyBox.ReadOnly][field: SerializeField] public GameObject Timer { get; set; }
-    //[field: MyBox.ReadOnly][field: SerializeField] public TextMeshProUGUI SpawnMapTimer { get; set; }
-
-    public IEnumerator InitializeWaitingAreaTimer()
-    {
-        while (core.ServerManager == null || Timer == null) yield return null;
-
-        ServerManager = core.ServerManager.GetComponent<DedicatedServerManager>();
-
-        timerTMP = Timer.transform.GetChild(0).GetChild(0).GetComponent<TextMeshProUGUI>();
-
-        timerTMP.text = $"{GameManager.Instance.GetMinuteSecondsTime(ServerManager.WaitingAreaTimer)}";
-        //SpawnMapTimer.text = $"{GameManager.Instance.GetMinuteSecondsTime(ServerManager.WaitingAreaTimer)}";
-
-        doneInitialize = true;
-    }
+    [field: Header("DEBUGGER")]
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
 
     private void Update()
     {
-        if (doneInitialize && HasInputAuthority)
+        if (HasInputAuthority)
         {
-            if (ServerManager.CurrentGameState == GameState.WAITINGAREA)
-            {
-                if (ServerManager.CanCountWaitingAreaTimer)
-                {
-                    Timer.gameObject.SetActive(true);
-                    timerTMP.text = $"{GameManager.Instance.GetMinuteSecondsTime(ServerManager.WaitingAreaTimer)}";
-                    //SpawnMapTimer.text = $"{GameManager.Instance.GetMinuteSecondsTime(ServerManager.WaitingAreaTimer)}";
-                }
-            }
-            else
+            if (ServerManager.CurrentGameState != GameState.WAITINGAREA)
             {
                 Timer.gameObject.SetActive(false);
+                return;
+            }
+
+            if (ServerManager.WaitingAreaTimer > 0f)
+            {
+                Timer.gameObject.SetActive(true);
+                timerTMP.text = $"{GameManager.Instance.GetMinuteSecondsTime(ServerManager.WaitingAreaTimer)}";
             }
         }
     }
