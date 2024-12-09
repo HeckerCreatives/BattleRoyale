@@ -258,7 +258,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         Debug.Log("Done adding waiting Area Timer");
 
-#if !UNITY_ANDROID
+#if !UNITY_ANDROID && !UNITY_IOS
 
         Debug.Log("Initializing Multiplay");
         await multiplayController.InitializeUnityAuthentication();

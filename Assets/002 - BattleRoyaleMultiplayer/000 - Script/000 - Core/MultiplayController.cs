@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Threading.Tasks;
-#if !UNITY_ANDROID
+#if !UNITY_ANDROID && !UNITY_IOS
 using Unity.Services.Core;
 using Unity.Services.Matchmaker;
 using Unity.Services.Matchmaker.Models;
@@ -14,7 +14,7 @@ public class MultiplayController : MonoBehaviour
 
     [SerializeField] private DedicatedServerManager serverManager;
 
-#if !UNITY_ANDROID
+#if !UNITY_ANDROID && !UNITY_IOS
 
     //  =====================
 
