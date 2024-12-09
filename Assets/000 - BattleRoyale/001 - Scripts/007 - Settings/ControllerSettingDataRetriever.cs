@@ -1,16 +1,26 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ControllerSettingDataRetriever : MonoBehaviour
 {
+    [SerializeField] private PlayerNetworkLoader playerNetworkLoader;
+    [SerializeField] private bool isNetworked;
     [SerializeField] private UserData userData;
     [SerializeField] private RectTransform uiRT;
     [SerializeField] private CanvasGroup uiImg;
 
-    private void Awake()
+    private async void Awake()
     {
+        if (isNetworked)
+        {
+            while (!playerNetworkLoader.Runner) await Task.Delay(100);
+
+            if (!playerNetworkLoader.HasInputAuthority) return;
+        }
+
         SetUILayout();
     }
 

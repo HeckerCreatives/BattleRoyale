@@ -103,6 +103,7 @@
     <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\Recorders\StatsWriter.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerOwnObjectEnabler.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Network\KCCNetworkQuaternion.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerQuitController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\Core\GenericKCCProcessorProvider.cs" />
     <Compile Include="Assets\002 - BattleRoyaleMultiplayer\000 - Script\000 - Core\Loader.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Core\KCC.Methods.cs" />
@@ -270,6 +271,7 @@
     <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Utilities\Accumulators\FloatAccumulator.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingSequencer.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\005 - ScriptableObjects\000 - Player\UserData.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\SocketManager.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Network\KCCNetworkFloatRange.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Photon\FusionAddons\KCC\Processors\Core\ScriptableKCCProcessor.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LTDescrOptional.cs" />
@@ -1441,6 +1443,10 @@
     </Reference>
     <Reference Include="Unity.RenderPipelines.Universal.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Universal.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="SocketIOUnityAssembly">
+      <HintPath>Library\ScriptAssemblies\SocketIOUnityAssembly.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Collections.Editor">

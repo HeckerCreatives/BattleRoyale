@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TMPro;
+using Unity.Services.Matchmaker.Models;
 using UnityEngine;
 
 public class WaitingAreaTimerController : NetworkBehaviour
@@ -13,10 +14,12 @@ public class WaitingAreaTimerController : NetworkBehaviour
     [field: Header("DEBUGGER")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
 
-    private void Update()
+    public override void Render()
     {
         if (HasInputAuthority)
         {
+            if (ServerManager == null) return;
+
             if (ServerManager.CurrentGameState != GameState.WAITINGAREA)
             {
                 Timer.gameObject.SetActive(false);

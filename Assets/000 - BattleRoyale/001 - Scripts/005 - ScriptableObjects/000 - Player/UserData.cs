@@ -25,8 +25,13 @@ public class UserData : ScriptableObject
 
     //  ===========================
 
-    private void Awake()
+    private void OnEnable()
     {
+        UserToken = "";
+        Username = "";
+        Password = "";
+        RememberMe = false;
+        LoadRememberMe();
         ControlSetting = new Dictionary<string, ControllerSettingData>();
     }
 
@@ -64,6 +69,30 @@ public class UserData : ScriptableObject
             };
 
         PlayerPrefs.SetString("ControlSetting", JsonConvert.SerializeObject(ControlSetting));
+    }
+
+    public void RememberMeSave()
+    {
+        PlayerPrefs.SetString("Username", Username);
+        PlayerPrefs.SetString("Password", Password);
+        PlayerPrefs.SetString("RememberMe", "true");
+    }
+
+    public void RememberMeDelete()
+    {
+        PlayerPrefs.DeleteKey("Username");
+        PlayerPrefs.DeleteKey("Password");
+        PlayerPrefs.DeleteKey("RememberMe");
+    }
+
+    public void LoadRememberMe()
+    {
+        if (PlayerPrefs.GetString("RememberMe") == "true")
+        {
+            RememberMe = PlayerPrefs.GetString("RememberMe") == "true" ? true : false;
+            Username = PlayerPrefs.GetString("Username");
+            Password = PlayerPrefs.GetString("Password");
+        }
     }
 }
 

@@ -36,6 +36,7 @@ public class GameManager : MonoBehaviour
 
     [field: Header("SCRIPTS")]
     [field: SerializeField] public SceneController SceneController { get; private set; }
+    [field: SerializeField] public SocketManager SocketMngr { get; private set; }
     [field: SerializeField] public AudioManager AudioController { get; private set; }
     [field: SerializeField] public GraphicsController GraphicsManager { get; private set; }
     [field: SerializeField] public GameplaySettingsController GameSettingManager { get; private set; }
@@ -106,6 +107,7 @@ public class GameManager : MonoBehaviour
                     {
                         //  ERROR PANEL HERE
                         Debug.Log(apiresponse["data"].ToString());
+                        NotificationController.ShowError(apiresponse["data"].ToString(), null);
                         errorAction?.Invoke();
                         yield break;
                     }
@@ -489,7 +491,7 @@ public static class Shuffler
 {
     private static System.Random rng = new System.Random();
 
-    public static IEnumerator Shuffle<T>(this IList<T> list)
+    public static async Task Shuffle<T>(this IList<T> list)
     {
         int n = list.Count;
         while (n > 1)
@@ -500,7 +502,7 @@ public static class Shuffler
             list[k] = list[n];
             list[n] = value;
 
-            yield return null;
+            await Task.Delay(100);
         }
     }
 }

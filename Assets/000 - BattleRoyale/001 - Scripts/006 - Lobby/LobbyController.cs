@@ -30,12 +30,14 @@ public class LobbyController : MonoBehaviour
             {
                 GameManager.Instance.SceneController.StopLoading();
                 Debug.Log(ex.ToString());
+                GameManager.Instance.SocketMngr.Socket.Disconnect();
                 GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 1", null);
                 GameManager.Instance.SceneController.CurrentScene = "Login";
             }
         }, () =>
         {
             GameManager.Instance.SceneController.StopLoading();
+            GameManager.Instance.SocketMngr.Socket.Disconnect();
             GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 2", null);
             GameManager.Instance.SceneController.CurrentScene = "Login";
         }));
@@ -52,12 +54,14 @@ public class LobbyController : MonoBehaviour
             {
                 GameManager.Instance.SceneController.StopLoading();
                 Debug.Log(ex.ToString());
+                GameManager.Instance.SocketMngr.Socket.Disconnect();
                 GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
                 GameManager.Instance.SceneController.CurrentScene = "Login";
             }
         }, () =>
         {
             GameManager.Instance.SceneController.StopLoading();
+            GameManager.Instance.SocketMngr.Socket.Disconnect();
             GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
             GameManager.Instance.SceneController.CurrentScene = "Login";
         }));
@@ -87,12 +91,14 @@ public class LobbyController : MonoBehaviour
             {
                 GameManager.Instance.SceneController.StopLoading();
                 Debug.Log(ex.ToString());
+                GameManager.Instance.SocketMngr.Socket.Disconnect();
                 GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
                 GameManager.Instance.SceneController.CurrentScene = "Login";
             }
         }, () =>
         {
             GameManager.Instance.SceneController.StopLoading();
+            GameManager.Instance.SocketMngr.Socket.Disconnect();
             GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
             GameManager.Instance.SceneController.CurrentScene = "Login";
         }));

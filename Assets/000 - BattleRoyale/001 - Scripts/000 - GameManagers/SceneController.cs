@@ -176,6 +176,11 @@ public class SceneController : MonoBehaviour
 
     private void SceneChange(object sender, EventArgs e)
     {
+        Debug.Log($"Loading Scene: {CurrentScene}");
+
+        if (LoadingCoroutine != null)
+            StopCoroutine(LoadingCoroutine);
+
         LoadingCoroutine = StartCoroutine(Loading());
     }
 

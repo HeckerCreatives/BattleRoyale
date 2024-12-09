@@ -15,13 +15,15 @@ public class PlayerSpawnLocationController : NetworkBehaviour
 
     public async override void Spawned()
     {
+        while (!Runner) await Task.Delay(100);
         while (ServerManager == null) await Task.Delay(100);
         ServerManager.OnCurrentStateChange += StateChange;
     }
 
     private void OnDisable()
     {
-        ServerManager.OnCurrentStateChange -= StateChange;
+        if (ServerManager != null)
+            ServerManager.OnCurrentStateChange -= StateChange;
     }
 
     private void StateChange(object sender, EventArgs e)

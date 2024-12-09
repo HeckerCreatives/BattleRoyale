@@ -102,34 +102,15 @@ public class PlayerInventory : NetworkBehaviour
             switch (change)
             {
                 case nameof(IsSkinInitialized):
+                    Debug.Log($"Activating hair index: {HairStyle}");
                     hairStyles[HairStyle].SetActive(true);
+                    Debug.Log($"Activating hair color index: {HairColorIndex}");
                     hairMR[HairStyle].material.SetColor("_BaseColor", hairColor[HairColorIndex]);
+                    Debug.Log($"Activating upper clothing color index: {ClothingColorIndex}");
                     upperClothingMR.material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
-                    lowerClothingMR.materials[0].SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
-                    lowerClothingMR.materials[1].SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
-                    bodyColorMR.material.SetColor("_BaseColor", skinColor[SkinColorIndex]);
-                    break;
-                case nameof(HairStyle):
-
-                    while (!IsSkinInitialized) await Task.Delay(100);
-                    Debug.Log(hairStyles[HairStyle].name);
-                    hairStyles[HairStyle].SetActive(true);
-                    break;
-                case nameof(HairColorIndex):
-                    while (!IsSkinInitialized) await Task.Delay(100);
-
-                    hairMR[HairStyle].material.SetColor("_BaseColor", hairColor[HairColorIndex]);
-                    break;
-                case nameof(ClothingColorIndex):
-                    while (!IsSkinInitialized) await Task.Delay(100);
-
-                    upperClothingMR.material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
-                    lowerClothingMR.materials[0].SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
-                    lowerClothingMR.materials[1].SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
-                    break;
-                case nameof(SkinColorIndex):
-                    while (!IsSkinInitialized) await Task.Delay(100);
-
+                    Debug.Log($"Activating lower clothing color index: {ClothingColorIndex}");
+                    lowerClothingMR.material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
+                    Debug.Log($"Activating body color index: {SkinColorIndex}");
                     bodyColorMR.material.SetColor("_BaseColor", skinColor[SkinColorIndex]);
                     break;
                 case nameof(WeaponIndex):

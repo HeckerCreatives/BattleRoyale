@@ -31,9 +31,18 @@ public class KillCountCounterController : NetworkBehaviour
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int KillCount { get; set; }
 
-    public override async void Spawned()
+    public override void Render()
     {
+        if (!HasInputAuthority) return;
 
+        if (ServerManager == null) return;
+
+        PlayerCount.text = $"{ServerManager.Players.Count:n0} / {ServerManager.Players.Capacity:n0}";
+        killCountTMP.text = $"{KillCount:n0}";
+    }
+
+    private async void OnEnable()
+    {
         if (HasInputAuthority)
         {
             while (!ServerManager) await Task.Delay(100);
@@ -44,13 +53,15 @@ public class KillCountCounterController : NetworkBehaviour
 
     private void OnDisable()
     {
-        ServerManager.OnPlayerCountChange -= PlayerCountChange;
+        if (HasInputAuthority)
+        {
+            if (ServerManager != null)
+                ServerManager.OnPlayerCountChange -= PlayerCountChange;
+        }
     }
 
     private async void PlayerCountChange(object sender, EventArgs e)
     {
-        if (!HasInputAuthority) return;
-
         if (ServerManager.StartBattleRoyale)
         {
             if (ServerManager.RemainingPlayers.Count <= 1)
@@ -69,13 +80,5 @@ public class KillCountCounterController : NetworkBehaviour
                 gameOverPanelObj.SetActive(true);
             }
         }
-    }
-
-    private void Update()
-    {
-        if (!HasInputAuthority) return;
-
-        PlayerCount.text = $"{ServerManager.Players.Count:n0} / {ServerManager.Players.Capacity:n0}";
-        killCountTMP.text = $"{KillCount:n0}";
     }
 }

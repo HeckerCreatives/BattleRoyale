@@ -80,7 +80,7 @@ public class NotificationController : MonoBehaviour
 
     #region ERROR
 
-    public void ShowError(string statusText, Action closeConfirmationAction)
+    public void ShowError(string statusText, Action closeConfirmationAction = null)
     {
         errorTMP.text = statusText;
         errorPanelObj.SetActive(true);

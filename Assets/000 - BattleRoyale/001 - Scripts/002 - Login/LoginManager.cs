@@ -43,6 +43,8 @@ public class LoginManager : MonoBehaviour
 
     private IEnumerator CheckRememberMe()
     {
+        rememberMe.isOn = userData.RememberMe;
+
         if (!userData.RememberMe) yield break;
 
         username.text = userData.Username;
@@ -51,6 +53,7 @@ public class LoginManager : MonoBehaviour
 
     IEnumerator LoginUser()
     {
+        Debug.Log("start login user api");
         GameManager.Instance.NoBGLoading.SetActive(true);
 
         UnityWebRequest apiRquest;
@@ -66,78 +69,81 @@ public class LoginManager : MonoBehaviour
             GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later", null);
             yield break;
         }
+        Debug.Log("done candy coded env");
         apiRquest.SetRequestHeader("Content-Type", "application/json");
+        Debug.Log("starting call api");
 
         yield return apiRquest.SendWebRequest();
 
+        Debug.Log("done call api");
+        Debug.Log("api response" + "  " + apiRquest.downloadHandler.text);
         if (apiRquest.result == UnityWebRequest.Result.Success)
         {
             string response = apiRquest.downloadHandler.text;
 
+            Debug.Log("api response" + "  " + response);
             if (response[0] == '{' && response[response.Length - 1] == '}')
             {
-                try
-                {
-                    Dictionary<string, object> apiresponse = JsonConvert.DeserializeObject<Dictionary<string, object>>(response);
+                Dictionary<string, object> apiresponse = JsonConvert.DeserializeObject<Dictionary<string, object>>(response);
 
-                    if (!apiresponse.ContainsKey("message"))
-                    {
-                        //  ERROR PANEL HERE
-                        Debug.Log("Error API CALL! Error Code: " + response);
-                        GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later.", null);
-                        GameManager.Instance.NoBGLoading.SetActive(false);
-                        yield break;
-                    }
-
-                    if (apiresponse["message"].ToString() != "success")
-                    {
-                        //  ERROR PANEL HERE
-                        Debug.Log("Error API CALL! Error Code: " + apiresponse["data"].ToString());
-                        GameManager.Instance.NotificationController.ShowError($"{apiresponse["data"]}", null);
-                        GameManager.Instance.NoBGLoading.SetActive(false);
-                        yield break;
-                    }
-
-                    if (!apiresponse.ContainsKey("data"))
-                    {
-                        //  ERROR PANEL HERE
-                        Debug.Log("Error API CALL! Error Code: " + apiresponse["message"].ToString());
-                        GameManager.Instance.NotificationController.ShowError($"{apiresponse["data"]}", null);
-                        GameManager.Instance.NoBGLoading.SetActive(false);
-                        yield break;
-                    }
-
-                    Dictionary<string, object> dataresponse = JsonConvert.DeserializeObject<Dictionary<string, object>>(apiresponse["data"].ToString());
-
-                    if (!dataresponse.ContainsKey("token"))
-                    {
-                        //  ERROR PANEL HERE
-                        Debug.Log("Error API CALL! Error Code: " + apiresponse["data"].ToString());
-                        GameManager.Instance.NotificationController.ShowError($"{apiresponse["data"]}", null);
-                        GameManager.Instance.NoBGLoading.SetActive(false);
-                        yield break;
-                    }
-
-                    userData.UserToken = dataresponse["token"].ToString();
-
-                    if (rememberMe.isOn)
-                    {
-                        userData.RememberMe = true;
-                        userData.Username = username.text;
-                        userData.Password = password.text;
-                    }
-
-                    GameManager.Instance.NoBGLoading.SetActive(false);
-                    GameManager.Instance.SceneController.CurrentScene = "Lobby";
-                }
-                catch (Exception ex)
+                if (!apiresponse.ContainsKey("message"))
                 {
                     //  ERROR PANEL HERE
-                    Debug.Log("Error API CALL! Error Code: " + ex.Message);
-                    Debug.Log("API response: " + response);
-                    GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please contact customer support for more details.", null);
+                    Debug.Log("Error API CALL! Error Code: " + response);
+                    GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later.", null);
                     GameManager.Instance.NoBGLoading.SetActive(false);
+                    yield break;
                 }
+
+                if (apiresponse["message"].ToString() != "success")
+                {
+                    //  ERROR PANEL HERE
+                    Debug.Log("Error API CALL! Error Code: " + apiresponse["data"].ToString());
+                    GameManager.Instance.NotificationController.ShowError($"{apiresponse["data"]}", null);
+                    GameManager.Instance.NoBGLoading.SetActive(false);
+                    yield break;
+                }
+
+                if (!apiresponse.ContainsKey("data"))
+                {
+                    //  ERROR PANEL HERE
+                    Debug.Log("Error API CALL! Error Code: " + apiresponse["message"].ToString());
+                    GameManager.Instance.NotificationController.ShowError($"{apiresponse["data"]}", null);
+                    GameManager.Instance.NoBGLoading.SetActive(false);
+                    yield break;
+                }
+
+                Dictionary<string, object> dataresponse = JsonConvert.DeserializeObject<Dictionary<string, object>>(apiresponse["data"].ToString());
+
+                if (!dataresponse.ContainsKey("token"))
+                {
+                    //  ERROR PANEL HERE
+                    Debug.Log("Error API CALL! Error Code: " + apiresponse["data"].ToString());
+                    GameManager.Instance.NotificationController.ShowError($"{apiresponse["data"]}", null);
+                    GameManager.Instance.NoBGLoading.SetActive(false);
+                    yield break;
+                }
+
+                userData.UserToken = dataresponse["token"].ToString();
+                userData.Username = username.text;
+
+                if (rememberMe.isOn)
+                {
+                    userData.RememberMe = true;
+                    userData.Password = password.text;
+                    userData.RememberMeSave();
+                }
+                else
+                {
+                    userData.RememberMeDelete();
+                }
+                Debug.Log("starting initialize socket");
+                GameManager.Instance.SocketMngr.InitializeSocket();
+
+                while (GameManager.Instance.SocketMngr.ConnectionStatus != "Connected") yield return null;
+
+                GameManager.Instance.NoBGLoading.SetActive(false);
+                GameManager.Instance.SceneController.CurrentScene = "Lobby";
             }
             else
             {
@@ -154,6 +160,7 @@ public class LoginManager : MonoBehaviour
                 Dictionary<string, object> apiresponse = JsonConvert.DeserializeObject<Dictionary<string, object>>(apiRquest.downloadHandler.text);
 
                 GameManager.Instance.NotificationController.ShowError($"{apiresponse["data"]}", null);
+                GameManager.Instance.NoBGLoading.SetActive(false);
             }
             catch (Exception ex)
             {

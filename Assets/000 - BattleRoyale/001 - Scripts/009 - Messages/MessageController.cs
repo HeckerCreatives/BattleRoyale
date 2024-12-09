@@ -90,11 +90,30 @@ public class MessageController : MonoBehaviour
         {
             if (response != null)
             {
-                List<MessageItem> itemList = JsonConvert.DeserializeObject<List<MessageItem>>(response.ToString());
+                Dictionary<string, object> tempresponsedata = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.ToString());
 
-                if (itemList.Count > 0)
+                Debug.Log(tempresponsedata["data"].ToString());
+
+                Dictionary<string, object> tempdata = JsonConvert.DeserializeObject<Dictionary<string, object>>(tempresponsedata["data"].ToString());
+
+                if (tempdata.ContainsKey("inbox"))
                 {
-                    StartCoroutine(InstantiateItems(itemList));
+                    List<MessageItem> itemList = JsonConvert.DeserializeObject<List<MessageItem>>(tempdata["inbox"].ToString());
+
+                    if (itemList.Count > 0)
+                    {
+                        StartCoroutine(InstantiateItems(itemList));
+                    }
+                    else
+                    {
+                        noItemsYetObj.SetActive(true);
+
+                        itemListLoader.SetActive(false);
+                        itemContentLoader.SetActive(false);
+
+                        CanAction = true;
+                        getMessages = null;
+                    }
                 }
                 else
                 {

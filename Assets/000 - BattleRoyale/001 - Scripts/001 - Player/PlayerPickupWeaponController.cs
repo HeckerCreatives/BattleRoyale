@@ -314,6 +314,11 @@ public class PlayerPickupWeaponController : NetworkBehaviour
             crateObj.GetComponent<CrateController>().Rpc_RemoveItemFromObject(data);
     }
 
+    public void CloseOpenPickupWeaponList()
+    {
+        PickupItemList.SetActive(PickupItemList.activeInHierarchy ? false : true);
+    }
+
     private void OnDrawGizmos()
     {
         Gizmos.DrawSphere(transform.position, itemDetectorRadius);

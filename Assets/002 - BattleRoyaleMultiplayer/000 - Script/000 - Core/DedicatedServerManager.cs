@@ -61,6 +61,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     //  ===================================
 
     [SerializeField] private string lobby;
+    [SerializeField] private MultiplayController multiplayController;
 
     [Header("SERVER")]
     [SerializeField] private NetworkRunner serverNetworkRunnerPrefab;
@@ -94,8 +95,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     //  =================
 
     private ChangeDetector _changeDetector;
-    [Networked, Capacity(10)] public NetworkDictionary<PlayerRef, NetworkObject> Players => default;
-    [Networked, Capacity(10)] public NetworkDictionary<PlayerRef, NetworkObject> RemainingPlayers => default;
+    [Networked, Capacity(15)] public NetworkDictionary<PlayerRef, NetworkObject> Players => default;
+    [Networked, Capacity(15)] public NetworkDictionary<PlayerRef, NetworkObject> RemainingPlayers => default;
 
     //  =================
 
@@ -113,8 +114,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     {
         List<string> itemPool = new List<string>
         {
-            //"rifle", "rifle", "rifle", "rifle", "rifle", // 5%
-            //"bow", "bow", "bow", "bow", "bow", // 5%
+            "rifle", "rifle", "rifle", "rifle", "rifle", // 5%
+            "bow", "bow", "bow", "bow", "bow", // 5%
             "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", // 15%
             "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", // 15%
             //"rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo",
@@ -167,9 +168,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         return selectedItems;
     }
 
-    IEnumerator SpawnCrates()
+    private async Task SpawnCrates()
     {
-        while (!Runner) yield return null;
+        while (!Runner) await Task.Delay(100);
 
         int index = 1;
 
@@ -181,15 +182,15 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             index++;
 
-            yield return null;
+            await Task.Delay(100);
         }
 
         doneSpawnCrates = true;
     }
 
-    IEnumerator SetSpawnPositionPlayers()
+    private async Task SetSpawnPositionPlayers()
     {
-        yield return StartCoroutine(Shuffler.Shuffle(spawnBattleAreaPositions));
+        await Shuffler.Shuffle(spawnBattleAreaPositions);
 
         doneSetupBattlePos = true;
     }
@@ -232,7 +233,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             IsOpen = false,
             SceneManager = networkRunner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
             Scene = networkSceneInfo,
-            PlayerCount = 10,
+            PlayerCount = 15,
             Address = NetAddress.Any(),
             CustomLobbyName = lobby,
         });
@@ -240,12 +241,29 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         Debug.Log($"Done Setting up photon server");
 
         Debug.Log($"Spawning Crates");
-        StartCoroutine(SpawnCrates());
+        await SpawnCrates();
 
         Debug.Log($"Set Spawn Positions");
-        StartCoroutine(SetSpawnPositionPlayers());
+        await SetSpawnPositionPlayers();
 
-        while (!doneSetupBattlePos || !doneSpawnCrates) await Task.Delay(100);
+        while (!doneSetupBattlePos || !doneSpawnCrates)
+        {
+            Debug.Log($"Done setup battle pos init: {doneSetupBattlePos} : Done spawn crates init: {doneSpawnCrates}");
+            await Task.Delay(100);
+        }
+
+        Debug.Log("Adding waiting Area Timer");
+
+        WaitingAreaTimer = 300f;
+
+        Debug.Log("Done adding waiting Area Timer");
+
+#if !UNITY_ANDROID
+
+        Debug.Log("Initializing Multiplay");
+        await multiplayController.InitializeUnityAuthentication();
+
+#endif
 
         networkRunner.SessionInfo.IsOpen = true;
         networkRunner.SessionInfo.IsVisible = true;
@@ -362,14 +380,14 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 obj.GetComponent<WaitingAreaTimerController>().ServerManager = this;
                 obj.GetComponent<PlayerHealth>().ServerManager = this;
                 obj.GetComponent<PlayerSpawnLocationController>().ServerManager = this;
+                obj.GetComponent<PlayerQuitController>().ServerManager = this;
             });
 
             Players.Add(player, playerCharacter);
             PlayerCountChange?.Invoke(this, EventArgs.Empty);
 
-            if (WaitingAreaTimer <= 0f && !CanCountWaitingAreaTimer)
+            if (!CanCountWaitingAreaTimer && Players.Count >= 3)
             {
-                WaitingAreaTimer = 150;
                 CanCountWaitingAreaTimer = true;
                 StartBattleRoyale = true;
             }
@@ -395,6 +413,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             if (Players.Count <= 0 && CanCountWaitingAreaTimer)
             {
+                WaitingAreaTimer = 300f;
                 CanCountWaitingAreaTimer = false;
             }
         }

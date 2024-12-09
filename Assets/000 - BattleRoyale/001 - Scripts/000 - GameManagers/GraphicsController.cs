@@ -202,8 +202,8 @@ public class GraphicsController : MonoBehaviour
         }
         else
         {
-            CurrentGraphicsQualityIndex = 0;
-            PlayerPrefs.SetInt("GraphicsQuality", 0);
+            CurrentGraphicsQualityIndex = 1;
+            PlayerPrefs.SetInt("GraphicsQuality", 1);
             QualitySettings.SetQualityLevel(CurrentGraphicsQualityIndex, false);
         }
 
@@ -274,9 +274,9 @@ public class GraphicsController : MonoBehaviour
 
         float renderScale = CurrentResolutionIndex switch
         {
-            0 => 0.5f,
-            1 => 1f,
-            2 => 2f,
+            0 => 0.25f,
+            1 => 0.5f,
+            2 => 1f,
             _ => 1f,
         };
 
