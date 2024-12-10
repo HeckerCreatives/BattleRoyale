@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.46169513, g: 0.5124164, b: 0.58993304, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -919,7 +919,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3ac0e352c8466343b7c7bb0a09feb19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  doShow: 1
+  doShow: 0
 --- !u!114 &425614886
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -973,6 +973,7 @@ MonoBehaviour:
   errorPanelObj: {fileID: 1971114350}
   errorTMP: {fileID: 484275458}
   <ConnectionStatus>k__BackingField: 
+  <LoginStatus>k__BackingField: 0
 --- !u!1 &432989998
 GameObject:
   m_ObjectHideFlags: 0
@@ -3621,7 +3622,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

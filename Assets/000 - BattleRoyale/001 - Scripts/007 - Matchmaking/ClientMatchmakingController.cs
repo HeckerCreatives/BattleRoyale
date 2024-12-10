@@ -256,7 +256,7 @@ public class ClientMatchmakingController : MonoBehaviour
         ShutdownServer();
     }
 
-    private async void ShutdownServer()
+    public async Task ShutdownServer()
     {
         if (ticketResponse != null)
             await MatchmakerService.Instance.DeleteTicketAsync(ticketResponse.Id);

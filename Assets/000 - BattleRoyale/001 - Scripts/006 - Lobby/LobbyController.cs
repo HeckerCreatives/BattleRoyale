@@ -7,6 +7,7 @@ using UnityEngine;
 public class LobbyController : MonoBehaviour
 {
     [SerializeField] private UserData userData;
+    [SerializeField] private ClientMatchmakingController matchmakingController;
     [SerializeField] private CharacterCreationController characterCreationController;
     [SerializeField] private GameSettingController gameSettingController;
     [SerializeField] private ControllerSetting controllerSetting;
@@ -112,6 +113,20 @@ public class LobbyController : MonoBehaviour
     public void ChangeScene()
     {
         GameManager.Instance.SceneController.CurrentScene = "Prototype";
+    }
+
+    public void Logout()
+    {
+        GameManager.Instance.NotificationController.ShowConfirmation("Are you sure you want to logout?", async () => 
+        {
+            GameManager.Instance.NoBGLoading.SetActive(true);
+            if (matchmakingController.currentRunnerInstance != null)
+                await matchmakingController.ShutdownServer();
+
+            userData.ResetLogin();
+            await GameManager.Instance.SocketMngr.Socket.DisconnectAsync();
+            GameManager.Instance.NoBGLoading.SetActive(false);
+        }, null);
     }
 }
 

@@ -16,7 +16,7 @@ public class AmbianceController : MonoBehaviour
     {
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.AudioController.OnAmbientVolumeChange += AmbianceChange;
+            //GameManager.Instance.AudioController.OnAmbientVolumeChange += AmbianceChange;
             GameManager.Instance.AudioController.StopBGMusic();
         }
     }

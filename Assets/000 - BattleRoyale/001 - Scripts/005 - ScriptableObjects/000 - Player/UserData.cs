@@ -27,12 +27,7 @@ public class UserData : ScriptableObject
 
     private void OnEnable()
     {
-        UserToken = "";
-        Username = "";
-        Password = "";
-        RememberMe = false;
-        LoadRememberMe();
-        ControlSetting = new Dictionary<string, ControllerSettingData>();
+        ResetLogin();
     }
 
     public IEnumerator CheckControlSettingSave()
@@ -93,6 +88,16 @@ public class UserData : ScriptableObject
             Username = PlayerPrefs.GetString("Username");
             Password = PlayerPrefs.GetString("Password");
         }
+    }
+
+    public void ResetLogin()
+    {
+        UserToken = "";
+        Username = "";
+        Password = "";
+        RememberMe = false;
+        LoadRememberMe();
+        ControlSetting = new Dictionary<string, ControllerSettingData>();
     }
 }
 

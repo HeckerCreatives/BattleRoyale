@@ -12,19 +12,50 @@ public class PlayerSpawnLocationController : NetworkBehaviour
 
     [Header("DEBUGGER")]
     [field: MyBox.ReadOnly][field: SerializeField] [Networked] public DedicatedServerManager ServerManager { get; set; }
+    [MyBox.ReadOnly][SerializeField] private bool isSpawned; 
 
-    public async override void Spawned()
+    ////  =====================
+
+    //private ChangeDetector _changeDetector;
+
+    ////  =====================
+
+
+    //public async override void Spawned()
+    //{
+    //    _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+    //}
+
+    private async void OnEnable()
     {
         while (!Runner) await Task.Delay(100);
+
         while (ServerManager == null) await Task.Delay(100);
+
+        Debug.Log("Server Manager Detected Spawn Location Controller");
         ServerManager.OnCurrentStateChange += StateChange;
+
+        isSpawned = true;
     }
 
-    private void OnDisable()
-    {
-        if (ServerManager != null)
-            ServerManager.OnCurrentStateChange -= StateChange;
-    }
+    //private void OnDisable()
+    //{
+    //    if (isSpawned && Runner.IsRunning)
+    //        ServerManager.OnCurrentStateChange -= StateChange;
+    //}
+
+    //public override void Render()
+    //{
+    //    foreach (var change in _changeDetector.DetectChanges(this))
+    //    {
+    //        switch (change)
+    //        {
+    //            case nameof(ServerManager):
+    //                Debug.Log("Server Manager detected");
+    //                break;
+    //        }
+    //    }
+    //}
 
     private void StateChange(object sender, EventArgs e)
     {
