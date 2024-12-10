@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class PlayerQuitController : NetworkBehaviour
 {
-    [Header("DEBUGGER")]
+    [field: Header("DEBUGGER")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
 
     public void QuitBtn()

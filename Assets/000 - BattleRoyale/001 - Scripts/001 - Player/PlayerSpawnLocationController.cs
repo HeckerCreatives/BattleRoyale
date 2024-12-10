@@ -10,21 +10,9 @@ public class PlayerSpawnLocationController : NetworkBehaviour
 {
     [SerializeField] public PlayerInventory inventory;
 
-    [Header("DEBUGGER")]
+    [field: Header("DEBUGGER")]
     [field: MyBox.ReadOnly][field: SerializeField] [Networked] public DedicatedServerManager ServerManager { get; set; }
     [MyBox.ReadOnly][SerializeField] private bool isSpawned; 
-
-    ////  =====================
-
-    //private ChangeDetector _changeDetector;
-
-    ////  =====================
-
-
-    //public async override void Spawned()
-    //{
-    //    _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
-    //}
 
     private async void OnEnable()
     {
@@ -38,24 +26,11 @@ public class PlayerSpawnLocationController : NetworkBehaviour
         isSpawned = true;
     }
 
-    //private void OnDisable()
-    //{
-    //    if (isSpawned && Runner.IsRunning)
-    //        ServerManager.OnCurrentStateChange -= StateChange;
-    //}
-
-    //public override void Render()
-    //{
-    //    foreach (var change in _changeDetector.DetectChanges(this))
-    //    {
-    //        switch (change)
-    //        {
-    //            case nameof(ServerManager):
-    //                Debug.Log("Server Manager detected");
-    //                break;
-    //        }
-    //    }
-    //}
+    private void OnDisable()
+    {
+        if (isSpawned)
+            ServerManager.OnCurrentStateChange -= StateChange;
+    }
 
     private void StateChange(object sender, EventArgs e)
     {

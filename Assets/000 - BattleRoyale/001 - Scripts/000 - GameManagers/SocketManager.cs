@@ -30,7 +30,7 @@ public class SocketManager : MonoBehaviour
     [SerializeField] public GameObject errorPanelObj;
     [SerializeField] private Text errorTMP;
 
-    [Header("DEBUGGER")]
+    [field: Header("DEBUGGER")]
     [field: SerializeField] public string ConnectionStatus { get; private set; }
     [field: SerializeField] public LoginState LoginStatus { get; private set; }
 

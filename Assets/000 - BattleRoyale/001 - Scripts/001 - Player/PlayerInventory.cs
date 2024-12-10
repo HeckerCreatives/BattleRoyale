@@ -48,7 +48,7 @@ public class PlayerInventory : NetworkBehaviour
     [SerializeField] private WeaponEquipBtnController PrimaryBtn;
     [SerializeField] private WeaponEquipBtnController SecondaryBtn;
 
-    [Header("DEBUGGER NETWORK")]
+    [field: Header("DEBUGGER NETWORK")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsSkinInitialized { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsWeaponInitialize { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int WeaponIndex { get; set; }
@@ -87,7 +87,7 @@ public class PlayerInventory : NetworkBehaviour
         }
         else if (!HasInputAuthority && !HasStateAuthority)
         {
-            while(!IsSkinInitialized) await Task.Delay(100);
+            while (!IsSkinInitialized) await Task.Delay(100);
 
             InitializeSkinOnStart();
         }
