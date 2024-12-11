@@ -78,6 +78,10 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [Header("SPAWN POSITIONS")]
     [SerializeField] private List<Transform> spawnLocationsBattlefield;
 
+    [Header("PLAYING FIELDS")]
+    [SerializeField] private GameObject waitingAreaArena;
+    [SerializeField] private GameObject battleFieldArena;
+
     [Header("DEBUGGER")]
     [MyBox.ReadOnly][SerializeField] private string sessionName;
     [MyBox.ReadOnly][SerializeField] private bool doneSpawnCrates;
@@ -106,6 +110,10 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         {
             StartGame();
         }
+    }
+
+    private void OnDisable()
+    {
     }
 
     #region GAME INITIALIZE
@@ -288,7 +296,14 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             {
                 case nameof(CurrentGameState):
 
+                    Debug.Log($"start game state on client: {CurrentGameState}");
+                    if (CurrentGameState == GameState.WAITINGAREA)
+                        ArenaEnabler(true, false);
+                    else
+                        ArenaEnabler(false, true);
+
                     CurrentStateChange?.Invoke(this, EventArgs.Empty);
+
 
                     break;
                 case nameof(RemainingPlayers):
@@ -361,6 +376,13 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         if (allPlayersInPosition)
             DonePlayerBattlePositions = true;
+    }
+
+    private void ArenaEnabler(bool waitingArea, bool battleField)
+    {
+        Debug.Log($"Arena enabler called, waiting area: {waitingArea}, battle field: {battleField}");
+        waitingAreaArena.SetActive(waitingArea);
+        battleFieldArena.SetActive(battleField);
     }
 
     #endregion
