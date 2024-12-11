@@ -124,8 +124,7 @@ public class LobbyController : MonoBehaviour
                 await matchmakingController.ShutdownServer();
 
             userData.ResetLogin();
-            await GameManager.Instance.SocketMngr.Socket.DisconnectAsync();
-            GameManager.Instance.NoBGLoading.SetActive(false);
+            GameManager.Instance.SocketMngr.Socket.Disconnect();
         }, null);
     }
 }

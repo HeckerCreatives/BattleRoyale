@@ -16,6 +16,8 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
+    Queue<Action> jobs = new Queue<Action>();
+
     //  ============================
 
     [SerializeField] private UserData userData;
@@ -59,6 +61,11 @@ public class GameManager : MonoBehaviour
         SceneController.CurrentScene = startSceneName;
     }
 
+    private void Update()
+    {
+        if (jobs.Count > 0)
+            jobs.Dequeue().Invoke();
+    }
 
     public IEnumerator GetRequest(string route, string query, bool loaderEndState, System.Action<System.Object> callback, System.Action errorAction)
     {
@@ -473,6 +480,11 @@ public class GameManager : MonoBehaviour
         int seconds = ((totalSeconds % 86400) % 3600) % 60;
 
         return $"{minutes:D2} : {seconds:D2}";
+    }
+
+    internal void AddJob(Action newJob)
+    {
+        jobs.Enqueue(newJob);
     }
 }
 

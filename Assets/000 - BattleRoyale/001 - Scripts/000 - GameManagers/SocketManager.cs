@@ -97,8 +97,12 @@ public class SocketManager : MonoBehaviour
     private void SocketDisconnected(object sender, string e)
     {
         Debug.Log("Socket Disconnected to server");
-        ConnectionStatus = "Disconnected";
-        sceneController.CurrentScene = "Login";
+        GameManager.Instance.AddJob(() =>
+        {
+            GameManager.Instance.NoBGLoading.SetActive(false);
+            ConnectionStatus = "Disconnected";
+            sceneController.CurrentScene = "Login";
+        });
     }
 
     public void EmitEvent(string eventname, object data)

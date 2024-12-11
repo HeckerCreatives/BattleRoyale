@@ -12,6 +12,11 @@ public class ControllerSettingDataRetriever : MonoBehaviour
     [SerializeField] private RectTransform uiRT;
     [SerializeField] private CanvasGroup uiImg;
 
+    [Space]
+    [SerializeField] private Image uiImage;
+    [SerializeField] private Color downPressColor;
+    [SerializeField] private Color upPress;
+
     private async void Awake()
     {
         if (isNetworked)
@@ -44,4 +49,8 @@ public class ControllerSettingDataRetriever : MonoBehaviour
     }
 
     public float UIOpacity() => uiImg.alpha;
+
+    public void DownPress() => uiImage.color = downPressColor;
+
+    public void UpPress() => uiImage.color = upPress;
 }
