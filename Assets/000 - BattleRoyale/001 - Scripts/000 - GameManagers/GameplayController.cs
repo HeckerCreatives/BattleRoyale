@@ -323,7 +323,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
         // Iterate over all touches
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID || UNITY_IOS
         foreach (var touch in Touchscreen.current.touches)
         {
             var touchPhase = touch.phase.ReadValue();
