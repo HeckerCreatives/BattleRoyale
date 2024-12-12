@@ -61,6 +61,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     //  ===================================
 
     [SerializeField] private string lobby;
+    [SerializeField] private bool useMultiplay;
     [SerializeField] private MultiplayController multiplayController;
 
     [Header("SERVER")]
@@ -176,27 +177,33 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         return selectedItems;
     }
 
-    private async Task SpawnCrates()
+    private async void SpawnCrates()
     {
+        Debug.Log("start spawning crates");
         while (!Runner) await Task.Delay(100);
 
+        Debug.Log("done waiting for runner");
         int index = 1;
 
         foreach (var spawnLocations in createSpawnLocations)
         {
+            Debug.Log("spawning loc objects");
             var gameobject = Runner.Spawn(createNO, spawnLocations.transform.position, Quaternion.identity, null);
 
+            Debug.Log("setting up crate datas");
             gameobject.GetComponent<CrateController>().SetDatas(GenerateRandomItems());
 
             index++;
+            Debug.Log("spawning locs");
 
             await Task.Delay(100);
         }
+        Debug.Log("done for spawn locations");
 
         doneSpawnCrates = true;
     }
 
-    private async Task SetSpawnPositionPlayers()
+    private async void SetSpawnPositionPlayers()
     {
         await Shuffler.Shuffle(spawnBattleAreaPositions);
 
@@ -249,10 +256,10 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         Debug.Log($"Done Setting up photon server");
 
         Debug.Log($"Spawning Crates");
-        await SpawnCrates();
+        SpawnCrates();
 
         Debug.Log($"Set Spawn Positions");
-        await SetSpawnPositionPlayers();
+        SetSpawnPositionPlayers();
 
         while (!doneSetupBattlePos || !doneSpawnCrates)
         {
@@ -266,11 +273,14 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         Debug.Log("Done adding waiting Area Timer");
 
+
+
 #if !UNITY_ANDROID && !UNITY_IOS
-
-        Debug.Log("Initializing Multiplay");
-        await multiplayController.InitializeUnityAuthentication();
-
+        if (useMultiplay)
+        {
+            Debug.Log("Initializing Multiplay");
+            await multiplayController.InitializeUnityAuthentication();
+        }
 #endif
 
         networkRunner.SessionInfo.IsOpen = true;
@@ -408,7 +418,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             Players.Add(player, playerCharacter);
             PlayerCountChange?.Invoke(this, EventArgs.Empty);
 
-            if (!CanCountWaitingAreaTimer && Players.Count >= 3)
+            if (!CanCountWaitingAreaTimer && Players.Count >= 10)
             {
                 CanCountWaitingAreaTimer = true;
                 StartBattleRoyale = true;

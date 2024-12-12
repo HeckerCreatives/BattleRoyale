@@ -78,6 +78,7 @@ public class GameSettingController : MonoBehaviour
     [Header("GRAPHICS")]
     [SerializeField] private Volume postProcesing;
     [SerializeField] private float maxBrightness;
+    [SerializeField] private float minBrightness;
     [SerializeField] private TMP_Dropdown graphicsDropdown;
     [SerializeField] private TMP_Dropdown resolutionDropdown;
     [SerializeField] private TMP_Dropdown frameRateDropdown;
@@ -170,9 +171,10 @@ public class GameSettingController : MonoBehaviour
         antiAliasingDropdown.RefreshShownValue();
 
         brightnessSlider.value = GameManager.Instance.GraphicsManager.CurrentBrightness;
+        float brightness = brightnessSlider.value * 10f - 5f;
         if (postProcesing.profile.TryGet<ColorAdjustments>(out colorAdjustments))
         {
-            colorAdjustments.postExposure.value = maxBrightness * GameManager.Instance.GraphicsManager.CurrentBrightness;
+            colorAdjustments.postExposure.value = brightness;
         }
         brightnessTMP.text = $"{brightnessSlider.value * 100:n0}";
 
@@ -361,9 +363,11 @@ public class GameSettingController : MonoBehaviour
     public void SetBrightnessSlider()
     {
         GameManager.Instance.GraphicsManager.CurrentBrightness = brightnessSlider.value;
+
+        float brightness = GameManager.Instance.GraphicsManager.CurrentBrightness * 10f - 5f;
         if (postProcesing.profile.TryGet<ColorAdjustments>(out colorAdjustments))
         {
-            colorAdjustments.postExposure.value = maxBrightness * GameManager.Instance.GraphicsManager.CurrentBrightness;
+            colorAdjustments.postExposure.value = brightness;
         }
 
         brightnessTMP.text = $"{brightnessSlider.value * 100:n0}";

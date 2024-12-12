@@ -8,6 +8,7 @@ using UnityEngine.UI;
 
 public class PlayerHealth : NetworkBehaviour
 {
+    [SerializeField] private PlayerNetworkLoader loader;
     [SerializeField] private UserData userData;
 
     [Space]
@@ -133,13 +134,13 @@ public class PlayerHealth : NetworkBehaviour
         }
     }
 
-    public void ReduceHealth(float damage, NetworkObject nobject)
+    public void ReduceHealth(float damage, string killer, NetworkObject nobject)
     {
         if (CurrentHealth <= 0) return;
 
         GetHit = true;
 
-        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+        //if (ServerManager.CurrentGameState != GameState.ARENA) return;
 
         CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - damage);
 
@@ -147,6 +148,15 @@ public class PlayerHealth : NetworkBehaviour
         {
             ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
             nobject.GetComponent<KillCountCounterController>().KillCount++;
+            RPC_ReceiveKillNotification(killer, loader.Username);
         }
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPC_ReceiveKillNotification(string killer, string killed)
+    {
+        Debug.Log($"Receive Kill Notif by: {loader.Username}");
+
+        KillNotificationController.KillNotifInstance.ShowMessage(killer, killed);
     }
 }

@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class FistWeaponHandler : NetworkBehaviour
 {
+    [SerializeField] private PlayerNetworkLoader loader;
     [SerializeField] private PlayerInventory inventory;
 
     [Space]
@@ -151,7 +152,7 @@ public class FistWeaponHandler : NetworkBehaviour
 
         PlayerHealth health = enemy.GetComponent<PlayerHealth>();
 
-        health.ReduceHealth(damage, Object);
+        health.ReduceHealth(damage, loader.Username, Object);
     }
 
     public void ResetFirstAttack()

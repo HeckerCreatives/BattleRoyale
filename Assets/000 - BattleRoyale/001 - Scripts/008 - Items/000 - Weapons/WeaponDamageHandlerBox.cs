@@ -5,6 +5,9 @@ using UnityEngine;
 
 public class WeaponDamageHandlerBox : NetworkBehaviour
 {
+    [SerializeField] private PlayerNetworkLoader loader;
+
+    [Space]
     [SerializeField] private Vector3 attackRadius;
     [SerializeField] private Vector3 attackRotation;
     [SerializeField] private LayerMask enemyLayerMask;
@@ -94,7 +97,7 @@ public class WeaponDamageHandlerBox : NetworkBehaviour
 
         PlayerHealth health = enemy.GetComponent<PlayerHealth>();
 
-        health.ReduceHealth(damage, nobject);
+        health.ReduceHealth(damage, loader.Username, nobject);
     }
 
     public void ResetFirstAttack()

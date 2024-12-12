@@ -60,7 +60,8 @@ public class UserData : ScriptableObject
                 { "Minimap", new ControllerSettingData{ sizeDeltaX = 285.7246f, sizeDeltaY = 285.7245f, localPositionX = -16f, localPositionY = -15f, opacity = 1f} },
                 { "Pickup", new ControllerSettingData{ sizeDeltaX = 44.24683f, sizeDeltaY = 44.24683f, localPositionX = -430f, localPositionY = -180.7532f, opacity = 1f} },
                 { "PickupItemList", new ControllerSettingData{ sizeDeltaX = 493.4304f, sizeDeltaY = 277.6669f, localPositionX = -424f, localPositionY = -232f, opacity = 1f} },
-                { "Settings", new ControllerSettingData{ sizeDeltaX = 68f, sizeDeltaY = 62f, localPositionX = -319.6f, localPositionY = -15.70001f, opacity = 1f} }
+                { "Settings", new ControllerSettingData{ sizeDeltaX = 68f, sizeDeltaY = 62f, localPositionX = -319.6f, localPositionY = -15.70001f, opacity = 1f} },
+                { "KillNotification", new ControllerSettingData{ sizeDeltaX = 324.3863f, sizeDeltaY = 108.84f, localPositionX = 17.96462f, localPositionY = -128.128f, opacity = 1f} }
             };
 
         PlayerPrefs.SetString("ControlSetting", JsonConvert.SerializeObject(ControlSetting));

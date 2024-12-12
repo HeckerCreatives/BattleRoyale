@@ -20,6 +20,7 @@ public class LoginManager : MonoBehaviour
 
     [Header("BRIGHTNESS")]
     [SerializeField] private float maxBrightness;
+    [SerializeField] private float minBrightness;
     [SerializeField] private Volume postProcessing;
 
     //  ============================
@@ -30,9 +31,10 @@ public class LoginManager : MonoBehaviour
 
     private void Awake()
     {
+        float brightness = GameManager.Instance.GraphicsManager.CurrentBrightness * 10f - 5f;
         if (postProcessing.profile.TryGet<ColorAdjustments>(out colorAdjustments))
         {
-            colorAdjustments.postExposure.value = maxBrightness * GameManager.Instance.GraphicsManager.CurrentBrightness;
+            colorAdjustments.postExposure.value = brightness;
         }
 
         GameManager.Instance.AudioController.SetBGMusic(bgMusic);

@@ -17,6 +17,7 @@ using Unity.Services.Authentication;
 public class ClientMatchmakingController : MonoBehaviour
 {
     [SerializeField] private UserData userData;
+    [SerializeField] private bool useMultiplay;
 
     [Space]
     //  delete this after today's presentation
@@ -63,91 +64,108 @@ public class ClientMatchmakingController : MonoBehaviour
     {
         if (findingMatch) return;
 
-        if (UnityServices.State == ServicesInitializationState.Uninitialized)
+        if (useMultiplay)
         {
-            await UnityServices.InitializeAsync();
-        }
 
-        if (!AuthenticationService.Instance.IsSignedIn)
-        {
-            await AuthenticationService.Instance.SignInAnonymouslyAsync();
-        }
+            if (UnityServices.State == ServicesInitializationState.Uninitialized)
+            {
+                await UnityServices.InitializeAsync();
+            }
 
-        findingMatch = true;
+            if (!AuthenticationService.Instance.IsSignedIn)
+            {
+                await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            }
 
-        cancelBtn.interactable = true;
+            findingMatch = true;
 
-        currentRunnerInstance = Instantiate(instanceRunner);
+            cancelBtn.interactable = true;
 
-        var players = new List<Unity.Services.Matchmaker.Models.Player>
+            currentRunnerInstance = Instantiate(instanceRunner);
+
+            var players = new List<Unity.Services.Matchmaker.Models.Player>
         {
             new Unity.Services.Matchmaker.Models.Player(userData.Username, new Dictionary<string, object>())
         };
 
-        var options = new CreateTicketOptions(
-              "BattleRoyale", // The name of the queue defined in the previous step,
-              new Dictionary<string, object>());
+            var options = new CreateTicketOptions(
+                  "BattleRoyale", // The name of the queue defined in the previous step,
+                  new Dictionary<string, object>());
 
-        Debug.Log("JOINING LOBBY");
+            Debug.Log("JOINING LOBBY");
 
-        await JoinLobby("AsiaBR");
+            await JoinLobby("AsiaBR");
 
-        Debug.Log("DONE JOINING LOBBY, RECEIVING TICKET RESPONSE");
+            Debug.Log("DONE JOINING LOBBY, RECEIVING TICKET RESPONSE");
 
-        ticketResponse = await MatchmakerService.Instance.CreateTicketAsync(players, options);
+            ticketResponse = await MatchmakerService.Instance.CreateTicketAsync(players, options);
 
-        Debug.Log($"ticket id: {ticketResponse.Id}");
+            Debug.Log($"ticket id: {ticketResponse.Id}");
 
-        MultiplayAssignment assignment = null;
-        bool gotAssignment = false;
-        bool matchfound = false;
+            MultiplayAssignment assignment = null;
+            bool gotAssignment = false;
+            bool matchfound = false;
 
-        do
+            do
+            {
+                //Rate limit delay
+                await Task.Delay(TimeSpan.FromSeconds(1f));
+
+                // Poll ticket
+                var ticketStatus = await MatchmakerService.Instance.GetTicketAsync(ticketResponse.Id);
+
+                if (ticketStatus == null)
+                {
+                    continue;
+                }
+
+                //Convert to platform assignment data (IOneOf conversion)
+                if (ticketStatus.Type == typeof(MultiplayAssignment))
+                {
+                    assignment = ticketStatus.Value as MultiplayAssignment;
+                }
+
+                switch (assignment?.Status)
+                {
+                    case MultiplayAssignment.StatusOptions.Found:
+                        gotAssignment = true;
+                        matchfound = true;
+                        break;
+                    case MultiplayAssignment.StatusOptions.InProgress:
+                        //...
+                        break;
+                    case MultiplayAssignment.StatusOptions.Failed:
+                        gotAssignment = true;
+                        Debug.LogError("Failed to get ticket status. Error: " + assignment.Message);
+                        break;
+                    case MultiplayAssignment.StatusOptions.Timeout:
+                        Debug.LogError("Failed to get ticket status. Ticket timed out. Retrying to find match");
+                        break;
+                    default:
+                        throw new InvalidOperationException();
+                }
+            } while (!gotAssignment && findingMatch);
+
+            if (matchfound)
+            {
+                Debug.Log($"Server IP: {assignment.Ip}   Port: {(ushort)assignment.Port}");
+
+                JoinDropballSession();
+            }
+        }
+        else
         {
-            //Rate limit delay
-            await Task.Delay(TimeSpan.FromSeconds(1f));
+            Debug.Log("Not using multiplay, starting photon find match");
 
-            // Poll ticket
-            var ticketStatus = await MatchmakerService.Instance.GetTicketAsync(ticketResponse.Id);
 
-            if (ticketStatus == null)
-            {
-                continue;
-            }
+            findingMatch = true;
 
-            //Convert to platform assignment data (IOneOf conversion)
-            if (ticketStatus.Type == typeof(MultiplayAssignment))
-            {
-                assignment = ticketStatus.Value as MultiplayAssignment;
-            }
+            cancelBtn.interactable = true;
 
-            switch (assignment?.Status)
-            {
-                case MultiplayAssignment.StatusOptions.Found:
-                    gotAssignment = true;
-                    matchfound = true;
-                    break;
-                case MultiplayAssignment.StatusOptions.InProgress:
-                    //...
-                    break;
-                case MultiplayAssignment.StatusOptions.Failed:
-                    gotAssignment = true;
-                    Debug.LogError("Failed to get ticket status. Error: " + assignment.Message);
-                    break;
-                case MultiplayAssignment.StatusOptions.Timeout:
-                    Debug.LogError("Failed to get ticket status. Ticket timed out. Retrying to find match");
-                    break;
-                default:
-                    throw new InvalidOperationException();
-            }
-        } while (!gotAssignment && findingMatch);
-
-        if (matchfound)
-        {
-            Debug.Log($"Server IP: {assignment.Ip}   Port: {(ushort)assignment.Port}");
-
+            currentRunnerInstance = Instantiate(instanceRunner);
             JoinDropballSession();
         }
+        
     }
 
     private async void JoinDropballSession()

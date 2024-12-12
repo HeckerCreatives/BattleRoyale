@@ -8221,10 +8221,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Damping: {x: 0.1, y: 0.5, z: 0.3}
-  ShoulderOffset: {x: 0.28, y: -0.3, z: -0.8}
-  VerticalArmLength: 0.4
+  ShoulderOffset: {x: 0.53, y: 0, z: 0}
+  VerticalArmLength: 0
   CameraSide: 1
-  CameraDistance: 2
+  CameraDistance: 2.5
   CameraCollisionFilter:
     serializedVersion: 2
     m_Bits: 0
@@ -14749,6 +14749,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2025998002691756969}
+  - component: {fileID: 7513633598931207137}
   - component: {fileID: 4935384743553952262}
   m_Layer: 0
   m_Name: Cloth_Lower
@@ -14772,6 +14773,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1582820687403535839}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7513633598931207137
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3250867013555217786}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0090b142eade044481babaee0890cb5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isSkinnedMeshRenderer: 1
+  skinnedMeshRenderer: {fileID: 4935384743553952262}
+  meshRenderer: {fileID: 0}
+  minDistance: 0.5
+  maxDistance: 15
+  transparencyAtMinDistance: 0.3
 --- !u!137 &4935384743553952262
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 0
@@ -14792,7 +14811,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 9054928168843377129, guid: ff3704e149150b74a8f4b26e5c6a9bec, type: 3}
+  - {fileID: 2100000, guid: 0697d2695531dc648b4d2f922a8c4f10, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -16444,6 +16463,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2679273360645648398}
+  - component: {fileID: 9070905238309283835}
   - component: {fileID: 5042370485106624174}
   - component: {fileID: 5100508331495480986}
   m_Layer: 9
@@ -16468,6 +16488,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1700518104251607759}
   m_LocalEulerAnglesHint: {x: 6.681, y: -1.279, z: 0}
+--- !u!114 &9070905238309283835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3606339518860838899}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0090b142eade044481babaee0890cb5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isSkinnedMeshRenderer: 0
+  skinnedMeshRenderer: {fileID: 0}
+  meshRenderer: {fileID: 5100508331495480986}
+  minDistance: 5
+  maxDistance: 15
+  transparencyAtMinDistance: 0.3
 --- !u!33 &5042370485106624174
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -18863,6 +18901,18 @@ MonoBehaviour:
       - m_Target: {fileID: 2795142651386916811}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 7495721667807700299}
+        m_TargetAssemblyTypeName: PauseController, Assembly-CSharp
+        m_MethodName: KillNotifEnabler
         m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -31261,6 +31311,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5726653037769616096}
+  - component: {fileID: 1249730166028085310}
   - component: {fileID: 5290872158571378263}
   m_Layer: 0
   m_Name: BodyMesh
@@ -31284,6 +31335,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1582820687403535839}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1249730166028085310
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6443125064072543147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0090b142eade044481babaee0890cb5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isSkinnedMeshRenderer: 1
+  skinnedMeshRenderer: {fileID: 5290872158571378263}
+  meshRenderer: {fileID: 0}
+  minDistance: 0.5
+  maxDistance: 15
+  transparencyAtMinDistance: 0.3
 --- !u!137 &5290872158571378263
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 0
@@ -31304,7 +31373,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -6776831516410565182, guid: ff3704e149150b74a8f4b26e5c6a9bec, type: 3}
+  - {fileID: 2100000, guid: 52d12f6e45761f345bd29460e72bd31f, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -32751,6 +32820,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5111193926057675778}
+  - component: {fileID: 5488136972631691568}
   - component: {fileID: 7292845528061439214}
   - component: {fileID: 8027407238144784616}
   m_Layer: 9
@@ -32775,6 +32845,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1700518104251607759}
   m_LocalEulerAnglesHint: {x: 7.314, y: 0, z: -0.725}
+--- !u!114 &5488136972631691568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6742879580334304490}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0090b142eade044481babaee0890cb5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isSkinnedMeshRenderer: 0
+  skinnedMeshRenderer: {fileID: 0}
+  meshRenderer: {fileID: 8027407238144784616}
+  minDistance: 5
+  maxDistance: 15
+  transparencyAtMinDistance: 0.3
 --- !u!33 &7292845528061439214
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -36948,7 +37036,7 @@ Transform:
   m_GameObject: {fileID: 7785137612220126972}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.08715578, z: -0, w: 0.9961947}
-  m_LocalPosition: {x: -0.2106058, y: 1.6680069, z: -2.8068526}
+  m_LocalPosition: {x: 0.01660335, y: 1.6880035, z: -2.9579782}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -37018,10 +37106,10 @@ MonoBehaviour:
   m_DistanceLimit: 0
   m_MinimumOcclusionTime: 0
   m_CameraRadius: 0.2
-  m_Strategy: 1
+  m_Strategy: 0
   m_MaximumEffort: 4
   m_SmoothingTime: 0
-  m_Damping: 0
+  m_Damping: 1.5
   m_DampingWhenOccluded: 0
   m_OptimalTargetDistance: 0
 --- !u!1 &7786803942585847077
@@ -41624,6 +41712,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9167145531910410737}
+  - component: {fileID: 3076659889305309422}
   - component: {fileID: 7922553538042978018}
   m_Layer: 0
   m_Name: Cloth_Upper
@@ -41647,6 +41736,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1582820687403535839}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3076659889305309422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8635202081841510722}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0090b142eade044481babaee0890cb5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isSkinnedMeshRenderer: 1
+  skinnedMeshRenderer: {fileID: 7922553538042978018}
+  meshRenderer: {fileID: 0}
+  minDistance: 0.5
+  maxDistance: 15
+  transparencyAtMinDistance: 0.3
 --- !u!137 &7922553538042978018
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 0
@@ -41667,7 +41774,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 9054928168843377129, guid: ff3704e149150b74a8f4b26e5c6a9bec, type: 3}
+  - {fileID: 2100000, guid: 5496290fa213adb4ebc70832d1f07665, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -42178,6 +42285,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1582820687403535839}
   - component: {fileID: 2671049237676878303}
+  - component: {fileID: 7495721667807700299}
   - component: {fileID: 2632271246272331152}
   - component: {fileID: 2630037937965088976}
   - component: {fileID: 3197376394441458163}
@@ -42250,8 +42358,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fca942ea8a745584f9a9419f947817a4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   gameSettingController: {fileID: 2630037937965088976}
   events: {fileID: 0}
+  _Username: 
+--- !u!114 &7495721667807700299
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8689549338059659052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ae847392ce8d84428936c23301d7ede, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &2632271246272331152
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -42333,7 +42455,8 @@ MonoBehaviour:
   ambientVolumeVolumeReduce: {fileID: 3631327465779104737}
   ambientVolumeVolumeAdd: {fileID: 8542673765616056363}
   postProcesing: {fileID: 0}
-  maxBrightness: 4
+  maxBrightness: 2
+  minBrightness: -4
   graphicsDropdown: {fileID: 7474702393866605682}
   resolutionDropdown: {fileID: 1320910671322324793}
   frameRateDropdown: {fileID: 2616423505401130634}
@@ -42680,6 +42803,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b28d2e0ec46073e42a8aaeb342e837c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  loader: {fileID: 2671049237676878303}
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   startingHealth: 100
   startingArmor: 0
@@ -42711,6 +42835,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d36ebc388d9a8274c887629a958e3d1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  loader: {fileID: 2671049237676878303}
   inventory: {fileID: 6475620730627094871}
   attackRadius: 0.12
   enemyLayerMask:
@@ -43932,6 +44057,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8065180958134967070}
+  - component: {fileID: 8598065617335713946}
   - component: {fileID: 1491831986454486006}
   - component: {fileID: 2629283069959782783}
   m_Layer: 9
@@ -43956,6 +44082,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1700518104251607759}
   m_LocalEulerAnglesHint: {x: 1.955, y: 0.056, z: -0.063}
+--- !u!114 &8598065617335713946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9072625023905755843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0090b142eade044481babaee0890cb5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isSkinnedMeshRenderer: 0
+  skinnedMeshRenderer: {fileID: 0}
+  meshRenderer: {fileID: 2629283069959782783}
+  minDistance: 5
+  maxDistance: 15
+  transparencyAtMinDistance: 0.3
 --- !u!33 &1491831986454486006
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -44261,6 +44405,18 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+        - m_Target: {fileID: 7495721667807700299}
+          m_TargetAssemblyTypeName: PauseController, Assembly-CSharp
+          m_MethodName: KillNotifEnabler
+          m_Mode: 6
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
   - eventID: 3
     callback:
       m_PersistentCalls:
@@ -44276,18 +44432,6 @@ MonoBehaviour:
             m_FloatArgument: 0
             m_StringArgument: 
             m_BoolArgument: 1
-          m_CallState: 2
-        - m_Target: {fileID: 2795142651386916811}
-          m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
-          m_MethodName: SetActive
-          m_Mode: 6
-          m_Arguments:
-            m_ObjectArgument: {fileID: 0}
-            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-            m_IntArgument: 0
-            m_FloatArgument: 0
-            m_StringArgument: 
-            m_BoolArgument: 0
           m_CallState: 2
 --- !u!114 &4989248976636051333
 MonoBehaviour:
