@@ -38,8 +38,6 @@ public class PlayerTransparencyController : MonoBehaviour
         // Calculate the distance between the camera and the player
         float distance = Vector3.Distance(camera.transform.position, transform.position);
 
-        Debug.Log($"Raw distance: {distance}");
-
         // Set the alpha value on the material
         materialInstance.SetFloat("_CameraDistance", distance);
     }

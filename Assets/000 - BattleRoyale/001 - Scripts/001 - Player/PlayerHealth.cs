@@ -8,6 +8,7 @@ using UnityEngine.UI;
 
 public class PlayerHealth : NetworkBehaviour
 {
+    [SerializeField] private KillCountCounterController killCounterController;
     [SerializeField] private PlayerNetworkLoader loader;
     [SerializeField] private UserData userData;
 
@@ -36,6 +37,7 @@ public class PlayerHealth : NetworkBehaviour
     [SerializeField] private TextMeshProUGUI usernameResultTMP;
     [SerializeField] private TextMeshProUGUI playerCountResultTMP;
     [SerializeField] private TextMeshProUGUI rankResultTMP;
+    [SerializeField] public TextMeshProUGUI killCountResultTMP;
 
     [field: Header("DEBUGGER")]
     [Networked] [field: SerializeField] public float CurrentHealth { get; set; }
@@ -44,6 +46,7 @@ public class PlayerHealth : NetworkBehaviour
 
     [field: Space]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public int PlayerPlacement { get; set; }
 
     //  =========================
 
@@ -71,22 +74,26 @@ public class PlayerHealth : NetworkBehaviour
                     if (HasInputAuthority)
                     {
                         healthSlider.value = CurrentHealth / 100f;
+                    }
 
-                        if (CurrentHealth <= 0)
-                        {
-                            await Task.Delay(1500);
 
-                            usernameResultTMP.text = userData.Username;
-                            playerCountResultTMP.text = $"<color=yellow><size=\"55\">#{ServerManager.RemainingPlayers.Count}</size></color> <size=\"50\"> / {ServerManager.RemainingPlayers.Count}</size>";
-                            rankResultTMP.text = "1";
+                    break;
+                case nameof(PlayerPlacement):
 
-                            controllerObj.SetActive(false);
-                            pauseObj.SetActive(false);
+                    if (HasInputAuthority)
+                    {
+                        Debug.Log($"Player lose, player placement: {PlayerPlacement}");
+                        usernameResultTMP.text = userData.Username;
+                        playerCountResultTMP.text = $"<color=yellow><size=\"55\">#{PlayerPlacement}</size></color> <size=\"50\"> / {ServerManager.RemainingPlayers.Capacity}</size>";
+                        rankResultTMP.text = PlayerPlacement.ToString();
+                        killCountResultTMP.text = killCounterController.KillCount.ToString();
 
-                            winMessageObj.SetActive(false);
-                            loseMessageObj.SetActive(true);
-                            gameOverPanelObj.SetActive(true);
-                        }
+                        controllerObj.SetActive(false);
+                        pauseObj.SetActive(false);
+
+                        winMessageObj.SetActive(false);
+                        loseMessageObj.SetActive(true);
+                        gameOverPanelObj.SetActive(true);
                     }
 
                     if (CurrentHealth <= 0)
@@ -140,12 +147,13 @@ public class PlayerHealth : NetworkBehaviour
 
         GetHit = true;
 
-        //if (ServerManager.CurrentGameState != GameState.ARENA) return;
+        if (ServerManager.CurrentGameState != GameState.ARENA) return;
 
         CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - damage);
 
         if (CurrentHealth <= 0)
         {
+            PlayerPlacement = ServerManager.RemainingPlayers.Count;
             ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
             nobject.GetComponent<KillCountCounterController>().KillCount++;
             RPC_ReceiveKillNotification(killer, loader.Username);

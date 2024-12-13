@@ -166,7 +166,6 @@ public class PlayerInventory : NetworkBehaviour
         hairMR[HairStyle].material.SetColor("_BaseColor", hairColor[HairColorIndex]);
         upperClothingMR.material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
         lowerClothingMR.materials[0].SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
-        lowerClothingMR.materials[1].SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
         bodyColorMR.material.SetColor("_BaseColor", skinColor[SkinColorIndex]);
     }
 

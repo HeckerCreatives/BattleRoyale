@@ -295,6 +295,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     {
         while (!Runner) await Task.Delay(100);
 
+        Debug.Log("change detector initialized on dedicated server local player");
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
     }
 
@@ -317,6 +318,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
                     break;
                 case nameof(RemainingPlayers):
+                    Debug.Log("remaining player change");
                     PlayerCountChange?.Invoke(this, EventArgs.Empty);
                     break;
             }
@@ -350,6 +352,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         if (WaitingAreaTimer <= 0f)
         {
+            StartBattleRoyale = true;
             CurrentGameState = GameState.ARENA;
             CanCountWaitingAreaTimer = false;
             CurrentStateChange?.Invoke(this, EventArgs.Empty);
@@ -413,15 +416,16 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 obj.GetComponent<PlayerHealth>().ServerManager = this;
                 obj.GetComponent<PlayerSpawnLocationController>().ServerManager = this;
                 obj.GetComponent<PlayerQuitController>().ServerManager = this;
+                obj.GetComponent<MapZoomInOut>().ServerManager = this;
             });
 
             Players.Add(player, playerCharacter);
+            RemainingPlayers.Add(player, playerCharacter);
             PlayerCountChange?.Invoke(this, EventArgs.Empty);
 
-            if (!CanCountWaitingAreaTimer && Players.Count >= 10)
+            if (!CanCountWaitingAreaTimer && Players.Count >= 3)
             {
                 CanCountWaitingAreaTimer = true;
-                StartBattleRoyale = true;
             }
 
             if (CanCountWaitingAreaTimer && WaitingAreaTimer > 60 && Players.Count >= Players.Capacity)
