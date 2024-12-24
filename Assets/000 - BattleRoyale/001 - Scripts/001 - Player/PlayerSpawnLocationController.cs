@@ -18,7 +18,11 @@ public class PlayerSpawnLocationController : NetworkBehaviour
     {
         while (!Runner) await Task.Delay(100);
 
-        while (ServerManager == null) await Task.Delay(100);
+        while (ServerManager == null)
+        {
+            Debug.Log("Waiting for server manager PlayerSpawnLoactaionController");
+            await Task.Delay(100);
+        }
 
         Debug.Log("Server Manager Detected Spawn Location Controller");
         ServerManager.OnCurrentStateChange += StateChange;
@@ -26,9 +30,9 @@ public class PlayerSpawnLocationController : NetworkBehaviour
         isSpawned = true;
     }
 
-    private void OnDisable()
+    public override void Despawned(NetworkRunner runner, bool hasState)
     {
-        if (isSpawned)
+        if (hasState && isSpawned)
             ServerManager.OnCurrentStateChange -= StateChange;
     }
 

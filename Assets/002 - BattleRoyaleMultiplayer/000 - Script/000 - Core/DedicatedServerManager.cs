@@ -318,6 +318,13 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
                     break;
                 case nameof(RemainingPlayers):
+
+                    if (HasStateAuthority)
+                    {
+                        if (RemainingPlayers.Count <= 1 && CurrentGameState == GameState.ARENA)
+                            CurrentGameState = GameState.DONE;
+                    }
+
                     Debug.Log("remaining player change");
                     PlayerCountChange?.Invoke(this, EventArgs.Empty);
                     break;
@@ -452,6 +459,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 WaitingAreaTimer = 300f;
                 CanCountWaitingAreaTimer = false;
             }
+
+            if (CurrentGameState == GameState.DONE && Players.Count <= 0)
+                Application.Quit();
         }
 
         

@@ -41,9 +41,10 @@ public class MapZoomInOut : NetworkBehaviour
         UpdateZoomInOut();
     }
 
-    private void OnDisable()
+    public override void Despawned(NetworkRunner runner, bool hasState)
     {
-        ServerManager.OnCurrentStateChange -= CheckPosition;
+        if (hasState)
+            ServerManager.OnCurrentStateChange -= CheckPosition;
     }
 
     private void CheckPosition(object sender, EventArgs e)
