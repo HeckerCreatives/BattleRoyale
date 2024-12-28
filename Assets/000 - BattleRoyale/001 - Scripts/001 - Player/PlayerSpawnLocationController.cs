@@ -40,17 +40,10 @@ public class PlayerSpawnLocationController : NetworkBehaviour
     {
         if (ServerManager.CurrentGameState == GameState.ARENA)
         {
-            if (HasStateAuthority)
-            {
-                Debug.Log("Start dropping items");
-                inventory.Rpc_DropWeaponsAfterTeleportBattlefield();
-            }
-
             if (HasInputAuthority)
             {
                 GameManager.Instance.SceneController.SpawnArenaLoading = true;
                 GameManager.Instance.SceneController.AddActionLoadinList(ReadyForBattle());
-                GameManager.Instance.SceneController.AddActionLoadinList(Inventory());
                 GameManager.Instance.SceneController.ActionPass = true;
             }
         }
@@ -59,10 +52,5 @@ public class PlayerSpawnLocationController : NetworkBehaviour
     IEnumerator ReadyForBattle()
     {
         while (!ServerManager.DonePlayerBattlePositions) yield return null;
-    }
-
-    IEnumerator Inventory()
-    {
-        while (inventory.PrimaryWeapon != null || inventory.SecondaryWeapon != null || inventory.AmmoObject != null || inventory.WeaponIndex != 1 || inventory.BowAmmo != 0 || inventory.RifleAmmo != 0) yield return null;
     }
 }

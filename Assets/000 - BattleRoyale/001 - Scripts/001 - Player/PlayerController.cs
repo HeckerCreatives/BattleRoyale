@@ -16,9 +16,6 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private PlayerInventory inventory;
     [SerializeField] private SimpleKCC characterController;
 
-    [Header("PLAYER")]
-    [SerializeField] private Animator animator;
-
     [Header("RIGS")]
     [SerializeField] private Rig hipsRig;
     [SerializeField] private Rig headRig;
@@ -52,12 +49,14 @@ public class PlayerController : NetworkBehaviour
     [MyBox.ReadOnly][SerializeField] private bool isJumping;
 
     [field: Header("DEBUGGER PLAYER NETWORK")]
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public Vector3 MoveDirection { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public float JumpImpulse { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsAttacking { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsShooting { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsProne { get; private set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsCrouch { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public Vector3 MoveDirection { get;  set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public float JumpImpulse { get;  set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsAttacking { get;  set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsShooting { get;  set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsProne { get;  set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsCrouch { get;  set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public float XMovement { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public float YMovement { get; set; }
 
     [field: Header("DEBUGGER ENVIRONMENT NETWORK")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool Grounded { get; private set; }
@@ -118,19 +117,17 @@ public class PlayerController : NetworkBehaviour
     public void ResetAnimationJump()
     {
         isJumping = false;
-        animator.SetBool("jump", false);
     }
 
     private void SetToFreeFall()
     {
-        if (!Grounded)
-            animator.SetBool("freefall", true);
-        else
-            animator.SetBool("freefall", false);
     }
 
     private void Move()
     {
+        XMovement = controllerInput.MovementDirection.x;
+        YMovement = controllerInput.MovementDirection.y;
+
         if (playerHealth.CurrentHealth <= 0) return;
 
         MoveDirection = characterController.TransformRotation * new Vector3(controllerInput.MovementDirection.x, 0f, controllerInput.MovementDirection.y) * (IsCrouch ? crouchMoveSpeed : IsProne ? proneMoveSpeed : isJumping ? 250 : moveSpeed) * Runner.DeltaTime;
@@ -145,20 +142,14 @@ public class PlayerController : NetworkBehaviour
             {
                 IsCrouch = false;
                 IsProne = false;
-                animator.SetBool("prone", false);
-                animator.SetBool("crouch", false);
                 return;
             }
             JumpImpulse = jumpHeight;
             isJumping = true;
-            animator.SetBool("jump", true);
         }
-
 
         // Apply the movement
         characterController.Move(MoveDirection, JumpImpulse);
-        animator.SetFloat("x", controllerInput.MovementDirection.x);
-        animator.SetFloat("y", controllerInput.MovementDirection.y);
     }
 
     private void Crouch()
@@ -179,13 +170,10 @@ public class PlayerController : NetworkBehaviour
         {
             IsCrouch = true;
             IsProne = false;
-            animator.SetBool("prone", false);
-            animator.SetBool("crouch", true);
         }
         else
         {
             IsCrouch = false;
-            animator.SetBool("crouch", false);
         }
     }
 
@@ -207,18 +195,13 @@ public class PlayerController : NetworkBehaviour
         {
             IsProne = true;
             IsCrouch = false;
-            animator.SetBool("crouch", false);
-            animator.SetBool("prone", true);
             hipsRig.weight = 0;
             headRig.weight = 0;
-            animator.SetLayerWeight(1, 0f);
         }
         else
         {
             IsProne = false;
-            animator.SetBool("prone", false);
             headRig.weight = 1f;
-            animator.SetLayerWeight(1, 1f);
         }
     }
 
@@ -236,15 +219,7 @@ public class PlayerController : NetworkBehaviour
 
         if (IsAttacking) return;
 
-        if (IsProne)
-        {
-            animator.ResetTrigger("meleeattack");
-            return;
-        }
-
         IsAttacking = true;
-
-        animator.SetTrigger("meleeattack");
     }
 
     private void Shoot()
@@ -252,7 +227,6 @@ public class PlayerController : NetworkBehaviour
         if (inventory.WeaponIndex != 5)
         {
             IsShooting = false;
-            animator.SetBool("shootHold", false);
             return;
         }
 
@@ -261,16 +235,12 @@ public class PlayerController : NetworkBehaviour
             if (IsShooting) return;
 
             IsShooting = true;
-
-            animator.SetBool("shootHold", true);
         }
         else
         {
             if (!IsShooting) return;
 
             IsShooting = false;
-
-            animator.SetBool("shootHold", false);
         }
 
         if (IsShooting) return;
@@ -280,24 +250,18 @@ public class PlayerController : NetworkBehaviour
     {
         if (!Grounded)
         {
-            animator.SetBool("turning", false);
             return;
         }
 
         if (controllerInput.MovementDirection != Vector2.zero)
         {
-            animator.SetBool("turning", false);
             return;
         }
 
         if (controllerInput.LookDirection.x == 0)
         {
-            animator.SetBool("turning", false);
             return;
         }
-
-        animator.SetBool("turning", true);
-        animator.SetFloat("rightleftturn", controllerInput.LookDirection.x);
     }
 
     private void LayerAndWeight()
@@ -305,17 +269,10 @@ public class PlayerController : NetworkBehaviour
         if (IsProne)
         {
             headRig.weight = 0f;
-
-            if (inventory.WeaponIndex == 1)
-                animator.SetLayerWeight(inventory.WeaponIndex, 0f);
-            else
-                animator.SetLayerWeight(inventory.WeaponIndex, 1f);
         }
         else
         {
             headRig.weight = 1f;
-
-            animator.SetLayerWeight(inventory.WeaponIndex, 1f);
         }
     }
 
@@ -326,13 +283,11 @@ public class PlayerController : NetworkBehaviour
     public void ResetAttack()
     {
         IsAttacking = false;
-        animator.ResetTrigger("meleeattack");
     }
 
     public void ResetSwitching()
     {
         IsAttacking = false;
-        animator.ResetTrigger("switchweapon");
     }
 
 

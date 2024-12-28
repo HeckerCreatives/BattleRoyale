@@ -29,8 +29,6 @@ public class PlayerWeaponChanger : NetworkBehaviour
         controllerInput = input;
 
         ChangeToPunchWeapon();
-        ChangeToPrimaryWeapon();
-        ChangeToSecondaryWeapon();
 
         PreviousButtons = input.Buttons;
     }
@@ -42,36 +40,6 @@ public class PlayerWeaponChanger : NetworkBehaviour
         if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchHands)) return;
 
         inventory.WeaponHandChange();
-
-        playerAnimator.SetLayerWeight(inventory.TempLastIndex, 0f);
-
-        playerAnimator.SetTrigger("switchweapon");
-    }
-
-    private void ChangeToPrimaryWeapon()
-    {
-        if (inventory.PrimaryWeapon == null) return;
-
-        if (inventory.WeaponIndex == inventory.PrimaryWeapon.AnimatorID) return;
-
-        if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchPrimary)) return;
-
-        inventory.WeaponPrimaryChange();
-
-        playerAnimator.SetLayerWeight(inventory.TempLastIndex, 0f);
-
-        playerAnimator.SetTrigger("switchweapon");
-    }
-
-    private void ChangeToSecondaryWeapon()
-    {
-        if (inventory.SecondaryWeapon == null) return;
-
-        if (inventory.WeaponIndex == inventory.SecondaryWeapon.AnimatorID) return;
-
-        if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchSecondary)) return;
-
-        inventory.WeaponSecondaryChange();
 
         playerAnimator.SetLayerWeight(inventory.TempLastIndex, 0f);
 

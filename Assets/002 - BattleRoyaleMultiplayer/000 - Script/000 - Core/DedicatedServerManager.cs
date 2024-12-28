@@ -88,14 +88,17 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [MyBox.ReadOnly][SerializeField] private bool doneSpawnCrates;
     [MyBox.ReadOnly][SerializeField] private bool doneSetupBattlePos;
     [MyBox.ReadOnly][SerializeField] private NetworkRunner networkRunner;
-
-
+    
     [field: Space]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public GameState CurrentGameState { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float WaitingAreaTimer { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool CanCountWaitingAreaTimer { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool DonePlayerBattlePositions { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool StartBattleRoyale { get; set; }
+
+    //  =================
+
+    private Dictionary<int, int> rankScoreTable = new Dictionary<int, int>();
 
     //  =================
 
@@ -111,10 +114,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         {
             StartGame();
         }
-    }
 
-    private void OnDisable()
-    {
+        InitializeRankScores();
     }
 
     #region GAME INITIALIZE
@@ -185,19 +186,19 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         Debug.Log("done waiting for runner");
         int index = 1;
 
-        foreach (var spawnLocations in createSpawnLocations)
-        {
-            Debug.Log("spawning loc objects");
-            var gameobject = Runner.Spawn(createNO, spawnLocations.transform.position, Quaternion.identity, null);
+        //foreach (var spawnLocations in createSpawnLocations)
+        //{
+        //    Debug.Log("spawning loc objects");
+        //    var gameobject = Runner.Spawn(createNO, spawnLocations.transform.position, Quaternion.identity, null);
 
-            Debug.Log("setting up crate datas");
-            gameobject.GetComponent<CrateController>().SetDatas(GenerateRandomItems());
+        //    Debug.Log("setting up crate datas");
+        //    gameobject.GetComponent<CrateController>().SetDatas(GenerateRandomItems());
 
-            index++;
-            Debug.Log("spawning locs");
+        //    index++;
+        //    Debug.Log("spawning locs");
 
-            await Task.Delay(100);
-        }
+        //    await Task.Delay(100);
+        //}
         Debug.Log("done for spawn locations");
 
         doneSpawnCrates = true;
@@ -287,6 +288,24 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         networkRunner.SessionInfo.IsVisible = true;
 
         Debug.Log("ALL PLAYERS CAN NOW JOIN");
+    }
+
+    private async void InitializeRankScores()
+    {
+        Debug.Log($"STARTING INITIALIZING RANK SCORES");
+        rankScoreTable.Clear();
+
+        // Add pre-determined scores for each rank up to 50
+        for (int rank = 1; rank <= 50; rank++)
+        {
+            int score = Mathf.Max(1000 - (rank - 1) * 20, 0); // Decrease score by 20 per rank, minimum score 0
+            rankScoreTable.Add(rank, score);
+
+            Debug.Log($"ADDING RANK SCORES: RANK ${rank}, SCORE ${score}");
+
+            await Task.Delay(100);
+        }
+        Debug.Log($"DONE INITIALIZING RANK SCORES");
     }
 
     #endregion
@@ -405,6 +424,17 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         battleFieldArena.SetActive(battleField);
     }
 
+    public int GetScoreForRank(int rank)
+    {
+        if (rankScoreTable.TryGetValue(rank, out int score))
+        {
+            return score;
+        }
+
+        Debug.LogWarning($"Rank {rank} does not exist in the rank score table.");
+        return 0; // Indicate invalid rank
+    }
+
     #endregion
 
     #region SERVER LOGIC
@@ -424,6 +454,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 obj.GetComponent<PlayerSpawnLocationController>().ServerManager = this;
                 obj.GetComponent<PlayerQuitController>().ServerManager = this;
                 obj.GetComponent<MapZoomInOut>().ServerManager = this;
+                obj.GetComponent<PlayerGameOverScreen>().ServerManager = this;
             });
 
             Players.Add(player, playerCharacter);

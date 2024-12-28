@@ -9,6 +9,7 @@ using UnityEngine.UI;
 public class PlayerHealth : NetworkBehaviour
 {
     [SerializeField] private KillCountCounterController killCounterController;
+    [SerializeField] private PlayerGameOverScreen gameOverScreen;
     [SerializeField] private PlayerNetworkLoader loader;
     [SerializeField] private UserData userData;
 
@@ -26,19 +27,6 @@ public class PlayerHealth : NetworkBehaviour
     [Space]
     [SerializeField] private Animator playerAnimator;
 
-    [Space]
-    [SerializeField] private GameObject controllerObj;
-    [SerializeField] private GameObject pauseObj;
-    [SerializeField] private GameObject gameOverPanelObj;
-    [SerializeField] private GameObject winMessageObj;
-    [SerializeField] private GameObject loseMessageObj;
-
-    [Space]
-    [SerializeField] private TextMeshProUGUI usernameResultTMP;
-    [SerializeField] private TextMeshProUGUI playerCountResultTMP;
-    [SerializeField] private TextMeshProUGUI rankResultTMP;
-    [SerializeField] public TextMeshProUGUI killCountResultTMP;
-
     [field: Header("DEBUGGER")]
     [Networked] [field: SerializeField] public float CurrentHealth { get; set; }
     [Networked][field: SerializeField] public float CurrentArmor { get; set; }
@@ -46,7 +34,6 @@ public class PlayerHealth : NetworkBehaviour
 
     [field: Space]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public int PlayerPlacement { get; set; }
 
     //  =========================
 
@@ -71,35 +58,9 @@ public class PlayerHealth : NetworkBehaviour
             {
                 case nameof(CurrentHealth):
 
-                    if (HasInputAuthority)
-                    {
-                        healthSlider.value = CurrentHealth / 100f;
-                    }
+                    if (!HasInputAuthority) return;
 
-
-                    break;
-                case nameof(PlayerPlacement):
-
-                    if (HasInputAuthority)
-                    {
-                        Debug.Log($"Player lose, player placement: {PlayerPlacement}");
-                        usernameResultTMP.text = userData.Username;
-                        playerCountResultTMP.text = $"<color=yellow><size=\"55\">#{PlayerPlacement}</size></color> <size=\"50\"> / {ServerManager.RemainingPlayers.Capacity}</size>";
-                        rankResultTMP.text = PlayerPlacement.ToString();
-                        killCountResultTMP.text = killCounterController.KillCount.ToString();
-
-                        controllerObj.SetActive(false);
-                        pauseObj.SetActive(false);
-
-                        winMessageObj.SetActive(false);
-                        loseMessageObj.SetActive(true);
-                        gameOverPanelObj.SetActive(true);
-                    }
-
-                    if (CurrentHealth <= 0)
-                    {
-                        playerAnimator.SetTrigger("died");
-                    }
+                    healthSlider.value = CurrentHealth / 100f;
 
                     break;
                 case nameof(CurrentArmor):
@@ -151,11 +112,14 @@ public class PlayerHealth : NetworkBehaviour
 
         CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - damage);
 
+        nobject.GetComponent<PlayerGameOverScreen>().HitPoints += damage * 100;
+
         if (CurrentHealth <= 0)
         {
-            PlayerPlacement = ServerManager.RemainingPlayers.Count;
-            ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
             nobject.GetComponent<KillCountCounterController>().KillCount++;
+            gameOverScreen.RankPoints = ServerManager.GetScoreForRank(ServerManager.RemainingPlayers.Count);
+            gameOverScreen.PlayerPlacement = ServerManager.RemainingPlayers.Count;
+            ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
             RPC_ReceiveKillNotification(killer, loader.Username);
         }
     }

@@ -6,6 +6,6 @@ public class ReloadEnd : StateMachineBehaviour
 {
     public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        animator.GetComponent<PlayerInventory>().ResetReload();
+        //animator.GetComponent<PlayerInventory>().ResetReload();
     }
 }

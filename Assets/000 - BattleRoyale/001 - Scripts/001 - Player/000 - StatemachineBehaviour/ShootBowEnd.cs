@@ -6,7 +6,7 @@ public class ShootBowEnd : StateMachineBehaviour
 {
     public override void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        animator.GetComponent<PlayerInventory>().Reload();
-        animator.GetComponent<PlayerController>().ResetAttack();
+        //animator.GetComponent<PlayerInventory>().Reload();
+        //animator.GetComponent<PlayerController>().ResetAttack();
     }
 }
