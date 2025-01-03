@@ -6,6 +6,6 @@ public class SwitchingEnd : StateMachineBehaviour
 {
     public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        animator.GetComponent<PlayerController>().ResetSwitching();
+        //animator.GetComponent<PlayerController>().ResetSwitching();
     }
 }

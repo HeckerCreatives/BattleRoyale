@@ -106,9 +106,12 @@ public class FistWeaponHandler : NetworkBehaviour
         {
             NetworkObject hitObject = hitsSecondFist[i].Hitbox?.transform.root.GetComponent<NetworkObject>();
 
+            Debug.Log($"{hitObject.name} {(hitObject != null && !hitEnemiesSecondFist.Contains(hitObject))}");
+
             // Ensure we only hit once per enemy per attack sequence
             if (hitObject != null && !hitEnemiesSecondFist.Contains(hitObject))
             {
+                Debug.Log("Second fist hit");
                 float tempdamage = 0;
 
                 switch (hitsSecondFist[i].Hitbox.tag)
@@ -135,6 +138,8 @@ public class FistWeaponHandler : NetworkBehaviour
                         tempdamage = 10f;
                         break;
                 }
+
+                Debug.Log("Second fist hit with damage " + tempdamage);
 
                 // Process the hit (apply damage, etc.)
                 HandleHit(hitObject, tempdamage);

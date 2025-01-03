@@ -6,6 +6,6 @@ public class MeleeAttackEnd : StateMachineBehaviour
 {
     public override void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
-        animator.GetComponent<PlayerController>().ResetAttack();
+        //animator.GetComponent<PlayerController>().ResetAttack();
     }
 }

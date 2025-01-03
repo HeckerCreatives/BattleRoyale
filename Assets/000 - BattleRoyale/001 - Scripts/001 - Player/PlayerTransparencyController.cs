@@ -17,17 +17,20 @@ public class PlayerTransparencyController : MonoBehaviour
 
     private void Start()
     {
-        camera = Camera.main.transform;
+        if (Camera.main != null)
+        {
+            camera = Camera.main.transform;
 
-        if (isSkinnedMeshRenderer)
-        {
-            if (skinnedMeshRenderer != null)
-                materialInstance = skinnedMeshRenderer.material; // Create a unique instance of the material
-        }
-        else
-        {
-            if (meshRenderer != null)
-                materialInstance = meshRenderer.material;
+            if (isSkinnedMeshRenderer)
+            {
+                if (skinnedMeshRenderer != null)
+                    materialInstance = skinnedMeshRenderer.material; // Create a unique instance of the material
+            }
+            else
+            {
+                if (meshRenderer != null)
+                    materialInstance = meshRenderer.material;
+            }
         }
     }
 

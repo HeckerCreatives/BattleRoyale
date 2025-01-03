@@ -51,15 +51,12 @@ public class PlayerController : NetworkBehaviour
     [field: Header("DEBUGGER PLAYER NETWORK")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public Vector3 MoveDirection { get;  set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float JumpImpulse { get;  set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsAttacking { get;  set; }
+    //[field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsAttacking { get;  set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsShooting { get;  set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsProne { get;  set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsCrouch { get;  set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float XMovement { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float YMovement { get; set; }
-
-    [field: Header("DEBUGGER ENVIRONMENT NETWORK")]
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool Grounded { get; private set; }
 
     //  ======================
 
@@ -70,7 +67,7 @@ public class PlayerController : NetworkBehaviour
     //  ======================
 
     #region NETWORK
-
+    
     public override void Spawned()
     {
         // Set custom gravity.
@@ -84,9 +81,8 @@ public class PlayerController : NetworkBehaviour
 
     #endregion
 
-    private void Update()
+    public override void Render()
     {
-        GroundCheck();
         SetToFreeFall();
         LayerAndWeight();
     }
@@ -100,18 +96,12 @@ public class PlayerController : NetworkBehaviour
         controllerInput = input;
 
         Move();
-        Attack();
         Shoot();
         Crouch();
         Prone();
         PlayerRotateAnimation();
 
         PreviousButtons = input.Buttons;
-    }
-
-    private void GroundCheck()
-    {
-        Grounded = Physics.CheckSphere(transform.position, groundedRadius, groundLayers);
     }
 
     public void ResetAnimationJump()
@@ -136,7 +126,7 @@ public class PlayerController : NetworkBehaviour
 
         MoveDirection.Normalize();
 
-        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Jump) && Grounded && !isJumping)
+        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Jump) && characterController.IsGrounded && !isJumping)
         {
             if (IsCrouch || IsProne)
             {
@@ -157,7 +147,7 @@ public class PlayerController : NetworkBehaviour
         if (playerHealth.CurrentHealth <= 0) return;
 
         // Ensure we're on the ground
-        if (!Grounded)
+        if (!characterController.IsGrounded)
         {
             controllerInput.Buttons.Set(3, false);
             return;
@@ -182,7 +172,7 @@ public class PlayerController : NetworkBehaviour
         if (playerHealth.CurrentHealth <= 0) return;
 
         // Ensure we're on the ground
-        if (!Grounded)
+        if (!characterController.IsGrounded)
         {
             controllerInput.Buttons.Set(4, false);
             return;
@@ -205,22 +195,22 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    private void Attack()
-    {
-        if (playerHealth.CurrentHealth <= 0) return;
+    //private void Attack()
+    //{
+    //    if (playerHealth.CurrentHealth <= 0) return;
 
-        if (inventory.WeaponIndex != 1 && inventory.WeaponIndex != 2 && inventory.WeaponIndex != 3 && inventory.WeaponIndex != 4)
-        {
-            ResetAttack();
-            return;
-        }
+    //    if (inventory.WeaponIndex != 1 && inventory.WeaponIndex != 2 && inventory.WeaponIndex != 3 && inventory.WeaponIndex != 4)
+    //    {
+    //        ResetAttack();
+    //        return;
+    //    }
 
-        if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Melee)) return;
+    //    if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Melee)) return;
 
-        if (IsAttacking) return;
+    //    if (IsAttacking) return;
 
-        IsAttacking = true;
-    }
+    //    IsAttacking = true;
+    //}
 
     private void Shoot()
     {
@@ -248,7 +238,7 @@ public class PlayerController : NetworkBehaviour
 
     private void PlayerRotateAnimation()
     {
-        if (!Grounded)
+        if (!characterController.IsGrounded)
         {
             return;
         }
@@ -275,21 +265,6 @@ public class PlayerController : NetworkBehaviour
             headRig.weight = 1f;
         }
     }
-
-    #endregion
-
-    #region RESET
-
-    public void ResetAttack()
-    {
-        IsAttacking = false;
-    }
-
-    public void ResetSwitching()
-    {
-        IsAttacking = false;
-    }
-
 
     #endregion
 

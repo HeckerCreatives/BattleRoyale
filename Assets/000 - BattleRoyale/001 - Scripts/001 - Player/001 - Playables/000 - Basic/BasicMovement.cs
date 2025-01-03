@@ -58,25 +58,45 @@ public class BasicMovement : NetworkBehaviour
         }
     }
 
-    public override void FixedUpdateNetwork()
+    public override void Render()
     {
-        if (Runner.IsForward)
+        if (!HasInputAuthority && !HasStateAuthority)
         {
             foreach (var playables in clipPlayables)
             {
-                // Only update authoritative clients
-                if (HasInputAuthority || HasStateAuthority)
-                {
+                double currentPlayableTime = playables.GetTime();
+                if (Mathf.Abs((float)(currentPlayableTime - mainCorePlayable.TickRateAnimation)) > 0.01f) // Adjust threshold as needed
                     playables.SetTime(mainCorePlayable.TickRateAnimation);
-                }
+            }
+
+            UpdateBlendTreeWeights();
+        }
+    }
+
+    public override void FixedUpdateNetwork()
+    {
+        TickRate();
+        UpdateBlendTreeWeights();
+    }
+
+
+    private void TickRate()
+    {
+        if (Runner.IsForward)
+        {
+            if (clipPlayables == null) return;
+
+            foreach (var playables in clipPlayables)
+            {
+                playables.SetTime(mainCorePlayable.TickRateAnimation);
             }
         }
-
-        UpdateBlendTreeWeights();
     }
 
     private void UpdateBlendTreeWeights()
     {
+        if (!movementMixer.IsValid()) return;
+
         float xMovement = playerController.XMovement;
         float yMovement = playerController.YMovement;
 

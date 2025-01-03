@@ -54,19 +54,30 @@ public class MainCorePlayable : NetworkBehaviour
         playableGraph.Play();
     }
 
+    public override void Render()
+    {
+        if (playableGraph.IsValid())
+        {
+            //  Bare Hands
+            if (inventory.WeaponIndex == 1)
+            {
+                mainPlayable.SetInputWeight(1, 1f);
+            }
+            else
+            {
+                mainPlayable.SetInputWeight(1, 0f);
+            }
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (playableGraph.IsValid())
+            playableGraph.Destroy();
+    }
+
     public override void FixedUpdateNetwork()
     {
         TickRateAnimation = Runner.Tick * Runner.DeltaTime;
-
-        //  Bare Hands
-        if (inventory.WeaponIndex == 1)
-        {
-            Debug.Log("inventory weapon index: " +  inventory.WeaponIndex);
-            mainPlayable.SetInputWeight(1, 1f);
-        }
-        else
-        {
-            mainPlayable.SetInputWeight(1, 0f);
-        }
     }
 }
