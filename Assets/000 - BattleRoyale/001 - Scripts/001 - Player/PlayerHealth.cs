@@ -25,7 +25,7 @@ public class PlayerHealth : NetworkBehaviour
     [SerializeField] private Image damageIndicator;
 
     [Space]
-    [SerializeField] private Animator playerAnimator;
+    [SerializeField] private DeathMovement deathMovement;
 
     [field: Header("DEBUGGER")]
     [Networked] [field: SerializeField] public float CurrentHealth { get; set; }
@@ -50,7 +50,7 @@ public class PlayerHealth : NetworkBehaviour
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
     }
 
-    public override async void Render()
+    public override void Render()
     {
         foreach (var change in _changeDetector.DetectChanges(this))
         {
@@ -108,7 +108,7 @@ public class PlayerHealth : NetworkBehaviour
 
         GetHit = true;
 
-        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+        //if (ServerManager.CurrentGameState != GameState.ARENA) return;
 
         CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - damage);
 
@@ -116,6 +116,7 @@ public class PlayerHealth : NetworkBehaviour
 
         if (CurrentHealth <= 0)
         {
+            deathMovement.MakePlayerDead();
             nobject.GetComponent<KillCountCounterController>().KillCount++;
             gameOverScreen.RankPoints = ServerManager.GetScoreForRank(ServerManager.RemainingPlayers.Count);
             gameOverScreen.PlayerPlacement = ServerManager.RemainingPlayers.Count;
@@ -128,6 +129,8 @@ public class PlayerHealth : NetworkBehaviour
     public void RPC_ReceiveKillNotification(string killer, string killed)
     {
         Debug.Log($"Receive Kill Notif by: {loader.Username}");
+
+        if (HasStateAuthority) return;
 
         KillNotificationController.KillNotifInstance.ShowMessage(killer, killed);
     }

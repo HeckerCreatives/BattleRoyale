@@ -176,9 +176,10 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public IEnumerator PostRequest(string route, string query, Dictionary<string, object> paramsBody, bool loaderEndState, System.Action<System.Object> callback, System.Action errorAction)
+    public IEnumerator PostRequest(string route, string query, Dictionary<string, object> paramsBody, bool loaderEndState, System.Action<System.Object> callback, System.Action errorAction, bool useUserToken = true)
     {
-        while (userData.UserToken == "") yield return null;
+        if (useUserToken)
+            while (userData.UserToken == "") yield return null;
 
         UnityWebRequest apiRquest;
 

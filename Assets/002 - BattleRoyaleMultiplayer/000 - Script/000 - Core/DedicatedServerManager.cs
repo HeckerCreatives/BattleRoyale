@@ -270,7 +270,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         Debug.Log("Adding waiting Area Timer");
 
-        WaitingAreaTimer = 300f;
+        WaitingAreaTimer = 30f;
 
         Debug.Log("Done adding waiting Area Timer");
 
@@ -301,8 +301,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             int score = Mathf.Max(1000 - (rank - 1) * 20, 0); // Decrease score by 20 per rank, minimum score 0
             rankScoreTable.Add(rank, score);
 
-            Debug.Log($"ADDING RANK SCORES: RANK ${rank}, SCORE ${score}");
-
             await Task.Delay(100);
         }
         Debug.Log($"DONE INITIALIZING RANK SCORES");
@@ -326,7 +324,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             {
                 case nameof(CurrentGameState):
 
-                    Debug.Log($"start game state on client: {CurrentGameState}");
                     if (CurrentGameState == GameState.WAITINGAREA)
                         ArenaEnabler(true, false);
                     else
@@ -344,7 +341,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                             CurrentGameState = GameState.DONE;
                     }
 
-                    Debug.Log("remaining player change");
                     PlayerCountChange?.Invoke(this, EventArgs.Empty);
                     break;
             }
@@ -397,7 +393,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         for (int a = 0; a < Players.Count; a++)
         {
-            Debug.Log($"Player: {Players.ElementAt(a).Key.PlayerId}  Pos: {spawnBattleAreaPositions[a].position}");
 
             // Set player position
             Players.ElementAt(a).Value.GetComponent<SimpleKCC>().SetPosition(spawnBattleAreaPositions[a].position);
@@ -407,7 +402,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         {
             if (Players.ElementAt(a).Value.transform.position != spawnBattleAreaPositions[a].position)
             {
-                Debug.Log($"Player: {Players.ElementAt(a).Key.PlayerId} not in the Pos: {spawnBattleAreaPositions[a].position}");
                 allPlayersInPosition = false;
                 break;
             }
@@ -419,7 +413,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
     private void ArenaEnabler(bool waitingArea, bool battleField)
     {
-        Debug.Log($"Arena enabler called, waiting area: {waitingArea}, battle field: {battleField}");
         waitingAreaArena.SetActive(waitingArea);
         battleFieldArena.SetActive(battleField);
     }
@@ -461,7 +454,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             RemainingPlayers.Add(player, playerCharacter);
             PlayerCountChange?.Invoke(this, EventArgs.Empty);
 
-            if (!CanCountWaitingAreaTimer && Players.Count >= 3)
+            if (!CanCountWaitingAreaTimer && Players.Count >= 2)
             {
                 CanCountWaitingAreaTimer = true;
             }
@@ -487,7 +480,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             if (Players.Count <= 0 && CanCountWaitingAreaTimer)
             {
-                WaitingAreaTimer = 300f;
+                WaitingAreaTimer = 30f;
                 CanCountWaitingAreaTimer = false;
             }
 

@@ -7,9 +7,10 @@ public class FistWeaponHandler : NetworkBehaviour
 {
     [SerializeField] private PlayerNetworkLoader loader;
     [SerializeField] private PlayerInventory inventory;
+    [SerializeField] private BareHandsMovement bareHandsMovement;
 
     [Space]
-    [SerializeField] private float attackRadius;
+    [SerializeField] private Vector3 attackRadius;
     [SerializeField] private LayerMask enemyLayerMask;
     [SerializeField] private Transform impactFirstFistPoint;
     [SerializeField] private Transform impactSecondFistPoint;
@@ -27,23 +28,13 @@ public class FistWeaponHandler : NetworkBehaviour
     {
         if (!HasStateAuthority) return;
 
-        if (inventory.WeaponIndex != 1) return;
-
-        // Use the runner to get lag-compensated overlap sphere results
-        int hitCount = Runner.LagCompensation.OverlapSphere(
-                impactFirstFistPoint.position,
-                attackRadius,
-                Object.InputAuthority,
-                hitsFirstFist,
-                enemyLayerMask,
-                HitOptions.IgnoreInputAuthority
-         );
+        int hitCount = Runner.LagCompensation.OverlapBox(impactFirstFistPoint.position, attackRadius, Quaternion.identity, Object.InputAuthority, hitsFirstFist, enemyLayerMask, HitOptions.SubtickAccuracy);
 
         for (int i = 0; i < hitCount; i++)
         {
             NetworkObject hitObject = hitsFirstFist[i].Hitbox?.transform.root.GetComponent<NetworkObject>();
 
-            Debug.Log($"{hitObject.name} {(hitObject != null && !hitEnemiesFirstFist.Contains(hitObject))}");
+            if (hitObject == Object) continue;
 
             // Ensure we only hit once per enemy per attack sequence
             if (hitObject != null && !hitEnemiesFirstFist.Contains(hitObject))
@@ -75,7 +66,7 @@ public class FistWeaponHandler : NetworkBehaviour
                         break;
                 }
 
-                Debug.Log($"Damge: {tempdamage}");
+                Debug.Log($"Fist fist Damage by {loader.Username} to {hitObject.GetComponent<PlayerNetworkLoader>().Username} on {hitsFirstFist[i].Hitbox.tag}: {tempdamage}");
 
                 // Process the hit (apply damage, etc.)
                 HandleHit(hitObject, tempdamage);
@@ -90,28 +81,21 @@ public class FistWeaponHandler : NetworkBehaviour
     {
         if (!HasStateAuthority) return;
 
-        if (inventory.WeaponIndex != 1) return;
+        Debug.Log("performing second attack");
 
-        // Use the runner to get lag-compensated overlap sphere results
-        int hitCount = Runner.LagCompensation.OverlapSphere(
-                impactSecondFistPoint.position,
-                attackRadius,
-                Object.InputAuthority,
-                hitsSecondFist,
-                enemyLayerMask,
-                HitOptions.IgnoreInputAuthority
-         );
+        int hitCount = Runner.LagCompensation.OverlapBox(impactSecondFistPoint.position, attackRadius, Quaternion.identity, Object.InputAuthority, hitsSecondFist, enemyLayerMask, HitOptions.SubtickAccuracy);
+
+        Debug.Log($"hit second attack: {hitCount}");
 
         for (int i = 0; i < hitCount; i++)
         {
             NetworkObject hitObject = hitsSecondFist[i].Hitbox?.transform.root.GetComponent<NetworkObject>();
 
-            Debug.Log($"{hitObject.name} {(hitObject != null && !hitEnemiesSecondFist.Contains(hitObject))}");
+            if (hitObject == Object) continue;
 
             // Ensure we only hit once per enemy per attack sequence
             if (hitObject != null && !hitEnemiesSecondFist.Contains(hitObject))
             {
-                Debug.Log("Second fist hit");
                 float tempdamage = 0;
 
                 switch (hitsSecondFist[i].Hitbox.tag)
@@ -139,7 +123,7 @@ public class FistWeaponHandler : NetworkBehaviour
                         break;
                 }
 
-                Debug.Log("Second fist hit with damage " + tempdamage);
+                Debug.Log($"Second Fist Damage by {loader.Username} to {hitObject.GetComponent<PlayerNetworkLoader>().Username} on {hitsSecondFist[i].Hitbox.tag}: {tempdamage}");
 
                 // Process the hit (apply damage, etc.)
                 HandleHit(hitObject, tempdamage);
@@ -173,10 +157,10 @@ public class FistWeaponHandler : NetworkBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(impactFirstFistPoint.position, attackRadius);
+        Gizmos.DrawCube(impactFirstFistPoint.position, attackRadius);
 
 
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(impactSecondFistPoint.position, attackRadius);
+        Gizmos.DrawCube(impactSecondFistPoint.position, attackRadius);
     }
 }

@@ -214,7 +214,7 @@ public class GraphicsController : MonoBehaviour
         }
         else
         {
-            CurrentResolutionIndex = 0;
+            CurrentResolutionIndex = 2;
             ChangeResolution();
         }
 

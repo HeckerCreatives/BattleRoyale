@@ -15,10 +15,16 @@ public class KillCountCounterController : NetworkBehaviour
     [Space]
     [SerializeField] public TextMeshProUGUI PlayerCount;
     [SerializeField] public TextMeshProUGUI killCountTMP;
+    [SerializeField] public TextMeshProUGUI pingTMP;
 
     [field: Header("DEBUGGER")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int KillCount { get; set; }
+
+    public override void Spawned()
+    {
+        ShowPlayerPing();
+    }
 
     public override void Render()
     {
@@ -30,4 +36,15 @@ public class KillCountCounterController : NetworkBehaviour
         killCountTMP.text = $"{KillCount:n0}";
     }
 
+    public async void ShowPlayerPing()
+    {
+        if (!HasInputAuthority) return;
+
+        pingTMP.text = $"Ping: {(Runner.GetPlayerRtt(Object.InputAuthority) * 1000):n0} (ms)";
+        while (true)
+        {
+            await Task.Delay(1000);
+            pingTMP.text = $"Ping: {(Runner.GetPlayerRtt(Object.InputAuthority) * 1000):n0} (ms)";
+        }
+    }
 }

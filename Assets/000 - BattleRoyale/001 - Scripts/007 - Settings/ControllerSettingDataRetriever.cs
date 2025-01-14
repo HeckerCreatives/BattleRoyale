@@ -31,6 +31,12 @@ public class ControllerSettingDataRetriever : MonoBehaviour
 
     public void SetUILayout()
     {
+        if (!userData.ControlSetting.ContainsKey(gameObject.name))
+        {
+            gameObject.SetActive(false);
+            return;
+        }
+
         uiRT.anchoredPosition = new Vector2(userData.ControlSetting[gameObject.name].localPositionX, userData.ControlSetting[gameObject.name].localPositionY);
         uiRT.sizeDelta = new Vector2(userData.ControlSetting[gameObject.name].sizeDeltaX, userData.ControlSetting[gameObject.name].sizeDeltaY);
         uiImg.alpha = userData.ControlSetting[gameObject.name].opacity;

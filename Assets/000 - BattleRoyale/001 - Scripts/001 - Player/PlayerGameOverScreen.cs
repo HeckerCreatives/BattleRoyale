@@ -49,7 +49,7 @@ public class PlayerGameOverScreen : NetworkBehaviour
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
     }
 
-    public override async void Render()
+    public override void Render()
     {
         foreach (var change in _changeDetector.DetectChanges(this))
         {
@@ -77,6 +77,20 @@ public class PlayerGameOverScreen : NetworkBehaviour
                     winMessageObj.SetActive(false);
                     loseMessageObj.SetActive(true);
                     gameOverPanelObj.SetActive(true);
+
+                    GameManager.Instance.NoBGLoading.SetActive(true);
+                    StartCoroutine(GameManager.Instance.PostRequest("/usergamedetail/updateusergamedetails", "", new Dictionary<string, object>
+                    {
+                        { "kill", killCountCounterController.KillCount },
+                        { "death", PlayerPlacement != 1 ? 1 : 0 },
+                        { "rank", PlayerPlacement }
+                    }, true, (response) =>
+                    {
+                        StartCoroutine(GameManager.Instance.PostRequest("/leaderboard/updateuserleaderboard", "", new Dictionary<string, object>
+                        {
+                            { "amount",RankPoints + (killCountCounterController.KillCount * 100) + HitPoints  }
+                        }, true, (tempresponse) => GameManager.Instance.NoBGLoading.SetActive(false), () => GameManager.Instance.NoBGLoading.SetActive(false)));
+                    }, () => GameManager.Instance.NoBGLoading.SetActive(false)));
 
                     break;
             }

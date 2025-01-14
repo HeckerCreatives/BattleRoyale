@@ -1,5 +1,4 @@
 using Fusion;
-using Fusion.Addons.KCC;
 using Fusion.Addons.SimpleKCC;
 using MyBox;
 using System.Collections;
@@ -14,6 +13,7 @@ public class PlayerController : NetworkBehaviour
 {
     [SerializeField] private PlayerHealth playerHealth;
     [SerializeField] private PlayerInventory inventory;
+    [SerializeField] private JumpMovement jumpMovement;
     [SerializeField] private SimpleKCC characterController;
 
     [Header("RIGS")]
@@ -46,12 +46,9 @@ public class PlayerController : NetworkBehaviour
     [MyBox.ReadOnly][SerializeField] private Vector3 spherePosition;
     [MyBox.ReadOnly][SerializeField] private float _jumpTimeoutDelta;
     [MyBox.ReadOnly][SerializeField] private float _fallTimeoutDelta;
-    [MyBox.ReadOnly][SerializeField] private bool isJumping;
 
     [field: Header("DEBUGGER PLAYER NETWORK")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public Vector3 MoveDirection { get;  set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public float JumpImpulse { get;  set; }
-    //[field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsAttacking { get;  set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsShooting { get;  set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsProne { get;  set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsCrouch { get;  set; }
@@ -71,7 +68,7 @@ public class PlayerController : NetworkBehaviour
     public override void Spawned()
     {
         // Set custom gravity.
-        characterController.SetGravity(Physics.gravity.y * 4.0f);
+        characterController.SetGravity(Physics.gravity.y * 3f);
     }
 
     public override void FixedUpdateNetwork()
@@ -83,7 +80,6 @@ public class PlayerController : NetworkBehaviour
 
     public override void Render()
     {
-        SetToFreeFall();
         LayerAndWeight();
     }
 
@@ -104,15 +100,6 @@ public class PlayerController : NetworkBehaviour
         PreviousButtons = input.Buttons;
     }
 
-    public void ResetAnimationJump()
-    {
-        isJumping = false;
-    }
-
-    private void SetToFreeFall()
-    {
-    }
-
     private void Move()
     {
         XMovement = controllerInput.MovementDirection.x;
@@ -120,26 +107,12 @@ public class PlayerController : NetworkBehaviour
 
         if (playerHealth.CurrentHealth <= 0) return;
 
-        MoveDirection = characterController.TransformRotation * new Vector3(controllerInput.MovementDirection.x, 0f, controllerInput.MovementDirection.y) * (IsCrouch ? crouchMoveSpeed : IsProne ? proneMoveSpeed : isJumping ? 250 : moveSpeed) * Runner.DeltaTime;
-
-        JumpImpulse = 0f;
+        MoveDirection = characterController.TransformRotation * new Vector3(controllerInput.MovementDirection.x, 0f, controllerInput.MovementDirection.y) * (IsCrouch ? crouchMoveSpeed : IsProne ? proneMoveSpeed : moveSpeed) * Runner.DeltaTime;
 
         MoveDirection.Normalize();
 
-        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Jump) && characterController.IsGrounded && !isJumping)
-        {
-            if (IsCrouch || IsProne)
-            {
-                IsCrouch = false;
-                IsProne = false;
-                return;
-            }
-            JumpImpulse = jumpHeight;
-            isJumping = true;
-        }
-
         // Apply the movement
-        characterController.Move(MoveDirection, JumpImpulse);
+        characterController.Move(MoveDirection, jumpMovement.JumpImpulse);
     }
 
     private void Crouch()

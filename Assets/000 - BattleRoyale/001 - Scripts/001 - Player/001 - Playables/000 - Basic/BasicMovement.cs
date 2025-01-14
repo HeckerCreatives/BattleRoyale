@@ -60,7 +60,7 @@ public class BasicMovement : NetworkBehaviour
 
     public override void Render()
     {
-        if (!HasInputAuthority && !HasStateAuthority)
+        if (!HasInputAuthority && !HasStateAuthority && movementMixer.IsValid())
         {
             foreach (var playables in clipPlayables)
             {

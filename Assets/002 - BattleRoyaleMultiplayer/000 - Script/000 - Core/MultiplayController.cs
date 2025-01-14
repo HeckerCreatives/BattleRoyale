@@ -302,20 +302,14 @@ public class MultiplayController : MonoBehaviour
 
     private async Task BackfillLoop()
     {
-        Debug.Log("Backfill Loop");
         while (NeedsPlayers())
         {
-            Debug.Log("Backfill needs player");
             localBackfillTicket = await MatchmakerService.Instance.ApproveBackfillTicketAsync(localBackfillTicket.Id);
 
             if (!NeedsPlayers())
             {
-                Debug.Log("Don't need player");
                 if (currentDeallocate)
-                {
-                    Debug.Log("Deallocation in progress no need to reset backfill ticket");
                     return;
-                }
 
                 await MatchmakerService.Instance.DeleteBackfillTicketAsync(localBackfillTicket.Id);
                 localBackfillTicket = null;
@@ -331,10 +325,7 @@ public class MultiplayController : MonoBehaviour
     private void SqpUpdate()
     {
         if (currentDeallocate)
-        {
-            Debug.Log("NO NEED TO SEND SQP UPDATE SINCE CURRENTLY DEALLOCATING");
             return;
-        }
 
         if (_sqpInitialized == true && serverManager.Runner && serverManager.HasStateAuthority)
         {
@@ -352,38 +343,22 @@ public class MultiplayController : MonoBehaviour
     private bool NeedsPlayers()
     {
         if (currentDeallocate)
-        {
-            Debug.Log($"Dont need player because currently deallocating");
             return false;
-        }
 
         if (serverManager.CurrentGameState == GameState.WAITINGAREA)
         {
-            Debug.Log($"Current waiting area timer: {serverManager.WaitingAreaTimer}");
             if (serverManager.WaitingAreaTimer > 60)
             {
                 if (serverManager.Players.Count < serverManager.Players.Capacity)
-                {
-                    Debug.Log($"Needs player because player count is less than capacity");
                     return true;
-                }
                 else
-                {
-                    Debug.Log($"Dont need player because player count is greater or equal than capacity");
                     return false;
-                }
             }
             else
-            {
-                Debug.Log($"Dont need player because timer is less than 60 seconds");
                 return false;
-            }
         }
         else
-        {
-            Debug.Log($"Dont need player because game state is not waiting area");
             return false;
-        }
     }
 
     private void OnError(MultiplayError error)
@@ -409,8 +384,6 @@ public class MultiplayController : MonoBehaviour
 
     private void OnAllocate(MultiplayAllocation allocation)
     {
-        Debug.Log($"OnAllocation: {allocation.AllocationId}");
-
         if (string.IsNullOrEmpty(allocation.AllocationId)) return;
 
         allocationID = allocation.AllocationId;
@@ -432,23 +405,18 @@ public class MultiplayController : MonoBehaviour
 
     private async Task StartTimerForDeallocation()
     {
-        Debug.Log("START CHECKING FOR DEALLOCATION");
         while (canDeallocate)
         {
             timerForDeallocation -= Time.deltaTime;
 
             if (timerForDeallocation <= 0)
             {
-                Debug.Log("STARTING DEALLOCATION");
                 currentDeallocate = true;
 
                 //  DEALLOCATION
                 await MatchmakerService.Instance.DeleteBackfillTicketAsync(localBackfillTicket.Id);
                 localBackfillTicket = null;
                 isCurrentlyBackfilling = false;
-
-                Debug.Log("DONE DEALLOCATION");
-                Debug.Log("QUITTING GAME SERVER");
 
                 Application.Quit();
 

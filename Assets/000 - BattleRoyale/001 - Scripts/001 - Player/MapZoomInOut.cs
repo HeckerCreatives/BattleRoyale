@@ -9,19 +9,23 @@ using UnityEngine.UI;
 public class MapZoomInOut : NetworkBehaviour
 {
     [SerializeField] private Transform playerTF;
+    [SerializeField] private Transform playerIconTF;
     [SerializeField] private Camera mapCamera;
 
     [Space]
     [SerializeField] private Slider mapSlider;
     [SerializeField] private float mapZoomOutMin;
+    [SerializeField] private float playerMapIcomZoomOutMin;
 
     [Space]
     [SerializeField] private Vector3 waitingAreaCenter;
     [SerializeField] private float waitingAreaMax;
+    [SerializeField] private float waitingPlayerMapIcomZoomOutMax;
 
     [Space]
     [SerializeField] private Vector3 battleAreaCenter;
     [SerializeField] private float battleAreaMax;
+    [SerializeField] private float battlePlayerMapIcomZoomOutMax;
 
     [field: Space]
     [field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
@@ -70,6 +74,7 @@ public class MapZoomInOut : NetworkBehaviour
         if (ServerManager.CurrentGameState == GameState.WAITINGAREA)
         {
             mapCamera.orthographicSize = Mathf.Lerp(waitingAreaMax, mapZoomOutMin, mapSlider.value);
+            playerIconTF.transform.localScale = new Vector3(Mathf.Lerp(waitingPlayerMapIcomZoomOutMax, playerMapIcomZoomOutMin, mapSlider.value), Mathf.Lerp(waitingPlayerMapIcomZoomOutMax, playerMapIcomZoomOutMin, mapSlider.value), 1f);
 
             if (mapSlider.value <= 0)
                 mapCamera.transform.position = waitingAreaCenter;
@@ -79,6 +84,7 @@ public class MapZoomInOut : NetworkBehaviour
         else
         {
             mapCamera.orthographicSize = Mathf.Lerp(battleAreaMax, mapZoomOutMin, mapSlider.value);
+            playerIconTF.transform.localScale = new Vector3(Mathf.Lerp(battlePlayerMapIcomZoomOutMax, playerMapIcomZoomOutMin, mapSlider.value), Mathf.Lerp(battlePlayerMapIcomZoomOutMax, playerMapIcomZoomOutMin, mapSlider.value), 1f);
 
             if (mapSlider.value <= 0)
                 mapCamera.transform.position = waitingAreaCenter;
