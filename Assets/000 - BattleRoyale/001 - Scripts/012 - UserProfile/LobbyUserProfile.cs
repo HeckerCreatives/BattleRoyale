@@ -25,11 +25,11 @@ public class LobbyUserProfile : MonoBehaviour
     {
         usernameTMP.text = userData.Username;
         levelTMP.text = $"Level: {userData.GameDetails.level:n0}";
-        xpTMP.text = $"XP: {userData.GameDetails.xp:n0} / 20";
+        xpTMP.text = $"XP: {userData.GameDetails.xp:n0} / {80 * userData.GameDetails.level}";
 
         usernameProfileTMP.text = userData.Username;
         levelProfileTMP.text = $"{userData.GameDetails.level:n0}";
-        xpProfileTMP.text = $"{userData.GameDetails.xp:n0} / 20";
+        xpProfileTMP.text = $"{userData.GameDetails.xp:n0} / {80 * userData.GameDetails.level}";
         killProfileTMP.text = $"{userData.GameDetails.kill:n0}";
         deathProfileTMP.text = $"{userData.GameDetails.death:n0}";
     }

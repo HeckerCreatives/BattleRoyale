@@ -32,7 +32,9 @@ public class KillCountCounterController : NetworkBehaviour
 
         if (ServerManager == null) return;
 
-        PlayerCount.text = $"{ServerManager.Players.Count:n0} / {ServerManager.Players.Capacity - 1:n0}";
+        int tempCapacity = ServerManager.Players.Capacity;
+
+        PlayerCount.text = $"{ServerManager.Players.Count:n0} / {(tempCapacity - 2):n0}";
         killCountTMP.text = $"{KillCount:n0}";
     }
 

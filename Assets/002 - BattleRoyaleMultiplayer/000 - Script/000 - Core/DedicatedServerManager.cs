@@ -96,15 +96,10 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool DonePlayerBattlePositions { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool StartBattleRoyale { get; set; }
 
-    //  =================
-
-    private Dictionary<int, int> rankScoreTable = new Dictionary<int, int>();
-
-    //  =================
 
     private ChangeDetector _changeDetector;
-    [Networked, Capacity(15)] public NetworkDictionary<PlayerRef, NetworkObject> Players => default;
-    [Networked, Capacity(15)] public NetworkDictionary<PlayerRef, NetworkObject> RemainingPlayers => default;
+    [Networked, Capacity(50)] public NetworkDictionary<PlayerRef, NetworkObject> Players => default;
+    [Networked, Capacity(50)] public NetworkDictionary<PlayerRef, NetworkObject> RemainingPlayers => default;
 
     //  =================
 
@@ -114,8 +109,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         {
             StartGame();
         }
-
-        InitializeRankScores();
     }
 
     #region GAME INITIALIZE
@@ -249,7 +242,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             IsOpen = false,
             SceneManager = networkRunner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
             Scene = networkSceneInfo,
-            PlayerCount = 15,
+            PlayerCount = 50,
             Address = NetAddress.Any(),
             CustomLobbyName = lobby,
         });
@@ -270,7 +263,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         Debug.Log("Adding waiting Area Timer");
 
-        WaitingAreaTimer = 30f;
+        WaitingAreaTimer = 300f;
 
         Debug.Log("Done adding waiting Area Timer");
 
@@ -288,22 +281,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         networkRunner.SessionInfo.IsVisible = true;
 
         Debug.Log("ALL PLAYERS CAN NOW JOIN");
-    }
-
-    private async void InitializeRankScores()
-    {
-        Debug.Log($"STARTING INITIALIZING RANK SCORES");
-        rankScoreTable.Clear();
-
-        // Add pre-determined scores for each rank up to 50
-        for (int rank = 1; rank <= 50; rank++)
-        {
-            int score = Mathf.Max(1000 - (rank - 1) * 20, 0); // Decrease score by 20 per rank, minimum score 0
-            rankScoreTable.Add(rank, score);
-
-            await Task.Delay(100);
-        }
-        Debug.Log($"DONE INITIALIZING RANK SCORES");
     }
 
     #endregion
@@ -417,17 +394,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         battleFieldArena.SetActive(battleField);
     }
 
-    public int GetScoreForRank(int rank)
-    {
-        if (rankScoreTable.TryGetValue(rank, out int score))
-        {
-            return score;
-        }
-
-        Debug.LogWarning($"Rank {rank} does not exist in the rank score table.");
-        return 0; // Indicate invalid rank
-    }
-
     #endregion
 
     #region SERVER LOGIC
@@ -480,7 +446,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             if (Players.Count <= 0 && CanCountWaitingAreaTimer)
             {
-                WaitingAreaTimer = 30f;
+                WaitingAreaTimer = 300f;
                 CanCountWaitingAreaTimer = false;
             }
 

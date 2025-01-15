@@ -108,7 +108,7 @@ public class PlayerHealth : NetworkBehaviour
 
         GetHit = true;
 
-        //if (ServerManager.CurrentGameState != GameState.ARENA) return;
+        if (ServerManager.CurrentGameState != GameState.ARENA) return;
 
         CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - damage);
 
@@ -118,7 +118,6 @@ public class PlayerHealth : NetworkBehaviour
         {
             deathMovement.MakePlayerDead();
             nobject.GetComponent<KillCountCounterController>().KillCount++;
-            gameOverScreen.RankPoints = ServerManager.GetScoreForRank(ServerManager.RemainingPlayers.Count);
             gameOverScreen.PlayerPlacement = ServerManager.RemainingPlayers.Count;
             ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
             RPC_ReceiveKillNotification(killer, loader.Username);

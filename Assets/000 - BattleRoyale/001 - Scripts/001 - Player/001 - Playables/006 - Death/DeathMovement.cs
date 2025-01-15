@@ -60,6 +60,7 @@ public class DeathMovement : NetworkBehaviour
                         {
                             var punchOnePlayable = clipPlayables[0];
                             punchOnePlayable.SetTime(0);
+                            punchOnePlayable.Play();
                             movementMixer.SetInputWeight(0, 1f);
                         }
                         break;
@@ -73,9 +74,10 @@ public class DeathMovement : NetworkBehaviour
         if (!movementMixer.IsValid()) return;
 
         if (IsDead) return;
-
+        IsDead = true;
         var punchOnePlayable = clipPlayables[0];
         punchOnePlayable.SetTime(0);
+        punchOnePlayable.Play();
         movementMixer.SetInputWeight(0, 1f);
     }
 

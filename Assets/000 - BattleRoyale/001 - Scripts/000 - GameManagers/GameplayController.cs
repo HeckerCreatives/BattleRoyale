@@ -1,6 +1,5 @@
 using Fusion;
 using Fusion.Sockets;
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -65,6 +64,8 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     [MyBox.ReadOnly][SerializeField] public int ActiveTouch;
     [MyBox.ReadOnly][SerializeField] private bool resetInput;
     [MyBox.ReadOnly][SerializeField] private bool doneInitialize;
+    [MyBox.ReadOnly][SerializeField] private int activeTouchId = -1;
+    [MyBox.ReadOnly][SerializeField] private Vector2 firstTouch;
 
 
 
@@ -96,6 +97,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             Debug.Log($"Starting init controls");
             gameplayInputs = new GameplayInputs();
             gameplayInputs.Enable();
+            EnhancedTouchSupport.Enable();
 
             gameplayInputs.Gameplay.Movement.performed += _ => MovementStart();
             gameplayInputs.Gameplay.Movement.canceled += _ => MovementStop();
@@ -118,8 +120,8 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.SwitchTrap.started += _ => SwitchTrapStart();
             gameplayInputs.Gameplay.SwitchTrap.canceled += _ => SwitchTrapStop();
 
-            gameplayInputs.Gameplay.Look.performed += _ => LookStart();
-            gameplayInputs.Gameplay.Look.canceled += _ => LookStop();
+            //gameplayInputs.Gameplay.Look.performed += _ => LookStart();
+            //gameplayInputs.Gameplay.Look.canceled += _ => LookStop();
 
             Runner.AddCallbacks(this);
             Debug.Log($"Done init controls");
@@ -152,176 +154,17 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.SwitchSecondary.canceled -= _ => SwitchSecondaryStop();
             gameplayInputs.Gameplay.SwitchTrap.started -= _ => SwitchTrapStart();
             gameplayInputs.Gameplay.SwitchTrap.canceled -= _ => SwitchTrapStop();
-            gameplayInputs.Gameplay.Look.performed -= _ => LookStart();
-            gameplayInputs.Gameplay.Look.canceled -= _ => LookStop();
+            //gameplayInputs.Gameplay.Look.performed -= _ => LookStart();
+            //gameplayInputs.Gameplay.Look.canceled -= _ => LookStop();
 
             gameplayInputs.Disable();
+            EnhancedTouchSupport.Disable();
             Runner.RemoveCallbacks(this);
         }
     }
 
-
-    #region LOCAL INPUTS
-
-#if !UNITY_ANDROID
-
-    private void SetCursorState(bool newState)
+    private void LateUpdate()
     {
-        UnityEngine.Cursor.lockState = newState ? CursorLockMode.Locked : CursorLockMode.None;
-    }
-
-#endif
-
-    private void LookStart()
-    {
-#if !UNITY_ANDROID
-        LookDirection = gameplayInputs.Gameplay.Look.ReadValue<Vector2>();
-#endif
-    }
-
-    private void LookStop()
-    {
-#if !UNITY_ANDROID
-        LookDirection = Vector2.zero;
-#endif
-    }
-
-    private void MovementStart()
-    {
-        MovementDirection = gameplayInputs.Gameplay.Movement.ReadValue<Vector2>();
-    }
-
-    private void MovementStop()
-    {
-        MovementDirection = Vector2.zero;
-    }
-
-    private void JumpStart()
-    {
-        Jump = true;
-    }
-
-    public void JumpTurnOff()
-    {
-        Jump = false;
-    }
-
-    private void AimStart()
-    {
-        Aim = true;
-    }
-
-    private void AimStop()
-    {
-        Aim = false;
-    }
-
-    private void ShootStart()
-    {
-        Shoot = true;
-    }
-
-    public void ShootStop()
-    {
-        Shoot = false;
-        myInput.HoldInputButtons = default;
-    }
-
-    private void CrouchStart()
-    {
-        Crouch = true;
-    }
-
-    public void CrouchStop()
-    {
-        Crouch = false;
-    }
-
-    private void ProneStart()
-    {
-        Prone = true;
-    }
-
-    public void ProneStop()
-    {
-        Prone = false;
-    }
-
-    public void SwitchTrapStop()
-    {
-        SwitchTrap = false;
-    }
-
-    private void SwitchTrapStart()
-    {
-        SwitchTrap = true;
-    }
-
-    public void SwitchSecondaryStop()
-    {
-        SwitchSecondary = false;
-    }
-
-    private void SwitchSecondaryStart()
-    {
-        SwitchSecondary = true;
-    }
-
-    public void SwitchPrimaryStop()
-    {
-        SwitchPrimary = false;
-    }
-
-    private void SwitchPrimaryStart()
-    {
-        SwitchPrimary = true;
-    }
-
-    public void SwitchHandsStop()
-    {
-        SwitchHands = false;
-    }
-
-    private void SwitchHandsStart()
-    {
-        SwitchHands = true;
-    }
-
-    private bool IsTouchOverUI(Vector2 touchPosition)
-    {
-        PointerEventData pointerEventData = new PointerEventData(EventSystem.current)
-        {
-            position = touchPosition
-        };
-
-        List<RaycastResult> raycastResults = new List<RaycastResult>();
-        EventSystem.current.RaycastAll(pointerEventData, raycastResults);
-
-        return raycastResults.Count > 0;  // Return true if UI was hit
-    }
-
-#endregion
-
-    #region NETWORK
-
-    public void BeforeUpdate()
-    {
-        if (resetInput)
-        {
-            resetInput = false;
-            myInput.MovementDirection = default;
-            myInput.Buttons = default;
-        }
-
-#if !UNITY_ANDROID
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard != null && (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame || keyboard.escapeKey.wasPressedThisFrame))
-        {
-
-        }
-#endif
-
-        // Iterate over all touches
 
 #if UNITY_ANDROID || UNITY_IOS
         foreach (var touch in Touchscreen.current.touches)
@@ -429,6 +272,165 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         }
 
 #endif
+
+    }
+    private bool IsTouchOverUI(Vector2 touchPosition)
+    {
+        PointerEventData pointerEventData = new PointerEventData(EventSystem.current)
+        {
+            position = touchPosition
+        };
+
+        List<RaycastResult> raycastResults = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerEventData, raycastResults);
+
+        return raycastResults.Count > 0;  // Return true if UI was hit
+    }
+
+    #region LOCAL INPUTS
+
+#if !UNITY_ANDROID
+
+    private void SetCursorState(bool newState)
+    {
+        UnityEngine.Cursor.lockState = newState ? CursorLockMode.Locked : CursorLockMode.None;
+    }
+
+#endif
+
+    private void LookStart()
+    {
+        LookDirection = gameplayInputs.Gameplay.Look.ReadValue<Vector2>();
+    }
+
+    private void LookStop()
+    {
+        LookDirection = Vector2.zero;
+    }
+
+    private void MovementStart()
+    {
+        MovementDirection = gameplayInputs.Gameplay.Movement.ReadValue<Vector2>();
+    }
+
+    private void MovementStop()
+    {
+        MovementDirection = Vector2.zero;
+    }
+
+    private void JumpStart()
+    {
+        Jump = true;
+    }
+
+    public void JumpTurnOff()
+    {
+        Jump = false;
+    }
+
+    private void AimStart()
+    {
+        Aim = true;
+    }
+
+    private void AimStop()
+    {
+        Aim = false;
+    }
+
+    private void ShootStart()
+    {
+        Shoot = true;
+    }
+
+    public void ShootStop()
+    {
+        Shoot = false;
+        myInput.HoldInputButtons = default;
+    }
+
+    private void CrouchStart()
+    {
+        Crouch = true;
+    }
+
+    public void CrouchStop()
+    {
+        Crouch = false;
+    }
+
+    private void ProneStart()
+    {
+        Prone = true;
+    }
+
+    public void ProneStop()
+    {
+        Prone = false;
+    }
+
+    public void SwitchTrapStop()
+    {
+        SwitchTrap = false;
+    }
+
+    private void SwitchTrapStart()
+    {
+        SwitchTrap = true;
+    }
+
+    public void SwitchSecondaryStop()
+    {
+        SwitchSecondary = false;
+    }
+
+    private void SwitchSecondaryStart()
+    {
+        SwitchSecondary = true;
+    }
+
+    public void SwitchPrimaryStop()
+    {
+        SwitchPrimary = false;
+    }
+
+    private void SwitchPrimaryStart()
+    {
+        SwitchPrimary = true;
+    }
+
+    public void SwitchHandsStop()
+    {
+        SwitchHands = false;
+    }
+
+    private void SwitchHandsStart()
+    {
+        SwitchHands = true;
+    }
+
+    #endregion
+
+    #region NETWORK
+
+    public void BeforeUpdate()
+    {
+        if (resetInput)
+        {
+            resetInput = false;
+            myInput.MovementDirection = default;
+            myInput.Buttons = default;
+        }
+
+#if !UNITY_ANDROID
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard != null && (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame || keyboard.escapeKey.wasPressedThisFrame))
+        {
+
+        }
+#endif
+
+        // Iterate over all touches
 
         myInput.MovementDirection.Set(MovementDirection.x, MovementDirection.y);
         myInput.Buttons.Set(InputButton.Jump, Jump);
