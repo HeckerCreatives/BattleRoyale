@@ -61,6 +61,11 @@ public class GameManager : MonoBehaviour
         SceneController.CurrentScene = startSceneName;
     }
 
+    private void Start()
+    {
+        userData.ResetLogin();
+    }
+
     private void Update()
     {
         if (jobs.Count > 0)

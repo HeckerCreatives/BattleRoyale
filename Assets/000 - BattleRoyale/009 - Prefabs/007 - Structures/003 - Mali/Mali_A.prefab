@@ -12,12 +12,12 @@ GameObject:
   - component: {fileID: 1966824819767223612}
   - component: {fileID: 8790235631349633976}
   - component: {fileID: 3249861402965643104}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Mali_A
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 2147483647
   m_IsActive: 1
 --- !u!4 &840474030555408893
 Transform:
@@ -27,13 +27,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6280789965718628075}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.000000053385076, y: 0.7071068, z: 0.70710677, w: 0.00000005338508}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0.7071068, w: 0}
   m_LocalPosition: {x: 104.286446, y: 36.51312, z: 37524.727}
-  m_LocalScale: {x: 257.2257, y: 224.15788, z: 257.2257}
+  m_LocalScale: {x: 257.2257, y: 224.1579, z: 257.2257}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -90, y: 0, z: 180}
 --- !u!33 &1966824819767223612
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -59,8 +59,6 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:

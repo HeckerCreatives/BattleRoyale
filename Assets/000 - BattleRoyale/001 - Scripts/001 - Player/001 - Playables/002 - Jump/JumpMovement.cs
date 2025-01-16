@@ -75,7 +75,6 @@ public class JumpMovement : NetworkBehaviour
                     case nameof(IsJumping):
                         if (IsJumping)
                         {
-                            Debug.Log("jumping animation render");
                             var jumpPlayable = clipPlayables[0];
                             jumpPlayable.SetTime(0);
                             jumpPlayable.Play();    // Start playing
@@ -113,8 +112,6 @@ public class JumpMovement : NetworkBehaviour
             var jumpPlayable = clipPlayables[0];
             jumpPlayable.SetTime(0);
             jumpPlayable.Play();    // Start playing
-
-            Debug.Log("jumping animation fixed update");
 
             movementMixer.SetInputWeight(0, 1f); // Idle animation active
 

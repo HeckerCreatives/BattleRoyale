@@ -17,11 +17,11 @@ public class ControllerSettingDataRetriever : MonoBehaviour
     [SerializeField] private Color downPressColor;
     [SerializeField] private Color upPress;
 
-    private async void Awake()
+    private async void OnEnable()
     {
         if (isNetworked)
         {
-            while (!playerNetworkLoader.Runner) await Task.Delay(100);
+            while (!playerNetworkLoader.Runner) await Task.Yield();
 
             if (!playerNetworkLoader.HasInputAuthority) return;
         }

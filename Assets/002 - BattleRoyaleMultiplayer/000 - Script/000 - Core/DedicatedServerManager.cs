@@ -263,7 +263,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         Debug.Log("Adding waiting Area Timer");
 
-        WaitingAreaTimer = 300f;
+        WaitingAreaTimer = 30f;
 
         Debug.Log("Done adding waiting Area Timer");
 
@@ -299,17 +299,13 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         {
             switch (change)
             {
-                case nameof(CurrentGameState):
-
-                    if (CurrentGameState == GameState.WAITINGAREA)
-                        ArenaEnabler(true, false);
-                    else
+                case nameof(CurrentGameState): 
+                    if (CurrentGameState == GameState.ARENA)
                         ArenaEnabler(false, true);
 
                     CurrentStateChange?.Invoke(this, EventArgs.Empty);
-
-
                     break;
+
                 case nameof(RemainingPlayers):
 
                     if (HasStateAuthority)
@@ -365,6 +361,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         if (CurrentGameState != GameState.ARENA) return;
 
         if (DonePlayerBattlePositions) return;
+
+        ArenaEnabler(false, true);
 
         bool allPlayersInPosition = true;
 
@@ -446,7 +444,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             if (Players.Count <= 0 && CanCountWaitingAreaTimer)
             {
-                WaitingAreaTimer = 300f;
+                WaitingAreaTimer = 30f;
                 CanCountWaitingAreaTimer = false;
             }
 

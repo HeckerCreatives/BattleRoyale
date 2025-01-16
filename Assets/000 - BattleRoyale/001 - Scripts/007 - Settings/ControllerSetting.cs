@@ -68,7 +68,7 @@ public class ControllerSetting : Fusion.Behaviour
     {
         if (insideGame)
         {
-            while (!player.Runner) await Task.Delay(100);
+            while (!player.Runner) await Task.Yield();
 
             if (!player.HasInputAuthority) return;
         }
@@ -80,7 +80,7 @@ public class ControllerSetting : Fusion.Behaviour
     {
         if (insideGame)
         {
-            while (!player.Runner) await Task.Delay(100);
+            while (!player.Runner) await Task.Yield();
 
             if (!player.HasInputAuthority) return;
         }

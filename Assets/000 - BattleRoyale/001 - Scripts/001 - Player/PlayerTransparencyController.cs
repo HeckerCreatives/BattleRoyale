@@ -1,9 +1,10 @@
 using Cinemachine;
+using Fusion;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerTransparencyController : MonoBehaviour
+public class PlayerTransparencyController : NetworkBehaviour
 {
     [SerializeField] private bool isSkinnedMeshRenderer;
     [SerializeField] private SkinnedMeshRenderer skinnedMeshRenderer; // The SkinnedMeshRenderer of the player
@@ -36,7 +37,7 @@ public class PlayerTransparencyController : MonoBehaviour
 
     private void Update()
     {
-        if (camera == null || materialInstance == null) return;
+        if (camera == null || materialInstance == null || !HasInputAuthority) return;
 
         // Calculate the distance between the camera and the player
         float distance = Vector3.Distance(camera.transform.position, transform.position);

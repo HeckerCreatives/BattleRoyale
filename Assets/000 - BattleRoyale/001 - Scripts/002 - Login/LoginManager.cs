@@ -310,6 +310,8 @@ public class LoginManager : MonoBehaviour
     {
         rememberMe.isOn = userData.RememberMe;
 
+        Debug.Log($"Remember Me: {userData.RememberMe}");
+
         if (!userData.RememberMe) yield break;
 
         username.text = userData.Username;
@@ -402,6 +404,9 @@ public class LoginManager : MonoBehaviour
                 userData.UserToken = dataresponse["token"].ToString();
                 userData.Username = username.text;
 
+
+                Debug.Log($"Remember Me login: {rememberMe.isOn}");
+
                 if (rememberMe.isOn)
                 {
                     userData.RememberMe = true;
@@ -478,7 +483,7 @@ public class LoginManager : MonoBehaviour
             GameManager.Instance.NotificationController.ShowError("Please select your country first!", null);
             return;
         }
-        else if (usernameRegister.text.Length < 6 || usernameRegister.text.Length > 15)
+        else if (usernameRegister.text.Length < 5 || usernameRegister.text.Length > 15)
         {
             GameManager.Instance.NotificationController.ShowError("Minimum of 5 and maximum of 15 characters only for username! Please try again.", null);
             return;

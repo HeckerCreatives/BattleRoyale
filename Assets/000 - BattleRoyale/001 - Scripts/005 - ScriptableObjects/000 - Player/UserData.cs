@@ -25,11 +25,6 @@ public class UserData : ScriptableObject
 
     //  ===========================
 
-    private void OnEnable()
-    {
-        ResetLogin();
-    }
-
     public IEnumerator CheckControlSettingSave()
     {
         if (PlayerPrefs.HasKey("ControlSetting"))
@@ -72,6 +67,8 @@ public class UserData : ScriptableObject
         PlayerPrefs.SetString("Username", Username);
         PlayerPrefs.SetString("Password", Password);
         PlayerPrefs.SetString("RememberMe", "true");
+
+        Debug.Log($"Remember Me save: {PlayerPrefs.GetString("RememberMe")}");
     }
 
     public void RememberMeDelete()
@@ -83,9 +80,10 @@ public class UserData : ScriptableObject
 
     public void LoadRememberMe()
     {
+        Debug.Log($"UserData Player Prefs Load Remember Me: {PlayerPrefs.GetString("RememberMe")}");
         if (PlayerPrefs.GetString("RememberMe") == "true")
         {
-            RememberMe = PlayerPrefs.GetString("RememberMe") == "true" ? true : false;
+            RememberMe = true;
             Username = PlayerPrefs.GetString("Username");
             Password = PlayerPrefs.GetString("Password");
         }
@@ -93,6 +91,7 @@ public class UserData : ScriptableObject
 
     public void ResetLogin()
     {
+        Debug.Log($"Login reset");
         UserToken = "";
         Username = "";
         Password = "";

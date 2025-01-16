@@ -12,9 +12,14 @@ public class PlayerCameraFollow : MonoBehaviour
         transform.parent = null;
     }
 
+    private void OnDisable()
+    {
+        playerTarget = null;
+    }
+
     private void Update()
     {
-        if (transform != null)
+        if (transform != null && playerTarget != null)
             transform.position = new Vector3(playerTarget.position.x, transform.position.y, playerTarget.position.z);
     }
 }

@@ -142,14 +142,16 @@ public class PlayerGameOverScreen : NetworkBehaviour
 
     private async void ShowWinner()
     {
+        if (!HasInputAuthority) return;
+
         if (playerHealth.CurrentHealth <= 0) return;
+
+        await Task.Delay(1500);
 
         if (winMessageObj.activeInHierarchy) return;
 
         if (ServerManager.CurrentGameState == GameState.DONE)
         {
-            await Task.Delay(1500);
-
             usernameResultTMP.text = userData.Username;
             playerCountResultTMP.text = $"<color=yellow><size=\"55\">#1</size></color> <size=\"50\"> / {ServerManager.RemainingPlayers.Capacity - 2}</size>";
             rankResultTMP.text = "1";
@@ -188,13 +190,19 @@ public class PlayerGameOverScreen : NetworkBehaviour
 
     private async void ShowWinnerOnAllPlayerQuit()
     {
+        if (!HasInputAuthority) return;
+
+        await Task.Delay(1500);
+
         if (ServerManager.CurrentGameState != GameState.ARENA) return;
 
         if (ServerManager.RemainingPlayers.Count > 1) return;
 
+
+        Debug.Log($"Win message active: {winMessageObj.activeInHierarchy}");
+
         if (winMessageObj.activeInHierarchy) return;
 
-        await Task.Delay(1500);
 
         usernameResultTMP.text = userData.Username;
         playerCountResultTMP.text = $"<color=yellow><size=\"55\">#1</size></color> <size=\"50\"> / {ServerManager.RemainingPlayers.Capacity - 2}</size>";

@@ -20,11 +20,7 @@ public class KillCountCounterController : NetworkBehaviour
     [field: Header("DEBUGGER")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int KillCount { get; set; }
-
-    public override void Spawned()
-    {
-        ShowPlayerPing();
-    }
+    [field: MyBox.ReadOnly][field: SerializeField] public float pingChange;
 
     public override void Render()
     {
@@ -38,14 +34,11 @@ public class KillCountCounterController : NetworkBehaviour
         killCountTMP.text = $"{KillCount:n0}";
     }
 
-    public async void ShowPlayerPing()
+    private void LateUpdate()
     {
-        if (!HasInputAuthority) return;
-
-        pingTMP.text = $"Ping: {(Runner.GetPlayerRtt(Object.InputAuthority) * 1000):n0} (ms)";
-        while (true)
+        if (pingChange < Time.time)
         {
-            await Task.Delay(1000);
+            pingChange = Time.time + 1;
             pingTMP.text = $"Ping: {(Runner.GetPlayerRtt(Object.InputAuthority) * 1000):n0} (ms)";
         }
     }

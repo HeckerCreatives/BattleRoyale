@@ -539,7 +539,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 21300000, guid: 958af7adb5f843444b41bee053b09038, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -903,8 +903,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: 8cfbc1fc4b54d9e479059bcd33ca3526, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -1335,8 +1335,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 851.1313, y: -287.13}
-  m_SizeDelta: {x: 1702.2626, y: 163.37}
+  m_AnchoredPosition: {x: 1015.01355, y: -287.13}
+  m_SizeDelta: {x: 2030.0271, y: 163.37}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &6033041893299305506
 CanvasRenderer:
@@ -2626,8 +2626,8 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.1
-  far clip plane: 5000
+  near clip plane: 0.5
+  far clip plane: 1000
   field of view: 30
   orthographic: 1
   orthographic size: 42.06
@@ -3605,8 +3605,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: 576fa9931b7b6db44b96369552d4eef3, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -3659,7 +3659,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 7888751226801552678}
+      - m_Target: {fileID: 7827492440747780323}
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
         m_Mode: 6
@@ -3669,12 +3669,24 @@ MonoBehaviour:
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 0
+          m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 2632271246272331152}
         m_TargetAssemblyTypeName: ControllerSetting, Assembly-CSharp
         m_MethodName: ClearUIValues
         m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 7888751226801552678}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -3861,8 +3873,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce75111585e9f044cba8d15262ebe14d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerNetworkLoader: {fileID: 0}
-  isNetworked: 0
+  playerNetworkLoader: {fileID: 2671049237676878303}
+  isNetworked: 1
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   uiRT: {fileID: 3451621925485623677}
   uiImg: {fileID: 7435407865304647396}
@@ -5666,8 +5678,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce75111585e9f044cba8d15262ebe14d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerNetworkLoader: {fileID: 0}
-  isNetworked: 0
+  playerNetworkLoader: {fileID: 2671049237676878303}
+  isNetworked: 1
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   uiRT: {fileID: 7486472704633209236}
   uiImg: {fileID: 2184168712551164134}
@@ -6819,7 +6831,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6132076, g: 0.6132076, b: 0.6132076, a: 1}
+  m_Color: {r: 0, g: 0, b: 0, a: 0.2901961}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -7963,15 +7975,16 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'SIZE : '
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: ef64250257b9cfb40980e204fcbd4574, type: 2}
+  m_sharedMaterial: {fileID: 7121675443319479725, guid: ef64250257b9cfb40980e204fcbd4574,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -9172,8 +9185,8 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.1
-  far clip plane: 5000
+  near clip plane: 0.5
+  far clip plane: 1000
   field of view: 30
   orthographic: 1
   orthographic size: 58
@@ -9763,8 +9776,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce75111585e9f044cba8d15262ebe14d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerNetworkLoader: {fileID: 0}
-  isNetworked: 0
+  playerNetworkLoader: {fileID: 2671049237676878303}
+  isNetworked: 1
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   uiRT: {fileID: 8665445117489313880}
   uiImg: {fileID: 7054394835260057771}
@@ -10292,8 +10305,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 418.53314, y: 0}
-  m_SizeDelta: {x: 837.0663, y: 167.93}
+  m_AnchoredPosition: {x: 500.47427, y: 0}
+  m_SizeDelta: {x: 1000.94855, y: 167.93}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &3461154903100426468
 CanvasRenderer:
@@ -10523,8 +10536,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce75111585e9f044cba8d15262ebe14d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerNetworkLoader: {fileID: 0}
-  isNetworked: 0
+  playerNetworkLoader: {fileID: 2671049237676878303}
+  isNetworked: 1
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   uiRT: {fileID: 1258525610393207787}
   uiImg: {fileID: 3683244570750240234}
@@ -11524,8 +11537,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce75111585e9f044cba8d15262ebe14d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerNetworkLoader: {fileID: 0}
-  isNetworked: 0
+  playerNetworkLoader: {fileID: 2671049237676878303}
+  isNetworked: 1
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   uiRT: {fileID: 8270957220391485278}
   uiImg: {fileID: 8847464590001140102}
@@ -12650,8 +12663,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 851.1313, y: -140.36499}
-  m_SizeDelta: {x: 1702.2626, y: 167.93}
+  m_AnchoredPosition: {x: 1015.01355, y: -140.36499}
+  m_SizeDelta: {x: 2030.0271, y: 167.93}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5787106001167178049
 CanvasRenderer:
@@ -15212,7 +15225,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 0}
   minDistance: 0.5
   maxDistance: 15
-  transparencyAtMinDistance: 0.3
+  transparencyAtMinDistance: 0.1
 --- !u!137 &4935384743553952262
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 0
@@ -15863,8 +15876,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce75111585e9f044cba8d15262ebe14d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerNetworkLoader: {fileID: 0}
-  isNetworked: 0
+  playerNetworkLoader: {fileID: 2671049237676878303}
+  isNetworked: 1
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   uiRT: {fileID: 3303592015488144840}
   uiImg: {fileID: 6900090468279613095}
@@ -16374,8 +16387,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce75111585e9f044cba8d15262ebe14d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerNetworkLoader: {fileID: 0}
-  isNetworked: 0
+  playerNetworkLoader: {fileID: 2671049237676878303}
+  isNetworked: 1
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   uiRT: {fileID: 2456215760388666600}
   uiImg: {fileID: 5474014917634607725}
@@ -17503,8 +17516,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce75111585e9f044cba8d15262ebe14d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerNetworkLoader: {fileID: 0}
-  isNetworked: 0
+  playerNetworkLoader: {fileID: 2671049237676878303}
+  isNetworked: 1
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   uiRT: {fileID: 9219545586694973668}
   uiImg: {fileID: 5552075528872701977}
@@ -18098,8 +18111,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce75111585e9f044cba8d15262ebe14d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerNetworkLoader: {fileID: 0}
-  isNetworked: 0
+  playerNetworkLoader: {fileID: 2671049237676878303}
+  isNetworked: 1
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   uiRT: {fileID: 7812836963715314526}
   uiImg: {fileID: 8067031587179191206}
@@ -19154,7 +19167,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 2632271246272331152}
         m_TargetAssemblyTypeName: ControllerSetting, Assembly-CSharp
         m_MethodName: OnSizeSliderChange
         m_Mode: 1
@@ -20442,8 +20455,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce75111585e9f044cba8d15262ebe14d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerNetworkLoader: {fileID: 0}
-  isNetworked: 0
+  playerNetworkLoader: {fileID: 2671049237676878303}
+  isNetworked: 1
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   uiRT: {fileID: 8718223322609369954}
   uiImg: {fileID: 38807349813976916}
@@ -21830,8 +21843,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 851.1313, y: 0}
-  m_SizeDelta: {x: 1702.2626, y: 163.37}
+  m_AnchoredPosition: {x: 1015.01355, y: 0}
+  m_SizeDelta: {x: 2030.0271, y: 163.37}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &1489359823324963835
 CanvasRenderer:
@@ -21923,8 +21936,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce75111585e9f044cba8d15262ebe14d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerNetworkLoader: {fileID: 0}
-  isNetworked: 0
+  playerNetworkLoader: {fileID: 2671049237676878303}
+  isNetworked: 1
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   uiRT: {fileID: 7028348933219556078}
   uiImg: {fileID: 8306852968649573032}
@@ -22856,8 +22869,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: 8cfbc1fc4b54d9e479059bcd33ca3526, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -23533,15 +23546,16 @@ MonoBehaviour:
       m_Calls: []
   m_text: Save
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: ef64250257b9cfb40980e204fcbd4574, type: 2}
+  m_sharedMaterial: {fileID: 7121675443319479725, guid: ef64250257b9cfb40980e204fcbd4574,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4281479730
-  m_fontColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -24099,8 +24113,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce75111585e9f044cba8d15262ebe14d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerNetworkLoader: {fileID: 0}
-  isNetworked: 0
+  playerNetworkLoader: {fileID: 2671049237676878303}
+  isNetworked: 1
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   uiRT: {fileID: 8699419484511259141}
   uiImg: {fileID: 4401575428382457539}
@@ -24734,8 +24748,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce75111585e9f044cba8d15262ebe14d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerNetworkLoader: {fileID: 0}
-  isNetworked: 0
+  playerNetworkLoader: {fileID: 2671049237676878303}
+  isNetworked: 1
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   uiRT: {fileID: 2294481649700360572}
   uiImg: {fileID: 7349598328813613976}
@@ -28100,7 +28114,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 21300000, guid: 958af7adb5f843444b41bee053b09038, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -29504,8 +29518,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 851.1313, y: -255.73}
-  m_SizeDelta: {x: 1702.2626, y: 50}
+  m_AnchoredPosition: {x: 1015.01355, y: -255.73}
+  m_SizeDelta: {x: 2030.0271, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4997235241105601388
 CanvasRenderer:
@@ -30957,8 +30971,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce75111585e9f044cba8d15262ebe14d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerNetworkLoader: {fileID: 0}
-  isNetworked: 0
+  playerNetworkLoader: {fileID: 2671049237676878303}
+  isNetworked: 1
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   uiRT: {fileID: 1141844507134748249}
   uiImg: {fileID: 4876489315907086845}
@@ -31946,8 +31960,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 851.1313, y: -25}
-  m_SizeDelta: {x: 1702.2626, y: 50}
+  m_AnchoredPosition: {x: 1015.01355, y: -25}
+  m_SizeDelta: {x: 2030.0271, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3056622325026858991
 CanvasRenderer:
@@ -32202,7 +32216,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 0}
   minDistance: 0.5
   maxDistance: 15
-  transparencyAtMinDistance: 0.3
+  transparencyAtMinDistance: 0.1
 --- !u!137 &5290872158571378263
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 0
@@ -32750,8 +32764,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: 4d1a2ed3c3e25ef47b4501e666f38fd7, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -32804,7 +32818,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 2632271246272331152}
         m_TargetAssemblyTypeName: ControllerSetting, Assembly-CSharp
         m_MethodName: SaveControllerSettings
         m_Mode: 1
@@ -34056,7 +34070,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6800961907190079781}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -34221,15 +34235,16 @@ MonoBehaviour:
       m_Calls: []
   m_text: Default
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: ef64250257b9cfb40980e204fcbd4574, type: 2}
+  m_sharedMaterial: {fileID: 7121675443319479725, guid: ef64250257b9cfb40980e204fcbd4574,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4281479730
-  m_fontColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -34355,15 +34370,16 @@ MonoBehaviour:
       m_Calls: []
   m_text: Back
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: ef64250257b9cfb40980e204fcbd4574, type: 2}
+  m_sharedMaterial: {fileID: 7121675443319479725, guid: ef64250257b9cfb40980e204fcbd4574,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4281479730
-  m_fontColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -35598,6 +35614,18 @@ MonoBehaviour:
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 1
+        m_CallState: 2
+      - m_Target: {fileID: 7827492440747780323}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
         m_CallState: 2
 --- !u!1 &7189380278599863440
 GameObject:
@@ -38216,7 +38244,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 2632271246272331152}
         m_TargetAssemblyTypeName: ControllerSetting, Assembly-CSharp
         m_MethodName: OnOpacitySliderChange
         m_Mode: 1
@@ -38369,7 +38397,7 @@ MonoBehaviour:
   m_Lens:
     FieldOfView: 60.000004
     OrthographicSize: 10
-    NearClipPlane: 0.1
+    NearClipPlane: 0.5
     FarClipPlane: 5000
     Dutch: 0
     ModeOverride: 0
@@ -38467,7 +38495,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7786803942585847077}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -40515,7 +40543,6 @@ GameObject:
   m_Component:
   - component: {fileID: 9100540506478789655}
   - component: {fileID: 5337166927684812738}
-  - component: {fileID: 3251170170080107459}
   - component: {fileID: 1351323442657432503}
   m_Layer: 5
   m_Name: Crosshair
@@ -40551,21 +40578,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8246114480092203529}
   m_CullTransparentMesh: 1
---- !u!114 &3251170170080107459
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8246114480092203529}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a3c6a5c278408504ab1602ebf3dbd82c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  uiElementRectTransform: {fileID: 9100540506478789655}
-  uiImg: {fileID: 0}
-  controllerSetting: {fileID: 0}
 --- !u!114 &1351323442657432503
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -40792,15 +40804,16 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'OPACITY :'
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: ef64250257b9cfb40980e204fcbd4574, type: 2}
+  m_sharedMaterial: {fileID: 7121675443319479725, guid: ef64250257b9cfb40980e204fcbd4574,
+    type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+    rgba: 4294967295
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -41988,8 +42001,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce75111585e9f044cba8d15262ebe14d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerNetworkLoader: {fileID: 0}
-  isNetworked: 0
+  playerNetworkLoader: {fileID: 2671049237676878303}
+  isNetworked: 1
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   uiRT: {fileID: 8050230229753460596}
   uiImg: {fileID: 2176179825623320557}
@@ -42153,8 +42166,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 1283.7295, y: 0}
-  m_SizeDelta: {x: 837.0663, y: 167.93}
+  m_AnchoredPosition: {x: 1529.5527, y: 0}
+  m_SizeDelta: {x: 1000.94855, y: 167.93}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!222 &7272064143236875045
 CanvasRenderer:
@@ -43091,7 +43104,7 @@ MonoBehaviour:
   meshRenderer: {fileID: 0}
   minDistance: 0.5
   maxDistance: 15
-  transparencyAtMinDistance: 0.3
+  transparencyAtMinDistance: 0.1
 --- !u!137 &7922553538042978018
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 0
@@ -43437,8 +43450,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce75111585e9f044cba8d15262ebe14d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerNetworkLoader: {fileID: 0}
-  isNetworked: 0
+  playerNetworkLoader: {fileID: 2671049237676878303}
+  isNetworked: 1
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   uiRT: {fileID: 5517388325267185191}
   uiImg: {fileID: 3208297298025303285}
@@ -43563,8 +43576,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ce75111585e9f044cba8d15262ebe14d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerNetworkLoader: {fileID: 0}
-  isNetworked: 0
+  playerNetworkLoader: {fileID: 2671049237676878303}
+  isNetworked: 1
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
   uiRT: {fileID: 7026212624299806282}
   uiImg: {fileID: 4161740966925661708}
@@ -43911,7 +43924,6 @@ MonoBehaviour:
   killPointsTMP: {fileID: 1672034215824488986}
   rankPointResultTMP: {fileID: 81654268418702493}
   hitPointResultTMP: {fileID: 607096069118391097}
-  <RankPoints>k__BackingField: 0
   <HitPoints>k__BackingField: 0
   _PlayerPlacement: 0
   _ServerManager: {fileID: 0}
@@ -43959,6 +43971,7 @@ MonoBehaviour:
   pingTMP: {fileID: 8782833887765425783}
   _ServerManager: {fileID: 0}
   _KillCount: 0
+  pingChange: 0
 --- !u!114 &5423910054657303324
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -44304,6 +44317,12 @@ MonoBehaviour:
   - {fileID: 6339851055258334585}
   - {fileID: 4473900367103220776}
   - {fileID: 4497955412935404956}
+  - {fileID: 1249730166028085310}
+  - {fileID: 7513633598931207137}
+  - {fileID: 3076659889305309422}
+  - {fileID: 8598065617335713946}
+  - {fileID: 9070905238309283835}
+  - {fileID: 5488136972631691568}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &6136798064161907215
 MonoBehaviour:
@@ -44327,7 +44346,7 @@ MonoBehaviour:
     ColliderLayer: 9
     CollisionLayerMask:
       serializedVersion: 2
-      m_Bits: 2624
+      m_Bits: 35392
     ProxyInterpolationMode: 0
     MaxPenetrationSteps: 8
     CCDRadiusMultiplier: 0.75
@@ -44906,8 +44925,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: 5a2e8aa6d4d140547901d44600b48f86, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -44960,7 +44979,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 2632271246272331152}
         m_TargetAssemblyTypeName: ControllerSetting, Assembly-CSharp
         m_MethodName: SetDefaultLayout
         m_Mode: 1
@@ -45316,7 +45335,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.25}
   m_AnchorMax: {x: 1, y: 0.75}
-  m_AnchoredPosition: {x: -2.4998932, y: -1.2248993}
+  m_AnchoredPosition: {x: -2.4999084, y: -1.2248993}
   m_SizeDelta: {x: -25, y: -3.9812}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &9064644241204160766
@@ -45376,7 +45395,7 @@ MonoBehaviour:
   m_Lens:
     FieldOfView: 30
     OrthographicSize: 10
-    NearClipPlane: 0.1
+    NearClipPlane: 0.5
     FarClipPlane: 5000
     Dutch: 0
     ModeOverride: 0
@@ -45885,15 +45904,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: 1d856c66ba3f6fa4198d9f9ae4b6080b, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
