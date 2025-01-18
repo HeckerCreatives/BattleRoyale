@@ -32,11 +32,11 @@ public class MapZoomInOut : NetworkBehaviour
 
     public async override void Spawned()
     {
-        while (!Runner) await Task.Delay(100);
+        while (!Runner) await Task.Yield();
 
         if (!HasInputAuthority) return;
 
-        while(!ServerManager) await Task.Delay(100);
+        while(!ServerManager) await Task.Yield();
 
         mapCamera.transform.parent = null;
 
@@ -53,17 +53,17 @@ public class MapZoomInOut : NetworkBehaviour
 
     private void CheckPosition(object sender, EventArgs e)
     {
+        mapSlider.value = 0;
+
         if (ServerManager.CurrentGameState == GameState.WAITINGAREA)
         {
             mapCamera.orthographicSize = waitingAreaMax;
-
-            transform.position = new Vector3(playerTF.position.x, mapCamera.transform.position.y, playerTF.position.z);
+            mapCamera.transform.position = battleAreaCenter;
         }
         else
         {
             mapCamera.orthographicSize = battleAreaMax;
-
-            transform.position = new Vector3(playerTF.position.x, mapCamera.transform.position.y, playerTF.position.z);
+            mapCamera.transform.position = battleAreaCenter;
         }
     }
 
@@ -87,7 +87,7 @@ public class MapZoomInOut : NetworkBehaviour
             playerIconTF.transform.localScale = new Vector3(Mathf.Lerp(battlePlayerMapIcomZoomOutMax, playerMapIcomZoomOutMin, mapSlider.value), Mathf.Lerp(battlePlayerMapIcomZoomOutMax, playerMapIcomZoomOutMin, mapSlider.value), 1f);
 
             if (mapSlider.value <= 0)
-                mapCamera.transform.position = waitingAreaCenter;
+                mapCamera.transform.position = battleAreaCenter;
             else
                 mapCamera.transform.position = new Vector3(playerTF.position.x, mapCamera.transform.position.y, playerTF.position.z);
         }

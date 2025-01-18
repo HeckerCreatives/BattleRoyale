@@ -30,7 +30,8 @@ public class PlayerHealth : NetworkBehaviour
     [field: Header("DEBUGGER")]
     [Networked] [field: SerializeField] public float CurrentHealth { get; set; }
     [Networked][field: SerializeField] public float CurrentArmor { get; set; }
-    [Networked][field: SerializeField] public bool GetHit { get; set; }
+    [Networked][field: SerializeField] public bool Heal { get; set; }
+
 
     [field: Space]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
@@ -62,6 +63,13 @@ public class PlayerHealth : NetworkBehaviour
 
                     healthSlider.value = CurrentHealth / 100f;
 
+                    if (damageIndicatorLT != 0) LeanTween.cancel(damageIndicatorLT);
+
+                    damageIndicatorLT = LeanTween.color(damageIndicator.rectTransform, new Color(255f, 255f, 255f, 255f), 0.12f).setEase(LeanTweenType.easeInOutSine).setOnComplete(() =>
+                    {
+                        damageIndicatorLT = LeanTween.color(damageIndicator.rectTransform, new Color(255f, 255f, 255f, 0), 5f).setEase(LeanTweenType.easeInSine).setDelay(2f).id;
+                    }).id;
+
                     break;
                 case nameof(CurrentArmor):
 
@@ -69,21 +77,34 @@ public class PlayerHealth : NetworkBehaviour
 
                     armorSlider.value = CurrentArmor / 100f;
                     break;
-                case nameof(GetHit):
-
-                    if (HasInputAuthority && GetHit)
-                    {
-                        if (damageIndicatorLT != 0) LeanTween.cancel(damageIndicatorLT);
-
-                        damageIndicatorLT = LeanTween.color(damageIndicator.rectTransform, new Color(255f, 255f, 255f, 255f), 0.12f).setEase(LeanTweenType.easeInOutSine).setOnComplete(() =>
-                        {
-                            damageIndicatorLT = LeanTween.color(damageIndicator.rectTransform, new Color(255f, 255f, 255f, 0), 5f).setEase(LeanTweenType.easeInSine).setDelay(2f).id;
-                        }).id;
-                    }
-
-                    GetHit = false;
-                    break;
             }
+        }
+    }
+
+    public override void FixedUpdateNetwork()
+    {
+        if (!HasStateAuthority) return;
+
+        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+
+        if (!ServerManager.DonePlayerBattlePositions) return;
+
+        if (CurrentHealth <= 0) return;
+
+        float distanceFromCenter = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(ServerManager.SafeZone.transform.position.x, 0, ServerManager.SafeZone.transform.position.z));
+        float circleRadius = ServerManager.SafeZone.CurrentShrinkSize.x / 2; // Adjust based on your implementation
+
+        if (distanceFromCenter > circleRadius)
+        {
+            CurrentHealth -= Runner.DeltaTime * 0.5f;
+        }
+
+        if (CurrentHealth <= 0)
+        {
+            deathMovement.MakePlayerDead();
+            gameOverScreen.PlayerPlacement = ServerManager.RemainingPlayers.Count;
+            ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
+            RPC_ReceiveKillNotification($"{loader.Username} KILLED OUTSIDE SAFE ZONE");
         }
     }
 
@@ -106,13 +127,11 @@ public class PlayerHealth : NetworkBehaviour
     {
         if (CurrentHealth <= 0) return;
 
-        GetHit = true;
-
         if (ServerManager.CurrentGameState != GameState.ARENA) return;
 
         CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - damage);
 
-        nobject.GetComponent<PlayerGameOverScreen>().HitPoints += damage * 100;
+        nobject.GetComponent<PlayerGameOverScreen>().HitPoints += damage;
 
         if (CurrentHealth <= 0)
         {
@@ -120,17 +139,19 @@ public class PlayerHealth : NetworkBehaviour
             nobject.GetComponent<KillCountCounterController>().KillCount++;
             gameOverScreen.PlayerPlacement = ServerManager.RemainingPlayers.Count;
             ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
-            RPC_ReceiveKillNotification(killer, loader.Username);
+            RPC_ReceiveKillNotification($"{killer} KILLED {loader.Username}");
         }
     }
 
+
+
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    public void RPC_ReceiveKillNotification(string killer, string killed)
+    public void RPC_ReceiveKillNotification(string killer)
     {
         Debug.Log($"Receive Kill Notif by: {loader.Username}");
 
         if (HasStateAuthority) return;
 
-        KillNotificationController.KillNotifInstance.ShowMessage(killer, killed);
+        KillNotificationController.KillNotifInstance.ShowMessage(killer);
     }
 }

@@ -32,10 +32,17 @@ public class PlayerGameOverScreen : NetworkBehaviour
     [SerializeField] private TextMeshProUGUI rankPointResultTMP;
     [SerializeField] private TextMeshProUGUI hitPointResultTMP;
 
+    [Space]
+    [SerializeField] private TextMeshProUGUI expPointsTMP;
+    [SerializeField] private TextMeshProUGUI lvlPointsExpTMP;
+    [SerializeField] private TextMeshProUGUI rankPointsExpTMP;
+    [SerializeField] private TextMeshProUGUI killPointsExpTMP;
+
     [field: Header("DEBUGGER")]
-    [field: SerializeField] public float HitPoints { get; set; }
+    [field: SerializeField][Networked] public float HitPoints { get; set; }
     [field: SerializeField][Networked] public int PlayerPlacement { get; set; }
     [field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
+    [SerializeField] private bool IsDoneShowingGameOver;
 
     //  ======================
 
@@ -58,19 +65,46 @@ public class PlayerGameOverScreen : NetworkBehaviour
 
                     if (!HasInputAuthority) return;
 
+                    if (IsDoneShowingGameOver) return;
+
                     //  THIS IS FOR DEATH
+
+                    IsDoneShowingGameOver = true;
 
                     Debug.Log($"Player lose, player placement: {PlayerPlacement}");
                     usernameResultTMP.text = userData.Username;
                     playerCountResultTMP.text = $"<color=yellow><size=\"55\">#{PlayerPlacement}</size></color> <size=\"50\"> / {ServerManager.RemainingPlayers.Capacity - 2}</size>";
                     rankResultTMP.text = PlayerPlacement.ToString();
                     killCountResultTMP.text = killCountCounterController.KillCount.ToString();
-                    rankPointResultTMP.text = (((100 - PlayerPlacement + 1) / 100) * 20).ToString("n0");
-                    killPointsTMP.text = (killCountCounterController.KillCount * 100).ToString("n0");
-                    hitPointResultTMP.text = HitPoints.ToString("n0");
-                    resultPointsTMP.text = ((((100 - PlayerPlacement + 1) / 100) * 20) + (killCountCounterController.KillCount * 100) + HitPoints).ToString("n0");
 
-                    Debug.Log($"Placement: {PlayerPlacement}   Placement points: {(((100 - PlayerPlacement + 1) / 100) * 20)}  Kills: {killCountCounterController.KillCount} Kill points: {(killCountCounterController.KillCount * 100)}    hit points: {HitPoints}          result: {((((100 - PlayerPlacement + 1) / 100) * 20) + (killCountCounterController.KillCount * 100) + HitPoints)}");
+                    //  Leaderboard
+
+                    float rankpointLB = (100 - PlayerPlacement + 1) / 100f * 20;
+                    rankpointLB = (float)Math.Truncate(rankpointLB);
+                    float killpointLB = killCountCounterController.KillCount * 100f;
+                    killpointLB = (float)Math.Truncate(killpointLB);
+                    float finalresultpointLB = rankpointLB + killpointLB + HitPoints;
+                    finalresultpointLB = (float)Math.Truncate(finalresultpointLB);
+
+                    rankPointResultTMP.text = rankpointLB.ToString("n0");
+                    killPointsTMP.text = killpointLB.ToString("n0");
+                    hitPointResultTMP.text = HitPoints.ToString("n0");
+                    resultPointsTMP.text = finalresultpointLB.ToString("n0");
+
+                    //  EXP
+                    float userlevelPoints = userData.GameDetails.level / 2f * 10;
+                    userlevelPoints = (float)Math.Truncate(userlevelPoints);
+                    float rankxpPoints = (100 - PlayerPlacement + 1) / 100f * 20;
+                    rankxpPoints = (float)Math.Truncate(rankxpPoints);
+                    float killxpPoints = killCountCounterController.KillCount * userData.GameDetails.level / 2f * 5;
+                    killxpPoints = (float)Math.Truncate(killxpPoints);
+                    float finalxp = userlevelPoints + rankxpPoints + killxpPoints;
+                    finalxp = (float)Math.Truncate(finalxp);
+
+                    lvlPointsExpTMP.text = userlevelPoints.ToString("n0");
+                    rankPointsExpTMP.text = rankxpPoints.ToString("n0");
+                    killPointsExpTMP.text = killxpPoints.ToString("n0");
+                    expPointsTMP.text = finalxp.ToString("n0");
 
                     controllerObj.SetActive(false);
                     pauseObj.SetActive(false);
@@ -89,7 +123,7 @@ public class PlayerGameOverScreen : NetworkBehaviour
                     {
                         StartCoroutine(GameManager.Instance.PostRequest("/leaderboard/updateuserleaderboard", "", new Dictionary<string, object>
                         {
-                            { "amount",((((100 - PlayerPlacement + 1) / 100) * 20) + (killCountCounterController.KillCount * 100) + HitPoints)  }
+                            { "amount", finalresultpointLB }
                         }, true, (tempresponse) => GameManager.Instance.NoBGLoading.SetActive(false), () => GameManager.Instance.NoBGLoading.SetActive(false)));
                     }, () => GameManager.Instance.NoBGLoading.SetActive(false)));
 
@@ -103,7 +137,7 @@ public class PlayerGameOverScreen : NetworkBehaviour
         while (!Runner)
         {
             Debug.Log("waiting runner on kill count counter");
-            await Task.Delay(100);
+            await Task.Yield();
         }
 
         if (HasInputAuthority)
@@ -111,7 +145,7 @@ public class PlayerGameOverScreen : NetworkBehaviour
             while (!ServerManager)
             {
                 Debug.Log("waiting on server manager kill count counter");
-                await Task.Delay(100);
+                await Task.Yield();
             }
 
             ServerManager.OnPlayerCountChange += PlayerCountChange;
@@ -125,8 +159,10 @@ public class PlayerGameOverScreen : NetworkBehaviour
         if (HasInputAuthority)
         {
             if (ServerManager != null)
+            {
                 ServerManager.OnPlayerCountChange -= PlayerCountChange;
-            ServerManager.OnCurrentStateChange -= GameStateChange;
+                ServerManager.OnCurrentStateChange -= GameStateChange;
+            }
         }
     }
 
@@ -150,19 +186,40 @@ public class PlayerGameOverScreen : NetworkBehaviour
 
         if (winMessageObj.activeInHierarchy) return;
 
+        if (IsDoneShowingGameOver) return;
+
         if (ServerManager.CurrentGameState == GameState.DONE)
         {
+            IsDoneShowingGameOver = true;
+
             usernameResultTMP.text = userData.Username;
             playerCountResultTMP.text = $"<color=yellow><size=\"55\">#1</size></color> <size=\"50\"> / {ServerManager.RemainingPlayers.Capacity - 2}</size>";
             rankResultTMP.text = "1";
             killCountResultTMP.text = killCountCounterController.KillCount.ToString();
-            rankPointResultTMP.text = (((100 - PlayerPlacement + 1) / 100) * 20).ToString("n0");
-            killPointsTMP.text = (killCountCounterController.KillCount * 100).ToString("n0");
+
+            //  Leaderboard
+
+            float rankpointLB = 100 - PlayerPlacement + 1 / 100 * 20;
+            float killpointLB = killCountCounterController.KillCount * 100;
+            float finalresultpointLB = rankpointLB + killpointLB + HitPoints;
+            finalresultpointLB = (float)Math.Truncate(finalresultpointLB);
+
+            rankPointResultTMP.text = rankpointLB.ToString("n0");
+            killPointsTMP.text = killpointLB.ToString("n0");
             hitPointResultTMP.text = HitPoints.ToString("n0");
-            resultPointsTMP.text = ((((100 - PlayerPlacement + 1) / 100) * 20) + (killCountCounterController.KillCount * 100) + HitPoints).ToString("n0");
+            resultPointsTMP.text = finalresultpointLB.ToString("n0");
 
+            //  EXP
+            float userlevelPoints = userData.GameDetails.level / 2 * 10;
+            float rankxpPoints = 100 - PlayerPlacement + 1 / 100 * 20;
+            float killxpPoints = killCountCounterController.KillCount * userData.GameDetails.level / 2 * 5;
+            float finalxp = userlevelPoints + rankxpPoints + killxpPoints;
+            finalxp = (float)Math.Truncate(finalxp);
 
-            Debug.Log($"Placement: {PlayerPlacement}   Placement points: {(((100 - PlayerPlacement + 1) / 100) * 20)}  Kills: {killCountCounterController.KillCount} Kill points: {(killCountCounterController.KillCount * 100)}    hit points: {HitPoints}          result: {((((100 - PlayerPlacement + 1) / 100) * 20) + (killCountCounterController.KillCount * 100) + HitPoints)}");
+            lvlPointsExpTMP.text = userlevelPoints.ToString("n0");
+            rankPointsExpTMP.text = rankxpPoints.ToString("n0");
+            killPointsExpTMP.text = killxpPoints.ToString("n0");
+            expPointsTMP.text = finalxp.ToString("n0");
 
             controllerObj.SetActive(false);
             pauseObj.SetActive(false);
@@ -182,7 +239,7 @@ public class PlayerGameOverScreen : NetworkBehaviour
             {
                 StartCoroutine(GameManager.Instance.PostRequest("/leaderboard/updateuserleaderboard", "", new Dictionary<string, object>
                 {
-                    { "amount",((((100 - PlayerPlacement + 1) / 100) * 20) + (killCountCounterController.KillCount * 100) + HitPoints)  }
+                    { "amount", finalresultpointLB }
                 }, true, (tempresponse) => GameManager.Instance.NoBGLoading.SetActive(false), () => GameManager.Instance.NoBGLoading.SetActive(false)));
             }, () => GameManager.Instance.NoBGLoading.SetActive(false)));
         }
@@ -192,29 +249,46 @@ public class PlayerGameOverScreen : NetworkBehaviour
     {
         if (!HasInputAuthority) return;
 
-        await Task.Delay(1500);
-
         if (ServerManager.CurrentGameState != GameState.ARENA) return;
 
         if (ServerManager.RemainingPlayers.Count > 1) return;
 
-
-        Debug.Log($"Win message active: {winMessageObj.activeInHierarchy}");
+        await Task.Delay(1500);
 
         if (winMessageObj.activeInHierarchy) return;
 
+        if (IsDoneShowingGameOver) return;
+
+        IsDoneShowingGameOver = true;
 
         usernameResultTMP.text = userData.Username;
         playerCountResultTMP.text = $"<color=yellow><size=\"55\">#1</size></color> <size=\"50\"> / {ServerManager.RemainingPlayers.Capacity - 2}</size>";
         rankResultTMP.text = "1";
         killCountResultTMP.text = killCountCounterController.KillCount.ToString();
-        rankPointResultTMP.text = (((100 - PlayerPlacement + 1) / 100) * 20).ToString("n0");
-        killPointsTMP.text = (killCountCounterController.KillCount * 100).ToString("n0");
+
+        //  Leaderboard
+
+        float rankpointLB = 100 - PlayerPlacement + 1 / 100 * 20;
+        float killpointLB = killCountCounterController.KillCount * 100;
+        float finalresultpointLB = rankpointLB + killpointLB + HitPoints;
+        finalresultpointLB = (float)Math.Truncate(finalresultpointLB);
+
+        rankPointResultTMP.text = rankpointLB.ToString("n0");
+        killPointsTMP.text = killpointLB.ToString("n0");
         hitPointResultTMP.text = HitPoints.ToString("n0");
-        resultPointsTMP.text = ((((100 - PlayerPlacement + 1) / 100) * 20) + (killCountCounterController.KillCount * 100) + HitPoints).ToString("n0");
+        resultPointsTMP.text = finalresultpointLB.ToString("n0");
 
+        //  EXP
+        float userlevelPoints = userData.GameDetails.level / 2 * 10;
+        float rankxpPoints = 100 - PlayerPlacement + 1 / 100 * 20;
+        float killxpPoints = killCountCounterController.KillCount * userData.GameDetails.level / 2 * 5;
+        float finalxp = userlevelPoints + rankxpPoints + killxpPoints;
+        finalxp = (float)Math.Truncate(finalxp);
 
-        Debug.Log($"Placement: {PlayerPlacement}   Placement points: {(((100 - PlayerPlacement + 1) / 100) * 20)}  Kills: {killCountCounterController.KillCount} Kill points: {(killCountCounterController.KillCount * 100)}    hit points: {HitPoints}          result: {((((100 - PlayerPlacement + 1) / 100) * 20) + (killCountCounterController.KillCount * 100) + HitPoints)}");
+        lvlPointsExpTMP.text = userlevelPoints.ToString("n0");
+        rankPointsExpTMP.text = rankxpPoints.ToString("n0");
+        killPointsExpTMP.text = killxpPoints.ToString("n0");
+        expPointsTMP.text = finalxp.ToString("n0");
 
         controllerObj.SetActive(false);
         pauseObj.SetActive(false);
@@ -234,7 +308,7 @@ public class PlayerGameOverScreen : NetworkBehaviour
         {
             StartCoroutine(GameManager.Instance.PostRequest("/leaderboard/updateuserleaderboard", "", new Dictionary<string, object>
             {
-                { "amount",((((100 - PlayerPlacement + 1) / 100) * 20) + (killCountCounterController.KillCount * 100) + HitPoints)  }
+                { "amount", finalresultpointLB  }
             }, true, (tempresponse) => GameManager.Instance.NoBGLoading.SetActive(false), () => GameManager.Instance.NoBGLoading.SetActive(false)));
         }, () => GameManager.Instance.NoBGLoading.SetActive(false)));
     }

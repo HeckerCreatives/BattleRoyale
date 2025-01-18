@@ -41,23 +41,7 @@ public class WeaponItem : WeaponData
         IsHand = isHand;
     }
 
-    public override void Spawned()
-    {
-        if (IsHand)
-            WeaponObject.transform.parent = Hand != null ? Hand.transform : null;
-        else
-            WeaponObject.transform.parent = Parent != null ? Parent.transform : null;
-
-        WeaponObject.transform.localPosition = Vector3.zero;
-        WeaponObject.transform.localRotation = Quaternion.identity;
-    }
-
-    public override void FixedUpdateNetwork()
-    {
-        SetWeaponParent();
-    }
-
-    private void Update()
+    public override void Render()
     {
         SetWeaponParent();
     }
@@ -76,6 +60,10 @@ public class WeaponItem : WeaponData
                 WeaponObject.transform.localPosition = Vector3.zero;
                 WeaponObject.transform.localRotation = Quaternion.identity;
             }
+        }
+        else
+        {
+
         }
     }
 
@@ -98,18 +86,6 @@ public class WeaponItem : WeaponData
         Hand = tempHand ? tempHand : null;
 
         IsPickedUp = true;
-    }
-
-    [Rpc]
-    public void Rpc_ActivateWeapon()
-    {
-        IsHand = true;
-    }
-
-    [Rpc]
-    public void Rpc_SheatWeapon()
-    {
-        IsHand = false;
     }
 
     [Rpc]

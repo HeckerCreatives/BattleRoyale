@@ -12,13 +12,13 @@ public class KillNotificationItem : MonoBehaviour
 
     private void Update()
     {
-        if (Time.time >= startTime + 3f)
+        if (Time.time >= startTime + 8f)
             Destroy(gameObject);
     }
 
-    public void SetData(string killer, string killed)
+    public void SetData(string killer)
     {
         startTime = Time.time;
-        killNotifTMP.text = $"{killer} killed {killed}";
+        killNotifTMP.text = killer;
     }
 }

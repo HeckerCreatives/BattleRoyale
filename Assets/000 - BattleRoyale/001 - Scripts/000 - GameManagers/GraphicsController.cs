@@ -274,8 +274,8 @@ public class GraphicsController : MonoBehaviour
 
         float renderScale = CurrentResolutionIndex switch
         {
-            0 => 0.25f,
-            1 => 0.5f,
+            0 => 0.4f,
+            1 => 0.75f,
             2 => 1f,
             _ => 1f,
         };

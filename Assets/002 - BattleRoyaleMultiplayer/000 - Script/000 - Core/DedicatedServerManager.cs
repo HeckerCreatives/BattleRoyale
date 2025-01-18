@@ -17,6 +17,13 @@ public enum GameState
     DONE
 }
 
+public enum SafeZoneState
+{
+    NONE,
+    TIMER,
+    SHRINK
+}
+
 public struct PlayerBattleSpawnPosition : INetworkStruct
 {
     [Networked, Capacity(43)] public NetworkArray<Vector3> NetworkSpawnLocation => default;
@@ -58,6 +65,17 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         remove { CurrentStateChange -= value; }
     }
 
+    private event EventHandler SafeZoneStateChange;
+    public event EventHandler OnSafeZoneStateChange
+    {
+        add
+        {
+            if (SafeZoneStateChange == null || !SafeZoneStateChange.GetInvocationList().Contains(value))
+                SafeZoneStateChange += value;
+        }
+        remove { SafeZoneStateChange -= value; }
+    }
+
     //  ===================================
 
     [SerializeField] private string lobby;
@@ -83,18 +101,27 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [SerializeField] private GameObject waitingAreaArena;
     [SerializeField] private GameObject battleFieldArena;
 
+    [Header("SAFE ZONE")]
+    [SerializeField] private NetworkObject safeZoneNO;
+    [SerializeField] private List<Vector3> safeZonePosition;
+    [SerializeField] private List<ShrinkSizeList> safeZoneShrink;
+
     [Header("DEBUGGER")]
     [MyBox.ReadOnly][SerializeField] private string sessionName;
     [MyBox.ReadOnly][SerializeField] private bool doneSpawnCrates;
     [MyBox.ReadOnly][SerializeField] private bool doneSetupBattlePos;
+    [MyBox.ReadOnly][SerializeField] private bool doneSetupSafeZone;
     [MyBox.ReadOnly][SerializeField] private NetworkRunner networkRunner;
     
     [field: Space]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public GameState CurrentGameState { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public SafeZoneState CurrentSafeZoneState { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float WaitingAreaTimer { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public float SafeZoneTimer { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool CanCountWaitingAreaTimer { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool DonePlayerBattlePositions { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool StartBattleRoyale { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public SafeZoneController SafeZone { get; set; }
 
 
     private ChangeDetector _changeDetector;
@@ -174,7 +201,10 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     private async void SpawnCrates()
     {
         Debug.Log("start spawning crates");
-        while (!Runner) await Task.Delay(100);
+        while (!Runner)
+        {
+            await Task.Yield();
+        }
 
         Debug.Log("done waiting for runner");
         int index = 1;
@@ -202,6 +232,26 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         await Shuffler.Shuffle(spawnBattleAreaPositions);
 
         doneSetupBattlePos = true;
+    }
+
+    private async void SetSafeZoneArea()
+    {
+        while (!Runner) await Task.Yield();
+
+        int rand = UnityEngine.Random.Range(0, safeZonePosition.Count);
+
+        SafeZone = Runner.Spawn(safeZoneNO, safeZonePosition[rand], Quaternion.identity, Object.StateAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+        {
+            
+            obj.GetComponent<SafeZoneController>().safeZoneShrinkSize = safeZoneShrink[rand].shrinksizes;
+            obj.GetComponent<SafeZoneController>().SpawnPosition = safeZonePosition[rand];
+            obj.GetComponent<SafeZoneController>().ShrinkSizeIndex = 1;
+            obj.GetComponent<SafeZoneController>().ServerManager = this;
+            obj.GetBehaviour<SafeZoneController>().InitializeSafeZone();
+
+        }).GetComponent<SafeZoneController>();
+
+        doneSetupSafeZone = true;
     }
 
     #endregion
@@ -255,15 +305,18 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         Debug.Log($"Set Spawn Positions");
         SetSpawnPositionPlayers();
 
-        while (!doneSetupBattlePos || !doneSpawnCrates)
+        Debug.Log($"Set Safe Zone");
+        SetSafeZoneArea();
+
+        while (!doneSetupBattlePos || !doneSpawnCrates || !doneSetupSafeZone)
         {
-            Debug.Log($"Done setup battle pos init: {doneSetupBattlePos} : Done spawn crates init: {doneSpawnCrates}");
-            await Task.Delay(100);
+            Debug.Log($"Done setup battle pos init: {doneSetupBattlePos} : Done spawn crates init: {doneSpawnCrates}  :  Done Safe Zone Init: {doneSetupSafeZone}");
+            await Task.Yield();
         }
 
         Debug.Log("Adding waiting Area Timer");
 
-        WaitingAreaTimer = 30f;
+        WaitingAreaTimer = 300f;
 
         Debug.Log("Done adding waiting Area Timer");
 
@@ -316,14 +369,20 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
                     PlayerCountChange?.Invoke(this, EventArgs.Empty);
                     break;
+                case nameof(CurrentSafeZoneState):
+                    SafeZoneStateChange?.Invoke(this, EventArgs.Empty);
+                    break;
             }
         }
+
+
     }
 
     public override void FixedUpdateNetwork()
     {
         CountDownWaitingAreaTimer();
         BattlePosition();
+        CountDownSafeZoneTimer();
     }
 
     #region GAME LOGIC
@@ -351,6 +410,20 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             CurrentGameState = GameState.ARENA;
             CanCountWaitingAreaTimer = false;
             CurrentStateChange?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private void CountDownSafeZoneTimer()
+    {
+        if (!HasStateAuthority) return;
+
+        if (CurrentSafeZoneState != SafeZoneState.TIMER) return;
+
+        SafeZoneTimer -= Runner.DeltaTime;
+
+        if (SafeZoneTimer <= 0f)
+        {
+            CurrentSafeZoneState = SafeZoneState.SHRINK;
         }
     }
 
@@ -384,6 +457,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         if (allPlayersInPosition)
             DonePlayerBattlePositions = true;
+
+        SafeZoneTimer = 180f;
+        CurrentSafeZoneState = SafeZoneState.TIMER;
     }
 
     private void ArenaEnabler(bool waitingArea, bool battleField)
@@ -396,7 +472,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
     #region SERVER LOGIC
 
-    public async void PlayerJoined(PlayerRef player)
+    public void PlayerJoined(PlayerRef player)
     {
         if (HasStateAuthority)
         {
@@ -412,13 +488,14 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 obj.GetComponent<PlayerQuitController>().ServerManager = this;
                 obj.GetComponent<MapZoomInOut>().ServerManager = this;
                 obj.GetComponent<PlayerGameOverScreen>().ServerManager = this;
+                obj.GetComponent<PlayerShrinkZoneTimer>().ServerManager = this;
             });
 
             Players.Add(player, playerCharacter);
             RemainingPlayers.Add(player, playerCharacter);
             PlayerCountChange?.Invoke(this, EventArgs.Empty);
 
-            if (!CanCountWaitingAreaTimer && Players.Count >= 2)
+            if (!CanCountWaitingAreaTimer && Players.Count >= 1)
             {
                 CanCountWaitingAreaTimer = true;
             }
@@ -444,7 +521,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             if (Players.Count <= 0 && CanCountWaitingAreaTimer)
             {
-                WaitingAreaTimer = 30f;
+                WaitingAreaTimer = 300f;
                 CanCountWaitingAreaTimer = false;
             }
 
@@ -458,4 +535,10 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     }
 
     #endregion
+}
+
+[System.Serializable]
+public class ShrinkSizeList
+{
+    public List<Vector3> shrinksizes;
 }

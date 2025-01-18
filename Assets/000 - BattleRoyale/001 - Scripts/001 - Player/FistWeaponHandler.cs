@@ -81,11 +81,7 @@ public class FistWeaponHandler : NetworkBehaviour
     {
         if (!HasStateAuthority) return;
 
-        Debug.Log("performing second attack");
-
         int hitCount = Runner.LagCompensation.OverlapBox(impactSecondFistPoint.position, attackRadius, Quaternion.identity, Object.InputAuthority, hitsSecondFist, enemyLayerMask, HitOptions.SubtickAccuracy);
-
-        Debug.Log($"hit second attack: {hitCount}");
 
         for (int i = 0; i < hitCount; i++)
         {

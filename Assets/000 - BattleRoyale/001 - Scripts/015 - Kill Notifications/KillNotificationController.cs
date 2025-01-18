@@ -18,8 +18,8 @@ public class KillNotificationController : MonoBehaviour
         KillNotifInstance = this;
     }
 
-    public void ShowMessage(string killer, string killed)
+    public void ShowMessage(string killer)
     {
-        Instantiate(killNotificationObj, killNotifTF).GetComponent<KillNotificationItem>().SetData(killer, killed);
+        Instantiate(killNotificationObj, killNotifTF).GetComponent<KillNotificationItem>().SetData(killer);
     }
 }
