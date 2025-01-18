@@ -10,6 +10,7 @@ using TMPro;
 using UnityEngine.UI;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
+using System.Threading;
 
 public class SocketManager : MonoBehaviour
 {
@@ -37,6 +38,8 @@ public class SocketManager : MonoBehaviour
     //  ===========================
 
     public SocketIOUnity Socket {get; private set; }
+
+    private CancellationTokenSource pingTimeoutCts;
 
     //  ===========================
 
@@ -83,25 +86,68 @@ public class SocketManager : MonoBehaviour
         Debug.Log("Socket Connected to server");
         ConnectionStatus = "Connected";
 
+        // Handle "ping" event
         Socket.On("ping", async (response) =>
         {
             await Task.Delay(5000);
-
+            // Respond with "pong" after 5 seconds
             DateTime utcNow = DateTime.UtcNow;
             EmitEvent("pong", utcNow);
+
+            // Start or reset the timeout timer
+            StartPingTimeout();
         });
 
-        EmitEvent("login", userData.Username);
+    EmitEvent("login", userData.Username);
+    }
+
+    private void StartPingTimeout()
+    {
+        CancelPingTimeout(); // Cancel any existing timeout
+
+        pingTimeoutCts = new CancellationTokenSource();
+        CancellationToken token = pingTimeoutCts.Token;
+
+        Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(10000, token); // Set timeout duration (e.g., 10 seconds)
+                if (!token.IsCancellationRequested)
+                {
+                    GameManager.Instance.SocketMngr.Socket.Disconnect();
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                // Task was canceled, no action needed
+            }
+        }, token);
+    }
+
+    // Cancels the current timeout timer
+    private void CancelPingTimeout()
+    {
+        if (pingTimeoutCts != null)
+        {
+            pingTimeoutCts.Cancel();
+            pingTimeoutCts.Dispose();
+            pingTimeoutCts = null;
+        }
     }
 
     private void SocketDisconnected(object sender, string e)
     {
         Debug.Log("Socket Disconnected to server");
+        CancelPingTimeout();
+
         GameManager.Instance.AddJob(() =>
         {
+            EmitEvent("disconnect", null);
             GameManager.Instance.NoBGLoading.SetActive(false);
             ConnectionStatus = "Disconnected";
             sceneController.CurrentScene = "Login";
+            Socket = null;
         });
     }
 

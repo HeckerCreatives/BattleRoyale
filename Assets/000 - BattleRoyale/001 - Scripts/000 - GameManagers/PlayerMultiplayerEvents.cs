@@ -13,6 +13,12 @@ public class PlayerMultiplayerEvents : SimulationBehaviour, INetworkRunnerCallba
     [Header("DEBUGGER")]
     [MyBox.ReadOnly] public bool doneLoadingScene;
 
+    //  ================
+
+    public Action queuedisconnection;
+
+    //  ================
+
     #region LOADING SCENE
 
     IEnumerator CheckIfDoneLoadingScreen()
@@ -98,6 +104,37 @@ public class PlayerMultiplayerEvents : SimulationBehaviour, INetworkRunnerCallba
 
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
     {
+        if (shutdownReason == ShutdownReason.ConnectionTimeout || shutdownReason == ShutdownReason.OperationTimeout || shutdownReason == ShutdownReason.ConnectionRefused || shutdownReason == ShutdownReason.DisconnectedByPluginLogic)
+        {
+            Debug.Log($"Server error: {shutdownReason}");
+
+            GameManager.Instance.NotificationController.ShowError($"There's a problem with the game server! Please queue up and try again. Error: {(shutdownReason == ShutdownReason.DisconnectedByPluginLogic ? "Server Shutdown due to unexpected error." : shutdownReason)}");
+
+            Runner.Shutdown();
+            GameManager.Instance.SceneController.CurrentScene = "Lobby";
+        }
+        else if (shutdownReason == ShutdownReason.MaxCcuReached || shutdownReason == ShutdownReason.GameIsFull || shutdownReason == ShutdownReason.GameClosed)
+        {
+
+            string errormessage = "";
+
+            switch (shutdownReason)
+            {
+                case ShutdownReason.GameIsFull:
+                    errormessage = $"The game you're trying to join is full! Please queue up and try again";
+                    break;
+                case ShutdownReason.GameClosed:
+                    errormessage = $"The game you're trying to join is now closed! Please queue up and try again";
+                    break;
+                case ShutdownReason.MaxCcuReached:
+                    errormessage = $"The game server is experiencing high level of players! Please try again later or contact customer support for more details";
+                    break;
+            }
+
+            GameManager.Instance.NotificationController.ShowError(errormessage);
+
+            queuedisconnection?.Invoke();
+        }
     }
 
     public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message)

@@ -15,12 +15,18 @@ public class JumpMovement : NetworkBehaviour
 
     [Space]
     [SerializeField] private SimpleKCC characterController;
+    [SerializeField] private LayerMask groundLayerMask;
 
     [Space]
     [SerializeField] private float jumpHeight;
+    [SerializeField] private float maxSlopeAngle = 45f;
+    [SerializeField] private float raycastLengthSlope;
 
     [Space]
     [SerializeField] private AnimationClip jumpClip;
+
+    [Header("DEBUGGER LOCAL")]
+    [SerializeField] private Vector3 groundNormal;
 
     [field: Header("DEBUGGER")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float JumpImpulse { get; set; }
@@ -38,6 +44,7 @@ public class JumpMovement : NetworkBehaviour
     MyInput controllerInput;
 
     private ChangeDetector _changeDetector;
+
 
     //  ============================
 
@@ -89,7 +96,23 @@ public class JumpMovement : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
+        GroundDetector();
         Jump();
+    }
+
+    private void GroundDetector()
+    {
+        groundNormal = Vector3.up;
+
+        if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, raycastLengthSlope, groundLayerMask)) // Adjust length based on character
+        {
+            groundNormal = hit.normal;
+        }
+    }
+
+    private bool IsSlopeWalkable(Vector3 normal)
+    {
+        return Vector3.Dot(Vector3.up, normal) >= Mathf.Cos(maxSlopeAngle * Mathf.Deg2Rad);
     }
 
     private void Jump()
@@ -98,7 +121,7 @@ public class JumpMovement : NetworkBehaviour
 
         controllerInput = input;
 
-        if (HasStateAuthority && controllerInput.Buttons.IsSet(InputButton.Jump) && characterController.IsGrounded && !IsJumping)
+        if (HasStateAuthority && controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Jump) && characterController.IsGrounded && !IsJumping && IsSlopeWalkable(groundNormal))
         {
             if (controller.IsCrouch || controller.IsProne)
             {
@@ -165,5 +188,11 @@ public class JumpMovement : NetworkBehaviour
     public Playable GetPlayable()
     {
         return movementMixer;
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.blue;
+        Gizmos.DrawRay(transform.position, new Vector3(0f, -1 + raycastLengthSlope));
     }
 }

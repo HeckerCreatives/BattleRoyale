@@ -46,6 +46,7 @@ public class PlayerController : NetworkBehaviour
     [MyBox.ReadOnly][SerializeField] private Vector3 spherePosition;
     [MyBox.ReadOnly][SerializeField] private float _jumpTimeoutDelta;
     [MyBox.ReadOnly][SerializeField] private float _fallTimeoutDelta;
+    [SerializeField] private Vector3 groundNormal;
 
     [field: Header("DEBUGGER PLAYER NETWORK")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public Vector3 MoveDirection { get;  set; }
@@ -110,6 +111,7 @@ public class PlayerController : NetworkBehaviour
         MoveDirection = characterController.TransformRotation * new Vector3(controllerInput.MovementDirection.x, 0f, controllerInput.MovementDirection.y) * (IsCrouch ? crouchMoveSpeed : IsProne ? proneMoveSpeed : moveSpeed) * Runner.DeltaTime;
 
         MoveDirection.Normalize();
+
 
         // Apply the movement
         characterController.Move(MoveDirection, jumpMovement.JumpImpulse);

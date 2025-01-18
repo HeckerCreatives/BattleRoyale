@@ -83,6 +83,8 @@ public class ClientMatchmakingController : MonoBehaviour
 
             currentRunnerInstance = Instantiate(instanceRunner);
 
+            currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
+
             var players = new List<Unity.Services.Matchmaker.Models.Player>
         {
             new Unity.Services.Matchmaker.Models.Player(userData.Username, new Dictionary<string, object>())
@@ -163,6 +165,9 @@ public class ClientMatchmakingController : MonoBehaviour
             cancelBtn.interactable = true;
 
             currentRunnerInstance = Instantiate(instanceRunner);
+
+            currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
+
             JoinDropballSession();
         }
         
@@ -207,6 +212,8 @@ public class ClientMatchmakingController : MonoBehaviour
                 return;
 
             currentRunnerInstance = Instantiate(instanceRunner);
+
+            currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
 
             Debug.Log("REJOINING LOBBY");
 
@@ -284,6 +291,8 @@ public class ClientMatchmakingController : MonoBehaviour
             matchmakingObj.SetActive(false);
             return;
         }
+
+        currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = null;
 
         await currentRunnerInstance.Shutdown(true);
 

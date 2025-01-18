@@ -96,7 +96,7 @@ public class PlayerHealth : NetworkBehaviour
 
         if (distanceFromCenter > circleRadius)
         {
-            CurrentHealth -= Runner.DeltaTime * 0.5f;
+            CurrentHealth -= Runner.DeltaTime * ServerManager.SafeZone.ShrinkSizeIndex;
         }
 
         if (CurrentHealth <= 0)

@@ -78,6 +78,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
     //  ===================================
 
+    [SerializeField] private int playerRequired;
     [SerializeField] private string lobby;
     [SerializeField] private bool useMultiplay;
     [SerializeField] private MultiplayController multiplayController;
@@ -316,7 +317,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         Debug.Log("Adding waiting Area Timer");
 
-        WaitingAreaTimer = 300f;
+        WaitingAreaTimer = 30f;
 
         Debug.Log("Done adding waiting Area Timer");
 
@@ -495,7 +496,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             RemainingPlayers.Add(player, playerCharacter);
             PlayerCountChange?.Invoke(this, EventArgs.Empty);
 
-            if (!CanCountWaitingAreaTimer && Players.Count >= 1)
+            if (!CanCountWaitingAreaTimer && Players.Count >= playerRequired)
             {
                 CanCountWaitingAreaTimer = true;
             }
@@ -521,7 +522,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             if (Players.Count <= 0 && CanCountWaitingAreaTimer)
             {
-                WaitingAreaTimer = 300f;
+                WaitingAreaTimer = 30f;
                 CanCountWaitingAreaTimer = false;
             }
 
