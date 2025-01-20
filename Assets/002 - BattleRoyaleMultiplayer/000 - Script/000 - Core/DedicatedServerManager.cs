@@ -317,7 +317,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         Debug.Log("Adding waiting Area Timer");
 
-        WaitingAreaTimer = 30f;
+        WaitingAreaTimer = 300f;
 
         Debug.Log("Done adding waiting Area Timer");
 
@@ -522,7 +522,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             if (Players.Count <= 0 && CanCountWaitingAreaTimer)
             {
-                WaitingAreaTimer = 30f;
+                WaitingAreaTimer = 300f;
                 CanCountWaitingAreaTimer = false;
             }
 

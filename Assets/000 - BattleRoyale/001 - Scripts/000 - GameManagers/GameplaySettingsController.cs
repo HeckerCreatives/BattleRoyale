@@ -77,7 +77,7 @@ public class GameplaySettingsController : MonoBehaviour
         }
         else
         {
-            CurrentLookSensitivity = 0.5f;
+            CurrentLookSensitivity = 0.20f;
         }
 
         if (PlayerPrefs.HasKey("LookAdsSensitivity"))
@@ -86,7 +86,7 @@ public class GameplaySettingsController : MonoBehaviour
         }
         else
         {
-            CurrentLookAdsSensitivity = 0.5f;
+            CurrentLookAdsSensitivity = 0.20f;
         }
     }
 }

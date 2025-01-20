@@ -3,15 +3,10 @@ using Fusion.Sockets;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Unity.Services.Matchmaker.Models;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Controls;
 using UnityEngine.InputSystem.EnhancedTouch;
-using UnityEngine.UIElements;
 
 public enum InputButton
 {
@@ -64,7 +59,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     [MyBox.ReadOnly][SerializeField] public int ActiveTouch;
     [MyBox.ReadOnly][SerializeField] private bool resetInput;
     [MyBox.ReadOnly][SerializeField] private bool doneInitialize;
-    [MyBox.ReadOnly][SerializeField] private int activeTouchId = -1;
     [MyBox.ReadOnly][SerializeField] private Vector2 firstTouch;
 
 
@@ -73,12 +67,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
     private GameplayInputs gameplayInputs;
 
-    private Queue<PointerEventData> pointerEventDataPool = new Queue<PointerEventData>();
-    private Dictionary<int, bool> fingerUIStatus = new Dictionary<int, bool>();
-    private Dictionary<int, Vector2> previousTouchPositions = new Dictionary<int, Vector2>();
-    private Dictionary<int, bool> touchWasEnded = new Dictionary<int, bool>();
-
-    MyInput myInput;
+    public MyInput myInput;
 
     //  =========================
 
@@ -99,8 +88,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Enable();
             EnhancedTouchSupport.Enable();
 
-            gameplayInputs.Gameplay.Movement.performed += _ => MovementStart();
-            gameplayInputs.Gameplay.Movement.canceled += _ => MovementStop();
             gameplayInputs.Gameplay.Jump.started += _ => JumpStart();
             gameplayInputs.Gameplay.Jump.canceled += _ => JumpTurnOff();
             gameplayInputs.Gameplay.Aim.started += _ => AimStart();
@@ -134,8 +121,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     {
         if (doneInitialize && Runner != null)
         {
-            gameplayInputs.Gameplay.Movement.performed -= _ => MovementStart();
-            gameplayInputs.Gameplay.Movement.canceled -= _ => MovementStop();
             gameplayInputs.Gameplay.Jump.started -= _ => JumpStart();
             gameplayInputs.Gameplay.Jump.canceled -= _ => JumpTurnOff();
             gameplayInputs.Gameplay.Aim.started -= _ => AimStart();
@@ -166,125 +151,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     private void LateUpdate()
     {
 
-#if UNITY_ANDROID || UNITY_IOS
-        foreach (var touch in Touchscreen.current.touches)
-        {
-            var touchPhase = touch.phase.ReadValue();
-            var touchPosition = touch.position.ReadValue();
-            int touchId = touch.touchId.ReadValue();
-
-            // Ignore inactive touches (TouchPhase.None)
-            if (touchPhase == UnityEngine.InputSystem.TouchPhase.None)
-                continue;
-
-            // Acquire a PointerEventData object from the pool or create a new one if the pool is empty
-            PointerEventData pointerData;
-            if (pointerEventDataPool.Count > 0)
-            {
-                pointerData = pointerEventDataPool.Dequeue();
-            }
-            else
-            {
-                pointerData = new PointerEventData(EventSystem.current);
-            }
-
-            // Set the position for the PointerEventData
-            pointerData.position = touchPosition;
-
-            // Perform a Raycast to see if the touch position intersects with a UI element
-            List<RaycastResult> raycastResults = new List<RaycastResult>();
-            EventSystem.current.RaycastAll(pointerData, raycastResults);
-
-            // If any UI elements were hit by the touch, it's over UI
-            bool isOverUI = raycastResults.Count > 0;
-
-            // Handle the beginning of a new touch
-            if (touchPhase == UnityEngine.InputSystem.TouchPhase.Began)
-            {
-                // Store the UI status for the touch when it first begins
-                fingerUIStatus[touchId] = isOverUI;
-
-                // If it's not over UI, start tracking the touch for camera control
-                if (!isOverUI)
-                {
-                    previousTouchPositions[touchId] = touchPosition;
-                }
-
-                // Mark the touch as active and reset the ended flag
-                touchWasEnded[touchId] = false;
-            }
-
-            // Handle the touch moving after it was previously ended
-            if (touchPhase == UnityEngine.InputSystem.TouchPhase.Moved && touchWasEnded.ContainsKey(touchId) && touchWasEnded[touchId])
-            {
-                // Treat this as a new "Began" phase after the touch ended
-                // If the touch was previously over UI, maintain the status
-                fingerUIStatus[touchId] = isOverUI;
-
-                // Start fresh from the new position if it's not over UI
-                if (!fingerUIStatus[touchId])
-                {
-                    previousTouchPositions[touchId] = touchPosition;
-                }
-
-                touchWasEnded[touchId] = false; // Reset the ended state
-            }
-
-            // Handle movement or dragging if this touch is controlling the camera
-            if (touchPhase == UnityEngine.InputSystem.TouchPhase.Moved || touchPhase == UnityEngine.InputSystem.TouchPhase.Stationary)
-            {
-                // Only track movement if the touch started not over UI
-                if (fingerUIStatus.ContainsKey(touchId) && !fingerUIStatus[touchId])
-                {
-                    Vector2 currentTouchPosition = touchPosition;
-
-                    // Update LookDirection for non-UI touch
-                    myInput.LookDirection += currentTouchPosition - previousTouchPositions[touchId];
-                    previousTouchPositions[touchId] = currentTouchPosition;
-                }
-            }
-
-            // Handle touch end or cancellation
-            if (touchPhase == UnityEngine.InputSystem.TouchPhase.Ended || touchPhase == UnityEngine.InputSystem.TouchPhase.Canceled)
-            {
-                // If this touch is not over UI, reset the LookDirection
-                if (fingerUIStatus.ContainsKey(touchId) && !fingerUIStatus[touchId])
-                {
-                    myInput.LookDirection = Vector2.zero;
-                }
-
-                // Mark the touch as ended so we can handle it when it moves again
-                touchWasEnded[touchId] = true;
-
-                // Remove the touch from tracking
-                if (fingerUIStatus.ContainsKey(touchId))
-                {
-                    fingerUIStatus.Remove(touchId);
-                }
-                if (previousTouchPositions.ContainsKey(touchId))
-                {
-                    previousTouchPositions.Remove(touchId);
-                }
-            }
-
-            // Release the PointerEventData object back into the pool
-            pointerEventDataPool.Enqueue(pointerData);
-        }
-
-#endif
-
-    }
-    private bool IsTouchOverUI(Vector2 touchPosition)
-    {
-        PointerEventData pointerEventData = new PointerEventData(EventSystem.current)
-        {
-            position = touchPosition
-        };
-
-        List<RaycastResult> raycastResults = new List<RaycastResult>();
-        EventSystem.current.RaycastAll(pointerEventData, raycastResults);
-
-        return raycastResults.Count > 0;  // Return true if UI was hit
     }
 
     #region LOCAL INPUTS
@@ -297,26 +163,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     }
 
 #endif
-
-    private void LookStart()
-    {
-        LookDirection = gameplayInputs.Gameplay.Look.ReadValue<Vector2>();
-    }
-
-    private void LookStop()
-    {
-        LookDirection = Vector2.zero;
-    }
-
-    private void MovementStart()
-    {
-        MovementDirection = gameplayInputs.Gameplay.Movement.ReadValue<Vector2>();
-    }
-
-    private void MovementStop()
-    {
-        MovementDirection = Vector2.zero;
-    }
 
     private void JumpStart()
     {
@@ -419,6 +265,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         {
             resetInput = false;
             myInput.MovementDirection = default;
+            myInput.LookDirection = default;
             myInput.Buttons = default;
         }
 
@@ -433,6 +280,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         // Iterate over all touches
 
         myInput.MovementDirection.Set(MovementDirection.x, MovementDirection.y);
+        myInput.LookDirection.Set(LookDirection.x, LookDirection.y);
         myInput.Buttons.Set(InputButton.Jump, Jump);
         myInput.Buttons.Set(InputButton.Aim, Aim);
         myInput.Buttons.Set(InputButton.Melee, Shoot);
@@ -472,8 +320,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         input.Set(myInput);
 
         resetInput = true;
-        //myInput.MovementDirection = default;
-        myInput.LookDirection = default;
+        //myInput.LookDirection = default;
     }
 
     public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input)

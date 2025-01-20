@@ -1,13 +1,13 @@
 using Fusion;
 using Fusion.Addons.SimpleKCC;
-using MyBox;
-using System.Collections;
+using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem.XR;
-using UnityEngine.Windows;
+using UnityEngine.InputSystem.EnhancedTouch;
 
 public class PlayerController : NetworkBehaviour
 {
@@ -36,6 +36,15 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float groundedRadius;
     [SerializeField] private LayerMask groundLayers;
 
+    [Space]
+    public RectTransform joystickArea; // The touch area for the joystick
+    public RectTransform joystickHandle; // The handle of the joystick
+
+    [Header("DEBUGGER")]
+
+    [SerializeField] private Vector2 startPosition;
+    [SerializeField] private Vector3 inputVector;
+
     [Header("DEBUGGER PLAYER")]
     [MyBox.ReadOnly][SerializeField] private float _verticalVelocity;
     [MyBox.ReadOnly][SerializeField] private float _terminalVelocity = 53.0f;
@@ -62,15 +71,118 @@ public class PlayerController : NetworkBehaviour
 
     MyInput controllerInput;
 
+    public GameplayController gameplayController;
+
+    private Dictionary<int, string> touchRoles = new Dictionary<int, string>();
+    private Dictionary<int, Vector2> lastTouchPositions = new Dictionary<int, Vector2>();
+    private Dictionary<int, float> stationaryTimers = new Dictionary<int, float>();
+    private const float StationaryThreshold = 2f; // Pixel distance to consider as stationary
+    private const float StationaryTimeThreshold = 0.1f; // Time in seconds to detect stationary
+
     //  ======================
 
     #region NETWORK
-    
-    public override void Spawned()
+
+    public async override void Spawned()
     {
+        EnhancedTouchSupport.Enable(); // Enable Enhanced Touch
         // Set custom gravity.
         characterController.SetGravity(Physics.gravity.y * 3f);
+
+        while (!Runner) await Task.Yield();
+
+        if (!HasInputAuthority) return;
+
+        gameplayController = Runner.GetComponent<GameplayController>();
+        UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerDown += TouchFingerDown;
+        UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerMove += TouchFingerMove;
+        UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerUp += TouchFingeUp;
     }
+
+    private void OnDisable()
+    {
+        UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerDown -= TouchFingerDown;
+        UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerMove -= TouchFingerMove;
+        UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerUp -= TouchFingeUp;
+        EnhancedTouchSupport.Disable(); // Enable Enhanced Touch
+    }
+
+    private void TouchFingeUp(Finger finger)
+    {
+        if (touchRoles.TryGetValue(finger.index, out string role))
+        {
+            if (role == "camera")
+            {
+                gameplayController.LookDirection = Vector2.zero;
+            }
+            else if (role == "joystick")
+            {
+                gameplayController.MovementDirection = Vector2.zero;
+                ResetJoystick();
+            }
+            touchRoles.Remove(finger.index);
+            lastTouchPositions.Remove(finger.index); // Remove the finger's position data
+        }
+    }
+
+    private void TouchFingerMove(Finger finger)
+    {
+        if (touchRoles.TryGetValue(finger.index, out string role))
+        {
+            if (role == "camera")
+            {
+                Vector2 currentTouchPosition = finger.screenPosition;
+
+                if (lastTouchPositions.TryGetValue(finger.index, out Vector2 lastPosition))
+                {
+                    Vector2 delta = currentTouchPosition - lastPosition;
+
+                    gameplayController.LookDirection += delta;
+
+                    lastTouchPositions[finger.index] = currentTouchPosition; // Update the last position
+                    stationaryTimers[finger.index] = 0f; // Reset timer
+                }
+                else
+                {
+                    // Initialize the last position if not present
+                    lastTouchPositions[finger.index] = currentTouchPosition;
+                }
+            }
+            else if (role == "joystick")
+            {
+                HandleJoystickMovement(finger);
+            }
+        }
+    }
+
+
+
+    private void TouchFingerDown(Finger finger)
+    {
+        if (IsTouchInJoystickArea(finger.screenPosition) && !touchRoles.ContainsKey(finger.index))
+        {
+            touchRoles[finger.index] = "joystick";
+        }
+        else if (!IsTouchOverUI(finger.screenPosition) && !touchRoles.ContainsKey(finger.index))
+        {
+            touchRoles[finger.index] = "camera";
+            lastTouchPositions[finger.index] = finger.currentTouch.screenPosition; // Initialize last position
+            stationaryTimers[finger.index] = 0f;
+        }
+
+        if (touchRoles.TryGetValue(finger.index, out string role))
+        {
+            if (role == "camera")
+            {
+                gameplayController.LookDirection = Vector2.zero;
+            }
+            else if (role == "joystick")
+            {
+                HandleJoystickMovement(finger);
+            }
+        }
+    }
+
 
     public override void FixedUpdateNetwork()
     {
@@ -82,6 +194,27 @@ public class PlayerController : NetworkBehaviour
     public override void Render()
     {
         LayerAndWeight();
+    }
+
+    private void LateUpdate()
+    {
+        if (!HasInputAuthority) return;
+
+        //AnalogStick();
+
+        foreach (var finger in UnityEngine.InputSystem.EnhancedTouch.Touch.activeFingers)
+        {
+            if (lastTouchPositions.TryGetValue(finger.index, out Vector2 lastPosition))
+            {
+                Vector2 currentPosition = finger.screenPosition;
+                Vector2 delta = currentPosition - lastPosition;
+
+                if (delta.magnitude < StationaryThreshold)
+                {
+                    gameplayController.LookDirection = Vector2.zero; // Reset camera movement
+                }
+            }
+        }
     }
 
     #region CONTROLLERS
@@ -99,6 +232,121 @@ public class PlayerController : NetworkBehaviour
         PlayerRotateAnimation();
 
         PreviousButtons = input.Buttons;
+    }
+
+    private bool IsTouchOverUI(Vector2 touchPosition)
+    {
+        PointerEventData pointerEventData = new PointerEventData(EventSystem.current)
+        {
+            position = touchPosition
+        };
+
+        List<RaycastResult> raycastResults = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerEventData, raycastResults);
+
+        return raycastResults.Count > 0;  // Return true if UI was hit
+    }
+
+    //private void AnalogStick()
+    //{
+    //    foreach (var finger in UnityEngine.InputSystem.EnhancedTouch.Touch.activeFingers)
+    //    {
+    //        switch (finger.currentTouch.phase)
+    //        {
+    //            case UnityEngine.InputSystem.TouchPhase.Began:
+    //                if (IsTouchInJoystickArea(finger.currentTouch.screenPosition) && !touchRoles.ContainsKey(finger.index))
+    //                {
+    //                    touchRoles[finger.index] = "joystick";
+    //                }
+    //                else if (!IsTouchOverUI(finger.currentTouch.screenPosition) && !touchRoles.ContainsKey(finger.index))
+    //                {
+    //                    touchRoles[finger.index] = "camera";
+    //                }
+    //                break;
+
+    //            case UnityEngine.InputSystem.TouchPhase.Moved:
+    //                if (touchRoles.TryGetValue(finger.index, out string role))
+    //                {
+    //                    if (role == "camera")
+    //                    {
+    //                        gameplayController.LookDirection = finger.currentTouch.delta;
+    //                    }
+    //                    else if (role == "joystick")
+    //                    {
+    //                        HandleJoystickMovement(finger);
+    //                    }
+    //                }
+    //                break;
+
+    //            case UnityEngine.InputSystem.TouchPhase.Stationary:
+    //                Debug.Log($"stationary");
+    //                if (touchRoles.TryGetValue(finger.index, out string stationaryrole))
+    //                {
+    //                    Debug.Log($"role: {stationaryrole}");
+    //                    if (stationaryrole == "camera")
+    //                    {
+    //                        gameplayController.LookDirection = Vector2.zero;
+    //                    }
+    //                }
+    //                break;
+
+    //            case UnityEngine.InputSystem.TouchPhase.Ended:
+    //            case UnityEngine.InputSystem.TouchPhase.Canceled:
+    //                if (touchRoles.TryGetValue(finger.index, out string endedrole))
+    //                {
+
+    //                    if (endedrole == "camera")
+    //                    {
+    //                        gameplayController.LookDirection = Vector2.zero;
+    //                    }
+    //                    else if (endedrole == "joystick")
+    //                    {
+    //                        gameplayController.MovementDirection = Vector2.zero;
+    //                        ResetJoystick();
+    //                    }
+    //                    touchRoles.Remove(finger.index);
+    //                }
+    //                break;
+    //            default:
+    //                if (touchRoles.TryGetValue(finger.index, out string defaultrole))
+    //                {
+    //                    Debug.Log($"role: {defaultrole}   phase: {finger.currentTouch.phase}");
+    //                }
+    //                break;
+    //        }
+    //    }
+    //}
+
+    private void HandleJoystickMovement(UnityEngine.InputSystem.EnhancedTouch.Finger finger)
+    {
+        Vector2 localTouchPosition;
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(joystickArea, finger.currentTouch.screenPosition, null, out localTouchPosition))
+        {
+            localTouchPosition.x = (localTouchPosition.x / joystickArea.sizeDelta.x);
+            localTouchPosition.y = (localTouchPosition.y / joystickArea.sizeDelta.y);
+
+            inputVector = new Vector2((localTouchPosition.x - 0.5f) * 2f, (localTouchPosition.y - 0.5f) * 2f);
+            inputVector = Vector2.ClampMagnitude(inputVector, 1.0f);
+
+            joystickHandle.anchoredPosition = new Vector2(
+                inputVector.x * (joystickArea.sizeDelta.x / 3),
+                inputVector.y * (joystickArea.sizeDelta.y / 3)
+            );
+
+            gameplayController.MovementDirection = inputVector;
+        }
+    }
+
+    private bool IsTouchInJoystickArea(Vector2 screenPosition)
+    {
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(joystickArea, screenPosition, null, out var localPoint);
+        return joystickArea.rect.Contains(localPoint);
+    }
+
+    private void ResetJoystick()
+    {
+        inputVector = Vector2.zero;
+        joystickHandle.anchoredPosition = Vector2.zero;
     }
 
     private void Move()
