@@ -305,7 +305,7 @@ MonoBehaviour:
   Type: 1
   SphereRadius: 0
   CapsuleRadius: 0
-  BoxExtents: {x: 0.07, y: 0.25, z: 0.09}
+  BoxExtents: {x: 0.1, y: 0.28, z: 0.1}
   CapsuleExtents: 0
   Offset: {x: 0, y: 0.22, z: 0}
   Root: {fileID: 2854278883015351779}
@@ -1191,9 +1191,9 @@ MonoBehaviour:
   Type: 1
   SphereRadius: 0
   CapsuleRadius: 0
-  BoxExtents: {x: 0.13, y: 0.13, z: 0.13}
+  BoxExtents: {x: 0.16, y: 0.17, z: 0.15}
   CapsuleExtents: 0
-  Offset: {x: 0, y: 0.06, z: 0.04}
+  Offset: {x: 0, y: 0.06, z: 0.01}
   Root: {fileID: 2854278883015351779}
   GizmosColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &359103684292160960
@@ -9473,6 +9473,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3122462780397039921}
+  - component: {fileID: 4002851597537320877}
   - component: {fileID: 2551054385962702362}
   - component: {fileID: 3201860767186620386}
   m_Layer: 0
@@ -9497,6 +9498,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1582820687403535839}
   m_LocalEulerAnglesHint: {x: 90, y: 180, z: 180}
+--- !u!114 &4002851597537320877
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1966139807628013716}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 916b29ff3754e4e45b605e93e36705f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mapSlider: {fileID: 6979852055906621376}
+  playerTarget: {fileID: 1582820687403535839}
 --- !u!20 &2551054385962702362
 Camera:
   m_ObjectHideFlags: 0
@@ -12662,6 +12677,7 @@ MonoBehaviour:
   playerController: {fileID: 8343728195109147783}
   playerInventory: {fileID: 6475620730627094871}
   fistWeaponHandler: {fileID: 8883263492747455}
+  deathMovement: {fileID: 4473900367103220776}
   characterController: {fileID: 6136798064161907215}
   idleClip: {fileID: 7400000, guid: 0bd9af707f03cdd4cb312c61120d4318, type: 2}
   punchOneClip: {fileID: 7400000, guid: 9c408bca4b24e47429e9dbdfb566f3c6, type: 2}
@@ -13993,7 +14009,7 @@ MonoBehaviour:
   Type: 1
   SphereRadius: 0
   CapsuleRadius: 0
-  BoxExtents: {x: 0.12, y: 0.28, z: 0.15}
+  BoxExtents: {x: 0.14, y: 0.3, z: 0.17}
   CapsuleExtents: 0
   Offset: {x: 0, y: 0.24, z: 0}
   Root: {fileID: 2854278883015351779}
@@ -15557,7 +15573,7 @@ MonoBehaviour:
   Type: 1
   SphereRadius: 0
   CapsuleRadius: 0
-  BoxExtents: {x: 0.26, y: 0.4, z: 0.19}
+  BoxExtents: {x: 0.29, y: 0.5, z: 0.23}
   CapsuleExtents: 0
   Offset: {x: 0, y: 0.06, z: 0}
   Root: {fileID: 2854278883015351779}
@@ -16465,7 +16481,7 @@ CanvasGroup:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3337696836338073884}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Alpha: 1
   m_Interactable: 1
   m_BlocksRaycasts: 1
@@ -22062,7 +22078,6 @@ GameObject:
   - component: {fileID: 7348290955579385318}
   - component: {fileID: 2838943394619819837}
   - component: {fileID: 7706016209901888775}
-  - component: {fileID: 5961697675647260356}
   m_Layer: 5
   m_Name: Stick
   m_TagString: Untagged
@@ -22127,41 +22142,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &5961697675647260356
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4313794311627607702}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e9d677f1681015749b15c436eec6d880, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_MovementRange: 50
-  m_DynamicOriginRange: 100
-  m_ControlPath: <AndroidJoystick>/stick
-  m_Behaviour: 0
-  m_UseIsolatedInputActions: 0
-  m_PointerDownAction:
-    m_Name: 
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: 868ad40e-f5bb-4ddb-ba94-1f89cfa2d28c
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings: []
-    m_Flags: 0
-  m_PointerMoveAction:
-    m_Name: 
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: 8aec43d7-d1ae-438d-9ffc-b20f53c1b7c4
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings: []
-    m_Flags: 0
 --- !u!1 &4314272085016890111
 GameObject:
   m_ObjectHideFlags: 0
@@ -23723,7 +23703,7 @@ MonoBehaviour:
   Type: 1
   SphereRadius: 0
   CapsuleRadius: 0
-  BoxExtents: {x: 0.12, y: 0.28, z: 0.15}
+  BoxExtents: {x: 0.14, y: 0.3, z: 0.17}
   CapsuleExtents: 0
   Offset: {x: 0, y: 0.24, z: 0}
   Root: {fileID: 2854278883015351779}
@@ -40085,7 +40065,7 @@ MonoBehaviour:
   groundLayerMask:
     serializedVersion: 2
     m_Bits: 64
-  jumpHeight: 3
+  jumpHeight: 4
   maxSlopeAngle: 45
   raycastLengthSlope: 0.58
   jumpClip: {fileID: 7400000, guid: 051a98b22901eb24598a0f4c0d285381, type: 2}
@@ -42573,7 +42553,7 @@ MonoBehaviour:
   Type: 1
   SphereRadius: 0
   CapsuleRadius: 0
-  BoxExtents: {x: 0.09, y: 0.2, z: 0.1}
+  BoxExtents: {x: 0.11, y: 0.2, z: 0.12}
   CapsuleExtents: 0
   Offset: {x: 0, y: 0.09, z: 0}
   Root: {fileID: 2854278883015351779}
@@ -43963,7 +43943,7 @@ MonoBehaviour:
   Type: 1
   SphereRadius: 0
   CapsuleRadius: 0
-  BoxExtents: {x: 0.07, y: 0.25, z: 0.09}
+  BoxExtents: {x: 0.1, y: 0.28, z: 0.1}
   CapsuleExtents: 0
   Offset: {x: 0, y: 0.22, z: 0}
   Root: {fileID: 2854278883015351779}
@@ -44535,7 +44515,7 @@ MonoBehaviour:
   Type: 1
   SphereRadius: 0
   CapsuleRadius: 0
-  BoxExtents: {x: 0.09, y: 0.2, z: 0.1}
+  BoxExtents: {x: 0.11, y: 0.2, z: 0.12}
   CapsuleExtents: 0
   Offset: {x: 0, y: 0.09, z: 0}
   Root: {fileID: 2854278883015351779}
@@ -45758,8 +45738,8 @@ MonoBehaviour:
   brightnessAdd: {fileID: 6590432552951775533}
   lookSensitivitySlider: {fileID: 6229863847647906287}
   lookAdsSensitivitySlider: {fileID: 5967670701058772222}
-  lookSensitivityTMP: {fileID: 3585580271744979080}
-  lookAdsSensitivityTMP: {fileID: 5663970952758091385}
+  lookSensitivityTMP: {fileID: 1800455219241663217}
+  lookAdsSensitivityTMP: {fileID: 8782647000078464814}
   lookSensitivityReduce: {fileID: 8294372082978278248}
   lookSensitivityAdd: {fileID: 3822127492799360624}
   lookAdsSensitivityReduce: {fileID: 5415789802391071113}
@@ -45997,6 +45977,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6b35f5c0a1d08049b6617713da6735f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerAim: {fileID: 5383506705213216986}
   playerHealth: {fileID: 4138419968400069941}
   playerController: {fileID: 8343728195109147783}
   target: {fileID: 6370590803431275936}
@@ -46017,6 +45998,7 @@ MonoBehaviour:
   __cinemachineTargetYaw: 0
   __cinemachineTargetPitch: 0
   _CurrentSensitivity: 0
+  _CurrentAdsSensitivity: 0
 --- !u!114 &5383506705213216986
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -46211,6 +46193,7 @@ MonoBehaviour:
   gameOverScreen: {fileID: 8512199826292790606}
   loader: {fileID: 2671049237676878303}
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
+  characterController: {fileID: 6136798064161907215}
   startingHealth: 100
   startingArmor: 0
   healthSlider: {fileID: 1978744067260841490}
@@ -46221,6 +46204,7 @@ MonoBehaviour:
   _CurrentArmor: 0
   _Heal: 0
   _ServerManager: {fileID: 0}
+  _PlayerFallDamage: 0
 --- !u!114 &8883263492747455
 MonoBehaviour:
   m_ObjectHideFlags: 0

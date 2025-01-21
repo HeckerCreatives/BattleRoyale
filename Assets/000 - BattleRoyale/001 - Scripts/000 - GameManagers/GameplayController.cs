@@ -107,9 +107,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.SwitchTrap.started += _ => SwitchTrapStart();
             gameplayInputs.Gameplay.SwitchTrap.canceled += _ => SwitchTrapStop();
 
-            //gameplayInputs.Gameplay.Look.performed += _ => LookStart();
-            //gameplayInputs.Gameplay.Look.canceled += _ => LookStop();
-
             Runner.AddCallbacks(this);
             Debug.Log($"Done init controls");
         }
@@ -139,8 +136,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.SwitchSecondary.canceled -= _ => SwitchSecondaryStop();
             gameplayInputs.Gameplay.SwitchTrap.started -= _ => SwitchTrapStart();
             gameplayInputs.Gameplay.SwitchTrap.canceled -= _ => SwitchTrapStop();
-            //gameplayInputs.Gameplay.Look.performed -= _ => LookStart();
-            //gameplayInputs.Gameplay.Look.canceled -= _ => LookStop();
 
             gameplayInputs.Disable();
             EnhancedTouchSupport.Disable();
@@ -154,15 +149,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     }
 
     #region LOCAL INPUTS
-
-#if !UNITY_ANDROID
-
-    private void SetCursorState(bool newState)
-    {
-        UnityEngine.Cursor.lockState = newState ? CursorLockMode.Locked : CursorLockMode.None;
-    }
-
-#endif
 
     private void JumpStart()
     {
@@ -269,14 +255,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             myInput.Buttons = default;
         }
 
-#if !UNITY_ANDROID
-        Keyboard keyboard = Keyboard.current;
-        if (keyboard != null && (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame || keyboard.escapeKey.wasPressedThisFrame))
-        {
-
-        }
-#endif
-
         // Iterate over all touches
 
         myInput.MovementDirection.Set(MovementDirection.x, MovementDirection.y);
@@ -303,12 +281,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
     {
-#if !UNITY_ANDROID
-        if (player == runner.LocalPlayer)
-        {
-            //SetCursorState(true);
-        }
-#endif
     }
 
     public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
@@ -320,7 +292,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         input.Set(myInput);
 
         resetInput = true;
-        //myInput.LookDirection = default;
     }
 
     public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input)
@@ -329,9 +300,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
     {
-#if !UNITY_ANDROID
-        //SetCursorState(false);
-#endif
     }
 
     public void OnConnectedToServer(NetworkRunner runner)

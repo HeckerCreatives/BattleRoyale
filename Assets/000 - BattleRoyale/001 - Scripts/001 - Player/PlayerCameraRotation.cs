@@ -2,6 +2,7 @@ using Cinemachine;
 using Fusion;
 using Fusion.Addons.SimpleKCC;
 using MyBox;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ public class PlayerCameraRotation : NetworkBehaviour
     //  ==================
 
     [Header("References")]
+    [SerializeField] private PlayerAim playerAim;
     [SerializeField] private PlayerHealth playerHealth;
     [SerializeField] private PlayerController playerController;
     [SerializeField] private GameObject target;
@@ -42,20 +44,39 @@ public class PlayerCameraRotation : NetworkBehaviour
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float _cinemachineTargetYaw { get; private set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float _cinemachineTargetPitch { get; private set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float CurrentSensitivity { get; private set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public float CurrentAdsSensitivity { get; private set; }
 
     async public override void Spawned()
     {
-        while (!Runner) await Task.Delay(100);
+        while (!Runner) await Task.Yield();
 
-        if (HasStateAuthority)
+        if (!HasInputAuthority) return;
+
+        _threshold = 0.01f;
+
+        Rpc_HandleSensitivity(GameManager.Instance.GameSettingManager.CurrentLookSensitivity);
+        Rpc_HandleAdsSensitivity(GameManager.Instance.GameSettingManager.CurrentLookAdsSensitivity);
+
+        GameManager.Instance.GameSettingManager.OnLookSensitivityChanged += LookSensitivityChanged;
+        GameManager.Instance.GameSettingManager.OnLookAdsSensitivityChanged += LookAdsSensitivityChanged;
+    }
+
+    private void OnDisable()
+    {
+        if (!Runner)
         {
-            _threshold = 0.01f;
+            if (GameManager.Instance == null) return;
+
+            GameManager.Instance.GameSettingManager.OnLookSensitivityChanged -= LookSensitivityChanged;
+            GameManager.Instance.GameSettingManager.OnLookAdsSensitivityChanged -= LookAdsSensitivityChanged;
+
+            return;
         }
 
-        if (HasInputAuthority)
-        {
-            Rpc_HandleSensitivity(GameManager.Instance.GameSettingManager.CurrentLookSensitivity);
-        }
+        if (!HasInputAuthority) return;
+
+        GameManager.Instance.GameSettingManager.OnLookSensitivityChanged -= LookSensitivityChanged;
+        GameManager.Instance.GameSettingManager.OnLookAdsSensitivityChanged -= LookAdsSensitivityChanged;
     }
 
     public override void FixedUpdateNetwork()
@@ -68,10 +89,27 @@ public class PlayerCameraRotation : NetworkBehaviour
         CameraHeight();
     }
 
+    private void LookSensitivityChanged(object sender, EventArgs e)
+    {
+        Rpc_HandleSensitivity(GameManager.Instance.GameSettingManager.CurrentLookSensitivity);
+    }
+
+    private void LookAdsSensitivityChanged(object sender, EventArgs e)
+    {
+        Rpc_HandleAdsSensitivity(GameManager.Instance.GameSettingManager.CurrentLookAdsSensitivity);
+    }
+
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     private void Rpc_HandleSensitivity(float lookSensitivity)
     {
         CurrentSensitivity = Sensitivity * lookSensitivity;
+    }
+
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void Rpc_HandleAdsSensitivity(float adsSensitivity)
+    {
+        CurrentAdsSensitivity = Sensitivity * adsSensitivity;
     }
 
     private void HandleMobileCameraInput()
@@ -82,8 +120,8 @@ public class PlayerCameraRotation : NetworkBehaviour
 
         if (input.LookDirection.sqrMagnitude >= _threshold)
         {
-            _cinemachineTargetYaw += input.LookDirection.x * Runner.DeltaTime * CurrentSensitivity;
-            _cinemachineTargetPitch += -input.LookDirection.y * Runner.DeltaTime * CurrentSensitivity;
+            _cinemachineTargetYaw += input.LookDirection.x * Runner.DeltaTime * (playerAim.IsAim ? CurrentAdsSensitivity : CurrentSensitivity);
+            _cinemachineTargetPitch += -input.LookDirection.y * Runner.DeltaTime * (playerAim.IsAim ? CurrentAdsSensitivity : CurrentSensitivity);
         }
 
         _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);

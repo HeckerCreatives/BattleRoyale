@@ -1,4 +1,6 @@
 using Fusion;
+using Fusion.Addons.SimpleKCC;
+using NUnit.Framework.Interfaces;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,6 +14,7 @@ public class PlayerHealth : NetworkBehaviour
     [SerializeField] private PlayerGameOverScreen gameOverScreen;
     [SerializeField] private PlayerNetworkLoader loader;
     [SerializeField] private UserData userData;
+    [SerializeField] private SimpleKCC characterController;
 
     [Space]
     [SerializeField] private float startingHealth;
@@ -35,6 +38,8 @@ public class PlayerHealth : NetworkBehaviour
 
     [field: Space]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public float PlayerFallDamage { get; set; }
+    public NetworkDictionary<int, string> Items { get; } = new NetworkDictionary<int, string>();
 
     //  =========================
 
@@ -47,7 +52,6 @@ public class PlayerHealth : NetworkBehaviour
     public override void Spawned()
     {
         InitializeHealth();
-
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
     }
 
@@ -83,6 +87,38 @@ public class PlayerHealth : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
+        CircleDmage();
+        FallDamage();
+    }
+
+    private void FallDamage()
+    {
+        if (!HasStateAuthority) return;
+
+        if (CurrentHealth <= 0) return;
+
+        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+
+        if (characterController.RealVelocity.y <= -20f)
+            PlayerFallDamage = Mathf.Abs(characterController.RealVelocity.y) - 5;
+
+        if (characterController.IsGrounded && PlayerFallDamage > 0)
+        {
+            CurrentHealth -= PlayerFallDamage;
+            PlayerFallDamage = 0f;
+
+            if (CurrentHealth <= 0)
+            {
+                deathMovement.MakePlayerDead();
+                gameOverScreen.PlayerPlacement = ServerManager.RemainingPlayers.Count;
+                ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
+                RPC_ReceiveKillNotification($"{loader.Username} DEATH BY FALL");
+            }
+        }
+    }
+
+    private void CircleDmage()
+    {
         if (!HasStateAuthority) return;
 
         if (ServerManager.CurrentGameState != GameState.ARENA) return;
@@ -96,7 +132,7 @@ public class PlayerHealth : NetworkBehaviour
 
         if (distanceFromCenter > circleRadius)
         {
-            CurrentHealth -= Runner.DeltaTime * ServerManager.SafeZone.ShrinkSizeIndex;
+            CurrentHealth -= Runner.DeltaTime * ((ServerManager.SafeZone.ShrinkSizeIndex + 1) / 2);
         }
 
         if (CurrentHealth <= 0)
@@ -104,7 +140,7 @@ public class PlayerHealth : NetworkBehaviour
             deathMovement.MakePlayerDead();
             gameOverScreen.PlayerPlacement = ServerManager.RemainingPlayers.Count;
             ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
-            RPC_ReceiveKillNotification($"{loader.Username} KILLED OUTSIDE SAFE ZONE");
+            RPC_ReceiveKillNotification($"{loader.Username} WAS KILLED OUTSIDE SAFE ZONE");
         }
     }
 
@@ -142,8 +178,6 @@ public class PlayerHealth : NetworkBehaviour
             RPC_ReceiveKillNotification($"{killer} KILLED {loader.Username}");
         }
     }
-
-
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     public void RPC_ReceiveKillNotification(string killer)

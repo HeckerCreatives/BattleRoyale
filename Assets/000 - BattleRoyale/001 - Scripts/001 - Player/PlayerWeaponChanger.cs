@@ -40,9 +40,5 @@ public class PlayerWeaponChanger : NetworkBehaviour
         if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchHands)) return;
 
         inventory.WeaponHandChange();
-
-        playerAnimator.SetLayerWeight(inventory.TempLastIndex, 0f);
-
-        playerAnimator.SetTrigger("switchweapon");
     }
 }

@@ -187,7 +187,7 @@ public class GameSettingController : MonoBehaviour
         lookSensitivityTMP.text = $"{lookSensitivitySlider.value * 100:n0}";
 
         lookAdsSensitivitySlider.value = GameManager.Instance.GameSettingManager.CurrentLookAdsSensitivity;
-        lookSensitivityTMP.text = $"{lookAdsSensitivitySlider.value * 100:n0}";
+        lookAdsSensitivityTMP.text = $"{lookAdsSensitivitySlider.value * 100:n0}";
 
         yield return null;
     }

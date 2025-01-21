@@ -10,12 +10,17 @@ public class KillNotificationController : MonoBehaviour
 
     [Space]
     [SerializeField] private GameObject killNotificationObj;
-    [SerializeField] private Transform killNotifTF;
+    public Transform killNotifTF;
 
 
     private void Awake()
     {
         KillNotifInstance = this;
+    }
+
+    private void OnDisable()
+    {
+        KillNotifInstance = null;
     }
 
     public void ShowMessage(string killer)

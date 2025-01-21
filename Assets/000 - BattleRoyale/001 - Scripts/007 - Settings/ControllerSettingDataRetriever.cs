@@ -31,7 +31,7 @@ public class ControllerSettingDataRetriever : MonoBehaviour
 
     public void SetUILayout()
     {
-        if (!userData.ControlSetting.ContainsKey(gameObject.name))
+        if (GameManager.Instance == null)
         {
             gameObject.SetActive(false);
             return;

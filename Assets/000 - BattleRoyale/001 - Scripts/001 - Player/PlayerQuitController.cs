@@ -48,6 +48,8 @@ public class PlayerQuitController : NetworkBehaviour
 
     private void OnDisable()
     {
+        if (!HasInputAuthority) return;
+
         GameManager.Instance.SceneController.onSceneChange -= SceneChange;
     }
 

@@ -60,79 +60,35 @@ public class PlayerInventory : NetworkBehaviour
 
     //  =========================
 
-    private ChangeDetector _changeDetector;
+    //private ChangeDetector _changeDetector;
 
     //  =========================
 
     public override async void Spawned()
     {
-        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+        //_changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
 
-        while (!Runner) await Task.Delay(100);
+        while (!Runner) await Task.Yield();
 
         if (HasStateAuthority)
         {
-            SetWeaponOnStart();
+            WeaponHandChange();
         }
 
         if (HasInputAuthority)
         {
             RPC_SendPlayerDataToServer(JsonConvert.SerializeObject(userData.CharacterSetting));
+            InitializeSkinOnStart();
         }
         else if (!HasInputAuthority && !HasStateAuthority)
         {
-            while (!IsSkinInitialized) await Task.Delay(100);
-
             InitializeSkinOnStart();
         }
     }
 
-    public override async void Render()
+    public override void Render()
     {
-        while (!Runner) await Task.Delay(100);
-
-        foreach (var change in _changeDetector.DetectChanges(this))
-        {
-            switch (change)
-            {
-                case nameof(IsSkinInitialized):
-                    Debug.Log($"Activating hair index: {HairStyle}");
-                    hairStyles[HairStyle].SetActive(true);
-                    Debug.Log($"Activating hair color index: {HairColorIndex}");
-                    hairMR[HairStyle].material.SetColor("_BaseColor", hairColor[HairColorIndex]);
-                    Debug.Log($"Activating upper clothing color index: {ClothingColorIndex}");
-                    upperClothingMR.material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
-                    Debug.Log($"Activating lower clothing color index: {ClothingColorIndex}");
-                    lowerClothingMR.material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
-                    Debug.Log($"Activating body color index: {SkinColorIndex}");
-                    bodyColorMR.material.SetColor("_BaseColor", skinColor[SkinColorIndex]);
-                    break;
-                case nameof(WeaponIndex):
-
-                    if (!HasInputAuthority) break;
-
-                    while (!IsWeaponInitialize) await Task.Delay(100);
-
-                    while (!HandBtn.gameObject.activeInHierarchy && !PrimaryBtn.gameObject.activeInHierarchy && !SecondaryBtn.gameObject.activeInHierarchy) await Task.Delay(100);
-
-                    HandBtn.SetIndicator(WeaponIndex == 1 ? true : false);
-                    break;
-                case nameof(IsWeaponInitialize):
-                    if (!HasInputAuthority) break;
-
-                    while (!HandBtn.gameObject.activeInHierarchy && !PrimaryBtn.gameObject.activeInHierarchy && !SecondaryBtn.gameObject.activeInHierarchy) await Task.Delay(100);
-
-                    HandBtn.SetIndicator(WeaponIndex == 1 ? true : false);
-                    break;
-            }
-        }
-    }
-
-    private void SetWeaponOnStart()
-    {
-        WeaponHandChange();
-
-        IsWeaponInitialize = true;
+        HandBtn.SetIndicator(WeaponIndex == 1 ? true : false);
     }
 
     #region Initialize Player Skin
@@ -140,8 +96,6 @@ public class PlayerInventory : NetworkBehaviour
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     private void RPC_SendPlayerDataToServer(string data)
     {
-        Debug.Log($"Send player to server: {data}");
-
         var characterSetting = JsonConvert.DeserializeObject<PlayerCharacterSetting>(data);
         HairStyle = characterSetting.hairstyle;
         HairColorIndex = characterSetting.haircolor;
@@ -150,8 +104,10 @@ public class PlayerInventory : NetworkBehaviour
         IsSkinInitialized = true;
     }
 
-    private void InitializeSkinOnStart()
+    private async void InitializeSkinOnStart()
     {
+        while (!IsSkinInitialized) await Task.Yield();
+
         hairStyles[HairStyle].SetActive(true);
         hairMR[HairStyle].material.SetColor("_BaseColor", hairColor[HairColorIndex]);
         upperClothingMR.material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
@@ -162,12 +118,6 @@ public class PlayerInventory : NetworkBehaviour
     #endregion
 
     #region Weapon Changer
-
-    [Rpc (RpcSources.StateAuthority, RpcTargets.InputAuthority)]
-    public void Rpc_ChangeWeaponInPickup(int tempWeapon)
-    {
-        playerAnimator.SetLayerWeight(tempWeapon, 0f);
-    }
 
     public void WeaponHandChange()
     {

@@ -50,7 +50,7 @@ public class SafeZoneController : NetworkBehaviour
         {
             if (Vector3.Distance(transform.localScale, safeZoneShrinkSize[ShrinkSizeIndex]) <= 30f)
             { 
-                ServerManager.SafeZoneTimer = 30f;
+                ServerManager.SafeZoneTimer = 150f;
 
                 if (ShrinkSizeIndex < safeZoneShrinkSize.Count - 1)
                 {

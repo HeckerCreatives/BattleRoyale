@@ -459,7 +459,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         if (allPlayersInPosition)
             DonePlayerBattlePositions = true;
 
-        SafeZoneTimer = 180f;
+        SafeZoneTimer = 150f;
         CurrentSafeZoneState = SafeZoneState.TIMER;
     }
 

@@ -44,25 +44,25 @@ public class FistWeaponHandler : NetworkBehaviour
                 switch (hitsFirstFist[i].Hitbox.tag)
                 {
                     case "Head":
-                        tempdamage = 25f;
+                        tempdamage = 30f;
                         break;
                     case "Body":
-                        tempdamage = 20f;
+                        tempdamage = 25f;
                         break;
                     case "Thigh":
-                        tempdamage = 15f;
+                        tempdamage = 20f;
                         break;
                     case "Shin":
-                        tempdamage = 10f;
-                        break;
-                    case "Foot":
-                        tempdamage = 5f;
-                        break;
-                    case "Arm":
                         tempdamage = 15f;
                         break;
-                    case "Forearm":
+                    case "Foot":
                         tempdamage = 10f;
+                        break;
+                    case "Arm":
+                        tempdamage = 20f;
+                        break;
+                    case "Forearm":
+                        tempdamage = 15f;
                         break;
                 }
 
@@ -97,25 +97,25 @@ public class FistWeaponHandler : NetworkBehaviour
                 switch (hitsSecondFist[i].Hitbox.tag)
                 {
                     case "Head":
-                        tempdamage = 25f;
+                        tempdamage = 30f;
                         break;
                     case "Body":
-                        tempdamage = 20f;
+                        tempdamage = 25f;
                         break;
                     case "Thigh":
-                        tempdamage = 15f;
+                        tempdamage = 20f;
                         break;
                     case "Shin":
-                        tempdamage = 10f;
-                        break;
-                    case "Foot":
-                        tempdamage = 5f;
-                        break;
-                    case "Arm":
                         tempdamage = 15f;
                         break;
-                    case "Forearm":
+                    case "Foot":
                         tempdamage = 10f;
+                        break;
+                    case "Arm":
+                        tempdamage = 20f;
+                        break;
+                    case "Forearm":
+                        tempdamage = 15f;
                         break;
                 }
 

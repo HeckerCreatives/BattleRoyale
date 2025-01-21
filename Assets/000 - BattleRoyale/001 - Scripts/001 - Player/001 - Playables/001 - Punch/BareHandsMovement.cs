@@ -13,6 +13,7 @@ public class BareHandsMovement : NetworkBehaviour
     [SerializeField] private PlayerController playerController;
     [SerializeField] private PlayerInventory playerInventory;
     [SerializeField] private FistWeaponHandler fistWeaponHandler;
+    [SerializeField] private DeathMovement deathMovement;
 
     [Space]
     [SerializeField] private SimpleKCC characterController;
@@ -258,6 +259,8 @@ public class BareHandsMovement : NetworkBehaviour
         if (!HasStateAuthority) return;
 
         if (!CanAttack) return;
+
+        if (deathMovement.IsDead) return;
 
         if (AttackStep == 1) fistWeaponHandler.PerformFirstAttack();
         else if (AttackStep == 2) fistWeaponHandler.PerformSecondAttack();
