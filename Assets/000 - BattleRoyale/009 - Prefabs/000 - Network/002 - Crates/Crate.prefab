@@ -12,9 +12,8 @@ GameObject:
   - component: {fileID: 6644594345486632414}
   - component: {fileID: 787926402971567274}
   - component: {fileID: 6964709895180703040}
-  - component: {fileID: 3552297498717383062}
+  - component: {fileID: 5823596019403183840}
   - component: {fileID: 5692795387059461451}
-  - component: {fileID: 8892368307421613438}
   m_Layer: 11
   m_Name: Crate
   m_TagString: Crate
@@ -62,8 +61,6 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -110,7 +107,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.35017943, y: 0.36840403, z: 0.36840418}
   m_Center: {x: 0.000000059604645, y: -0.0000017136335, z: -0.00000008940692}
---- !u!114 &3552297498717383062
+--- !u!114 &5823596019403183840
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -119,11 +116,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 2363885156619663466}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 23f2299b28d4a49488c9e1daf8bc08d4, type: 3}
+  m_Script: {fileID: 11500000, guid: e94c7578c976a334396a1ca50ae744d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _Weapons:
-    _items: []
 --- !u!114 &5692795387059461451
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -141,21 +136,5 @@ MonoBehaviour:
   Flags: 262145
   NestedObjects: []
   NetworkedBehaviours:
-  - {fileID: 3552297498717383062}
-  - {fileID: 8892368307421613438}
---- !u!114 &8892368307421613438
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2363885156619663466}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SyncScale: 0
-  SyncParent: 0
-  _autoAOIOverride: 0
-  DisableSharedModeInterpolation: 0
+  - {fileID: 5823596019403183840}
+  ForceRemoteRenderTimeframe: 0

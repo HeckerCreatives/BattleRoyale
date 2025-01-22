@@ -124,6 +124,7 @@ public class BareHandsMovement : NetworkBehaviour
                 InputControlls();
                 ResetToIdle();
                 AnimationBlend();
+                AttackDamage();
             }
 
             ResetAttackAnimation();
@@ -171,7 +172,6 @@ public class BareHandsMovement : NetworkBehaviour
         controllerInput = input;
 
         Attack();
-        AttackDamage();
 
         PreviousButtons = input.Buttons;
     }
@@ -285,6 +285,9 @@ public class BareHandsMovement : NetworkBehaviour
             {
                 if (AttackStep == 1)
                 {
+                    ResetFirstAttack();
+                    CanAttack = false;
+
                     var punchOnePlayable = clipPlayables[1];
                     SetAttackTickRate(punchOnePlayable); // Reset time
                     punchOnePlayable.Play();    // Start playing
@@ -295,6 +298,9 @@ public class BareHandsMovement : NetworkBehaviour
                 }
                 else if (AttackStep == 2)
                 {
+                    ResetSecondAttack();
+                    CanAttack = false;
+
                     var punchTwoPlayable = clipPlayables[2];
                     SetAttackTickRate(punchTwoPlayable); // Reset time
                     punchTwoPlayable.Play();    // Start playing
@@ -308,6 +314,9 @@ public class BareHandsMovement : NetworkBehaviour
             {
                 if (AttackStep == 1)
                 {
+                    ResetFirstAttack();
+                    CanAttack = false;
+
                     var punchOnePlayable = clipPlayables[3];
                     SetAttackTickRate(punchOnePlayable); // Reset time
                     punchOnePlayable.Play();    // Start playing
@@ -318,6 +327,9 @@ public class BareHandsMovement : NetworkBehaviour
                 }
                 else if (AttackStep == 2)
                 {
+                    ResetSecondAttack();
+                    CanAttack = false;
+
                     var punchTwoPlayable = clipPlayables[4];
                     SetAttackTickRate(punchTwoPlayable); // Reset time
                     punchTwoPlayable.Play();    // Start playing

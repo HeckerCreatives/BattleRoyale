@@ -202,28 +202,24 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     private async void SpawnCrates()
     {
         Debug.Log("start spawning crates");
-        while (!Runner)
-        {
-            await Task.Yield();
-        }
 
-        Debug.Log("done waiting for runner");
+        while (!Runner)
+            await Task.Yield();
+
         int index = 1;
 
         //foreach (var spawnLocations in createSpawnLocations)
         //{
-        //    Debug.Log("spawning loc objects");
         //    var gameobject = Runner.Spawn(createNO, spawnLocations.transform.position, Quaternion.identity, null);
 
-        //    Debug.Log("setting up crate datas");
         //    gameobject.GetComponent<CrateController>().SetDatas(GenerateRandomItems());
 
         //    index++;
-        //    Debug.Log("spawning locs");
 
-        //    await Task.Delay(100);
+        //    await Task.Yield();
         //}
-        Debug.Log("done for spawn locations");
+
+        Debug.Log("done for spawn crates");
 
         doneSpawnCrates = true;
     }

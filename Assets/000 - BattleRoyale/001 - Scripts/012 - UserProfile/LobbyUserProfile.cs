@@ -32,6 +32,7 @@ public class LobbyUserProfile : MonoBehaviour
         xpProfileTMP.text = $"{userData.GameDetails.xp:n0} / {80 * userData.GameDetails.level}";
         killProfileTMP.text = $"{userData.GameDetails.kill:n0}";
         deathProfileTMP.text = $"{userData.GameDetails.death:n0}";
+        rankProfileTMP.text = $"{userData.GameDetails.userrank:n0}";
     }
 }
 
@@ -42,4 +43,5 @@ public class GameUserDetails
     public int death;
     public int level;
     public int xp;
+    public int userrank;
 }

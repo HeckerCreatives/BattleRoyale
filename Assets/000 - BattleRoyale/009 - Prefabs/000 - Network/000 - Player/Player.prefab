@@ -45595,6 +45595,7 @@ GameObject:
   - component: {fileID: 4920152902683292829}
   - component: {fileID: 2630037937965088976}
   - component: {fileID: 7495721667807700299}
+  - component: {fileID: 835355285967617485}
   - component: {fileID: 2591908786426449395}
   - component: {fileID: 5516893389093601067}
   - component: {fileID: 2632271246272331152}
@@ -45758,6 +45759,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ae847392ce8d84428936c23301d7ede, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &835355285967617485
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8689549338059659052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8993c7a76a9e7194c92673caa9798f70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  objecMask:
+    serializedVersion: 2
+    m_Bits: 0
+  itemDetectorRadius: 0
 --- !u!114 &2591908786426449395
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -46284,6 +46301,7 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 3197376394441458163}
   - {fileID: 4920152902683292829}
+  - {fileID: 835355285967617485}
   - {fileID: 2591908786426449395}
   - {fileID: 5516893389093601067}
   - {fileID: 2671049237676878303}
