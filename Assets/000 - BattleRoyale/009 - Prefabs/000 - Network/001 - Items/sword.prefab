@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 789551355360307124}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.091, y: 0.423, z: 0}
+  m_LocalPosition: {x: -0.091, y: 0.431, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -42,11 +42,10 @@ GameObject:
   - component: {fileID: 6175662577263270886}
   - component: {fileID: 2511843833045033619}
   - component: {fileID: 1209081772464881890}
-  - component: {fileID: 8128101794879521815}
   - component: {fileID: 3200345005151495415}
   - component: {fileID: -6896107499734453323}
-  - component: {fileID: 3207388781055745948}
   - component: {fileID: -2041506180087163115}
+  - component: {fileID: 2161710917413007540}
   m_Layer: 12
   m_Name: sword
   m_TagString: Weapon
@@ -95,8 +94,6 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -122,31 +119,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &8128101794879521815
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7616198628887366643}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1f6ed8a34d7cc344b84e7d5d4351da07, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  attackRadius: {x: 0.37, y: 1.09, z: 0.03}
-  attackRotation: {x: 0, y: 0, z: 0}
-  enemyLayerMask:
-    serializedVersion: 2
-    m_Bits: 8192
-  impactPoint: {fileID: 7638595848337183244}
-  headDamage: 50
-  bodyDamge: 25
-  thighDamage: 15
-  shinDamage: 10
-  footDamage: 5
-  armDamage: 15
-  forearmDamage: 10
 --- !u!114 &3200345005151495415
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -159,17 +131,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58e432449cdabfd42890861b85aa9062, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _AnimatorID: 0
+  dropRotation: {x: 90, y: 0, z: 0}
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 8192
+  impactSize: {x: 0.25, y: 0.56, z: 0.13}
+  impactPoint: {fileID: 7638595848337183244}
   _WeaponID: 
   _WeaponName: 
   _Ammo: 0
-  _Owner: {fileID: 0}
-  _WeaponObject: {fileID: 0}
-  _Parent: {fileID: 0}
+  _TempPlayer: {fileID: 0}
+  _Back: {fileID: 0}
   _Hand: {fileID: 0}
   _IsPickedUp: 0
   _IsHand: 0
-  dropRotation: {x: 90, y: 0, z: 0}
+  _DropPosition: {x: 0, y: 0, z: 0}
+  _hitEnemiesFirst: []
+  _hitEnemiesSecond: []
 --- !u!114 &-6896107499734453323
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -187,25 +165,9 @@ MonoBehaviour:
   Flags: 262145
   NestedObjects: []
   NetworkedBehaviours:
-  - {fileID: 8128101794879521815}
   - {fileID: 3200345005151495415}
-  - {fileID: 3207388781055745948}
---- !u!114 &3207388781055745948
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7616198628887366643}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SyncScale: 0
-  SyncParent: 1
-  _autoAOIOverride: 0
-  DisableSharedModeInterpolation: 0
+  - {fileID: 2161710917413007540}
+  ForceRemoteRenderTimeframe: 0
 --- !u!65 &-2041506180087163115
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -227,3 +189,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.35768747, y: 1.2829473, z: 0.08813867}
   m_Center: {x: -0.095538884, y: 0.30272177, z: -0.0012031328}
+--- !u!114 &2161710917413007540
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7616198628887366643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _stateAuthorityChangeErrorCorrectionDelta: 0.15
+  SyncScale: 0
+  SyncParent: 0
+  _autoAOIOverride: 1
+  DisableSharedModeInterpolation: 0

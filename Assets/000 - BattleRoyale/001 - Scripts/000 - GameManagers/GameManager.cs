@@ -227,6 +227,8 @@ public class GameManager : MonoBehaviour
                         Debug.Log("Error API CALL! Error Code: " + response);
                         NotificationController.ShowError("There's a problem with the server! Please try again later.", null);
 
+                        NoBGLoading.SetActive(false);
+
                         errorAction?.Invoke();
                         yield break;
                     }
@@ -243,6 +245,7 @@ public class GameManager : MonoBehaviour
                         }
                         Debug.Log($"Error API CALL! Error Code: {apiresponse["data"]}");
                         NotificationController.ShowError($"{apiresponse["data"]}", () => errorAction?.Invoke());
+                        NoBGLoading.SetActive(false);
                         yield break;
                     }
 
@@ -260,6 +263,7 @@ public class GameManager : MonoBehaviour
                     //  ERROR PANEL HERE
                     Debug.Log("Error API CALL! Error Code: " + ex.Message);
                     NotificationController.ShowError("There's a problem with the server! Please try again later.", null);
+                    NoBGLoading.SetActive(false);
                     errorAction?.Invoke();
                 }
             }
@@ -268,6 +272,7 @@ public class GameManager : MonoBehaviour
                 //  ERROR PANEL HERE
                 Debug.Log("Error API CALL! Error Code: " + response);
                 NotificationController.ShowError("There's a problem with the server! Please try again later.", null);
+                NoBGLoading.SetActive(false);
                 errorAction?.Invoke();
             }
         }
@@ -282,16 +287,19 @@ public class GameManager : MonoBehaviour
                 {
                     case 400:
                         NotificationController.ShowError($"{apiresponse["data"]}", null);
+                        NoBGLoading.SetActive(false);
                         break;
                     case 300:
                         NotificationController.ShowError($"{apiresponse["data"]}", null);
                         SceneController.StopLoading();
                         SceneController.CurrentScene = "Login";
+                        NoBGLoading.SetActive(false);
                         break;
                     case 301:
                         NotificationController.ShowError($"{apiresponse["data"]}", null);
                         SceneController.StopLoading();
                         SceneController.CurrentScene = "Lobby";
+                        NoBGLoading.SetActive(false);
                         break;
                 }
             }
@@ -299,6 +307,7 @@ public class GameManager : MonoBehaviour
             {
                 Debug.Log("Error API CALL! Error Code: " + apiRquest.result + ", " + apiRquest.downloadHandler.text);
                 NotificationController.ShowError("There's a problem with your internet connection! Please check your connection and try again.", null);
+                NoBGLoading.SetActive(false);
                 errorAction?.Invoke();
             }
         }

@@ -333,7 +333,7 @@ public class PlayerController : NetworkBehaviour
                 inputVector.y * (joystickArea.sizeDelta.y / 3)
             );
 
-            gameplayController.MovementDirection = inputVector;
+            gameplayController.MovementDirection = inputVector.normalized;
         }
     }
 

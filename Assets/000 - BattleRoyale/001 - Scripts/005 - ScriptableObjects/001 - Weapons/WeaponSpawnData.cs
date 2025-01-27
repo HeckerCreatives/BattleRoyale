@@ -86,6 +86,8 @@ public class WeaponSpawnData : ScriptableObject
                 return "Rifle Ammo";
             case "006":
                 return "Bow Ammo";
+            case "007":
+                return "Armor";
             default: return "";
         }
     }

@@ -10,121 +10,124 @@ public class FistWeaponHandler : NetworkBehaviour
     [SerializeField] private BareHandsMovement bareHandsMovement;
 
     [Space]
-    [SerializeField] private Vector3 attackRadius;
+    [SerializeField] private float attackRadius;
     [SerializeField] private LayerMask enemyLayerMask;
     [SerializeField] private Transform impactFirstFistPoint;
     [SerializeField] private Transform impactSecondFistPoint;
 
     //  ================
 
-    private HashSet<NetworkObject> hitEnemiesFirstFist = new HashSet<NetworkObject>();
-    private HashSet<NetworkObject> hitEnemiesSecondFist = new HashSet<NetworkObject>();
-    private List<LagCompensatedHit> hitsFirstFist = new List<LagCompensatedHit>();
-    private List<LagCompensatedHit> hitsSecondFist = new List<LagCompensatedHit>();
+    [Networked, Capacity(10)] public NetworkLinkedList<NetworkObject> hitEnemiesFirstFist { get; } = new NetworkLinkedList<NetworkObject>();
+    [Networked, Capacity(10)] public NetworkLinkedList<NetworkObject> hitEnemiesSecondFist { get; } = new NetworkLinkedList<NetworkObject>();
+    private readonly List<LagCompensatedHit> hitsFirstFist = new List<LagCompensatedHit>();
+    private readonly List<LagCompensatedHit> hitsSecondFist = new List<LagCompensatedHit>();
 
     //  ================
 
     public void PerformFirstAttack()
     {
-        if (!HasStateAuthority) return;
-
-        int hitCount = Runner.LagCompensation.OverlapBox(impactFirstFistPoint.position, attackRadius, Quaternion.identity, Object.InputAuthority, hitsFirstFist, enemyLayerMask, HitOptions.SubtickAccuracy);
+        int hitCount = Runner.LagCompensation.OverlapSphere(
+            impactFirstFistPoint.position,
+            attackRadius,
+            Object.InputAuthority,
+            hitsFirstFist,
+            enemyLayerMask,
+            HitOptions.IgnoreInputAuthority
+        );
 
         for (int i = 0; i < hitCount; i++)
         {
-            NetworkObject hitObject = hitsFirstFist[i].Hitbox?.transform.root.GetComponent<NetworkObject>();
-
-            if (hitObject == Object) continue;
-
-            // Ensure we only hit once per enemy per attack sequence
-            if (hitObject != null && !hitEnemiesFirstFist.Contains(hitObject))
+            var hitbox = hitsFirstFist[i].Hitbox;
+            if (hitbox == null)
             {
-                float tempdamage = 0;
+                continue;
+            }
 
-                switch (hitsFirstFist[i].Hitbox.tag)
+            NetworkObject hitObject = hitbox.transform.root.GetComponent<NetworkObject>();
+
+            if (hitObject == null)
+            {
+                continue;
+            }
+
+            // Avoid duplicate hits
+            if (!hitEnemiesFirstFist.Contains(hitObject))
+            {
+                string tag = hitbox.tag;
+
+                float tempdamage = tag switch
                 {
-                    case "Head":
-                        tempdamage = 30f;
-                        break;
-                    case "Body":
-                        tempdamage = 25f;
-                        break;
-                    case "Thigh":
-                        tempdamage = 20f;
-                        break;
-                    case "Shin":
-                        tempdamage = 15f;
-                        break;
-                    case "Foot":
-                        tempdamage = 10f;
-                        break;
-                    case "Arm":
-                        tempdamage = 20f;
-                        break;
-                    case "Forearm":
-                        tempdamage = 15f;
-                        break;
-                }
+                    "Head" => 30f,
+                    "Body" => 25f,
+                    "Thigh" => 20f,
+                    "Shin" => 15f,
+                    "Foot" => 10f,
+                    "Arm" => 20f,
+                    "Forearm" => 15f,
+                    _ => 0f
+                };
 
-                Debug.Log($"Fist fist Damage by {loader.Username} to {hitObject.GetComponent<PlayerNetworkLoader>().Username} on {hitsFirstFist[i].Hitbox.tag}: {tempdamage}");
+                Debug.Log($"First Fist Damage by {loader.Username} to {hitObject.GetComponent<PlayerNetworkLoader>().Username} on {tag}: {tempdamage}");
 
-                // Process the hit (apply damage, etc.)
+                // Process the hit
                 HandleHit(hitObject, tempdamage);
 
-                // Mark this enemy as hit
+                // Mark as hit
                 hitEnemiesFirstFist.Add(hitObject);
             }
         }
     }
 
+
     public void PerformSecondAttack()
     {
-        if (!HasStateAuthority) return;
-
-        int hitCount = Runner.LagCompensation.OverlapBox(impactSecondFistPoint.position, attackRadius, Quaternion.identity, Object.InputAuthority, hitsSecondFist, enemyLayerMask, HitOptions.SubtickAccuracy);
+        int hitCount = Runner.LagCompensation.OverlapSphere(
+            impactSecondFistPoint.position,
+            attackRadius,
+            Object.InputAuthority,
+            hitsSecondFist,
+            enemyLayerMask,
+            HitOptions.IgnoreInputAuthority
+        );
 
         for (int i = 0; i < hitCount; i++)
         {
-            NetworkObject hitObject = hitsSecondFist[i].Hitbox?.transform.root.GetComponent<NetworkObject>();
-
-            if (hitObject == Object) continue;
-
-            // Ensure we only hit once per enemy per attack sequence
-            if (hitObject != null && !hitEnemiesSecondFist.Contains(hitObject))
+            var hitbox = hitsSecondFist[i].Hitbox;
+            if (hitbox == null)
             {
-                float tempdamage = 0;
+                continue;
+            }
 
-                switch (hitsSecondFist[i].Hitbox.tag)
+            NetworkObject hitObject = hitbox.transform.root.GetComponent<NetworkObject>();
+
+            if (hitObject == null)
+            {
+                continue;
+            }
+
+            // Avoid duplicate hits
+            if (!hitEnemiesSecondFist.Contains(hitObject))
+            {
+                string tag = hitbox.tag;
+
+                float tempdamage = tag switch
                 {
-                    case "Head":
-                        tempdamage = 30f;
-                        break;
-                    case "Body":
-                        tempdamage = 25f;
-                        break;
-                    case "Thigh":
-                        tempdamage = 20f;
-                        break;
-                    case "Shin":
-                        tempdamage = 15f;
-                        break;
-                    case "Foot":
-                        tempdamage = 10f;
-                        break;
-                    case "Arm":
-                        tempdamage = 20f;
-                        break;
-                    case "Forearm":
-                        tempdamage = 15f;
-                        break;
-                }
+                    "Head" => 30f,
+                    "Body" => 25f,
+                    "Thigh" => 20f,
+                    "Shin" => 15f,
+                    "Foot" => 10f,
+                    "Arm" => 20f,
+                    "Forearm" => 15f,
+                    _ => 0f
+                };
 
-                Debug.Log($"Second Fist Damage by {loader.Username} to {hitObject.GetComponent<PlayerNetworkLoader>().Username} on {hitsSecondFist[i].Hitbox.tag}: {tempdamage}");
+                Debug.Log($"Second Fist Damage by {loader.Username} to {hitObject.GetComponent<PlayerNetworkLoader>().Username} on {tag}: {tempdamage}");
 
-                // Process the hit (apply damage, etc.)
+                // Process the hit
                 HandleHit(hitObject, tempdamage);
 
-                // Mark this enemy as hit
+                // Mark as hit
                 hitEnemiesSecondFist.Add(hitObject);
             }
         }
@@ -153,10 +156,10 @@ public class FistWeaponHandler : NetworkBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.blue;
-        Gizmos.DrawCube(impactFirstFistPoint.position, attackRadius);
+        Gizmos.DrawWireSphere(impactFirstFistPoint.position, attackRadius);
 
 
         Gizmos.color = Color.red;
-        Gizmos.DrawCube(impactSecondFistPoint.position, attackRadius);
+        Gizmos.DrawWireSphere(impactSecondFistPoint.position, attackRadius);
     }
 }

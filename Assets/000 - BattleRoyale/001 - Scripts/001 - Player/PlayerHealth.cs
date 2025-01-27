@@ -10,6 +10,7 @@ using UnityEngine.UI;
 
 public class PlayerHealth : NetworkBehaviour
 {
+    [SerializeField] private PlayerInventory playerInventory;
     [SerializeField] private KillCountCounterController killCounterController;
     [SerializeField] private PlayerGameOverScreen gameOverScreen;
     [SerializeField] private PlayerNetworkLoader loader;
@@ -113,6 +114,12 @@ public class PlayerHealth : NetworkBehaviour
                 gameOverScreen.PlayerPlacement = ServerManager.RemainingPlayers.Count;
                 ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
                 RPC_ReceiveKillNotification($"{loader.Username} DEATH BY FALL");
+
+                if (playerInventory.PrimaryWeapon != null)
+                {
+                    playerInventory.PrimaryWeapon.DropWeapon();
+                    playerInventory.PrimaryWeapon = null;
+                }
             }
         }
     }
@@ -141,6 +148,12 @@ public class PlayerHealth : NetworkBehaviour
             gameOverScreen.PlayerPlacement = ServerManager.RemainingPlayers.Count;
             ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
             RPC_ReceiveKillNotification($"{loader.Username} WAS KILLED OUTSIDE SAFE ZONE");
+
+            if (playerInventory.PrimaryWeapon != null)
+            {
+                playerInventory.PrimaryWeapon.DropWeapon();
+                playerInventory.PrimaryWeapon = null;
+            }
         }
     }
 
@@ -176,6 +189,12 @@ public class PlayerHealth : NetworkBehaviour
             gameOverScreen.PlayerPlacement = ServerManager.RemainingPlayers.Count;
             ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
             RPC_ReceiveKillNotification($"{killer} KILLED {loader.Username}");
+
+            if (playerInventory.PrimaryWeapon != null)
+            {
+                playerInventory.PrimaryWeapon.DropWeapon();
+                playerInventory.PrimaryWeapon = null;
+            }
         }
     }
 

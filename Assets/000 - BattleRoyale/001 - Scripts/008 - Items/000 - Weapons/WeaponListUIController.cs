@@ -23,11 +23,10 @@ public class WeaponListUIController : MonoBehaviour
     [MyBox.ReadOnly][SerializeField] private int index;
     [MyBox.ReadOnly] public NetworkObject noCrateWeaponObj;
     
-    public void InitializeData(Sprite weaponSprite, string weaponName, string qty, NetworkObject noCrateWeaponObj = null)
+    public void InitializeData(Sprite weaponSprite, string weaponName, string qty)
     {
         weaponImg.sprite = weaponSprite;
         weaponNameTMP.text = weaponName;
         qtyTMP.text = qty;
-        this.noCrateWeaponObj = noCrateWeaponObj; 
     }
 }

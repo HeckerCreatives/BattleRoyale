@@ -29,6 +29,7 @@ public class PlayerWeaponChanger : NetworkBehaviour
         controllerInput = input;
 
         ChangeToPunchWeapon();
+        ChangeToPrimaryWeapon();
 
         PreviousButtons = input.Buttons;
     }
@@ -40,5 +41,16 @@ public class PlayerWeaponChanger : NetworkBehaviour
         if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchHands)) return;
 
         inventory.WeaponHandChange();
+    }
+
+    private void ChangeToPrimaryWeapon()
+    {
+        if (inventory.WeaponIndex == 2) return;
+
+        if (inventory.PrimaryWeapon == null) return;
+
+        if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchPrimary)) return;
+
+        inventory.WeaponPrimaryChange();
     }
 }

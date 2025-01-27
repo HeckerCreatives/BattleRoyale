@@ -57,6 +57,7 @@ public class PlayerInventory : NetworkBehaviour
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int HairColorIndex { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int ClothingColorIndex { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int SkinColorIndex { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public WeaponItem PrimaryWeapon { get; set; }
 
     //  =========================
 
@@ -88,7 +89,12 @@ public class PlayerInventory : NetworkBehaviour
 
     public override void Render()
     {
-        HandBtn.SetIndicator(WeaponIndex == 1 ? true : false);
+        if (HasInputAuthority)
+        {
+            HandBtn.SetIndicator(WeaponIndex == 1 ? true : false);
+            PrimaryBtn.SetIndicator(WeaponIndex == 2 ? true : false);
+            PrimaryBtn.ChangeSpriteButton(PrimaryWeapon != null ? PrimaryWeapon.WeaponID : null);
+        }
     }
 
     #region Initialize Player Skin
@@ -123,6 +129,16 @@ public class PlayerInventory : NetworkBehaviour
     {
         TempLastIndex = WeaponIndex;
         WeaponIndex = 1;
+
+        if (PrimaryWeapon != null)
+            PrimaryWeapon.IsHand = false;
+    }
+
+    public void WeaponPrimaryChange()
+    {
+        TempLastIndex = WeaponIndex;
+        WeaponIndex = 2;
+        PrimaryWeapon.IsHand = true;
     }
 
     #endregion

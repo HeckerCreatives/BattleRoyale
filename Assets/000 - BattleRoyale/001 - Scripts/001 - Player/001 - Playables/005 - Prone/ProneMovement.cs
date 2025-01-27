@@ -9,10 +9,19 @@ public class ProneMovement : NetworkBehaviour
 {
     [SerializeField] private MainCorePlayable mainCorePlayable;
     [SerializeField] private PlayerController playerController;
+    [SerializeField] private PlayerInventory playerInventory;
 
     [Space]
     [SerializeField] private AnimationClip idleClip;
     [SerializeField] private AnimationClip moveClip;
+
+    [Space]
+    [SerializeField] private AnimationClip swordIdleClip;
+    [SerializeField] private AnimationClip swordMoveClip;
+
+    [Space]
+    [SerializeField] private AnimationClip spearIdleClip;
+    [SerializeField] private AnimationClip spearMoveClip;
 
     //  ============================
 
@@ -25,7 +34,7 @@ public class ProneMovement : NetworkBehaviour
     {
         clipPlayables = new List<AnimationClipPlayable>();
 
-        movementMixer = AnimationMixerPlayable.Create(graph, 2);
+        movementMixer = AnimationMixerPlayable.Create(graph, 6);
 
         var idlePlayable = AnimationClipPlayable.Create(graph, idleClip);
         clipPlayables.Add(idlePlayable);
@@ -33,8 +42,24 @@ public class ProneMovement : NetworkBehaviour
         var movePlayable = AnimationClipPlayable.Create(graph, moveClip);
         clipPlayables.Add(movePlayable);
 
+        var swordidlePlayable = AnimationClipPlayable.Create(graph, swordIdleClip);
+        clipPlayables.Add(swordidlePlayable);
+
+        var swordmovePlayable = AnimationClipPlayable.Create(graph, swordMoveClip);
+        clipPlayables.Add(swordmovePlayable);
+
+        var spearidlePlayable = AnimationClipPlayable.Create(graph, spearIdleClip);
+        clipPlayables.Add(spearidlePlayable);
+
+        var spearmovePlayable = AnimationClipPlayable.Create(graph, spearMoveClip);
+        clipPlayables.Add(spearmovePlayable);
+
         graph.Connect(idlePlayable, 0, movementMixer, 0);
         graph.Connect(movePlayable, 0, movementMixer, 1);
+        graph.Connect(swordidlePlayable, 0, movementMixer, 2);
+        graph.Connect(swordmovePlayable, 0, movementMixer, 3);
+        graph.Connect(spearidlePlayable, 0, movementMixer, 4);
+        graph.Connect(spearmovePlayable, 0, movementMixer, 5);
 
         // Initialize all weights to 0
         for (int i = 0; i < movementMixer.GetInputCount(); i++)
@@ -92,8 +117,36 @@ public class ProneMovement : NetworkBehaviour
         float moveWeight = (xMovement != 0 || yMovement != 0) ? 1f : 0f; // Left strafe
 
         // Apply weights to mixer inputs
-        movementMixer.SetInputWeight(0, idleWeight);
-        movementMixer.SetInputWeight(1, moveWeight);
+
+        if (playerInventory.WeaponIndex == 1)
+        {
+            movementMixer.SetInputWeight(0, idleWeight);
+            movementMixer.SetInputWeight(1, moveWeight);
+            movementMixer.SetInputWeight(2, 0);
+            movementMixer.SetInputWeight(3, 0);
+            movementMixer.SetInputWeight(4, 0);
+            movementMixer.SetInputWeight(5, 0);
+        }
+        else if (playerInventory.WeaponIndex == 2)
+        {
+            if (playerInventory.PrimaryWeapon.WeaponID == "001")
+            {
+                movementMixer.SetInputWeight(2, idleWeight);
+                movementMixer.SetInputWeight(3, moveWeight);
+                movementMixer.SetInputWeight(4, 0);
+                movementMixer.SetInputWeight(5, 0);
+            }
+            else if (playerInventory.PrimaryWeapon.WeaponID == "002")
+            {
+                movementMixer.SetInputWeight(4, idleWeight);
+                movementMixer.SetInputWeight(5, moveWeight);
+                movementMixer.SetInputWeight(2, 0);
+                movementMixer.SetInputWeight(3, 0);
+            }
+
+            movementMixer.SetInputWeight(0, 0);
+            movementMixer.SetInputWeight(1, 0);
+        }
     }
 
     public Playable GetPlayable()

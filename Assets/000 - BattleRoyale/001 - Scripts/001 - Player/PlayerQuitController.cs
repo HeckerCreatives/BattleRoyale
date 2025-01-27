@@ -24,7 +24,7 @@ public class PlayerQuitController : NetworkBehaviour
 
         if (!HasInputAuthority) return;
 
-        gameConclusionCountdown = 5f;
+        gameConclusionCountdown = 10f;
 
         GameManager.Instance.SceneController.onSceneChange += SceneChange;
     }

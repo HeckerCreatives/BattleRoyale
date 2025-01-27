@@ -5,7 +5,14 @@ using UnityEngine;
 
 public class CrateController : NetworkBehaviour
 {
-    [field: SerializeField][field: MyBox.ReadOnly][Networked, Capacity(10)] public NetworkDictionary<NetworkString<_4>, int> Weapons => default;
+    [SerializeField] private NetworkObject swordObj;
+    [SerializeField] private NetworkObject spearObj;
+
+    //  ====================
+
+    [Networked, Capacity(10)] public NetworkDictionary<NetworkString<_4>, int> Weapons => default;
+
+    //  ====================
 
     public void SetDatas(Dictionary<string, int> data)
     {
@@ -17,5 +24,63 @@ public class CrateController : NetworkBehaviour
         }
     }
 
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RPC_RemoveItem(NetworkString<_4> itemkey, string itemname, NetworkObject player, NetworkObject back, NetworkObject hand)
+    {
+        if (!HasStateAuthority) return;
 
+        if (!Weapons.ContainsKey(itemkey)) return;
+
+        Weapons.Remove(itemkey);
+
+        NetworkObject tempweapon = null;
+
+        PlayerInventory playerInventory = player.GetComponent<PlayerInventory>();
+
+        switch (itemkey.ToString())
+        {
+            case "001":
+
+                if (playerInventory.PrimaryWeapon != null)
+                    playerInventory.PrimaryWeapon.DropWeapon();
+
+                tempweapon = Runner.Spawn(swordObj, Vector3.zero, Quaternion.identity, player.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                {
+                    obj.GetComponent<WeaponItem>().InitializeItem(
+                        itemname,
+                        itemkey.ToString(),
+                        player,
+                        back,
+                        hand,
+                        0,
+                        true
+                    );
+                });
+
+                playerInventory.PrimaryWeapon = tempweapon.GetComponent<WeaponItem>();
+                playerInventory.WeaponIndex = 2;
+                break;
+            case "002":
+
+                if (playerInventory.PrimaryWeapon != null)
+                    playerInventory.PrimaryWeapon.DropWeapon();
+
+                tempweapon = Runner.Spawn(spearObj, Vector3.zero, Quaternion.identity, player.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                {
+                    obj.GetComponent<WeaponItem>().InitializeItem(
+                        itemname,
+                        itemkey.ToString(),
+                        player,
+                        back,
+                        hand,
+                        0,
+                        true
+                    );
+                });
+
+                playerInventory.PrimaryWeapon = tempweapon.GetComponent<WeaponItem>();
+                playerInventory.WeaponIndex = 2;
+                break;
+        }
+    }
 }

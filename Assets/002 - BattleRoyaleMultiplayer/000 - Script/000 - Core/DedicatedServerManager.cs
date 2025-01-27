@@ -78,7 +78,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
     //  ===================================
 
+    [SerializeField] private float waitingAreaStartTimer;
     [SerializeField] private int playerRequired;
+    [SerializeField] private int maxPlayers;
     [SerializeField] private string lobby;
     [SerializeField] private bool useMultiplay;
     [SerializeField] private MultiplayController multiplayController;
@@ -108,7 +110,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [SerializeField] private List<ShrinkSizeList> safeZoneShrink;
 
     [Header("DEBUGGER")]
-    [MyBox.ReadOnly][SerializeField] private string sessionName;
     [MyBox.ReadOnly][SerializeField] private bool doneSpawnCrates;
     [MyBox.ReadOnly][SerializeField] private bool doneSetupBattlePos;
     [MyBox.ReadOnly][SerializeField] private bool doneSetupSafeZone;
@@ -145,17 +146,17 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     {
         List<string> itemPool = new List<string>
         {
-            "rifle", "rifle", "rifle", "rifle", "rifle", // 5%
-            "bow", "bow", "bow", "bow", "bow", // 5%
+            //"rifle", "rifle", "rifle", "rifle", "rifle", // 5%
+            //"bow", "bow", "bow", "bow", "bow", // 5%
             "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", // 15%
             "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", // 15%
-            //"rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo",
-            //"rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo",
-            //"rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo",
-            //"rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", // 60% total ammo, divided into rifle and bow ammo
-            //"bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo",
-            //"bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo"
+            //"heal", "heal", "heal", "heal", "heal", "heal", "heal", "heal", "heal", "heal", // 10%
+            //"repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", // 10%
+            //"armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor" // 10%
+            //"rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", // Ammo items can be re-added similarly if needed
+            //"bow ammo", "bow ammo", "bow ammo", "bow ammo",
         };
+
 
         Dictionary<string, string> itemIDMap = new Dictionary<string, string>
         {
@@ -164,7 +165,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             { "rifle", "003" },
             { "bow", "004" },
             { "rifle ammo", "005" },
-            { "bow ammo", "006" }
+            { "bow ammo", "006" },
+            { "armor", "007" }
         };
 
         Dictionary<string, int> selectedItems = new Dictionary<string, int>();
@@ -187,6 +189,10 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                     selectedItems[itemID] = UnityEngine.Random.Range(1, 61); // Set a random quantity between 1 and 60
                 }
             }
+            else if (selectedItem == "armor")
+            {
+                selectedItems[itemID] = 100;
+            }
             else
             {
                 if (!selectedItems.ContainsKey(itemID))
@@ -208,16 +214,16 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         int index = 1;
 
-        //foreach (var spawnLocations in createSpawnLocations)
-        //{
-        //    var gameobject = Runner.Spawn(createNO, spawnLocations.transform.position, Quaternion.identity, null);
+        foreach (var spawnLocations in createSpawnLocations)
+        {
+            var gameobject = Runner.Spawn(createNO, spawnLocations.transform.position, Quaternion.identity, null);
 
-        //    gameobject.GetComponent<CrateController>().SetDatas(GenerateRandomItems());
+            gameobject.GetComponent<CrateController>().SetDatas(GenerateRandomItems());
 
-        //    index++;
+            index++;
 
-        //    await Task.Yield();
-        //}
+            await Task.Yield();
+        }
 
         Debug.Log("done for spawn crates");
 
@@ -283,39 +289,41 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         await networkRunner.StartGame(new StartGameArgs()
         {
-            SessionName = sessionName,
+            SessionName = Guid.NewGuid().ToString(),
             GameMode = GameMode.Server,
             IsVisible = false,
             IsOpen = false,
             SceneManager = networkRunner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
             Scene = networkSceneInfo,
-            PlayerCount = 50,
+            PlayerCount = maxPlayers,
             Address = NetAddress.Any(),
             CustomLobbyName = lobby,
         });
 
-        Debug.Log($"Done Setting up photon server");
-
-        Debug.Log($"Spawning Crates");
-        SpawnCrates();
-
-        Debug.Log($"Set Spawn Positions");
-        SetSpawnPositionPlayers();
-
-        Debug.Log($"Set Safe Zone");
-        SetSafeZoneArea();
-
-        while (!doneSetupBattlePos || !doneSpawnCrates || !doneSetupSafeZone)
+        if (networkRunner.IsRunning)
         {
-            Debug.Log($"Done setup battle pos init: {doneSetupBattlePos} : Done spawn crates init: {doneSpawnCrates}  :  Done Safe Zone Init: {doneSetupSafeZone}");
-            await Task.Yield();
-        }
+            Debug.Log($"Done Setting up photon server");
 
-        Debug.Log("Adding waiting Area Timer");
+            Debug.Log($"Spawning Crates");
+            SpawnCrates();
 
-        WaitingAreaTimer = 300f;
+            Debug.Log($"Set Spawn Positions");
+            SetSpawnPositionPlayers();
 
-        Debug.Log("Done adding waiting Area Timer");
+            Debug.Log($"Set Safe Zone");
+            SetSafeZoneArea();
+
+            while (!doneSetupBattlePos || !doneSpawnCrates || !doneSetupSafeZone)
+            {
+                Debug.Log($"Done setup battle pos init: {doneSetupBattlePos} : Done spawn crates init: {doneSpawnCrates}  :  Done Safe Zone Init: {doneSetupSafeZone}");
+                await Task.Yield();
+            }
+
+            Debug.Log("Adding waiting Area Timer");
+
+            WaitingAreaTimer = waitingAreaStartTimer;
+
+            Debug.Log("Done adding waiting Area Timer");
 
 
 
@@ -327,10 +335,11 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         }
 #endif
 
-        networkRunner.SessionInfo.IsOpen = true;
-        networkRunner.SessionInfo.IsVisible = true;
+            networkRunner.SessionInfo.IsOpen = true;
+            networkRunner.SessionInfo.IsVisible = true;
 
-        Debug.Log("ALL PLAYERS CAN NOW JOIN");
+            Debug.Log("ALL PLAYERS CAN NOW JOIN");
+        }
     }
 
     #endregion
@@ -518,7 +527,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             if (Players.Count <= 0 && CanCountWaitingAreaTimer)
             {
-                WaitingAreaTimer = 300f;
+                WaitingAreaTimer = waitingAreaStartTimer;
                 CanCountWaitingAreaTimer = false;
             }
 

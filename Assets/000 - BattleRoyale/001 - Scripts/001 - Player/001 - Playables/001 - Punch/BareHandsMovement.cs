@@ -27,9 +27,6 @@ public class BareHandsMovement : NetworkBehaviour
     [SerializeField] private AnimationClip crouchPunchOneClip;
     [SerializeField] private AnimationClip crouchPunchTwoClip;
 
-    [Space]
-    [SerializeField] private List<float> comboResetTime;
-
     [Header("DEBUGGER LOCAL")]
     [SerializeField] private float idleWeight;
     [SerializeField] private float attackOneWeight;
@@ -42,7 +39,7 @@ public class BareHandsMovement : NetworkBehaviour
     [Networked][field: SerializeField] public int AttackStep { get; set; } // Current combo step
     [Networked][field: SerializeField] public float LastAttackTime { get; set; } // Time when the last attack was performed
     [Networked][field: SerializeField] public bool CanCombo { get; set; }
-    [field: SerializeField] public bool CanAttack { get; set; }
+    [Networked][field: SerializeField] public bool CanAttack { get; set; }
     [Networked] public NetworkButtons PreviousButtons { get; set; }
 
     //  ============================
@@ -104,7 +101,18 @@ public class BareHandsMovement : NetworkBehaviour
                 }
             }
 
-            if (mainCorePlayable.TickRateAnimation - LastAttackTime > comboResetTime[AttackStep <= 0 ? 0 : AttackStep - 1] && Attacking)
+            float templength;
+
+            if (playerController.IsCrouch)
+            {
+                templength = AttackStep == 1 ? crouchPunchOneClip.length : crouchPunchTwoClip.length;
+            }
+            else
+            {
+                templength = AttackStep == 1 ? punchOneClip.length : punchTwoClip.length;
+            }
+
+            if (mainCorePlayable.TickRateAnimation - LastAttackTime > templength && Attacking)
             {
                 var idlePlayable = clipPlayables[0];
                 idlePlayable.SetTime(0); // Reset idle animation
@@ -124,10 +132,9 @@ public class BareHandsMovement : NetworkBehaviour
                 InputControlls();
                 ResetToIdle();
                 AnimationBlend();
-                AttackDamage();
             }
-
-            ResetAttackAnimation();
+            else
+                ResetAttackAnimation();
         }
     }
 
@@ -254,16 +261,23 @@ public class BareHandsMovement : NetworkBehaviour
         }
     }
 
-    private void AttackDamage()
+
+    private void AttackFirstDamage()
     {
         if (!HasStateAuthority) return;
 
-        if (!CanAttack) return;
+        if (deathMovement.IsDead) return;
+
+        fistWeaponHandler.PerformFirstAttack();
+    }
+
+    private void AttackSecondDamage()
+    {
+        if (!HasStateAuthority) return;
 
         if (deathMovement.IsDead) return;
 
-        if (AttackStep == 1) fistWeaponHandler.PerformFirstAttack();
-        else if (AttackStep == 2) fistWeaponHandler.PerformSecondAttack();
+        fistWeaponHandler.PerformSecondAttack();
     }
 
     private void HandleComboInput()
@@ -285,7 +299,6 @@ public class BareHandsMovement : NetworkBehaviour
             {
                 if (AttackStep == 1)
                 {
-                    ResetFirstAttack();
                     CanAttack = false;
 
                     var punchOnePlayable = clipPlayables[1];
@@ -293,12 +306,11 @@ public class BareHandsMovement : NetworkBehaviour
                     punchOnePlayable.Play();    // Start playing
 
                     Invoke(nameof(AllowNextCombo), punchOneClip.length * 0.8f); // Allow next combo towards the end of Punch1
-                    Invoke(nameof(CanNowAttack), punchOneClip.length * 0.3f);
+                    Invoke(nameof(AttackFirstDamage), punchOneClip.length * 0.25f);
                     Invoke(nameof(ResetFirstAttack), punchOneClip.length);
                 }
                 else if (AttackStep == 2)
                 {
-                    ResetSecondAttack();
                     CanAttack = false;
 
                     var punchTwoPlayable = clipPlayables[2];
@@ -306,7 +318,7 @@ public class BareHandsMovement : NetworkBehaviour
                     punchTwoPlayable.Play();    // Start playing
 
                     Invoke(nameof(AllowNextCombo), punchTwoClip.length * 0.6f); // Allow next combo towards the end of Punch2
-                    Invoke(nameof(CanNowAttack), punchTwoClip.length * 0.3f);
+                    Invoke(nameof(AttackSecondDamage), punchTwoClip.length * 0.35f);
                     Invoke(nameof(ResetSecondAttack), punchTwoClip.length); // Reset to Idle after Punch2
                 }
             }
@@ -314,7 +326,6 @@ public class BareHandsMovement : NetworkBehaviour
             {
                 if (AttackStep == 1)
                 {
-                    ResetFirstAttack();
                     CanAttack = false;
 
                     var punchOnePlayable = clipPlayables[3];
@@ -322,12 +333,11 @@ public class BareHandsMovement : NetworkBehaviour
                     punchOnePlayable.Play();    // Start playing
 
                     Invoke(nameof(AllowNextCombo), crouchPunchOneClip.length * 0.8f); // Allow next combo towards the end of Punch1
-                    Invoke(nameof(CanNowAttack), crouchPunchOneClip.length * 0.54f);
+                    Invoke(nameof(AttackFirstDamage), crouchPunchOneClip.length * 0.6f);
                     Invoke(nameof(ResetFirstAttack), crouchPunchOneClip.length);
                 }
                 else if (AttackStep == 2)
                 {
-                    ResetSecondAttack();
                     CanAttack = false;
 
                     var punchTwoPlayable = clipPlayables[4];
@@ -335,7 +345,7 @@ public class BareHandsMovement : NetworkBehaviour
                     punchTwoPlayable.Play();    // Start playing
 
                     Invoke(nameof(AllowNextCombo), crouchPunchTwoClip.length * 0.8f); // Allow next combo towards the end of Punch2
-                    Invoke(nameof(CanNowAttack), crouchPunchTwoClip.length * 0.5f);
+                    Invoke(nameof(AttackSecondDamage), crouchPunchTwoClip.length * 0.55f);
                     Invoke(nameof(ResetSecondAttack), crouchPunchTwoClip.length); // Reset to Idle after Punch2
                 }
             }
@@ -407,7 +417,18 @@ public class BareHandsMovement : NetworkBehaviour
 
         if (!movementMixer.IsValid()) return;
 
-        if (mainCorePlayable.TickRateAnimation - LastAttackTime > comboResetTime[AttackStep <= 0 ? 0 : AttackStep - 1] && Attacking)
+        float templength;
+
+        if (playerController.IsCrouch)
+        {
+            templength = AttackStep == 1 ? crouchPunchOneClip.length : crouchPunchTwoClip.length;
+        }
+        else
+        {
+            templength = AttackStep == 1 ? punchOneClip.length : punchTwoClip.length;
+        }
+
+        if (mainCorePlayable.TickRateAnimation - LastAttackTime > templength && Attacking)
         {
             Attacking = false;
             AttackStep = 0;

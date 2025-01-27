@@ -27,6 +27,10 @@ public class MainCorePlayable : NetworkBehaviour
     [SerializeField] private CrouchMovement crouchMovement;
     [SerializeField] private ProneMovement proneMovement;
     [SerializeField] private DeathMovement deathMovement;
+    [SerializeField] private SwordPlayable swordPlayable;
+    [SerializeField] private SwordBasicMovement swordBasicMovement;
+    [SerializeField] private SwordPlayable spearPlayable;
+    [SerializeField] private SwordBasicMovement spearBasicMovement;
 
     [Header("DEBUGGER")]
     [SerializeField] private float basicMovementWeight;
@@ -36,6 +40,10 @@ public class MainCorePlayable : NetworkBehaviour
     [SerializeField] private float crouchWeight;
     [SerializeField] private float proneWeight;
     [SerializeField] private float deadWeight;
+    [SerializeField] private float swordBasicMovementWeight;
+    [SerializeField] private float swordWeight;
+    [SerializeField] private float spearBasicMovementWeight;
+    [SerializeField] private float spearWeight;
 
     [field: Space]
     [Networked][field: SerializeField] public float TickRateAnimation { get; set; }
@@ -53,7 +61,7 @@ public class MainCorePlayable : NetworkBehaviour
         var output = AnimationPlayableOutput.Create(playableGraph, "AnimationOutput", animator);
 
         // Create the main playable (AnimationLayerMixerPlayable)
-        mainPlayable = AnimationLayerMixerPlayable.Create(playableGraph, 7);
+        mainPlayable = AnimationLayerMixerPlayable.Create(playableGraph, 11);
         output.SetSourcePlayable(mainPlayable);
 
         if (basicMovement != null)
@@ -61,6 +69,7 @@ public class MainCorePlayable : NetworkBehaviour
             basicMovement.Initialize(playableGraph);
             playableGraph.Connect(basicMovement.GetPlayable(), 0, mainPlayable, 0);
             mainPlayable.SetInputWeight(0, 1f); // Full-body layer weight
+            mainPlayable.SetLayerMaskFromAvatarMask(0, LowerBodyMask);
         }
 
         if (bareHandsMovement != null)
@@ -107,6 +116,39 @@ public class MainCorePlayable : NetworkBehaviour
             mainPlayable.SetInputWeight(6, 0f);
         }
 
+        if (swordPlayable != null)
+        {
+            swordPlayable.Initialize(playableGraph);
+            playableGraph.Connect(swordPlayable.GetPlayable(), 0, mainPlayable, 7);
+            mainPlayable.SetInputWeight(7, 0f);
+            mainPlayable.SetLayerMaskFromAvatarMask(7, upperBodyMask);
+        }
+
+        if (swordBasicMovement != null)
+        {
+            swordBasicMovement.Initialize(playableGraph);
+            playableGraph.Connect(swordBasicMovement.GetPlayable(), 0, mainPlayable, 8);
+            mainPlayable.SetInputWeight(8, 0f); // Full-body layer weight
+            mainPlayable.SetLayerMaskFromAvatarMask(8, LowerBodyMask);
+        }
+
+
+        if (spearPlayable != null)
+        {
+            spearPlayable.Initialize(playableGraph);
+            playableGraph.Connect(spearPlayable.GetPlayable(), 0, mainPlayable, 9);
+            mainPlayable.SetInputWeight(9, 0f);
+            mainPlayable.SetLayerMaskFromAvatarMask(9, upperBodyMask);
+        }
+
+        if (spearBasicMovement != null)
+        {
+            spearBasicMovement.Initialize(playableGraph);
+            playableGraph.Connect(spearBasicMovement.GetPlayable(), 0, mainPlayable, 10);
+            mainPlayable.SetInputWeight(10, 0f); // Full-body layer weight
+            mainPlayable.SetLayerMaskFromAvatarMask(10, LowerBodyMask);
+        }
+
         playableGraph.Play();
     }
 
@@ -114,8 +156,6 @@ public class MainCorePlayable : NetworkBehaviour
     {
         if (playableGraph.IsValid())
         {
-            //Debug.Log($"Player Grounded: {characterController.IsGrounded}");
-
             if (!deathMovement.IsDead)
             {
 
@@ -125,7 +165,28 @@ public class MainCorePlayable : NetworkBehaviour
                 {
                     if (!controller.IsCrouch && !controller.IsProne)
                     {
-                        basicMovementWeight = Mathf.Lerp(basicMovementWeight, 1f, Time.deltaTime * 5f);
+                        if (inventory.WeaponIndex == 1)
+                        {
+                            basicMovementWeight = Mathf.Lerp(basicMovementWeight, 1f, Time.deltaTime * 5f);
+                            swordBasicMovementWeight = Mathf.Lerp(swordBasicMovementWeight, 0f, Time.deltaTime * 5f);
+                            spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 0f, Time.deltaTime * 5f);
+                        }
+                        else if (inventory.WeaponIndex == 2)
+                        {
+                            if (inventory.PrimaryWeapon.WeaponID == "001")
+                            {
+                                swordBasicMovementWeight = Mathf.Lerp(swordBasicMovementWeight, 1f, Time.deltaTime * 5f);
+                                spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 0f, Time.deltaTime * 5f);
+                            }
+                            else if (inventory.PrimaryWeapon.WeaponID == "002")
+                            {
+                                spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 1f, Time.deltaTime * 5f);
+                                swordBasicMovementWeight = Mathf.Lerp(swordBasicMovementWeight, 0f, Time.deltaTime * 5f);
+                            }
+
+                            basicMovementWeight = Mathf.Lerp(basicMovementWeight, 0f, Time.deltaTime * 5f);
+                        }
+
                         crouchWeight = Mathf.Lerp(crouchWeight, 0f, Time.deltaTime * 5f);
                         proneWeight = Mathf.Lerp(proneWeight, 0f, Time.deltaTime * 5f);
                     }
@@ -142,11 +203,32 @@ public class MainCorePlayable : NetworkBehaviour
                             bareHandWeight = Mathf.Lerp(bareHandWeight, 0f, Time.deltaTime * 5f);
                         }
 
+                        if (inventory.WeaponIndex == 2)
+                        {
+                            if (inventory.PrimaryWeapon.WeaponID == "001")
+                            {
+                                swordWeight = Mathf.Lerp(swordWeight, 1f, Time.deltaTime * 5f);
+                                spearWeight = Mathf.Lerp(spearWeight, 0f, Time.deltaTime * 5f);
+                            }
+                            else if (inventory.PrimaryWeapon.WeaponID == "002")
+                            {
+                                spearWeight = Mathf.Lerp(spearWeight, 1f, Time.deltaTime * 5f);
+                                swordWeight = Mathf.Lerp(swordWeight, 0f, Time.deltaTime * 5f);
+                            }
+                        }
+                        else
+                        {
+                            swordWeight = Mathf.Lerp(swordWeight, 0f, Time.deltaTime * 5f);
+                            spearWeight = Mathf.Lerp(spearWeight, 0f, Time.deltaTime * 5f);
+                        }
+
                         if (controller.IsCrouch)
                         {
                             crouchWeight = Mathf.Lerp(crouchWeight, 1f, Time.deltaTime * 5f);
                             proneWeight = Mathf.Lerp(proneWeight, 0f, Time.deltaTime * 5f);
                             basicMovementWeight = Mathf.Lerp(basicMovementWeight, 0f, Time.deltaTime * 5f);
+                            swordBasicMovementWeight = Mathf.Lerp(swordBasicMovementWeight, 0f, Time.deltaTime * 5f);
+                            spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 0f, Time.deltaTime * 5f);
                         }
                         else
                         {
@@ -161,6 +243,10 @@ public class MainCorePlayable : NetworkBehaviour
                         crouchWeight = Mathf.Lerp(crouchWeight, 0f, Time.deltaTime * 5f);
                         basicMovementWeight = Mathf.Lerp(basicMovementWeight, 0f, Time.deltaTime * 5f);
                         bareHandWeight = Mathf.Lerp(bareHandWeight, 0f, Time.deltaTime * 5f);
+                        swordWeight = Mathf.Lerp(swordWeight, 0f, Time.deltaTime * 5f);
+                        swordBasicMovementWeight = Mathf.Lerp(swordBasicMovementWeight, 0f, Time.deltaTime * 5f);
+                        spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 0f, Time.deltaTime * 5f);
+                        spearWeight = Mathf.Lerp(spearWeight, 0f, Time.deltaTime * 5f);
                     }
 
                     jumpMovementWeight = 0;
@@ -179,19 +265,27 @@ public class MainCorePlayable : NetworkBehaviour
                         jumpMovementWeight = Mathf.Lerp(jumpMovementWeight, 0f, Time.deltaTime * 5f);
                     }
                     basicMovementWeight = Mathf.Lerp(basicMovementWeight, 0f, Time.deltaTime * 5f);
+                    swordBasicMovementWeight = Mathf.Lerp(swordBasicMovementWeight, 0f, Time.deltaTime * 5f);
                     bareHandWeight = Mathf.Lerp(bareHandWeight, 0f, Time.deltaTime * 5f);
                     crouchWeight = Mathf.Lerp(crouchWeight, 0f, Time.deltaTime * 5f);
                     proneWeight = Mathf.Lerp(proneWeight, 0f, Time.deltaTime * 5f);
+                    swordWeight = Mathf.Lerp(swordWeight, 0f, Time.deltaTime * 5f);
+                    spearWeight = Mathf.Lerp(spearWeight, 0f, Time.deltaTime * 5f);
+                    spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 0f, Time.deltaTime * 5f);
                 }
             }
             else
             {
                 basicMovementWeight = Mathf.Lerp(basicMovementWeight, 0f, Time.deltaTime * 5f);
+                swordBasicMovementWeight = Mathf.Lerp(swordBasicMovementWeight, 0f, Time.deltaTime * 5f);
+                spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 0f, Time.deltaTime * 5f);
                 bareHandWeight = Mathf.Lerp(bareHandWeight, 0f, Time.deltaTime * 5f);
                 crouchWeight = Mathf.Lerp(crouchWeight, 0f, Time.deltaTime * 5f);
                 proneWeight = Mathf.Lerp(proneWeight, 0f, Time.deltaTime * 5f);
                 jumpMovementWeight = Mathf.Lerp(jumpMovementWeight, 0f, Time.deltaTime * 5f);
                 fallingWeight = Mathf.Lerp(fallingWeight, 0f, Time.deltaTime * 5f);
+                swordWeight = Mathf.Lerp(swordWeight, 0f, Time.deltaTime * 5f);
+                spearWeight = Mathf.Lerp(spearWeight, 0f, Time.deltaTime * 5f);
                 deadWeight = Mathf.Lerp(deadWeight, 1f, Time.deltaTime * 5f);
             }
 
@@ -203,6 +297,10 @@ public class MainCorePlayable : NetworkBehaviour
             mainPlayable.SetInputWeight(4, crouchWeight);
             mainPlayable.SetInputWeight(5, proneWeight);
             mainPlayable.SetInputWeight(6, deadWeight);
+            mainPlayable.SetInputWeight(7, swordWeight);
+            mainPlayable.SetInputWeight(8, swordBasicMovementWeight);
+            mainPlayable.SetInputWeight(9, spearWeight);
+            mainPlayable.SetInputWeight(10, spearBasicMovementWeight);
         }
     }
 

@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 6964709895180703040}
   - component: {fileID: 5823596019403183840}
   - component: {fileID: 5692795387059461451}
+  - component: {fileID: 3759242690004959880}
   m_Layer: 11
   m_Name: Crate
   m_TagString: Crate
@@ -119,6 +120,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e94c7578c976a334396a1ca50ae744d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  swordObj: {fileID: -6896107499734453323, guid: 7fe4a221ff2f2d64181e56c9913c850c,
+    type: 3}
+  spearObj: {fileID: 7258497585221354807, guid: 796b17788ddec0e4995ac5a523ff0d95,
+    type: 3}
 --- !u!114 &5692795387059461451
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -137,4 +142,22 @@ MonoBehaviour:
   NestedObjects: []
   NetworkedBehaviours:
   - {fileID: 5823596019403183840}
+  - {fileID: 3759242690004959880}
   ForceRemoteRenderTimeframe: 0
+--- !u!114 &3759242690004959880
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2363885156619663466}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _stateAuthorityChangeErrorCorrectionDelta: 0.15
+  SyncScale: 0
+  SyncParent: 0
+  _autoAOIOverride: 1
+  DisableSharedModeInterpolation: 0

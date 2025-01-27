@@ -474,6 +474,57 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &161544379873980536
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7005627784585538477}
+  - component: {fileID: 5189147756967244705}
+  m_Layer: 0
+  m_Name: SpearBasic
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7005627784585538477
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 161544379873980536}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6588220280225281164}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5189147756967244705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 161544379873980536}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 041ff077c57376847adfac704f4aca22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainCorePlayable: {fileID: 5516893389093601067}
+  playerController: {fileID: 8343728195109147783}
+  idleClip: {fileID: 7400000, guid: 91dee14dd6f6c1541934aa301d8bd561, type: 2}
+  sideStrafeLeftClip: {fileID: 7400000, guid: c7a357f7876a9ab44bcd01e850d4e86d, type: 2}
+  sideStrafeRightClip: {fileID: 7400000, guid: 8684c7a303a0d4d458e8215efcb5bf9f, type: 2}
+  backwardClip: {fileID: 7400000, guid: c9a92ba706245944fa3bed3e9bc48923, type: 2}
+  sprintClip: {fileID: 7400000, guid: e3114a2c083e73744b9fde92d0074e09, type: 2}
 --- !u!1 &166762330710470991
 GameObject:
   m_ObjectHideFlags: 0
@@ -1188,9 +1239,9 @@ MonoBehaviour:
   m_Script: {fileID: 1014831617, guid: e725a070cec140c4caffb81624c8c787, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Type: 1
+  Type: 3
   SphereRadius: 0
-  CapsuleRadius: 0
+  CapsuleRadius: 0.2
   BoxExtents: {x: 0.16, y: 0.17, z: 0.15}
   CapsuleExtents: 0
   Offset: {x: 0, y: 0.06, z: 0.01}
@@ -2202,6 +2253,8 @@ Transform:
   - {fileID: 1309314190739981209}
   - {fileID: 5136007313307979733}
   - {fileID: 6363994381028530295}
+  - {fileID: 7868843794308448928}
+  - {fileID: 1188749318299424663}
   m_Father: {fileID: 8560549007622899244}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &513603190354109003
@@ -7224,6 +7277,7 @@ Transform:
   - {fileID: 5665737923728698200}
   - {fileID: 885908353366576531}
   - {fileID: 4708126104663463314}
+  - {fileID: 4217746481394098688}
   - {fileID: 188170956228360550}
   - {fileID: 8708524780548924639}
   - {fileID: 5581487388742175515}
@@ -9779,7 +9833,7 @@ Transform:
   m_GameObject: {fileID: 1973823912742809376}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071069, y: 0, z: -0, w: 0.7071067}
-  m_LocalPosition: {x: -0, y: 0, z: 0}
+  m_LocalPosition: {x: -0, y: 0, z: 0.383}
   m_LocalScale: {x: 100, y: 100, z: 100}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -10488,6 +10542,37 @@ Transform:
   - {fileID: 3465654466048997788}
   m_Father: {fileID: 7804352208716785430}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2259032839763842006
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7868843794308448928}
+  m_Layer: 0
+  m_Name: FistHitBoxL
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7868843794308448928
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2259032839763842006}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.00024, y: 0.00115, z: -0.00002}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3902528618953361711}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2301790019405717680
 GameObject:
   m_ObjectHideFlags: 0
@@ -11155,6 +11240,37 @@ MonoBehaviour:
   NestedObjects: []
   NetworkedBehaviours: []
   ForceRemoteRenderTimeframe: 0
+--- !u!1 &2528621884543806682
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1188749318299424663}
+  m_Layer: 0
+  m_Name: ShieldPosition
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1188749318299424663
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2528621884543806682}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.2648326, y: -0.83193696, z: -0.3760995, w: 0.31031242}
+  m_LocalPosition: {x: -0.00992, y: -0.00619, z: -0.00125}
+  m_LocalScale: {x: 0.0100000035, y: 0.0100000035, z: 0.010000012}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3902528618953361711}
+  m_LocalEulerAnglesHint: {x: -52.199, y: -148.843, z: 19.761}
 --- !u!1 &2528749018273059391
 GameObject:
   m_ObjectHideFlags: 0
@@ -12684,9 +12800,6 @@ MonoBehaviour:
   punchTwoClip: {fileID: 7400000, guid: 55bff9c3411c9674ca668f93177e820f, type: 2}
   crouchPunchOneClip: {fileID: 7400000, guid: 3635338ab5d661642890105440979f0a, type: 2}
   crouchPunchTwoClip: {fileID: 7400000, guid: 4b73d3d93e26d6e40bbb575943485e53, type: 2}
-  comboResetTime:
-  - 0.79
-  - 0.62
   idleWeight: 0
   attackOneWeight: 0
   attackTwoWeight: 0
@@ -12696,7 +12809,7 @@ MonoBehaviour:
   _AttackStep: 0
   _LastAttackTime: 0
   _CanCombo: 0
-  <CanAttack>k__BackingField: 0
+  _CanAttack: 0
 --- !u!1 &2896462975168905268
 GameObject:
   m_ObjectHideFlags: 0
@@ -16564,8 +16677,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainCorePlayable: {fileID: 5516893389093601067}
   playerController: {fileID: 8343728195109147783}
+  playerInventory: {fileID: 6475620730627094871}
   idleClip: {fileID: 7400000, guid: 0e183fe0c40364d438abf41c33ffbe09, type: 2}
   moveClip: {fileID: 7400000, guid: d7457789894a9c748830fca14bb72b55, type: 2}
+  swordIdleClip: {fileID: 7400000, guid: e5a7b604400bf0844b7f25c57a61d006, type: 2}
+  swordMoveClip: {fileID: 7400000, guid: a1b3a4a8d61388a4d85dd59f3d894183, type: 2}
+  spearIdleClip: {fileID: 7400000, guid: 7f8f3c4748dffcf4397b761f7b65b2a1, type: 2}
+  spearMoveClip: {fileID: 7400000, guid: d3f0a690158c5304fb5a8a28614875f5, type: 2}
 --- !u!1 &3418844327955596835
 GameObject:
   m_ObjectHideFlags: 0
@@ -26898,6 +27016,74 @@ MonoBehaviour:
   NestedObjects: []
   NetworkedBehaviours: []
   ForceRemoteRenderTimeframe: 0
+--- !u!1 &5015709068982150735
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8107630699914703694}
+  - component: {fileID: 2081829643331837765}
+  m_Layer: 0
+  m_Name: SwordAttack
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8107630699914703694
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5015709068982150735}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6588220280225281164}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2081829643331837765
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5015709068982150735}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dea2176f1f7bb434bb246cc3adc39340, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainCorePlayable: {fileID: 5516893389093601067}
+  playerController: {fileID: 8343728195109147783}
+  playerInventory: {fileID: 6475620730627094871}
+  deathMovement: {fileID: 4473900367103220776}
+  characterController: {fileID: 6136798064161907215}
+  idleClip: {fileID: 7400000, guid: 83d589e99725a1247adaccac9eae8860, type: 2}
+  swordOneClip: {fileID: 7400000, guid: 4375e5506dcd91c47848d70aee0f5a74, type: 2}
+  swordTwoClip: {fileID: 7400000, guid: fa75385138885de43ab681e77becf240, type: 2}
+  crouchSwordOneClip: {fileID: 7400000, guid: 4375e5506dcd91c47848d70aee0f5a74, type: 2}
+  crouchSwordTwoClip: {fileID: 7400000, guid: fa75385138885de43ab681e77becf240, type: 2}
+  attackStandOneTime: 0.38
+  attackStandTwoTime: 0.19
+  attackCrouchOneTime: 0.38
+  attackCrouchTwoTime: 0.19
+  idleWeight: 0
+  attackOneWeight: 0
+  attackTwoWeight: 0
+  crouchAttackOneWeight: 0
+  crouchAttackTwoWeight: 0
+  _Attacking: 0
+  _AttackStep: 0
+  _LastAttackTime: 0
+  _CanCombo: 0
+  _CanAttack: 0
 --- !u!1 &5030613307470903455
 GameObject:
   m_ObjectHideFlags: 0
@@ -30297,6 +30483,57 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!1 &5652902092654139266
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7855002196305907027}
+  - component: {fileID: 1892986559066851962}
+  m_Layer: 0
+  m_Name: SwordBasic
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7855002196305907027
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5652902092654139266}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6588220280225281164}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1892986559066851962
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5652902092654139266}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 041ff077c57376847adfac704f4aca22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainCorePlayable: {fileID: 5516893389093601067}
+  playerController: {fileID: 8343728195109147783}
+  idleClip: {fileID: 7400000, guid: 83d589e99725a1247adaccac9eae8860, type: 2}
+  sideStrafeLeftClip: {fileID: 7400000, guid: 705743e29e49c7f45a45767bdbffe0b4, type: 2}
+  sideStrafeRightClip: {fileID: 7400000, guid: 070aceec756e0d344b435f5863cab4c2, type: 2}
+  backwardClip: {fileID: 7400000, guid: f95fc3d087f269149bd392113a43aa33, type: 2}
+  sprintClip: {fileID: 7400000, guid: 79e4a9f413d58d04190b0b11ca077825, type: 2}
 --- !u!1 &5686437768725435735
 GameObject:
   m_ObjectHideFlags: 0
@@ -39351,6 +39588,10 @@ Transform:
   - {fileID: 6622050859883353104}
   - {fileID: 3680495656654407643}
   - {fileID: 6382800464049624045}
+  - {fileID: 7855002196305907027}
+  - {fileID: 8107630699914703694}
+  - {fileID: 7005627784585538477}
+  - {fileID: 1650386067900619463}
   m_Father: {fileID: 1582820687403535839}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7660702217389018503
@@ -40326,6 +40567,74 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &7826280378436273849
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1650386067900619463}
+  - component: {fileID: 5222543667287124414}
+  m_Layer: 0
+  m_Name: SpearAttack
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1650386067900619463
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7826280378436273849}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6588220280225281164}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5222543667287124414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7826280378436273849}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dea2176f1f7bb434bb246cc3adc39340, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainCorePlayable: {fileID: 5516893389093601067}
+  playerController: {fileID: 8343728195109147783}
+  playerInventory: {fileID: 6475620730627094871}
+  deathMovement: {fileID: 4473900367103220776}
+  characterController: {fileID: 6136798064161907215}
+  idleClip: {fileID: 7400000, guid: 91dee14dd6f6c1541934aa301d8bd561, type: 2}
+  swordOneClip: {fileID: 7400000, guid: dd3b087c50bade840a73b5b70dd38d76, type: 2}
+  swordTwoClip: {fileID: 7400000, guid: e7026bcf49cb31348b2f63af2b0c5ba4, type: 2}
+  crouchSwordOneClip: {fileID: 7400000, guid: 8aea4fbcd02f4ab44b1370942eeabb7c, type: 2}
+  crouchSwordTwoClip: {fileID: 7400000, guid: 8aea4fbcd02f4ab44b1370942eeabb7c, type: 2}
+  attackStandOneTime: 0.48
+  attackStandTwoTime: 0.5
+  attackCrouchOneTime: 0.4
+  attackCrouchTwoTime: 0.4
+  idleWeight: 0
+  attackOneWeight: 0
+  attackTwoWeight: 0
+  crouchAttackOneWeight: 0
+  crouchAttackTwoWeight: 0
+  _Attacking: 0
+  _AttackStep: 0
+  _LastAttackTime: 0
+  _CanCombo: 0
+  _CanAttack: 0
 --- !u!1 &7827492440747780323
 GameObject:
   m_ObjectHideFlags: 0
@@ -45010,6 +45319,37 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!1 &8619889827472838462
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4217746481394098688}
+  m_Layer: 0
+  m_Name: FistHitBoxR
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4217746481394098688
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8619889827472838462}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.00019, y: 0.00091, z: 0.00009}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6906049285948815774}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8635202081841510722
 GameObject:
   m_ObjectHideFlags: 0
@@ -45595,7 +45935,6 @@ GameObject:
   - component: {fileID: 4920152902683292829}
   - component: {fileID: 2630037937965088976}
   - component: {fileID: 7495721667807700299}
-  - component: {fileID: 835355285967617485}
   - component: {fileID: 2591908786426449395}
   - component: {fileID: 5516893389093601067}
   - component: {fileID: 2632271246272331152}
@@ -45608,6 +45947,7 @@ GameObject:
   - component: {fileID: 5383506705213216986}
   - component: {fileID: 8343728195109147783}
   - component: {fileID: 6475620730627094871}
+  - component: {fileID: 835355285967617485}
   - component: {fileID: 5316304471600521873}
   - component: {fileID: 4138419968400069941}
   - component: {fileID: 8883263492747455}
@@ -45619,7 +45959,6 @@ GameObject:
   - component: {fileID: 2664311439496064174}
   - component: {fileID: 2200149334318263902}
   - component: {fileID: 5512999093782185749}
-  - component: {fileID: 3252522565171559214}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -45635,7 +45974,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8689549338059659052}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.9961947, z: 0, w: -0.08715578}
+  m_LocalRotation: {x: 0, y: -1, z: 0, w: 0}
   m_LocalPosition: {x: 45.781025, y: 32.997612, z: 37590.152}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -45656,7 +45995,7 @@ Transform:
   - {fileID: 8308127325687650393}
   - {fileID: 3122462780397039921}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: -190, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -180, z: 0}
 --- !u!114 &3197376394441458163
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -45759,22 +46098,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ae847392ce8d84428936c23301d7ede, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &835355285967617485
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8689549338059659052}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8993c7a76a9e7194c92673caa9798f70, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  objecMask:
-    serializedVersion: 2
-    m_Bits: 0
-  itemDetectorRadius: 0
 --- !u!114 &2591908786426449395
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -45816,6 +46139,10 @@ MonoBehaviour:
   crouchMovement: {fileID: 1373600756197763605}
   proneMovement: {fileID: 6339851055258334585}
   deathMovement: {fileID: 4473900367103220776}
+  swordPlayable: {fileID: 2081829643331837765}
+  swordBasicMovement: {fileID: 1892986559066851962}
+  spearPlayable: {fileID: 5222543667287124414}
+  spearBasicMovement: {fileID: 5189147756967244705}
   basicMovementWeight: 0
   bareHandWeight: 0
   jumpMovementWeight: 0
@@ -45823,6 +46150,10 @@ MonoBehaviour:
   crouchWeight: 0
   proneWeight: 0
   deadWeight: 0
+  swordBasicMovementWeight: 0
+  swordWeight: 0
+  spearBasicMovementWeight: 0
+  spearWeight: 0
   _TickRateAnimation: 0
 --- !u!114 &2632271246272331152
 MonoBehaviour:
@@ -46179,6 +46510,42 @@ MonoBehaviour:
   _HairColorIndex: 0
   _ClothingColorIndex: 0
   _SkinColorIndex: 0
+  _PrimaryWeapon: {fileID: 0}
+--- !u!114 &835355285967617485
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8689549338059659052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8993c7a76a9e7194c92673caa9798f70, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerInventory: {fileID: 6475620730627094871}
+  itemSpritesData: {fileID: 11400000, guid: c12335f14c4d0e549986dfe35b8f1a53, type: 2}
+  objecMask:
+    serializedVersion: 2
+    m_Bits: 6144
+  colliderOffset: {x: 0, y: 0.9, z: 0}
+  colliderSize: {x: 0.85, y: 1.83, z: 0.82}
+  itemListObj: {fileID: 1660345329993585193}
+  itemButton: {fileID: 4397963196234212630, guid: 3463239684b98a144a5e304a598d39db,
+    type: 3}
+  contentTF: {fileID: 322272831347253784}
+  swordBackHandle: {fileID: 5214006550831868785}
+  spearBackHandle: {fileID: 7864447784401410714}
+  rifleBackHandle: {fileID: 3000078124456543987}
+  bowBackHandle: {fileID: 2118416943823695513}
+  arrowBackHandle: {fileID: 7720033416305080247}
+  swordHandHandle: {fileID: 6809272779941590205}
+  spearHandHandle: {fileID: 5789645283626088335}
+  rifleHandHandle: {fileID: 250748919841830176}
+  bowHandHandle: {fileID: 5172973234901469198}
+  <CrateObject>k__BackingField: {fileID: 0}
+  <CrateObjectDetector>k__BackingField: {fileID: 0}
+  localNearbyWeapon: []
 --- !u!114 &5316304471600521873
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -46206,6 +46573,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b28d2e0ec46073e42a8aaeb342e837c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerInventory: {fileID: 6475620730627094871}
   killCounterController: {fileID: 7198316378760082317}
   gameOverScreen: {fileID: 8512199826292790606}
   loader: {fileID: 2671049237676878303}
@@ -46237,12 +46605,14 @@ MonoBehaviour:
   loader: {fileID: 2671049237676878303}
   inventory: {fileID: 6475620730627094871}
   bareHandsMovement: {fileID: 7998668056606014103}
-  attackRadius: {x: 0.31, y: 0.33, z: 0.32}
+  attackRadius: 0.25
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 8192
-  impactFirstFistPoint: {fileID: 6463215277176470508}
-  impactSecondFistPoint: {fileID: 1645221570562652169}
+  impactFirstFistPoint: {fileID: 4217746481394098688}
+  impactSecondFistPoint: {fileID: 7868843794308448928}
+  _hitEnemiesFirstFist: []
+  _hitEnemiesSecondFist: []
 --- !u!114 &4158273765220117195
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -46301,7 +46671,6 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 3197376394441458163}
   - {fileID: 4920152902683292829}
-  - {fileID: 835355285967617485}
   - {fileID: 2591908786426449395}
   - {fileID: 5516893389093601067}
   - {fileID: 2671049237676878303}
@@ -46313,6 +46682,7 @@ MonoBehaviour:
   - {fileID: 5383506705213216986}
   - {fileID: 8343728195109147783}
   - {fileID: 6475620730627094871}
+  - {fileID: 835355285967617485}
   - {fileID: 5316304471600521873}
   - {fileID: 4138419968400069941}
   - {fileID: 8883263492747455}
@@ -46327,6 +46697,10 @@ MonoBehaviour:
   - {fileID: 1373600756197763605}
   - {fileID: 6339851055258334585}
   - {fileID: 4473900367103220776}
+  - {fileID: 1892986559066851962}
+  - {fileID: 2081829643331837765}
+  - {fileID: 5189147756967244705}
+  - {fileID: 5222543667287124414}
   - {fileID: 4497955412935404956}
   - {fileID: 1249730166028085310}
   - {fileID: 7513633598931207137}
@@ -46384,8 +46758,8 @@ MonoBehaviour:
   m_Script: {fileID: 1039544458, guid: e725a070cec140c4caffb81624c8c787, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Config: 3
-  BroadRadius: 1.8374405
+  Config: -1
+  BroadRadius: 1.8397155
   Offset: {x: 0, y: 0, z: 0}
   GizmosColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
   Hitboxes:
@@ -46414,7 +46788,7 @@ Animator:
   m_Controller: {fileID: 0}
   m_CullingMode: 1
   m_UpdateMode: 0
-  m_ApplyRootMotion: 1
+  m_ApplyRootMotion: 0
   m_LinearVelocityBlending: 0
   m_StabilizeFeet: 0
   m_WarningMessage: 
@@ -46467,90 +46841,6 @@ MonoBehaviour:
   - m_Rig: {fileID: 7064045330688745863}
     m_Active: 1
   m_Effectors: []
---- !u!114 &3252522565171559214
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8689549338059659052}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b2d8418b0b9634b1892b0268dd9c2743, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  boneShape: 1
-  drawBones: 1
-  drawTripods: 0
-  boneSize: 1
-  tripodSize: 1
-  boneColor: {r: 0, g: 0, b: 1, a: 0.5}
-  m_Transforms:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
 --- !u!1 &8726464459012578213
 GameObject:
   m_ObjectHideFlags: 0
