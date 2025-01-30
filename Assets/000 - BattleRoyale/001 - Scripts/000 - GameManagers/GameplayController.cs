@@ -19,7 +19,9 @@ public enum InputButton
     SwitchPrimary,
     SwitchSecondary,
     SwitchTrap,
-    ActiveTouch
+    ActiveTouch,
+    ArmorRepair,
+    Heal
 }
 
 public enum HoldInputButtons
@@ -56,6 +58,8 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     [MyBox.ReadOnly][SerializeField] public bool SwitchPrimary;
     [MyBox.ReadOnly][SerializeField] public bool SwitchSecondary;
     [MyBox.ReadOnly][SerializeField] public bool SwitchTrap;
+    [MyBox.ReadOnly][SerializeField] public bool ArmorRepair;
+    [MyBox.ReadOnly][SerializeField] public bool Heal;
     [MyBox.ReadOnly][SerializeField] public int ActiveTouch;
     [MyBox.ReadOnly][SerializeField] private bool resetInput;
     [MyBox.ReadOnly][SerializeField] private bool doneInitialize;
@@ -106,6 +110,10 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.SwitchSecondary.canceled += _ => SwitchSecondaryStop();
             gameplayInputs.Gameplay.SwitchTrap.started += _ => SwitchTrapStart();
             gameplayInputs.Gameplay.SwitchTrap.canceled += _ => SwitchTrapStop();
+            gameplayInputs.Gameplay.Heal.started += _ => HealStart();
+            gameplayInputs.Gameplay.Heal.canceled += _ => HealStop();
+            gameplayInputs.Gameplay.ArmorRepair.started += _ => ArmorRepairStart();
+            gameplayInputs.Gameplay.ArmorRepair.canceled += _ => ArmorRepairStop();
 
             Runner.AddCallbacks(this);
             Debug.Log($"Done init controls");
@@ -136,16 +144,15 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.SwitchSecondary.canceled -= _ => SwitchSecondaryStop();
             gameplayInputs.Gameplay.SwitchTrap.started -= _ => SwitchTrapStart();
             gameplayInputs.Gameplay.SwitchTrap.canceled -= _ => SwitchTrapStop();
+            gameplayInputs.Gameplay.Heal.started -= _ => HealStart();
+            gameplayInputs.Gameplay.Heal.canceled -= _ => HealStop();
+            gameplayInputs.Gameplay.ArmorRepair.started -= _ => ArmorRepairStart();
+            gameplayInputs.Gameplay.ArmorRepair.canceled -= _ => ArmorRepairStop();
 
             gameplayInputs.Disable();
             EnhancedTouchSupport.Disable();
             Runner.RemoveCallbacks(this);
         }
-    }
-
-    private void LateUpdate()
-    {
-
     }
 
     #region LOCAL INPUTS
@@ -241,6 +248,27 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         SwitchHands = true;
     }
 
+    private void HealStart()
+    {
+        Debug.Log($"Heal pressed");
+        Heal = true;
+    }
+
+    private void HealStop()
+    {
+        Heal = false;
+    }
+
+    private void ArmorRepairStart()
+    {
+        ArmorRepair = true;
+    }
+
+    private void ArmorRepairStop()
+    {
+        ArmorRepair = false;
+    }
+
     #endregion
 
     #region NETWORK
@@ -268,6 +296,8 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         myInput.Buttons.Set(InputButton.SwitchPrimary, SwitchPrimary);
         myInput.Buttons.Set(InputButton.SwitchSecondary, SwitchSecondary);
         myInput.Buttons.Set(InputButton.SwitchTrap, SwitchTrap);
+        myInput.Buttons.Set(InputButton.Heal, Heal);
+        myInput.Buttons.Set(InputButton.ArmorRepair, ArmorRepair);
         myInput.HoldInputButtons.Set(HoldInputButtons.Shoot, Shoot);
     }
 

@@ -155,8 +155,6 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-
-
     private void TouchFingerDown(Finger finger)
     {
         if (IsTouchInJoystickArea(finger.screenPosition) && !touchRoles.ContainsKey(finger.index))
@@ -182,7 +180,6 @@ public class PlayerController : NetworkBehaviour
             }
         }
     }
-
 
     public override void FixedUpdateNetwork()
     {
@@ -218,6 +215,14 @@ public class PlayerController : NetworkBehaviour
     }
 
     #region CONTROLLERS
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    public void RPC_ResetMovementOnMoveBattle()
+    {
+        IsShooting = false;
+        IsProne = false;
+        IsCrouch = false;
+    }
 
     private void InputControlls()
     {

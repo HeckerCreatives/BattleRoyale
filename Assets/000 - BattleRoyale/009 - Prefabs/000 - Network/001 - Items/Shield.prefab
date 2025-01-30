@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 857726766820582720}
-  - component: {fileID: 7622779821149059729}
+  - component: {fileID: 6874718661963209029}
   - component: {fileID: 91142540133084581}
   - component: {fileID: 7894227427262779223}
   - component: {fileID: 1519240528620062772}
@@ -29,14 +29,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6314472852876574868}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.03126275, y: -0.8995428, z: -0.0032018716, w: 0.43570077}
+  m_LocalRotation: {x: -0.031263053, y: -0.89954126, z: -0.0031990306, w: 0.43570393}
   m_LocalPosition: {x: 45.576958, y: 33.22328, z: 37590.07}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: -52.199, y: -148.843, z: 19.761}
---- !u!114 &7622779821149059729
+  m_LocalEulerAnglesHint: {x: -1.891, y: -128.363, z: 3.066}
+--- !u!114 &6874718661963209029
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -45,11 +45,26 @@ MonoBehaviour:
   m_GameObject: {fileID: 6314472852876574868}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8613263cd7b411046901e332d9d9c051, type: 3}
+  m_Script: {fileID: 11500000, guid: 58e432449cdabfd42890861b85aa9062, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _ItemID: 
-  _ArmorLeft: 0
+  dropRotation: {x: 0.892, y: -87.461, z: -73.403}
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  impactSize: {x: 0, y: 0, z: 0}
+  impactPoint: {fileID: 0}
+  _WeaponID: 
+  _WeaponName: 
+  _Ammo: 0
+  _TempPlayer: {fileID: 0}
+  _Back: {fileID: 0}
+  _Hand: {fileID: 0}
+  _IsPickedUp: 0
+  _IsHand: 0
+  _DropPosition: {x: 0, y: 0, z: 0}
+  _hitEnemiesFirst: []
+  _hitEnemiesSecond: []
 --- !u!33 &91142540133084581
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -115,7 +130,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -138,5 +153,5 @@ MonoBehaviour:
   Flags: 262145
   NestedObjects: []
   NetworkedBehaviours:
-  - {fileID: 7622779821149059729}
+  - {fileID: 6874718661963209029}
   ForceRemoteRenderTimeframe: 0

@@ -31,6 +31,7 @@ public class PlayerItemCheckerController : NetworkBehaviour
     [SerializeField] private NetworkObject spearHandHandle;
     [SerializeField] private NetworkObject rifleHandHandle;
     [SerializeField] private NetworkObject bowHandHandle;
+    [SerializeField] private NetworkObject shieldHandHandle;
 
     [field: Header("DEBUGGER")]
     [field: MyBox.ReadOnly][field: SerializeField] public CrateController CrateObject { get; set; }
@@ -230,19 +231,7 @@ public class PlayerItemCheckerController : NetworkBehaviour
     private void AddItemButton(string itemID, int value, bool isCrateItem)
     {
         GameObject tempbuttons = Instantiate(itemButton, contentTF);
-
-        NetworkObject tempback = null;
-        NetworkObject temphand = null;
         int tempWeaponIndex = 0;
-
-        switch (itemID)
-        {
-            case "001":
-                tempback = swordBackHandle;
-                temphand = swordHandHandle;
-                tempWeaponIndex = 2;
-                break;
-        }
 
         tempbuttons.GetComponent<Button>().onClick.AddListener(() =>
         {
@@ -252,8 +241,24 @@ public class PlayerItemCheckerController : NetworkBehaviour
             }
             else
             {
+                if (playerInventory.PrimaryWeapon != null)
+                {
+                    switch (playerInventory.PrimaryWeapon.WeaponID)
+                    {
+                        case "001":
+                        case "002":
+                            tempWeaponIndex = 2;
+                            playerInventory.PrimaryWeapon.RPC_DropWeapon();
+                            break;
+                        case "007":
+                            tempWeaponIndex = 7;
+                            playerInventory.Shield.RPC_DropWeapon();
+                            break;
+                    }
+                }
+
                 var weapon = localNearbyWeapon.FirstOrDefault(w => w.GetComponent<WeaponItem>()?.WeaponID == itemID);
-                weapon?.GetComponent<WeaponItem>()?.RPC_RepickupWeapon(Object, Back(itemID), Hand(itemID), 0, playerInventory.WeaponIndex == 1 ? true : tempWeaponIndex == playerInventory.WeaponIndex ? true : false);
+                weapon?.GetComponent<WeaponItem>()?.RPC_RepickupWeapon(Object, Back(itemID), Hand(itemID), playerInventory.WeaponIndex == 1 || tempWeaponIndex == playerInventory.WeaponIndex || tempWeaponIndex == 7);
             }
         });
 
@@ -271,6 +276,8 @@ public class PlayerItemCheckerController : NetworkBehaviour
                 return swordHandHandle;
             case "002":
                 return spearHandHandle;
+            case "007":
+                return shieldHandHandle;
             default:
                 return null;
         }
@@ -284,6 +291,8 @@ public class PlayerItemCheckerController : NetworkBehaviour
                 return swordBackHandle;
             case "002":
                 return spearBackHandle;
+            case "007":
+                return shieldHandHandle;
             default:
                 return null;
         }

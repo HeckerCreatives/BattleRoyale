@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Unity.Collections;
 using UnityEngine;
-
+using UnityEngine.UI;
 
 public class PlayerInventory : NetworkBehaviour
 {
@@ -42,11 +42,16 @@ public class PlayerInventory : NetworkBehaviour
     [SerializeField] private NetworkObject spearHandHandle;
     [SerializeField] private NetworkObject rifleHandHandle;
     [SerializeField] private NetworkObject bowHandHandle;
+    [SerializeField] private NetworkObject shieldHandHandle;
 
     [Header("WEAPON EQUIP BUTTONS")]
     [SerializeField] private WeaponEquipBtnController HandBtn;
     [SerializeField] private WeaponEquipBtnController PrimaryBtn;
     [SerializeField] private WeaponEquipBtnController SecondaryBtn;
+
+    [Header("HEAL")]
+    [SerializeField] private Image healCountIndicator;
+    [SerializeField] private Image repairCountIndicator;
 
     [field: Header("DEBUGGER NETWORK")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsSkinInitialized { get; set; }
@@ -58,6 +63,10 @@ public class PlayerInventory : NetworkBehaviour
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int ClothingColorIndex { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int SkinColorIndex { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public WeaponItem PrimaryWeapon { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public WeaponItem Shield { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public int HealCount { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public int ArmorRepairCount { get; set; }
+
 
     //  =========================
 
@@ -94,6 +103,8 @@ public class PlayerInventory : NetworkBehaviour
             HandBtn.SetIndicator(WeaponIndex == 1 ? true : false);
             PrimaryBtn.SetIndicator(WeaponIndex == 2 ? true : false);
             PrimaryBtn.ChangeSpriteButton(PrimaryWeapon != null ? PrimaryWeapon.WeaponID : null);
+            healCountIndicator.fillAmount = 1 - (float)HealCount / 4;
+            repairCountIndicator.fillAmount = 1 - (float)ArmorRepairCount / 4;
         }
     }
 

@@ -58,6 +58,11 @@ public class PlayerHealth : NetworkBehaviour
 
     public override void Render()
     {
+        if (playerInventory.Shield != null)
+        {
+            armorSlider.value = playerInventory.Shield.Ammo / 100f;
+        }
+
         foreach (var change in _changeDetector.DetectChanges(this))
         {
             switch (change)
@@ -176,12 +181,33 @@ public class PlayerHealth : NetworkBehaviour
     {
         if (CurrentHealth <= 0) return;
 
-        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+        //if (ServerManager.CurrentGameState != GameState.ARENA) return;
 
-        CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - damage);
+        float remainingDamage = damage;
 
-        nobject.GetComponent<PlayerGameOverScreen>().HitPoints += damage;
+        // Apply damage to the shield first
+        if (playerInventory.Shield != null && playerInventory.Shield.Ammo > 0)
+        {
+            if (playerInventory.Shield.Ammo >= remainingDamage)
+            {
+                playerInventory.Shield.Ammo -= (int)remainingDamage;
+                remainingDamage = 0; // Shield absorbed all damage
+            }
+            else
+            {
+                remainingDamage -= playerInventory.Shield.Ammo;
+                playerInventory.Shield.Ammo = 0; // Shield fully depleted
+            }
+        }
 
+        // Apply remaining damage to health
+        if (remainingDamage > 0)
+        {
+            CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - remainingDamage);
+            nobject.GetComponent<PlayerGameOverScreen>().HitPoints += remainingDamage;
+        }
+
+        // Check if player is dead
         if (CurrentHealth <= 0)
         {
             deathMovement.MakePlayerDead();
@@ -194,6 +220,12 @@ public class PlayerHealth : NetworkBehaviour
             {
                 playerInventory.PrimaryWeapon.DropWeapon();
                 playerInventory.PrimaryWeapon = null;
+            }
+
+            if (playerInventory.Shield != null)
+            {
+                playerInventory.Shield.DropWeapon();
+                playerInventory.Shield = null;
             }
         }
     }

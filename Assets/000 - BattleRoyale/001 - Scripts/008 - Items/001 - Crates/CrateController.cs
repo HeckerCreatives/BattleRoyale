@@ -7,6 +7,7 @@ public class CrateController : NetworkBehaviour
 {
     [SerializeField] private NetworkObject swordObj;
     [SerializeField] private NetworkObject spearObj;
+    [SerializeField] private NetworkObject shieldObj;
 
     //  ====================
 
@@ -30,6 +31,8 @@ public class CrateController : NetworkBehaviour
         if (!HasStateAuthority) return;
 
         if (!Weapons.ContainsKey(itemkey)) return;
+
+        int tempAmmo = Weapons[itemkey]; 
 
         Weapons.Remove(itemkey);
 
@@ -80,6 +83,42 @@ public class CrateController : NetworkBehaviour
 
                 playerInventory.PrimaryWeapon = tempweapon.GetComponent<WeaponItem>();
                 playerInventory.WeaponIndex = 2;
+                break;
+            case "007":
+
+                if (playerInventory.Shield != null)
+                    playerInventory.Shield.DropWeapon();
+
+                tempweapon = Runner.Spawn(shieldObj, Vector3.zero, Quaternion.identity, player.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                {
+                    obj.GetComponent<WeaponItem>().InitializeItem(
+                        itemname,
+                        itemkey.ToString(),
+                        player,
+                        back,
+                        hand,
+                        tempAmmo,
+                        true
+                    );
+                });
+
+                playerInventory.Shield = tempweapon.GetComponent<WeaponItem>();
+
+                break;
+            case "008":
+
+                if (playerInventory.HealCount >= 4)
+                    break;
+
+                playerInventory.HealCount++;
+
+                break;
+            case "009":
+
+                if (playerInventory.ArmorRepairCount >= 4) break;
+
+                playerInventory.ArmorRepairCount++;
+
                 break;
         }
     }

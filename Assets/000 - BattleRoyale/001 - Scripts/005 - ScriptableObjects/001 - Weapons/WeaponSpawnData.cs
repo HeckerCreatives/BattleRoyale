@@ -88,6 +88,10 @@ public class WeaponSpawnData : ScriptableObject
                 return "Bow Ammo";
             case "007":
                 return "Armor";
+            case "008":
+                return "Heal";
+            case "009":
+                return "Armor Repair";
             default: return "";
         }
     }

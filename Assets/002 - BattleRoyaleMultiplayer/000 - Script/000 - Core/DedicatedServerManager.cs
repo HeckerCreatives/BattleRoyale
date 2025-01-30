@@ -150,9 +150,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             //"bow", "bow", "bow", "bow", "bow", // 5%
             "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", // 15%
             "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", // 15%
-            //"heal", "heal", "heal", "heal", "heal", "heal", "heal", "heal", "heal", "heal", // 10%
-            //"repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", // 10%
-            //"armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor" // 10%
+            "heal", "heal", "heal", "heal", "heal", "heal", "heal", "heal", "heal", "heal", // 10%
+            "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", // 10%
+            "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor" // 10%
             //"rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", // Ammo items can be re-added similarly if needed
             //"bow ammo", "bow ammo", "bow ammo", "bow ammo",
         };
@@ -166,7 +166,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             { "bow", "004" },
             { "rifle ammo", "005" },
             { "bow ammo", "006" },
-            { "armor", "007" }
+            { "armor", "007" },
+            { "heal", "008" },
+            { "repair armor", "009" }
         };
 
         Dictionary<string, int> selectedItems = new Dictionary<string, int>();
@@ -192,6 +194,10 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             else if (selectedItem == "armor")
             {
                 selectedItems[itemID] = 100;
+            }
+            else if (selectedItem == "heal" || selectedItem == "repair armor")
+            {
+                selectedItems[itemID] = 1;
             }
             else
             {

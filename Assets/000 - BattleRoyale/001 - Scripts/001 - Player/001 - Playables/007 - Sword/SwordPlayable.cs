@@ -12,6 +12,8 @@ public class SwordPlayable : NetworkBehaviour
     [SerializeField] private PlayerController playerController;
     [SerializeField] private PlayerInventory playerInventory;
     [SerializeField] private DeathMovement deathMovement;
+    [SerializeField] private HealPlayables heal;
+    [SerializeField] private RepairArmorPlayables repairArmorPlayables;
 
     [Space]
     [SerializeField] private SimpleKCC characterController;
@@ -129,6 +131,12 @@ public class SwordPlayable : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
+        if (heal.Healing || repairArmorPlayables.Repairing)
+        {
+            ResetAttackAnimation();
+            return;
+        }
+
         if (playerInventory.WeaponIndex == 2)
         {
             if (characterController.IsGrounded)
@@ -254,7 +262,9 @@ public class SwordPlayable : NetworkBehaviour
         if (playerInventory.WeaponIndex != 2)
             return;
 
-        if (controllerInput.Buttons.IsSet(InputButton.Melee) && characterController.IsGrounded)
+        if (heal.Healing) return;
+
+        if (controllerInput.Buttons.IsSet(InputButton.Melee) && characterController.IsGrounded && !heal.Healing && !repairArmorPlayables.Repairing)
         {
             if (AttackStep <= 2)
             {
@@ -304,6 +314,8 @@ public class SwordPlayable : NetworkBehaviour
                 {
                     CanAttack = false;
 
+                    ResetFirstAttack();
+
                     var punchOnePlayable = clipPlayables[1];
                     punchOnePlayable.SetTime(0); // Reset time
                     punchOnePlayable.Play();    // Start playing
@@ -315,6 +327,8 @@ public class SwordPlayable : NetworkBehaviour
                 else if (AttackStep == 2)
                 {
                     CanAttack = false;
+
+                    ResetSecondAttack();
 
                     var punchTwoPlayable = clipPlayables[2];
                     punchTwoPlayable.SetTime(0); // Reset time
@@ -331,6 +345,8 @@ public class SwordPlayable : NetworkBehaviour
                 {
                     CanAttack = false;
 
+                    ResetFirstAttack();
+
                     var punchOnePlayable = clipPlayables[3];
                     punchOnePlayable.SetTime(0); // Reset time
                     punchOnePlayable.Play();    // Start playing
@@ -342,6 +358,8 @@ public class SwordPlayable : NetworkBehaviour
                 else if (AttackStep == 2)
                 {
                     CanAttack = false;
+
+                    ResetSecondAttack();
 
                     var punchTwoPlayable = clipPlayables[4];
                     punchTwoPlayable.SetTime(0); // Reset time

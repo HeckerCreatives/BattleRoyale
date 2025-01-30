@@ -12,6 +12,7 @@ public class JumpMovement : NetworkBehaviour
 {
     [SerializeField] private MainCorePlayable mainCorePlayable;
     [SerializeField] private PlayerController controller;
+    [SerializeField] private HealPlayables heal;
 
     [Space]
     [SerializeField] private SimpleKCC characterController;
@@ -121,7 +122,7 @@ public class JumpMovement : NetworkBehaviour
 
         controllerInput = input;
 
-        if (HasStateAuthority && controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Jump) && characterController.IsGrounded && !IsJumping && IsSlopeWalkable(groundNormal))
+        if (HasStateAuthority && controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Jump) && characterController.IsGrounded && !IsJumping && IsSlopeWalkable(groundNormal) && !heal.Healing)
         {
             if (controller.IsCrouch || controller.IsProne)
             {

@@ -35,14 +35,7 @@ public class WeaponItem : NetworkBehaviour
     private readonly List<LagCompensatedHit> hitsFirst = new List<LagCompensatedHit>();
     private readonly List<LagCompensatedHit> hitsSecond = new List<LagCompensatedHit>();
 
-    private ChangeDetector _changeDetector;
-
     //  ===========================
-
-    public override void Spawned()
-    {
-        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
-    }
 
     public void InitializeItem(string name, string id, NetworkObject tempPlayer, NetworkObject back, NetworkObject hand, int ammo, bool isHand = false)
     {
@@ -60,20 +53,11 @@ public class WeaponItem : NetworkBehaviour
     {
         SetWeaponParent();
 
-        foreach (var change in _changeDetector.DetectChanges(this))
+        if (!IsPickedUp)
         {
-            switch (change)
-            {
-                case nameof(DropPosition):
-
-                    Debug.Log($"Drop Weapon, Pos: {DropPosition}");
-
-                    transform.parent = null;
-                    transform.position = new Vector3(DropPosition.x, DropPosition.y + 0.1f, DropPosition.z);
-                    transform.rotation = Quaternion.Euler(dropRotation);
-
-                    break;
-            }
+            transform.parent = null;
+            transform.position = new Vector3(DropPosition.x, DropPosition.y + 0.1f, DropPosition.z);
+            transform.rotation = Quaternion.Euler(dropRotation);
         }
     }
 
@@ -98,7 +82,7 @@ public class WeaponItem : NetworkBehaviour
     }
 
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    public void RPC_RepickupWeapon(NetworkObject tempPlayer, NetworkObject back, NetworkObject hand, int ammo, bool isHand = false)
+    public void RPC_RepickupWeapon(NetworkObject tempPlayer, NetworkObject back, NetworkObject hand, bool isHand = false)
     {
         Object.AssignInputAuthority(tempPlayer.InputAuthority);
 
@@ -112,22 +96,57 @@ public class WeaponItem : NetworkBehaviour
 
         Back = back;
         Hand = hand;
-        Ammo = ammo;
         IsPickedUp = true;
         IsHand = isHand;
     }
 
     public void DropWeapon()
     {
-        IsPickedUp = false;
+        Debug.Log($"Drop weapon executed with no RPC executed by: {HasStateAuthority}");
         Back = null;
         Hand = null;
         IsHand = false;
         transform.parent = null;
-        transform.position = DropPosition;
+        transform.position = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
         transform.rotation = Quaternion.Euler(dropRotation);
-        DropPosition = TempPlayer.transform.position;
+        DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
+        TempPlayer.GetComponent<PlayerInventory>().PrimaryWeapon = null;
         TempPlayer = null;
+        IsPickedUp = false;
+        Object.RemoveInputAuthority();
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    public void RPC_DropWeaponOnMoveBattle()
+    {
+        Back = null;
+        Hand = null;
+        IsHand = false;
+        transform.parent = null;
+        transform.position = Vector3.zero;
+        transform.rotation = Quaternion.Euler(dropRotation);
+        DropPosition = Vector3.zero;
+        TempPlayer.GetComponent<PlayerInventory>().WeaponIndex = 1;
+        TempPlayer.GetComponent<PlayerInventory>().PrimaryWeapon = null;
+        TempPlayer = null;
+        IsPickedUp = false;
+        Object.RemoveInputAuthority();
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    public void RPC_DropWeapon()
+    {
+        Back = null;
+        Hand = null;
+        IsHand = false;
+        transform.parent = null;
+        transform.position = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
+        transform.rotation = Quaternion.Euler(dropRotation);
+        DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
+        TempPlayer.GetComponent<PlayerInventory>().WeaponIndex = 1;
+        TempPlayer.GetComponent<PlayerInventory>().PrimaryWeapon = null;
+        TempPlayer = null;
+        IsPickedUp = false;
         Object.RemoveInputAuthority();
     }
 

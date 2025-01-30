@@ -14,6 +14,8 @@ public class BareHandsMovement : NetworkBehaviour
     [SerializeField] private PlayerInventory playerInventory;
     [SerializeField] private FistWeaponHandler fistWeaponHandler;
     [SerializeField] private DeathMovement deathMovement;
+    [SerializeField] private HealPlayables healPlayables;
+    [SerializeField] private RepairArmorPlayables repairArmorPlayables;
 
     [Space]
     [SerializeField] private SimpleKCC characterController;
@@ -125,6 +127,13 @@ public class BareHandsMovement : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
+        if (healPlayables.Healing || repairArmorPlayables.Repairing)
+        {
+            ResetAttackAnimation();
+
+            return;
+        }
+
         if (playerInventory.WeaponIndex == 1)
         {
             if (characterController.IsGrounded)
@@ -250,7 +259,7 @@ public class BareHandsMovement : NetworkBehaviour
         if (playerInventory.WeaponIndex != 1)
             return;
 
-        if (controllerInput.Buttons.IsSet(InputButton.Melee) && characterController.IsGrounded)
+        if (controllerInput.Buttons.IsSet(InputButton.Melee) && characterController.IsGrounded && !healPlayables.Healing && !repairArmorPlayables.Repairing)
         {
             if (AttackStep <= 2)
             {
@@ -284,6 +293,10 @@ public class BareHandsMovement : NetworkBehaviour
     {
         if (!HasStateAuthority) return;
 
+        if (healPlayables.Healing) return;
+
+        if (repairArmorPlayables.Repairing) return;
+
         if (AttackStep == 0 || CanCombo)
         {
             AttackStep++;
@@ -301,6 +314,8 @@ public class BareHandsMovement : NetworkBehaviour
                 {
                     CanAttack = false;
 
+                    ResetFirstAttack();
+
                     var punchOnePlayable = clipPlayables[1];
                     SetAttackTickRate(punchOnePlayable); // Reset time
                     punchOnePlayable.Play();    // Start playing
@@ -312,6 +327,8 @@ public class BareHandsMovement : NetworkBehaviour
                 else if (AttackStep == 2)
                 {
                     CanAttack = false;
+
+                    ResetSecondAttack();
 
                     var punchTwoPlayable = clipPlayables[2];
                     SetAttackTickRate(punchTwoPlayable); // Reset time
@@ -328,6 +345,8 @@ public class BareHandsMovement : NetworkBehaviour
                 {
                     CanAttack = false;
 
+                    ResetFirstAttack();
+
                     var punchOnePlayable = clipPlayables[3];
                     SetAttackTickRate(punchOnePlayable); // Reset time
                     punchOnePlayable.Play();    // Start playing
@@ -339,6 +358,8 @@ public class BareHandsMovement : NetworkBehaviour
                 else if (AttackStep == 2)
                 {
                     CanAttack = false;
+
+                    ResetSecondAttack();
 
                     var punchTwoPlayable = clipPlayables[4];
                     SetAttackTickRate(punchTwoPlayable); // Reset time
@@ -376,18 +397,6 @@ public class BareHandsMovement : NetworkBehaviour
         {
             playables.SetTime(0);
         }
-    }
-
-    private IEnumerator PerformCanAttack(int delayInTicks)
-    {
-        int targetTick = Runner.Tick + delayInTicks;
-
-        while (Runner.Tick < targetTick)
-        {
-            yield return null;
-        }
-
-        CanAttack = true;
     }
 
     private void ResetFirstAttack() => fistWeaponHandler.ResetFirstAttack();

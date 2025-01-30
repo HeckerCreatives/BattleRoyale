@@ -31,6 +31,8 @@ public class MainCorePlayable : NetworkBehaviour
     [SerializeField] private SwordBasicMovement swordBasicMovement;
     [SerializeField] private SwordPlayable spearPlayable;
     [SerializeField] private SwordBasicMovement spearBasicMovement;
+    [SerializeField] private HealPlayables healPlayables;
+    [SerializeField] private RepairArmorPlayables repairArmorPlayables;
 
     [Header("DEBUGGER")]
     [SerializeField] private float basicMovementWeight;
@@ -44,6 +46,8 @@ public class MainCorePlayable : NetworkBehaviour
     [SerializeField] private float swordWeight;
     [SerializeField] private float spearBasicMovementWeight;
     [SerializeField] private float spearWeight;
+    [SerializeField] private float healWeight;
+    [SerializeField] private float repairArmorWeight;
 
     [field: Space]
     [Networked][field: SerializeField] public float TickRateAnimation { get; set; }
@@ -61,7 +65,7 @@ public class MainCorePlayable : NetworkBehaviour
         var output = AnimationPlayableOutput.Create(playableGraph, "AnimationOutput", animator);
 
         // Create the main playable (AnimationLayerMixerPlayable)
-        mainPlayable = AnimationLayerMixerPlayable.Create(playableGraph, 11);
+        mainPlayable = AnimationLayerMixerPlayable.Create(playableGraph, 13);
         output.SetSourcePlayable(mainPlayable);
 
         if (basicMovement != null)
@@ -149,6 +153,22 @@ public class MainCorePlayable : NetworkBehaviour
             mainPlayable.SetLayerMaskFromAvatarMask(10, LowerBodyMask);
         }
 
+        if (healPlayables != null)
+        {
+            healPlayables.Initialize(playableGraph);
+            playableGraph.Connect(healPlayables.GetPlayable(), 0, mainPlayable, 11);
+            mainPlayable.SetInputWeight(11, 0f); // Full-body layer weight
+            mainPlayable.SetLayerMaskFromAvatarMask(11, upperBodyMask);
+        }
+
+        if (repairArmorPlayables != null)
+        {
+            repairArmorPlayables.Initialize(playableGraph);
+            playableGraph.Connect(repairArmorPlayables.GetPlayable(), 0, mainPlayable, 12);
+            mainPlayable.SetInputWeight(12, 0f); // Full-body layer weight
+            mainPlayable.SetLayerMaskFromAvatarMask(12, upperBodyMask);
+        }
+
         playableGraph.Play();
     }
 
@@ -160,9 +180,26 @@ public class MainCorePlayable : NetworkBehaviour
             {
 
                 deadWeight = 0;
-
                 if (characterController.IsGrounded)
                 {
+                    if (healPlayables.Healing)
+                    {
+                        healWeight = Mathf.Lerp(healWeight, 1f, Time.deltaTime * 5f);
+                    }
+                    else
+                    {
+                        healWeight = Mathf.Lerp(healWeight, 0f, Time.deltaTime * 5f);
+                    }
+
+                    if (repairArmorPlayables.Repairing)
+                    {
+                        repairArmorWeight = Mathf.Lerp(repairArmorWeight, 1f, Time.deltaTime * 5f);
+                    }
+                    else
+                    {
+                        repairArmorWeight = Mathf.Lerp(repairArmorWeight, 0f, Time.deltaTime * 5f);
+                    }
+
                     if (!controller.IsCrouch && !controller.IsProne)
                     {
                         if (inventory.WeaponIndex == 1)
@@ -272,6 +309,8 @@ public class MainCorePlayable : NetworkBehaviour
                     swordWeight = Mathf.Lerp(swordWeight, 0f, Time.deltaTime * 5f);
                     spearWeight = Mathf.Lerp(spearWeight, 0f, Time.deltaTime * 5f);
                     spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 0f, Time.deltaTime * 5f);
+                    healWeight = Mathf.Lerp(healWeight, 0f, Time.deltaTime * 5f);
+                    repairArmorWeight = Mathf.Lerp(repairArmorWeight, 0f, Time.deltaTime * 5f);
                 }
             }
             else
@@ -286,6 +325,8 @@ public class MainCorePlayable : NetworkBehaviour
                 fallingWeight = Mathf.Lerp(fallingWeight, 0f, Time.deltaTime * 5f);
                 swordWeight = Mathf.Lerp(swordWeight, 0f, Time.deltaTime * 5f);
                 spearWeight = Mathf.Lerp(spearWeight, 0f, Time.deltaTime * 5f);
+                healWeight = Mathf.Lerp(healWeight, 0f, Time.deltaTime * 5f);
+                repairArmorWeight = Mathf.Lerp(repairArmorWeight, 0f, Time.deltaTime * 5f);
                 deadWeight = Mathf.Lerp(deadWeight, 1f, Time.deltaTime * 5f);
             }
 
@@ -301,6 +342,8 @@ public class MainCorePlayable : NetworkBehaviour
             mainPlayable.SetInputWeight(8, swordBasicMovementWeight);
             mainPlayable.SetInputWeight(9, spearWeight);
             mainPlayable.SetInputWeight(10, spearBasicMovementWeight);
+            mainPlayable.SetInputWeight(11, healWeight);
+            mainPlayable.SetInputWeight(12, repairArmorWeight);
         }
     }
 

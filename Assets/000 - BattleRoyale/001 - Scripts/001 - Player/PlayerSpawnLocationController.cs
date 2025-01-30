@@ -9,6 +9,7 @@ using UnityEngine;
 public class PlayerSpawnLocationController : NetworkBehaviour
 {
     [SerializeField] public PlayerInventory inventory;
+    [SerializeField] private PlayerController controller;
 
     [field: Header("DEBUGGER")]
     [field: MyBox.ReadOnly][field: SerializeField] [Networked] public DedicatedServerManager ServerManager { get; set; }
@@ -43,14 +44,30 @@ public class PlayerSpawnLocationController : NetworkBehaviour
             if (HasInputAuthority)
             {
                 GameManager.Instance.SceneController.SpawnArenaLoading = true;
+                GameManager.Instance.SceneController.AddActionLoadinList(ResetControllerMovement());
+                GameManager.Instance.SceneController.AddActionLoadinList(DropWeaponOnMoveBattleField());
                 GameManager.Instance.SceneController.AddActionLoadinList(ReadyForBattle());
                 GameManager.Instance.SceneController.ActionPass = true;
             }
         }
     }
 
+    IEnumerator DropWeaponOnMoveBattleField()
+    {
+        if (inventory.PrimaryWeapon != null) inventory.PrimaryWeapon.RPC_DropWeaponOnMoveBattle();
+
+        yield return null;
+    }
+
+    IEnumerator ResetControllerMovement()
+    {
+        controller.RPC_ResetMovementOnMoveBattle();
+
+        yield return null;
+    }
+
     IEnumerator ReadyForBattle()
     {
-        while (!ServerManager.DonePlayerBattlePositions) yield return null;
+        while (!ServerManager.DonePlayerBattlePositions || inventory.PrimaryWeapon != null) yield return null;
     }
 }

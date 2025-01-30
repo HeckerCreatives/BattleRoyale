@@ -85,7 +85,7 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""name"": ""SwitchPrimary"",
                     ""type"": ""Button"",
                     ""id"": ""a65ac0d8-866e-434b-a530-2b70da2bd715"",
-                    ""expectedControlType"": ""Button"",
+                    ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
@@ -103,6 +103,24 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""name"": ""SwitchTrap"",
                     ""type"": ""Button"",
                     ""id"": ""75845407-53d0-4714-a0dc-3fddebc411f1"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""ArmorRepair"",
+                    ""type"": ""Button"",
+                    ""id"": ""44c3eeb2-267f-417f-bd78-f9f13971d178"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Heal"",
+                    ""type"": ""Button"",
+                    ""id"": ""ffbbe895-c394-4da0-8c5a-424bfb641680"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -138,18 +156,7 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""path"": ""<Gamepad>/leftShoulder"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": ""Android"",
-                    ""action"": ""Aim"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""59f542c7-0360-41a6-9e10-42d209ee6a61"",
-                    ""path"": ""<Mouse>/rightButton"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""KeyboardMouse"",
+                    ""groups"": """",
                     ""action"": ""Aim"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -158,17 +165,6 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""name"": """",
                     ""id"": ""88b1fb37-df8d-4a09-b628-93f9383007a5"",
                     ""path"": ""<Gamepad>/rightShoulder"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""Android"",
-                    ""action"": ""Shoot"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""dabb2c32-acdc-4ec5-9cf4-51e7191eab9f"",
-                    ""path"": ""<Mouse>/leftButton"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -182,18 +178,7 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""path"": ""<Gamepad>/buttonEast"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": ""Android"",
-                    ""action"": ""Crouch"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""3901f946-19bf-49aa-9a4b-9bc86c66f1ed"",
-                    ""path"": ""<Keyboard>/leftCtrl"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""KeyboardMouse"",
+                    ""groups"": """",
                     ""action"": ""Crouch"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -204,18 +189,7 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""path"": ""<Gamepad>/buttonNorth"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": ""Android"",
-                    ""action"": ""Prone"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""5bde6d3a-281c-42a4-9d0c-cef0f31e0c08"",
-                    ""path"": ""<Keyboard>/c"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""KeyboardMouse"",
+                    ""groups"": """",
                     ""action"": ""Prone"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -226,18 +200,7 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""path"": ""<Gamepad>/dpad/down"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": ""Android"",
-                    ""action"": ""SwitchHands"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""12a6a670-d148-4dc7-98cd-8fbe313ad73f"",
-                    ""path"": ""<Keyboard>/1"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""KeyboardMouse"",
+                    ""groups"": """",
                     ""action"": ""SwitchHands"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -248,18 +211,7 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""path"": ""<Gamepad>/dpad/left"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": ""Android"",
-                    ""action"": ""SwitchPrimary"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""2c56b628-6579-47fa-8114-b3c1e876041d"",
-                    ""path"": ""<Keyboard>/2"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""KeyboardMouse"",
+                    ""groups"": """",
                     ""action"": ""SwitchPrimary"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -270,18 +222,7 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""path"": ""<Gamepad>/dpad/right"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": ""Android"",
-                    ""action"": ""SwitchSecondary"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
-                    ""id"": ""7cffb620-6237-4e43-9ba6-1c3f06950084"",
-                    ""path"": ""<Keyboard>/3"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": ""KeyboardMouse"",
+                    ""groups"": """",
                     ""action"": ""SwitchSecondary"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -292,19 +233,30 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""path"": ""<Gamepad>/dpad/up"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": ""Android"",
+                    ""groups"": """",
                     ""action"": ""SwitchTrap"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
                 {
                     ""name"": """",
-                    ""id"": ""13fb4623-c25d-42fd-8548-8bd7a394fd56"",
-                    ""path"": ""<Keyboard>/4"",
+                    ""id"": ""0f7e2277-813f-455f-bf28-d11efdd749c3"",
+                    ""path"": ""<Gamepad>/rightTrigger"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": ""KeyboardMouse"",
-                    ""action"": ""SwitchTrap"",
+                    ""groups"": """",
+                    ""action"": ""ArmorRepair"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0e243d23-07e7-43ea-b9b2-e10ee8db457a"",
+                    ""path"": ""<Gamepad>/leftTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Heal"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -341,6 +293,8 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
         m_Gameplay_SwitchPrimary = m_Gameplay.FindAction("SwitchPrimary", throwIfNotFound: true);
         m_Gameplay_SwitchSecondary = m_Gameplay.FindAction("SwitchSecondary", throwIfNotFound: true);
         m_Gameplay_SwitchTrap = m_Gameplay.FindAction("SwitchTrap", throwIfNotFound: true);
+        m_Gameplay_ArmorRepair = m_Gameplay.FindAction("ArmorRepair", throwIfNotFound: true);
+        m_Gameplay_Heal = m_Gameplay.FindAction("Heal", throwIfNotFound: true);
     }
 
     ~@GameplayInputs()
@@ -416,6 +370,8 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Gameplay_SwitchPrimary;
     private readonly InputAction m_Gameplay_SwitchSecondary;
     private readonly InputAction m_Gameplay_SwitchTrap;
+    private readonly InputAction m_Gameplay_ArmorRepair;
+    private readonly InputAction m_Gameplay_Heal;
     public struct GameplayActions
     {
         private @GameplayInputs m_Wrapper;
@@ -429,6 +385,8 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
         public InputAction @SwitchPrimary => m_Wrapper.m_Gameplay_SwitchPrimary;
         public InputAction @SwitchSecondary => m_Wrapper.m_Gameplay_SwitchSecondary;
         public InputAction @SwitchTrap => m_Wrapper.m_Gameplay_SwitchTrap;
+        public InputAction @ArmorRepair => m_Wrapper.m_Gameplay_ArmorRepair;
+        public InputAction @Heal => m_Wrapper.m_Gameplay_Heal;
         public InputActionMap Get() { return m_Wrapper.m_Gameplay; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -465,6 +423,12 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
             @SwitchTrap.started += instance.OnSwitchTrap;
             @SwitchTrap.performed += instance.OnSwitchTrap;
             @SwitchTrap.canceled += instance.OnSwitchTrap;
+            @ArmorRepair.started += instance.OnArmorRepair;
+            @ArmorRepair.performed += instance.OnArmorRepair;
+            @ArmorRepair.canceled += instance.OnArmorRepair;
+            @Heal.started += instance.OnHeal;
+            @Heal.performed += instance.OnHeal;
+            @Heal.canceled += instance.OnHeal;
         }
 
         private void UnregisterCallbacks(IGameplayActions instance)
@@ -496,6 +460,12 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
             @SwitchTrap.started -= instance.OnSwitchTrap;
             @SwitchTrap.performed -= instance.OnSwitchTrap;
             @SwitchTrap.canceled -= instance.OnSwitchTrap;
+            @ArmorRepair.started -= instance.OnArmorRepair;
+            @ArmorRepair.performed -= instance.OnArmorRepair;
+            @ArmorRepair.canceled -= instance.OnArmorRepair;
+            @Heal.started -= instance.OnHeal;
+            @Heal.performed -= instance.OnHeal;
+            @Heal.canceled -= instance.OnHeal;
         }
 
         public void RemoveCallbacks(IGameplayActions instance)
@@ -542,5 +512,7 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
         void OnSwitchPrimary(InputAction.CallbackContext context);
         void OnSwitchSecondary(InputAction.CallbackContext context);
         void OnSwitchTrap(InputAction.CallbackContext context);
+        void OnArmorRepair(InputAction.CallbackContext context);
+        void OnHeal(InputAction.CallbackContext context);
     }
 }
