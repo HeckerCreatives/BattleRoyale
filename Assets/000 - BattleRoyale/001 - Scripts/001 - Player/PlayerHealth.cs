@@ -125,6 +125,12 @@ public class PlayerHealth : NetworkBehaviour
                     playerInventory.PrimaryWeapon.DropWeapon();
                     playerInventory.PrimaryWeapon = null;
                 }
+
+                if (playerInventory.Shield != null)
+                {
+                    playerInventory.Shield.DropShield();
+                    playerInventory.Shield = null;
+                }
             }
         }
     }
@@ -158,6 +164,12 @@ public class PlayerHealth : NetworkBehaviour
             {
                 playerInventory.PrimaryWeapon.DropWeapon();
                 playerInventory.PrimaryWeapon = null;
+            }
+
+            if (playerInventory.Shield != null)
+            {
+                playerInventory.Shield.DropShield();
+                playerInventory.Shield = null;
             }
         }
     }
@@ -224,7 +236,7 @@ public class PlayerHealth : NetworkBehaviour
 
             if (playerInventory.Shield != null)
             {
-                playerInventory.Shield.DropWeapon();
+                playerInventory.Shield.DropShield();
                 playerInventory.Shield = null;
             }
         }

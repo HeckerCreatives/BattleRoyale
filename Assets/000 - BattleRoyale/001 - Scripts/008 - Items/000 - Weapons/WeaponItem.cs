@@ -102,7 +102,6 @@ public class WeaponItem : NetworkBehaviour
 
     public void DropWeapon()
     {
-        Debug.Log($"Drop weapon executed with no RPC executed by: {HasStateAuthority}");
         Back = null;
         Hand = null;
         IsHand = false;
@@ -111,6 +110,21 @@ public class WeaponItem : NetworkBehaviour
         transform.rotation = Quaternion.Euler(dropRotation);
         DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
         TempPlayer.GetComponent<PlayerInventory>().PrimaryWeapon = null;
+        TempPlayer = null;
+        IsPickedUp = false;
+        Object.RemoveInputAuthority();
+    }
+
+    public void DropShield()
+    {
+        Back = null;
+        Hand = null;
+        IsHand = false;
+        transform.parent = null;
+        transform.position = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y, TempPlayer.transform.position.z);
+        transform.rotation = Quaternion.Euler(dropRotation);
+        DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y, TempPlayer.transform.position.z);
+        TempPlayer.GetComponent<PlayerInventory>().Shield = null;
         TempPlayer = null;
         IsPickedUp = false;
         Object.RemoveInputAuthority();
@@ -145,6 +159,22 @@ public class WeaponItem : NetworkBehaviour
         DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
         TempPlayer.GetComponent<PlayerInventory>().WeaponIndex = 1;
         TempPlayer.GetComponent<PlayerInventory>().PrimaryWeapon = null;
+        TempPlayer = null;
+        IsPickedUp = false;
+        Object.RemoveInputAuthority();
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    public void RPC_DropShield()
+    {
+        Back = null;
+        Hand = null;
+        IsHand = false;
+        transform.parent = null;
+        transform.position = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y, TempPlayer.transform.position.z);
+        transform.rotation = Quaternion.Euler(dropRotation);
+        DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y, TempPlayer.transform.position.z);
+        TempPlayer.GetComponent<PlayerInventory>().Shield = null;
         TempPlayer = null;
         IsPickedUp = false;
         Object.RemoveInputAuthority();

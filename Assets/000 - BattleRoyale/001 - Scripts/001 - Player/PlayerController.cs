@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Animations.Rigging;
 using UnityEngine.EventSystems;
@@ -15,6 +16,11 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private PlayerInventory inventory;
     [SerializeField] private JumpMovement jumpMovement;
     [SerializeField] private SimpleKCC characterController;
+    [SerializeField] private HealPlayables healPlayables;
+    [SerializeField] private RepairArmorPlayables repairArmorPlayables;
+
+    [Space]
+    [SerializeField] private TextMeshProUGUI warningTMP;
 
     [Header("RIGS")]
     [SerializeField] private Rig hipsRig;
@@ -395,8 +401,23 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
+    private void TurnOffWarning()
+    {
+        warningTMP.gameObject.SetActive(false);
+        warningTMP.text = "";
+    }
+
     private void Prone()
     {
+        if (healPlayables.Healing || repairArmorPlayables.Repairing)
+        {
+            warningTMP.text = healPlayables.Healing ? "Can't prone while healing" : "Can't prone while repairing armor";
+            warningTMP.gameObject.SetActive(true);
+            Invoke(nameof(TurnOffWarning), 3f);
+
+            return;
+        }
+
         if (playerHealth.CurrentHealth <= 0) return;
 
         // Ensure we're on the ground

@@ -14,6 +14,9 @@ public class WeaponSpawnData : ScriptableObject
     [SerializeField] private Sprite bowList;
     [SerializeField] private Sprite rifleAmmoList;
     [SerializeField] private Sprite bowAmmoList;
+    [SerializeField] private Sprite healList;
+    [SerializeField] private Sprite repairList;
+    [SerializeField] private Sprite armorList;
 
     [Header("ITEM BUTTON")]
     [SerializeField] private Sprite swordBtn;
@@ -33,6 +36,7 @@ public class WeaponSpawnData : ScriptableObject
     [SerializeField] private NetworkObject rifleObject;
     [SerializeField] private NetworkObject bowObject;
     [SerializeField] private NetworkObject arrowContainerObject;
+    [SerializeField] private NetworkObject armorObject;
 
     public Sprite GetItemButtonSprite(string itemID)
     {
@@ -66,6 +70,12 @@ public class WeaponSpawnData : ScriptableObject
                 return rifleAmmoList;
             case "006":
                 return bowAmmoList;
+            case "007":
+                return armorList;
+            case "008":
+                return healList;
+            case "009":
+                return repairList;
             default: return null;
         }
     }
@@ -110,6 +120,8 @@ public class WeaponSpawnData : ScriptableObject
                 return bowObject;
             case "arrowcontainer":
                 return arrowContainerObject;
+            case "007":
+                return armorObject;
             default: return null;
         }
     }

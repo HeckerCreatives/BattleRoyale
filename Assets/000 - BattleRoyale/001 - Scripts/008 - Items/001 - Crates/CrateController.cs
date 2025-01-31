@@ -5,9 +5,7 @@ using UnityEngine;
 
 public class CrateController : NetworkBehaviour
 {
-    [SerializeField] private NetworkObject swordObj;
-    [SerializeField] private NetworkObject spearObj;
-    [SerializeField] private NetworkObject shieldObj;
+    [SerializeField] private WeaponSpawnData weaponSpawnData;
 
     //  ====================
 
@@ -34,92 +32,58 @@ public class CrateController : NetworkBehaviour
 
         int tempAmmo = Weapons[itemkey]; 
 
-        Weapons.Remove(itemkey);
-
-        NetworkObject tempweapon = null;
+        NetworkObject tempweapon = weaponSpawnData.GetItemObject(itemkey.ToString());
 
         PlayerInventory playerInventory = player.GetComponent<PlayerInventory>();
 
-        switch (itemkey.ToString())
+        if (tempweapon != null)
         {
-            case "001":
+            if ((itemkey.ToString() == "001" || itemkey.ToString() == "002") && playerInventory.PrimaryWeapon != null)
+                playerInventory.PrimaryWeapon.DropWeapon();
+            else if (itemkey.ToString() == "007")
+                playerInventory.Shield.DropShield();
 
-                if (playerInventory.PrimaryWeapon != null)
-                    playerInventory.PrimaryWeapon.DropWeapon();
+            NetworkObject weapon = Runner.Spawn(tempweapon, Vector3.zero, Quaternion.identity, player.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+            {
+                obj.GetComponent<WeaponItem>().InitializeItem(
+                    itemname,
+                    itemkey.ToString(),
+                    player,
+                    back,
+                    hand,
+                    0,
+                    true
+                );
+            });
 
-                tempweapon = Runner.Spawn(swordObj, Vector3.zero, Quaternion.identity, player.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
-                {
-                    obj.GetComponent<WeaponItem>().InitializeItem(
-                        itemname,
-                        itemkey.ToString(),
-                        player,
-                        back,
-                        hand,
-                        0,
-                        true
-                    );
-                });
-
-                playerInventory.PrimaryWeapon = tempweapon.GetComponent<WeaponItem>();
+            if (itemkey.ToString() == "001" || itemkey.ToString() == "002")
+            {
+                playerInventory.PrimaryWeapon = weapon.GetComponent<WeaponItem>();
                 playerInventory.WeaponIndex = 2;
-                break;
-            case "002":
+            }
+            else if (itemkey.ToString() == "007")
+            {
+                playerInventory.Shield = weapon.GetComponent<WeaponItem>();
+            }
 
-                if (playerInventory.PrimaryWeapon != null)
-                    playerInventory.PrimaryWeapon.DropWeapon();
-
-                tempweapon = Runner.Spawn(spearObj, Vector3.zero, Quaternion.identity, player.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
-                {
-                    obj.GetComponent<WeaponItem>().InitializeItem(
-                        itemname,
-                        itemkey.ToString(),
-                        player,
-                        back,
-                        hand,
-                        0,
-                        true
-                    );
-                });
-
-                playerInventory.PrimaryWeapon = tempweapon.GetComponent<WeaponItem>();
-                playerInventory.WeaponIndex = 2;
-                break;
-            case "007":
-
-                if (playerInventory.Shield != null)
-                    playerInventory.Shield.DropWeapon();
-
-                tempweapon = Runner.Spawn(shieldObj, Vector3.zero, Quaternion.identity, player.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
-                {
-                    obj.GetComponent<WeaponItem>().InitializeItem(
-                        itemname,
-                        itemkey.ToString(),
-                        player,
-                        back,
-                        hand,
-                        tempAmmo,
-                        true
-                    );
-                });
-
-                playerInventory.Shield = tempweapon.GetComponent<WeaponItem>();
-
-                break;
-            case "008":
-
-                if (playerInventory.HealCount >= 4)
-                    break;
+            Weapons.Remove(itemkey);
+        }
+        else
+        {
+            if (itemkey.ToString() == "008")
+            {
+                if (playerInventory.HealCount >= 4) return;
 
                 playerInventory.HealCount++;
-
-                break;
-            case "009":
-
-                if (playerInventory.ArmorRepairCount >= 4) break;
+            }
+            else if (itemkey.ToString() == "009")
+            {
+                if (playerInventory.ArmorRepairCount >= 4) return;
 
                 playerInventory.ArmorRepairCount++;
-
-                break;
+            }
         }
+
+        Weapons.Remove(itemkey);
     }
 }

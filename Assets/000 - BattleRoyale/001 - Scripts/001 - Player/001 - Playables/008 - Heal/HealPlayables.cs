@@ -15,6 +15,7 @@ public class HealPlayables : NetworkBehaviour
     [SerializeField] private PlayerHealth health;
     [SerializeField] private DeathMovement deathMovement;
     [SerializeField] private RepairArmorPlayables repairArmorPlayables;
+    [SerializeField] private PlayerController playerController;
 
     [Space]
     [SerializeField] private SimpleKCC characterController;
@@ -22,6 +23,7 @@ public class HealPlayables : NetworkBehaviour
     [Space]
     [SerializeField] private Image progressCircle;
     [SerializeField] private TextMeshProUGUI statusTMP;
+    [SerializeField] private TextMeshProUGUI warningTMP;
 
     [Space]
     [SerializeField] private AnimationClip healClip;
@@ -143,6 +145,14 @@ public class HealPlayables : NetworkBehaviour
 
     private void DoHealing()
     {
+        if (playerController.IsProne)
+        {
+            warningTMP.text = "Can't heal while prone";
+            warningTMP.gameObject.SetActive(true);
+            Invoke(nameof(TurnOffWarning), 3f);
+            return;
+        }
+
         if (health.CurrentHealth >= 100f) return;
 
         if (inventory.HealCount <= 0) return;
@@ -164,6 +174,13 @@ public class HealPlayables : NetworkBehaviour
             Invoke(nameof(HealPlayer), healClip.length * 0.6f); // Allow next combo towards the end of Punch1
             Invoke(nameof(ResetHeal), healClip.length);
         }
+    }
+
+
+    private void TurnOffWarning()
+    {
+        warningTMP.gameObject.SetActive(false);
+        warningTMP.text = "";
     }
 
     private void HealPlayer()
