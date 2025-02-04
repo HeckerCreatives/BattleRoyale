@@ -1,27 +1,29 @@
 using Fusion;
-using Fusion.Addons.SimpleKCC;
-using MyBox;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using Unity.Services.Matchmaker.Models;
-using Unity.VisualScripting;
+using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.XR;
+
+public enum PlayerAction
+{
+    DropShield,
+    RepickupArmor
+}
 
 public class WeaponItem : NetworkBehaviour
 {
     [SerializeField] private Vector3 dropRotation;
     [SerializeField] private LayerMask enemyLayerMask;
     [SerializeField] private Vector3 impactSize;
-    [SerializeField] private Transform impactPoint;
+    public GameObject muzzleFlash;
+    public Transform impactPoint;
 
     [field: Header("DEBUGGER")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public string WeaponID { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public string WeaponName { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int Ammo { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public PlayerNetworkLoader TempPlayer { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public PlayerItemCheckerController ItemCheckerController { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkObject Back { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkObject Hand { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool IsPickedUp { get; set; }
@@ -42,6 +44,7 @@ public class WeaponItem : NetworkBehaviour
         WeaponID = id;
         WeaponName = name;
         TempPlayer = tempPlayer.GetComponent<PlayerNetworkLoader>();
+        ItemCheckerController = tempPlayer.GetComponent<PlayerItemCheckerController>();
         Back = back;
         Hand = hand;
         Ammo = ammo;
@@ -81,17 +84,20 @@ public class WeaponItem : NetworkBehaviour
         transform.localRotation = Quaternion.identity;
     }
 
-    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    public void RPC_RepickupWeapon(NetworkObject tempPlayer, NetworkObject back, NetworkObject hand, bool isHand = false)
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority, Channel = RpcChannel.Unreliable)]
+    public void RPC_RepickupPrimaryWeapon(NetworkObject tempPlayer, NetworkObject back, NetworkObject hand, bool isHand = false)
     {
-        Object.AssignInputAuthority(tempPlayer.InputAuthority);
-
         PlayerInventory playerInventory = tempPlayer.GetComponent<PlayerInventory>();
 
+        if (playerInventory.PrimaryWeapon != null) playerInventory.PrimaryWeapon.DropPrimaryWeapon();
+
+        Object.AssignInputAuthority(tempPlayer.InputAuthority);
+
         TempPlayer = tempPlayer.GetComponent<PlayerNetworkLoader>();
+        ItemCheckerController = tempPlayer.GetComponent<PlayerItemCheckerController>();
         playerInventory.PrimaryWeapon = this;
 
-        if (playerInventory.WeaponIndex == 1)
+        if (isHand)
             playerInventory.WeaponIndex = 2;
 
         Back = back;
@@ -100,17 +106,57 @@ public class WeaponItem : NetworkBehaviour
         IsHand = isHand;
     }
 
-    public void DropWeapon()
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority, Channel = RpcChannel.Unreliable)]
+    public void RPC_RepickupArmor(NetworkObject tempPlayer, NetworkObject back, NetworkObject hand)
+    {
+        PlayerInventory playerInventory = tempPlayer.GetComponent<PlayerInventory>();
+
+        if (playerInventory.Shield != null) playerInventory.Shield.DropShield();
+
+        Object.AssignInputAuthority(tempPlayer.InputAuthority);
+
+        TempPlayer = tempPlayer.GetComponent<PlayerNetworkLoader>();
+        ItemCheckerController = tempPlayer.GetComponent<PlayerItemCheckerController>();
+        playerInventory.Shield = this;
+
+        Back = back;
+        Hand = hand;
+        IsPickedUp = true;
+        IsHand = true;
+    }
+
+    public void DropPrimaryWeapon()
     {
         Back = null;
         Hand = null;
         IsHand = false;
         transform.parent = null;
-        transform.position = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
-        transform.rotation = Quaternion.Euler(dropRotation);
+
         DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
+        transform.position = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
         TempPlayer.GetComponent<PlayerInventory>().PrimaryWeapon = null;
         TempPlayer = null;
+        ItemCheckerController = null;
+
+        transform.rotation = Quaternion.Euler(dropRotation);
+        IsPickedUp = false;
+        Object.RemoveInputAuthority();
+    }
+
+    public void DropSecondaryWeapon()
+    {
+        Back = null;
+        Hand = null;
+        IsHand = false;
+        transform.parent = null;
+
+        DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
+        transform.position = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
+        TempPlayer.GetComponent<PlayerInventory>().SecondaryWeapon = null;
+        TempPlayer = null;
+        ItemCheckerController = null;
+
+        transform.rotation = Quaternion.Euler(dropRotation);
         IsPickedUp = false;
         Object.RemoveInputAuthority();
     }
@@ -121,17 +167,20 @@ public class WeaponItem : NetworkBehaviour
         Hand = null;
         IsHand = false;
         transform.parent = null;
+
         transform.position = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y, TempPlayer.transform.position.z);
-        transform.rotation = Quaternion.Euler(dropRotation);
         DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y, TempPlayer.transform.position.z);
         TempPlayer.GetComponent<PlayerInventory>().Shield = null;
         TempPlayer = null;
+        ItemCheckerController = null;
+
+        transform.rotation = Quaternion.Euler(dropRotation);
         IsPickedUp = false;
         Object.RemoveInputAuthority();
     }
 
-    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    public void RPC_DropWeaponOnMoveBattle()
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority, Channel = RpcChannel.Reliable)]
+    public void RPC_DropPrimaryWeaponOnMoveBattle()
     {
         Back = null;
         Hand = null;
@@ -143,39 +192,42 @@ public class WeaponItem : NetworkBehaviour
         TempPlayer.GetComponent<PlayerInventory>().WeaponIndex = 1;
         TempPlayer.GetComponent<PlayerInventory>().PrimaryWeapon = null;
         TempPlayer = null;
+        ItemCheckerController = null;
         IsPickedUp = false;
         Object.RemoveInputAuthority();
     }
 
-    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    public void RPC_DropWeapon()
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority, Channel = RpcChannel.Reliable)]
+    public void RPC_DropSecondaryWeaponOnMoveBattle()
     {
         Back = null;
         Hand = null;
         IsHand = false;
         transform.parent = null;
-        transform.position = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
+        transform.position = Vector3.zero;
         transform.rotation = Quaternion.Euler(dropRotation);
-        DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
+        DropPosition = Vector3.zero;
         TempPlayer.GetComponent<PlayerInventory>().WeaponIndex = 1;
-        TempPlayer.GetComponent<PlayerInventory>().PrimaryWeapon = null;
+        TempPlayer.GetComponent<PlayerInventory>().SecondaryWeapon = null;
         TempPlayer = null;
+        ItemCheckerController = null;
         IsPickedUp = false;
         Object.RemoveInputAuthority();
     }
 
-    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    public void RPC_DropShield()
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority, Channel = RpcChannel.Reliable)]
+    public void RPC_DropShieldOnMoveBattle()
     {
         Back = null;
         Hand = null;
         IsHand = false;
         transform.parent = null;
-        transform.position = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y, TempPlayer.transform.position.z);
+        transform.position = Vector3.zero;
         transform.rotation = Quaternion.Euler(dropRotation);
-        DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y, TempPlayer.transform.position.z);
+        DropPosition = Vector3.zero;
         TempPlayer.GetComponent<PlayerInventory>().Shield = null;
         TempPlayer = null;
+        ItemCheckerController = null;
         IsPickedUp = false;
         Object.RemoveInputAuthority();
     }
@@ -312,21 +364,5 @@ public class WeaponItem : NetworkBehaviour
     public void ResetSecondAttack()
     {
         hitEnemiesSecond.Clear();
-    }
-
-    private void OnDrawGizmos()
-    {
-        if (impactPoint == null) return;
-
-        // Adjust for world scale
-        Vector3 worldImpactSize = Vector3.Scale(impactSize, impactPoint.lossyScale);
-
-        // Draw the Gizmo with world-adjusted scale
-        Gizmos.color = Color.red;
-        Matrix4x4 rotationMatrix = Matrix4x4.TRS(impactPoint.position, transform.rotation, Vector3.one);
-        Gizmos.matrix = rotationMatrix;
-        Gizmos.DrawWireCube(Vector3.zero, worldImpactSize * 2);
-        Gizmos.matrix = Matrix4x4.identity;
-        Gizmos.color = Color.white;
     }
 }

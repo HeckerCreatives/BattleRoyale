@@ -146,14 +146,14 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     {
         List<string> itemPool = new List<string>
         {
-            //"rifle", "rifle", "rifle", "rifle", "rifle", // 5%
+            "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", // 15%
             //"bow", "bow", "bow", "bow", "bow", // 5%
-            "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", // 15%
-            "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", // 15%
+            "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", // 20%
+            "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", // 20%
             "heal", "heal", "heal", "heal", "heal", "heal", "heal", "heal", "heal", "heal", // 10%
             "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", // 10%
-            "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor" // 10%
-            //"rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", // Ammo items can be re-added similarly if needed
+            "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", // 10%
+            "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", // Ammo items can be re-added similarly if needed
             //"bow ammo", "bow ammo", "bow ammo", "bow ammo",
         };
 
@@ -190,6 +190,10 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 {
                     selectedItems[itemID] = UnityEngine.Random.Range(1, 61); // Set a random quantity between 1 and 60
                 }
+            }
+            else if (selectedItem == "rifle")
+            {
+                selectedItems[itemID] = 10;
             }
             else if (selectedItem == "armor")
             {

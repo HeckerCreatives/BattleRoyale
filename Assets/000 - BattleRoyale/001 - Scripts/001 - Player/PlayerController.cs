@@ -194,11 +194,6 @@ public class PlayerController : NetworkBehaviour
 
     #endregion
 
-    public override void Render()
-    {
-        LayerAndWeight();
-    }
-
     private void LateUpdate()
     {
         if (!HasInputAuthority) return;
@@ -500,18 +495,6 @@ public class PlayerController : NetworkBehaviour
         if (controllerInput.LookDirection.x == 0)
         {
             return;
-        }
-    }
-
-    private void LayerAndWeight()
-    {
-        if (IsProne)
-        {
-            headRig.weight = 0f;
-        }
-        else
-        {
-            headRig.weight = 1f;
         }
     }
 

@@ -141,13 +141,6 @@ public class RepairArmorPlayables : NetworkBehaviour
 
     private void DoHealing()
     {
-        if (playerController.IsProne)
-        {
-            warningTMP.text = "Can't repair armor while prone";
-            warningTMP.gameObject.SetActive(true);
-            Invoke(nameof(TurnOffWarning), 3f);
-            return;
-        }
 
         if (inventory.ArmorRepairCount <= 0) return;
 
@@ -161,16 +154,27 @@ public class RepairArmorPlayables : NetworkBehaviour
 
         if (Repairing) return;
 
-        if (controllerInput.Buttons.IsSet(InputButton.ArmorRepair) && characterController.IsGrounded)
+
+        if (playerController.IsProne)
         {
-            Repairing = true;
+            warningTMP.text = "Can't repair armor while prone";
+            warningTMP.gameObject.SetActive(true);
+            Invoke(nameof(TurnOffWarning), 3f);
+            return;
+        }
+        else
+        {
+            if (controllerInput.Buttons.IsSet(InputButton.ArmorRepair) && characterController.IsGrounded)
+            {
+                Repairing = true;
 
-            var healingPlayable = clipPlayables[0];
-            healingPlayable.SetTime(0); // Reset time
-            healingPlayable.Play();    // Start playing
+                var healingPlayable = clipPlayables[0];
+                healingPlayable.SetTime(0); // Reset time
+                healingPlayable.Play();    // Start playing
 
-            Invoke(nameof(RepairPlayer), repairClip.length * 0.6f); // Allow next combo towards the end of Punch1
-            Invoke(nameof(ResetRepair), repairClip.length);
+                Invoke(nameof(RepairPlayer), repairClip.length * 0.6f); // Allow next combo towards the end of Punch1
+                Invoke(nameof(ResetRepair), repairClip.length);
+            }
         }
     }
 

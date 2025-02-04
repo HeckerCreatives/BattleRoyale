@@ -33,6 +33,8 @@ public class MainCorePlayable : NetworkBehaviour
     [SerializeField] private SwordBasicMovement spearBasicMovement;
     [SerializeField] private HealPlayables healPlayables;
     [SerializeField] private RepairArmorPlayables repairArmorPlayables;
+    [SerializeField] private BasicMovement rifleBasicMovement;
+    [SerializeField] private RifleAttackPlayables rifleAttackPlayables;
 
     [Header("DEBUGGER")]
     [SerializeField] private float basicMovementWeight;
@@ -48,6 +50,8 @@ public class MainCorePlayable : NetworkBehaviour
     [SerializeField] private float spearWeight;
     [SerializeField] private float healWeight;
     [SerializeField] private float repairArmorWeight;
+    [SerializeField] private float rifleBasicWeight;
+    [SerializeField] private float rifleAttackWeight;
 
     [field: Space]
     [Networked][field: SerializeField] public float TickRateAnimation { get; set; }
@@ -65,7 +69,7 @@ public class MainCorePlayable : NetworkBehaviour
         var output = AnimationPlayableOutput.Create(playableGraph, "AnimationOutput", animator);
 
         // Create the main playable (AnimationLayerMixerPlayable)
-        mainPlayable = AnimationLayerMixerPlayable.Create(playableGraph, 13);
+        mainPlayable = AnimationLayerMixerPlayable.Create(playableGraph, 15);
         output.SetSourcePlayable(mainPlayable);
 
         if (basicMovement != null)
@@ -169,6 +173,22 @@ public class MainCorePlayable : NetworkBehaviour
             mainPlayable.SetLayerMaskFromAvatarMask(12, upperBodyMask);
         }
 
+        if (rifleBasicMovement != null)
+        {
+            rifleBasicMovement.Initialize(playableGraph);
+            playableGraph.Connect(rifleBasicMovement.GetPlayable(), 0, mainPlayable, 13);
+            mainPlayable.SetInputWeight(13, 0f); // Full-body layer weight
+            mainPlayable.SetLayerMaskFromAvatarMask(13, LowerBodyMask);
+        }
+
+        if (rifleAttackPlayables != null)
+        {
+            rifleAttackPlayables.Initialize(playableGraph);
+            playableGraph.Connect(rifleAttackPlayables.GetPlayable(), 0, mainPlayable, 14);
+            mainPlayable.SetInputWeight(14, 0f); // Full-body layer weight
+            mainPlayable.SetLayerMaskFromAvatarMask(14, upperBodyMask);
+        }
+
         playableGraph.Play();
     }
 
@@ -200,6 +220,8 @@ public class MainCorePlayable : NetworkBehaviour
                         repairArmorWeight = Mathf.Lerp(repairArmorWeight, 0f, Time.deltaTime * 5f);
                     }
 
+                    #region LOWER BODY MASK
+
                     if (!controller.IsCrouch && !controller.IsProne)
                     {
                         if (inventory.WeaponIndex == 1)
@@ -207,6 +229,7 @@ public class MainCorePlayable : NetworkBehaviour
                             basicMovementWeight = Mathf.Lerp(basicMovementWeight, 1f, Time.deltaTime * 5f);
                             swordBasicMovementWeight = Mathf.Lerp(swordBasicMovementWeight, 0f, Time.deltaTime * 5f);
                             spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 0f, Time.deltaTime * 5f);
+                            rifleBasicWeight = Mathf.Lerp(rifleBasicWeight, 0f, Time.deltaTime * 5f);
                         }
                         else if (inventory.WeaponIndex == 2)
                         {
@@ -222,11 +245,23 @@ public class MainCorePlayable : NetworkBehaviour
                             }
 
                             basicMovementWeight = Mathf.Lerp(basicMovementWeight, 0f, Time.deltaTime * 5f);
+                            rifleBasicWeight = Mathf.Lerp(rifleBasicWeight, 0f, Time.deltaTime * 5f);
+                        }
+                        else if (inventory.WeaponIndex == 3)
+                        {
+                            if (inventory.SecondaryWeapon.WeaponID == "003")
+                            {
+                                rifleBasicWeight = Mathf.Lerp(rifleBasicWeight, 1f, Time.deltaTime * 5f);
+                            }
+
+                            basicMovementWeight = Mathf.Lerp(basicMovementWeight, 0f, Time.deltaTime * 5f);
                         }
 
                         crouchWeight = Mathf.Lerp(crouchWeight, 0f, Time.deltaTime * 5f);
                         proneWeight = Mathf.Lerp(proneWeight, 0f, Time.deltaTime * 5f);
                     }
+
+                    #endregion
 
                     if (!controller.IsProne)
                     {
@@ -259,6 +294,18 @@ public class MainCorePlayable : NetworkBehaviour
                             spearWeight = Mathf.Lerp(spearWeight, 0f, Time.deltaTime * 5f);
                         }
 
+                        if (inventory.WeaponIndex == 3)
+                        {
+                            if (inventory.SecondaryWeapon.WeaponID == "003")
+                            {
+                                rifleAttackWeight = Mathf.Lerp(rifleAttackWeight, 1f, Time.deltaTime * 5f);
+                            }
+                        }
+                        else
+                        {
+                            rifleAttackWeight = Mathf.Lerp(rifleAttackWeight, 0f, Time.deltaTime * 5f);
+                        }
+
                         if (controller.IsCrouch)
                         {
                             crouchWeight = Mathf.Lerp(crouchWeight, 1f, Time.deltaTime * 5f);
@@ -266,6 +313,7 @@ public class MainCorePlayable : NetworkBehaviour
                             basicMovementWeight = Mathf.Lerp(basicMovementWeight, 0f, Time.deltaTime * 5f);
                             swordBasicMovementWeight = Mathf.Lerp(swordBasicMovementWeight, 0f, Time.deltaTime * 5f);
                             spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 0f, Time.deltaTime * 5f);
+                            rifleBasicWeight = Mathf.Lerp(rifleBasicWeight, 0f, Time.deltaTime * 5f);
                         }
                         else
                         {
@@ -284,6 +332,8 @@ public class MainCorePlayable : NetworkBehaviour
                         swordBasicMovementWeight = Mathf.Lerp(swordBasicMovementWeight, 0f, Time.deltaTime * 5f);
                         spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 0f, Time.deltaTime * 5f);
                         spearWeight = Mathf.Lerp(spearWeight, 0f, Time.deltaTime * 5f);
+                        rifleBasicWeight = Mathf.Lerp(rifleBasicWeight, 0f, Time.deltaTime * 5f);
+                        rifleAttackWeight = Mathf.Lerp(rifleAttackWeight, 0f, Time.deltaTime * 5f);
                     }
 
                     jumpMovementWeight = 0;
@@ -311,6 +361,8 @@ public class MainCorePlayable : NetworkBehaviour
                     spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 0f, Time.deltaTime * 5f);
                     healWeight = Mathf.Lerp(healWeight, 0f, Time.deltaTime * 5f);
                     repairArmorWeight = Mathf.Lerp(repairArmorWeight, 0f, Time.deltaTime * 5f);
+                    rifleBasicWeight = Mathf.Lerp(rifleBasicWeight, 0f, Time.deltaTime * 5f);
+                    rifleAttackWeight = Mathf.Lerp(rifleAttackWeight, 0f, Time.deltaTime * 5f);
                 }
             }
             else
@@ -328,6 +380,8 @@ public class MainCorePlayable : NetworkBehaviour
                 healWeight = Mathf.Lerp(healWeight, 0f, Time.deltaTime * 5f);
                 repairArmorWeight = Mathf.Lerp(repairArmorWeight, 0f, Time.deltaTime * 5f);
                 deadWeight = Mathf.Lerp(deadWeight, 1f, Time.deltaTime * 5f);
+                rifleBasicWeight = Mathf.Lerp(rifleBasicWeight, 0f, Time.deltaTime * 5f);
+                rifleAttackWeight = Mathf.Lerp(rifleAttackWeight, 0f, Time.deltaTime * 5f);
             }
 
 
@@ -344,6 +398,8 @@ public class MainCorePlayable : NetworkBehaviour
             mainPlayable.SetInputWeight(10, spearBasicMovementWeight);
             mainPlayable.SetInputWeight(11, healWeight);
             mainPlayable.SetInputWeight(12, repairArmorWeight);
+            mainPlayable.SetInputWeight(13, rifleBasicWeight);
+            mainPlayable.SetInputWeight(14, rifleAttackWeight);
         }
     }
 

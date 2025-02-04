@@ -80,7 +80,7 @@ public class LobbyController : MonoBehaviour
                 {
                     if (a < tempdata.Count)
                     {
-                        leaderboardItems[a].SetData(tempdata[a.ToString()].user, tempdata[a.ToString()].amount.ToString("n0"));
+                        leaderboardItems[a].SetData($"{a + 1}.) {tempdata[a.ToString()].user}", tempdata[a.ToString()].amount.ToString("n0"));
                     }
                     else
                     {

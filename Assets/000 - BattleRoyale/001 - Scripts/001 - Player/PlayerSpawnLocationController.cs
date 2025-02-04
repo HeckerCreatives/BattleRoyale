@@ -54,7 +54,13 @@ public class PlayerSpawnLocationController : NetworkBehaviour
 
     IEnumerator DropWeaponOnMoveBattleField()
     {
-        if (inventory.PrimaryWeapon != null) inventory.PrimaryWeapon.RPC_DropWeaponOnMoveBattle();
+        if (inventory.PrimaryWeapon != null) inventory.PrimaryWeapon.RPC_DropPrimaryWeaponOnMoveBattle();
+
+        if (inventory.SecondaryWeapon != null) inventory.SecondaryWeapon.RPC_DropSecondaryWeaponOnMoveBattle();
+
+        if (inventory.Shield != null) inventory.Shield.RPC_DropShieldOnMoveBattle();
+
+        inventory.RPC_DropHealRepair();
 
         yield return null;
     }
@@ -68,6 +74,6 @@ public class PlayerSpawnLocationController : NetworkBehaviour
 
     IEnumerator ReadyForBattle()
     {
-        while (!ServerManager.DonePlayerBattlePositions || inventory.PrimaryWeapon != null) yield return null;
+        while (!ServerManager.DonePlayerBattlePositions || inventory.PrimaryWeapon != null || inventory.SecondaryWeapon != null || inventory.Shield != null) yield return null;
     }
 }

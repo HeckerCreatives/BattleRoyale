@@ -60,6 +60,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2dff5bf4d2c7d1c48a694f9bb964de91, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cameraLayerMask:
+    serializedVersion: 2
+    m_Bits: 10304
   cursorLocked: 1
   MovementDirection: {x: 0, y: 0}
   LookDirection: {x: 0, y: 0}
@@ -72,9 +75,14 @@ MonoBehaviour:
   SwitchPrimary: 0
   SwitchSecondary: 0
   SwitchTrap: 0
+  ArmorRepair: 0
+  Heal: 0
   ActiveTouch: 0
   resetInput: 0
   doneInitialize: 0
+  firstTouch: {x: 0, y: 0}
+  ScreenCenterPoint: {x: 0, y: 0}
+  CameraHitpoints: {x: 0, y: 0, z: 0}
 --- !u!114 &279779223495510489
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -35,13 +35,16 @@ public struct MyInput : INetworkInput
     public NetworkButtons HoldInputButtons;
     public Vector2 MovementDirection;
     public Vector2 LookDirection;
-    public Vector2 PointerPosition;
+    public Vector3 CameraHitOrigin;
+    public Vector3 CameraHitDirection;
 }
 
 public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, IBeforeUpdate
 {
 
     //  =========================
+
+    [SerializeField] private LayerMask cameraLayerMask;
 
     [Header("DEBUGGER")]
     [MyBox.ReadOnly][SerializeField] private bool cursorLocked = true;
@@ -64,6 +67,9 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     [MyBox.ReadOnly][SerializeField] private bool resetInput;
     [MyBox.ReadOnly][SerializeField] private bool doneInitialize;
     [MyBox.ReadOnly][SerializeField] private Vector2 firstTouch;
+    [MyBox.ReadOnly][SerializeField] private Vector3 ScreenCenterPoint;
+    [MyBox.ReadOnly][SerializeField] private Vector3 CameraHitOrigin;
+    [MyBox.ReadOnly][SerializeField] private Vector3 CameraHitDirection;
 
 
 
@@ -72,6 +78,8 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     private GameplayInputs gameplayInputs;
 
     public MyInput myInput;
+
+    Ray cameraRay;
 
     //  =========================
 
@@ -153,6 +161,14 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             EnhancedTouchSupport.Disable();
             Runner.RemoveCallbacks(this);
         }
+    }
+
+    public override void FixedUpdateNetwork()
+    {
+        Vector2 ScreenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
+        cameraRay = Camera.main.ScreenPointToRay(ScreenCenter);
+        CameraHitOrigin = cameraRay.origin;
+        CameraHitDirection = cameraRay.direction;
     }
 
     #region LOCAL INPUTS
@@ -250,7 +266,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
     private void HealStart()
     {
-        Debug.Log($"Heal pressed");
         Heal = true;
     }
 
@@ -287,6 +302,8 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
         myInput.MovementDirection.Set(MovementDirection.x, MovementDirection.y);
         myInput.LookDirection.Set(LookDirection.x, LookDirection.y);
+        myInput.CameraHitOrigin.Set(CameraHitOrigin.x, CameraHitOrigin.y, CameraHitOrigin.z);
+        myInput.CameraHitDirection.Set(CameraHitDirection.x, CameraHitDirection.y, CameraHitDirection.z);
         myInput.Buttons.Set(InputButton.Jump, Jump);
         myInput.Buttons.Set(InputButton.Aim, Aim);
         myInput.Buttons.Set(InputButton.Melee, Shoot);
@@ -380,5 +397,5 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     {
     }
 
-#endregion
+    #endregion
 }

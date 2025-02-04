@@ -231,7 +231,6 @@ public class PlayerItemCheckerController : NetworkBehaviour
     private void AddItemButton(string itemID, int value, bool isCrateItem)
     {
         GameObject tempbuttons = Instantiate(itemButton, contentTF);
-        int tempWeaponIndex = 0;
 
         tempbuttons.GetComponent<Button>().onClick.AddListener(() =>
         {
@@ -241,24 +240,22 @@ public class PlayerItemCheckerController : NetworkBehaviour
             }
             else
             {
-                if (playerInventory.PrimaryWeapon != null)
-                {
-                    switch (playerInventory.PrimaryWeapon.WeaponID)
-                    {
-                        case "001":
-                        case "002":
-                            tempWeaponIndex = 2;
-                            playerInventory.PrimaryWeapon.RPC_DropWeapon();
-                            break;
-                        case "007":
-                            tempWeaponIndex = 7;
-                            playerInventory.Shield.RPC_DropWeapon();
-                            break;
-                    }
-                }
-
                 var weapon = localNearbyWeapon.FirstOrDefault(w => w.GetComponent<WeaponItem>()?.WeaponID == itemID);
-                weapon?.GetComponent<WeaponItem>()?.RPC_RepickupWeapon(Object, Back(itemID), Hand(itemID), playerInventory.WeaponIndex == 1 || tempWeaponIndex == playerInventory.WeaponIndex || tempWeaponIndex == 7);
+
+                if (weapon == null) return;
+
+                WeaponItem tempWeaponItem = weapon?.GetComponent<WeaponItem>();
+
+                if (tempWeaponItem.IsPickedUp) return;
+
+                if (itemID == "001" || itemID == "002")
+                {
+                    tempWeaponItem?.RPC_RepickupPrimaryWeapon(Object, Back(itemID), Hand(itemID), playerInventory.WeaponIndex == 1 || playerInventory.WeaponIndex == 2);
+                }
+                else if (itemID == "007")
+                {
+                    tempWeaponItem?.RPC_RepickupArmor(Object, Back(itemID), Hand(itemID));
+                }
             }
         });
 
@@ -276,6 +273,8 @@ public class PlayerItemCheckerController : NetworkBehaviour
                 return swordHandHandle;
             case "002":
                 return spearHandHandle;
+            case "003":
+                return rifleHandHandle;
             case "007":
                 return shieldHandHandle;
             default:
@@ -291,6 +290,8 @@ public class PlayerItemCheckerController : NetworkBehaviour
                 return swordBackHandle;
             case "002":
                 return spearBackHandle;
+            case "003":
+                return rifleBackHandle;
             case "007":
                 return shieldHandHandle;
             default:

@@ -18,6 +18,7 @@ public class Loader : MonoBehaviour
     {
         if (isServer)
         {
+            Application.runInBackground = true;
             Application.targetFrameRate = 30;
             userData.Username = "Server";
             SceneManager.LoadScene(sceneName);

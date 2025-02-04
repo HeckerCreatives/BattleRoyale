@@ -7,7 +7,6 @@ public class PlayerWeaponChanger : NetworkBehaviour
 {
     [SerializeField] private PlayerInventory inventory;
     [SerializeField] private PlayerController controller;
-    [SerializeField] private Animator playerAnimator;
 
     //  ======================
 
@@ -30,6 +29,7 @@ public class PlayerWeaponChanger : NetworkBehaviour
 
         ChangeToPunchWeapon();
         ChangeToPrimaryWeapon();
+        ChangeToSecondaryWeapon();
 
         PreviousButtons = input.Buttons;
     }
@@ -52,5 +52,16 @@ public class PlayerWeaponChanger : NetworkBehaviour
         if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchPrimary)) return;
 
         inventory.WeaponPrimaryChange();
+    }
+
+    private void ChangeToSecondaryWeapon()
+    {
+        if (inventory.WeaponIndex == 3) return;
+
+        if (inventory.SecondaryWeapon == null) return;
+
+        if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchSecondary)) return;
+
+        inventory.WeaponSecondaryChange();
     }
 }

@@ -23,6 +23,10 @@ public class ProneMovement : NetworkBehaviour
     [SerializeField] private AnimationClip spearIdleClip;
     [SerializeField] private AnimationClip spearMoveClip;
 
+    [Space]
+    [SerializeField] private AnimationClip rifleIdleClip;
+    [SerializeField] private AnimationClip rifleMoveClip;
+
     //  ============================
 
     private AnimationMixerPlayable movementMixer;
@@ -34,7 +38,7 @@ public class ProneMovement : NetworkBehaviour
     {
         clipPlayables = new List<AnimationClipPlayable>();
 
-        movementMixer = AnimationMixerPlayable.Create(graph, 6);
+        movementMixer = AnimationMixerPlayable.Create(graph, 8);
 
         var idlePlayable = AnimationClipPlayable.Create(graph, idleClip);
         clipPlayables.Add(idlePlayable);
@@ -54,18 +58,20 @@ public class ProneMovement : NetworkBehaviour
         var spearmovePlayable = AnimationClipPlayable.Create(graph, spearMoveClip);
         clipPlayables.Add(spearmovePlayable);
 
+        var rifleidlePlayable = AnimationClipPlayable.Create(graph, rifleIdleClip);
+        clipPlayables.Add(rifleidlePlayable);
+
+        var riflemovePlayable = AnimationClipPlayable.Create(graph, rifleMoveClip);
+        clipPlayables.Add(riflemovePlayable);
+
         graph.Connect(idlePlayable, 0, movementMixer, 0);
         graph.Connect(movePlayable, 0, movementMixer, 1);
         graph.Connect(swordidlePlayable, 0, movementMixer, 2);
         graph.Connect(swordmovePlayable, 0, movementMixer, 3);
         graph.Connect(spearidlePlayable, 0, movementMixer, 4);
         graph.Connect(spearmovePlayable, 0, movementMixer, 5);
-
-        // Initialize all weights to 0
-        for (int i = 0; i < movementMixer.GetInputCount(); i++)
-        {
-            movementMixer.SetInputWeight(i, 0.0f);
-        }
+        graph.Connect(rifleidlePlayable, 0, movementMixer, 6);
+        graph.Connect(riflemovePlayable, 0, movementMixer, 7);
     }
 
     public override void Render()
@@ -126,6 +132,8 @@ public class ProneMovement : NetworkBehaviour
             movementMixer.SetInputWeight(3, 0);
             movementMixer.SetInputWeight(4, 0);
             movementMixer.SetInputWeight(5, 0);
+            movementMixer.SetInputWeight(6, 0);
+            movementMixer.SetInputWeight(7, 0);
         }
         else if (playerInventory.WeaponIndex == 2)
         {
@@ -146,6 +154,23 @@ public class ProneMovement : NetworkBehaviour
 
             movementMixer.SetInputWeight(0, 0);
             movementMixer.SetInputWeight(1, 0);
+            movementMixer.SetInputWeight(6, 0);
+            movementMixer.SetInputWeight(7, 0);
+        }
+        else if (playerInventory.WeaponIndex == 3)
+        {
+            if (playerInventory.SecondaryWeapon.WeaponID == "003")
+            {
+                movementMixer.SetInputWeight(6, idleWeight);
+                movementMixer.SetInputWeight(7, moveWeight);
+            }
+
+            movementMixer.SetInputWeight(0, 0);
+            movementMixer.SetInputWeight(1, 0);
+            movementMixer.SetInputWeight(2, 0);
+            movementMixer.SetInputWeight(3, 0);
+            movementMixer.SetInputWeight(4, 0);
+            movementMixer.SetInputWeight(5, 0);
         }
     }
 

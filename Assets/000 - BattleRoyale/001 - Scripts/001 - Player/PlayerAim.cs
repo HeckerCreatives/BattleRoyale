@@ -13,6 +13,7 @@ public class PlayerAim : NetworkBehaviour
     //  =====================
 
     [SerializeField] private PlayerController playerController;
+    [SerializeField] private PlayerInventory playerInventory;
 
     [Header("RIG AIM")]
     [SerializeField] private CinemachineVirtualCamera aimVcam;
@@ -27,9 +28,20 @@ public class PlayerAim : NetworkBehaviour
 
     //  ====================
 
+    public override void Render()
+    {
+        if (!HasStateAuthority) 
+        {
+            HipsWeightNetwork();
+        }
+    }
+
     public override void FixedUpdateNetwork()
     {
         NetworkAim();
+
+        if (HasStateAuthority)
+            HipsWeightNetwork();
     }
 
     private void NetworkAim()
@@ -40,7 +52,6 @@ public class PlayerAim : NetworkBehaviour
             IsAim = !IsAim;
 
         PlayerAimCamera();
-        HipsWeightNetwork();
 
         ButtonsPrevious = input.Buttons;
     }
@@ -66,6 +77,14 @@ public class PlayerAim : NetworkBehaviour
         if (IsAim)
             hipsRig.weight = 1f;
         else
-            hipsRig.weight = 0f;
+        {
+            if (playerInventory.WeaponIndex != 3)
+            {
+                hipsRig.weight = 0f;
+                return;
+            }
+
+            hipsRig.weight = 1f;
+        }
     }
 }

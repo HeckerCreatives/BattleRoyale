@@ -55,6 +55,7 @@
     <UnityVersion>2022.3.54f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Analyzer Include="C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\2022.3.54f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.SourceGenerators.dll" />
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\2022.3.54f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
   </ItemGroup>
@@ -89,12 +90,16 @@
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\007 - Settings\SettingsControlGameplayController.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\DeveloperConsole.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerAim.cs" />
+    <Compile Include="Assets\UnityTechnologies\ParticlePack\Shared\Ramps\Runtime\RampAsset.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\000 - StatemachineBehaviour\JumpEnd.cs" />
+    <Compile Include="Assets\UnityTechnologies\ParticlePack\Shared\Scripts\AdjustTimeScale.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingSceneSwitching.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LeanAudio.cs" />
+    <Compile Include="Assets\UnityTechnologies\ParticlePack\Shared\Scripts\SimpleCameraController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\TestingZLegacy.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\Scripts\LeanPool.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\001 - Playables\007 - Sword\SwordPlayable.cs" />
+    <Compile Include="Assets\UnityTechnologies\ParticlePack\Shared\Scripts\SimpleCharacterMotor.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LeanTest.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\LogoCinematic.cs" />
@@ -124,13 +129,16 @@
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerQuitController.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\GameplaySettingsController.cs" />
     <Compile Include="Assets\002 - BattleRoyaleMultiplayer\000 - Script\000 - Core\Loader.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\001 - Playables\010 - RifleAttack\RifleAttackPlayables.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\007 - Settings\PauseController.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\004 - MainMenu\ButtonSelector.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\005 - ScriptableObjects\000 - Player\MovementData.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\002 - Ammo\000 - Bullets\BulletObjectPool.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\001 - Playables\MainCorePlayable.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\007 - Matchmaking\ClientMatchmakingController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingIssue.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\GraphicsController.cs" />
+    <Compile Include="Assets\UnityTechnologies\ParticlePack\EffectExamples\Misc Effects\Scripts\SpawnEffect.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Scripts\YuME_GizmoGrid.cs" />
     <Compile Include="Assets\002 - BattleRoyaleMultiplayer\000 - Script\000 - Core\MultiplayController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\TestingZLegacyExt.cs" />
@@ -138,6 +146,7 @@
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\WeaponHandler.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingColorTweening.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingMaxTweens.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\002 - Ammo\000 - Bullets\BulletController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Scripts\YuME_tileGizmo.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingRotate.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerHealth.cs" />
@@ -185,6 +194,7 @@
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\007 - Settings\ControllerSetting.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\011 - WaitingAreaTimer\WaitingAreaTimerController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingSequencer.cs" />
+    <Compile Include="Assets\UnityTechnologies\ParticlePack\Shared\Scripts\ProximityActivate.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralEasingTypes.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerOnScreenStick.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\003 - CharacterCreation\CharacterCreationController.cs" />
@@ -217,6 +227,7 @@
     <None Include="Assets\001 - ExternalAssets\LeanTween\License.txt" />
     <None Include="Assets\Photon\Fusion\Assemblies\Fusion.Common.xml" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
+    <None Include="Assets\UnityTechnologies\ParticlePack\EffectExamples\Misc Effects\Prefabs\Readme_Dissolve_Respawn_.txt" />
     <None Include="Assets\Photon\Fusion\Assemblies\Fusion.Log.dll" />
     <None Include="Assets\Photon\Fusion\Assemblies\Fusion.Common.dll" />
     <None Include="Assets\Photon\FusionAddons\SimpleKCC\Fusion.Addons.SimpleKCC.Editor.dll" />
@@ -227,7 +238,9 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Surface-Mobile.shader" />
     <None Include="Assets\Photon\Fusion\Assemblies\Fusion.Sockets.dll" />
     <None Include="Assets\TextMesh Pro\Shaders\SDFFunctions.hlsl" />
+    <None Include="Assets\UnityTechnologies\ParticlePack\EffectExamples\Magic Effects\Shaders\Ice.shader" />
     <None Include="Assets\Photon\Fusion\release_history.txt" />
+    <None Include="Assets\UnityTechnologies\ParticlePack\EffectExamples\Misc Effects\Shaders\Respawn.shader" />
     <None Include="Assets\Photon\Fusion\Plugins\NanoSockets\NanoSockets\Dynamic\NanoSockets.dll" />
     <None Include="Assets\Photon\FusionAddons\SimpleKCC\Fusion.Addons.SimpleKCC.dll" />
     <None Include="Assets\Photon\Fusion\Assemblies\Fusion.Runtime.dll" />
@@ -248,6 +261,7 @@
     <None Include="Assets\Photon\Fusion\Plugins\NanoSockets\Windows\nanosockets.dll" />
     <None Include="Assets\Photon\FusionAddons\SimpleKCC\simple_kcc_build_info.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
+    <None Include="Assets\UnityTechnologies\ParticlePack\EffectExamples\Misc Effects\Shaders\FireFly.shader" />
     <None Include="Assets\Photon\Fusion\Assemblies\Fusion.Realtime.xml" />
     <None Include="Assets\Photon\Fusion\build_info.txt" />
     <None Include="Assets\Photon\Fusion\Assemblies\Fusion.Realtime.dll" />
@@ -257,6 +271,7 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Bitmap-Mobile.shader" />
     <None Include="Assets\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile.shader" />
+    <None Include="Assets\UnityTechnologies\ParticlePack\EffectExamples\Misc Effects\Shaders\Dissolve.shader" />
     <None Include="Assets\Photon\Fusion\Plugins\NanoSockets\Metro\ARM\libnanosockets.dll" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_Sprite.shader" />
   </ItemGroup>
@@ -1371,9 +1386,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="Fusion.Addons.Physics.csproj">
+      <Project>{169A227D-2383-7537-765C-BD1D5FDEB1BA}</Project>
+      <Name>Fusion.Addons.Physics</Name>
+    </ProjectReference>
     <ProjectReference Include="GPUInstancer.Editor.csproj">
       <Project>{92D432CF-7A11-C58B-CAAB-6F07E6CEC897}</Project>
       <Name>GPUInstancer.Editor</Name>
+    </ProjectReference>
+    <ProjectReference Include="Fusion.Addons.Physics.Editor.csproj">
+      <Project>{4826551E-4477-53B1-089B-B5EDC640A3E9}</Project>
+      <Name>Fusion.Addons.Physics.Editor</Name>
     </ProjectReference>
     <ProjectReference Include="Fusion.Unity.Editor.csproj">
       <Project>{39DD10B8-5E09-AA4F-A9BF-DB8C3491909F}</Project>

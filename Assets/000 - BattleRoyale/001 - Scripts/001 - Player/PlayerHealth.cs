@@ -62,6 +62,10 @@ public class PlayerHealth : NetworkBehaviour
         {
             armorSlider.value = playerInventory.Shield.Ammo / 100f;
         }
+        else
+        {
+            armorSlider.value = 0f;
+        }
 
         foreach (var change in _changeDetector.DetectChanges(this))
         {
@@ -122,7 +126,7 @@ public class PlayerHealth : NetworkBehaviour
 
                 if (playerInventory.PrimaryWeapon != null)
                 {
-                    playerInventory.PrimaryWeapon.DropWeapon();
+                    playerInventory.PrimaryWeapon.DropPrimaryWeapon();
                     playerInventory.PrimaryWeapon = null;
                 }
 
@@ -139,7 +143,7 @@ public class PlayerHealth : NetworkBehaviour
     {
         if (!HasStateAuthority) return;
 
-        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+        //if (ServerManager.CurrentGameState != GameState.ARENA) return;
 
         if (!ServerManager.DonePlayerBattlePositions) return;
 
@@ -162,7 +166,7 @@ public class PlayerHealth : NetworkBehaviour
 
             if (playerInventory.PrimaryWeapon != null)
             {
-                playerInventory.PrimaryWeapon.DropWeapon();
+                playerInventory.PrimaryWeapon.DropPrimaryWeapon();
                 playerInventory.PrimaryWeapon = null;
             }
 
@@ -193,7 +197,7 @@ public class PlayerHealth : NetworkBehaviour
     {
         if (CurrentHealth <= 0) return;
 
-        //if (ServerManager.CurrentGameState != GameState.ARENA) return;
+        if (ServerManager.CurrentGameState != GameState.ARENA) return;
 
         float remainingDamage = damage;
 
@@ -230,7 +234,7 @@ public class PlayerHealth : NetworkBehaviour
 
             if (playerInventory.PrimaryWeapon != null)
             {
-                playerInventory.PrimaryWeapon.DropWeapon();
+                playerInventory.PrimaryWeapon.DropPrimaryWeapon();
                 playerInventory.PrimaryWeapon = null;
             }
 

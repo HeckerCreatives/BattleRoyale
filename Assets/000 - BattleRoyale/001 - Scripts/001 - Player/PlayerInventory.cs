@@ -63,9 +63,13 @@ public class PlayerInventory : NetworkBehaviour
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int ClothingColorIndex { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int SkinColorIndex { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public WeaponItem PrimaryWeapon { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public WeaponItem SecondaryWeapon { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public WeaponItem Shield { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int HealCount { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int ArmorRepairCount { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public int RifleAmmoCount { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool NotSafeToPickup { get; set; }
+
 
 
     //  =========================
@@ -102,7 +106,9 @@ public class PlayerInventory : NetworkBehaviour
         {
             HandBtn.SetIndicator(WeaponIndex == 1 ? true : false);
             PrimaryBtn.SetIndicator(WeaponIndex == 2 ? true : false);
-            PrimaryBtn.ChangeSpriteButton(PrimaryWeapon != null ? PrimaryWeapon.WeaponID : null);
+            PrimaryBtn.ChangeSpriteButton(PrimaryWeapon != null ? PrimaryWeapon.WeaponID : null, "");
+            SecondaryBtn.SetIndicator(WeaponIndex == 3 ? true : false);
+            SecondaryBtn.ChangeSpriteButton(SecondaryWeapon != null ? SecondaryWeapon.WeaponID : null, $"{(SecondaryWeapon != null ? SecondaryWeapon.Ammo : 0)} / {RifleAmmoCount}", SecondaryWeapon != null);
             healCountIndicator.fillAmount = 1 - (float)HealCount / 4;
             repairCountIndicator.fillAmount = 1 - (float)ArmorRepairCount / 4;
         }
@@ -143,6 +149,9 @@ public class PlayerInventory : NetworkBehaviour
 
         if (PrimaryWeapon != null)
             PrimaryWeapon.IsHand = false;
+
+        if (SecondaryWeapon != null)
+            SecondaryWeapon.IsHand = false;
     }
 
     public void WeaponPrimaryChange()
@@ -150,6 +159,30 @@ public class PlayerInventory : NetworkBehaviour
         TempLastIndex = WeaponIndex;
         WeaponIndex = 2;
         PrimaryWeapon.IsHand = true;
+
+        if (SecondaryWeapon != null)
+            SecondaryWeapon.IsHand = false;
+    }
+
+    public void WeaponSecondaryChange()
+    {
+        TempLastIndex = WeaponIndex;
+        WeaponIndex = 3;
+        SecondaryWeapon.IsHand = true;
+
+        if (PrimaryWeapon != null)
+            PrimaryWeapon.IsHand = false;
+    }
+
+    #endregion
+
+    #region HEAL REPAIR
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    public void RPC_DropHealRepair()
+    {
+        HealCount = 0;
+        ArmorRepairCount = 0;
     }
 
     #endregion
