@@ -11,12 +11,13 @@ GameObject:
   - component: {fileID: 9148194540388516471}
   - component: {fileID: 2653201670467620724}
   - component: {fileID: 8380336785744584227}
-  m_Layer: 0
+  - component: {fileID: 6214645837939469075}
+  m_Layer: 6
   m_Name: Torch
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 123
   m_IsActive: 1
 --- !u!4 &9148194540388516471
 Transform:
@@ -26,7 +27,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3027067484663177808}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.00000009735359, y: 0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 58.371513, y: 2.1432142, z: 107.82467}
   m_LocalScale: {x: 17.336937, y: 17.336937, z: 17.336937}
   m_ConstrainProportionsScale: 0
@@ -58,8 +59,6 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -85,3 +84,25 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &6214645837939469075
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3027067484663177808}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -7095231422606553871, guid: 0e242a8dac13f5448bdb6da4766596e2, type: 3}

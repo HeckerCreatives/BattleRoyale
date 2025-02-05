@@ -120,9 +120,12 @@ public class BareHandsMovement : NetworkBehaviour
                 idlePlayable.SetTime(0); // Reset idle animation
                 idlePlayable.Play();
             }
-
-            AnimationBlend();
         }
+    }
+
+    private void Update()
+    {
+        AnimationBlend();
     }
 
     public override void FixedUpdateNetwork()
@@ -140,7 +143,6 @@ public class BareHandsMovement : NetworkBehaviour
             {
                 InputControlls();
                 ResetToIdle();
-                AnimationBlend();
             }
             else
                 ResetAttackAnimation();
@@ -198,50 +200,50 @@ public class BareHandsMovement : NetworkBehaviour
         {
             if (!playerController.IsCrouch)
             {
-                crouchAttackOneWeight = Mathf.Lerp(crouchAttackOneWeight, 0f, Runner.DeltaTime * 4);
-                crouchAttackTwoWeight = Mathf.Lerp(crouchAttackTwoWeight, 0f, Runner.DeltaTime * 4);
+                crouchAttackOneWeight = Mathf.Lerp(crouchAttackOneWeight, 0f, Time.deltaTime * 4);
+                crouchAttackTwoWeight = Mathf.Lerp(crouchAttackTwoWeight, 0f, Time.deltaTime * 4);
 
                 if (AttackStep == 1)
                 {
-                    attackOneWeight = Mathf.Lerp(attackOneWeight, 1f, Runner.DeltaTime * 4);
-                    idleWeight = Mathf.Lerp(idleWeight, 0f, Runner.DeltaTime * 4f);
-                    attackTwoWeight = Mathf.Lerp(attackTwoWeight, 0f, Runner.DeltaTime * 4);
+                    attackOneWeight = Mathf.Lerp(attackOneWeight, 1f, Time.deltaTime * 4);
+                    idleWeight = Mathf.Lerp(idleWeight, 0f, Time.deltaTime * 4f);
+                    attackTwoWeight = Mathf.Lerp(attackTwoWeight, 0f, Time.deltaTime * 4);
                 }
                 else if (AttackStep == 2)
                 {
-                    attackTwoWeight = Mathf.Lerp(attackTwoWeight, 1f, Runner.DeltaTime * 4);
-                    idleWeight = Mathf.Lerp(idleWeight, 0f, Runner.DeltaTime * 4);
-                    attackOneWeight = Mathf.Lerp(attackOneWeight, 0f, Runner.DeltaTime * 4);
+                    attackTwoWeight = Mathf.Lerp(attackTwoWeight, 1f, Time.deltaTime * 4);
+                    idleWeight = Mathf.Lerp(idleWeight, 0f, Time.deltaTime * 4);
+                    attackOneWeight = Mathf.Lerp(attackOneWeight, 0f, Time.deltaTime * 4);
                 }
                 else
                 {
-                    idleWeight = Mathf.Lerp(idleWeight, 1f, Runner.DeltaTime * 4f);
-                    attackOneWeight = Mathf.Lerp(attackOneWeight, 0f, Runner.DeltaTime * 4f);
-                    attackTwoWeight = Mathf.Lerp(attackTwoWeight, 0f, Runner.DeltaTime * 4f);
+                    idleWeight = Mathf.Lerp(idleWeight, 1f, Time.deltaTime * 4f);
+                    attackOneWeight = Mathf.Lerp(attackOneWeight, 0f, Time.deltaTime * 4f);
+                    attackTwoWeight = Mathf.Lerp(attackTwoWeight, 0f, Time.deltaTime * 4f);
                 }
             }
             else
             {
-                attackOneWeight = Mathf.Lerp(attackOneWeight, 0f, Runner.DeltaTime * 4);
-                attackTwoWeight = Mathf.Lerp(attackTwoWeight, 0f, Runner.DeltaTime * 4);
+                attackOneWeight = Mathf.Lerp(attackOneWeight, 0f, Time.deltaTime * 4);
+                attackTwoWeight = Mathf.Lerp(attackTwoWeight, 0f, Time.deltaTime * 4);
 
                 if (AttackStep == 1)
                 {
-                    crouchAttackOneWeight = Mathf.Lerp(crouchAttackOneWeight, 1f, Runner.DeltaTime * 4);
-                    idleWeight = Mathf.Lerp(idleWeight, 0f, Runner.DeltaTime * 4);
-                    crouchAttackTwoWeight = Mathf.Lerp(crouchAttackTwoWeight, 0f, Runner.DeltaTime * 4);
+                    crouchAttackOneWeight = Mathf.Lerp(crouchAttackOneWeight, 1f, Time.deltaTime * 4);
+                    idleWeight = Mathf.Lerp(idleWeight, 0f, Time.deltaTime * 4);
+                    crouchAttackTwoWeight = Mathf.Lerp(crouchAttackTwoWeight, 0f, Time.deltaTime * 4);
                 }
                 else if (AttackStep == 2)
                 {
-                    crouchAttackTwoWeight = Mathf.Lerp(crouchAttackTwoWeight, 1f, Runner.DeltaTime * 4);
-                    idleWeight = Mathf.Lerp(idleWeight, 0f, Runner.DeltaTime * 4);
-                    crouchAttackOneWeight = Mathf.Lerp(crouchAttackOneWeight, 0f, Runner.DeltaTime * 4);
+                    crouchAttackTwoWeight = Mathf.Lerp(crouchAttackTwoWeight, 1f, Time.deltaTime * 4);
+                    idleWeight = Mathf.Lerp(idleWeight, 0f, Time.deltaTime * 4);
+                    crouchAttackOneWeight = Mathf.Lerp(crouchAttackOneWeight, 0f, Time.deltaTime * 4);
                 }
                 else
                 {
-                    idleWeight = Mathf.Lerp(idleWeight, 1f, Runner.DeltaTime * 4);
-                    crouchAttackOneWeight = Mathf.Lerp(crouchAttackOneWeight, 0f, Runner.DeltaTime * 4);
-                    crouchAttackTwoWeight = Mathf.Lerp(crouchAttackTwoWeight, 0f, Runner.DeltaTime * 4);
+                    idleWeight = Mathf.Lerp(idleWeight, 1f, Time.deltaTime * 4);
+                    crouchAttackOneWeight = Mathf.Lerp(crouchAttackOneWeight, 0f, Time.deltaTime * 4);
+                    crouchAttackTwoWeight = Mathf.Lerp(crouchAttackTwoWeight, 0f, Time.deltaTime * 4);
                 }
             }
 

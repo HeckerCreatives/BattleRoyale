@@ -11,12 +11,13 @@ GameObject:
   - component: {fileID: 6821983666934211876}
   - component: {fileID: 8523191582383305616}
   - component: {fileID: 2803528767874562867}
-  m_Layer: 0
+  - component: {fileID: 3415276681573183931}
+  m_Layer: 6
   m_Name: Cube.001
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 123
   m_IsActive: 1
 --- !u!4 &6821983666934211876
 Transform:
@@ -58,8 +59,6 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -85,6 +84,28 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &3415276681573183931
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2701906303379041531}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4493585093827132993, guid: 5e76350d448708c4c8a4cf1dd0a9b5ce, type: 3}
 --- !u!1 &3715833323250822569
 GameObject:
   m_ObjectHideFlags: 0
@@ -96,12 +117,13 @@ GameObject:
   - component: {fileID: 4320923334900182351}
   - component: {fileID: 510776686773456926}
   - component: {fileID: 4421759828104166483}
-  m_Layer: 0
+  - component: {fileID: 2179612934530831275}
+  m_Layer: 6
   m_Name: Cube.002
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 123
   m_IsActive: 1
 --- !u!4 &4320923334900182351
 Transform:
@@ -143,8 +165,6 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -170,6 +190,28 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &2179612934530831275
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3715833323250822569}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -1550514412580984892, guid: 5e76350d448708c4c8a4cf1dd0a9b5ce, type: 3}
 --- !u!1 &7943417632350970809
 GameObject:
   m_ObjectHideFlags: 0
@@ -181,12 +223,13 @@ GameObject:
   - component: {fileID: 8226436525735598429}
   - component: {fileID: 5220199552162036233}
   - component: {fileID: 1742735116914154547}
-  m_Layer: 0
+  - component: {fileID: 8496067732552985209}
+  m_Layer: 6
   m_Name: Cube.003
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 123
   m_IsActive: 1
 --- !u!4 &8226436525735598429
 Transform:
@@ -228,8 +271,6 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -255,6 +296,28 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &8496067732552985209
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7943417632350970809}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -8678823145569952518, guid: 5e76350d448708c4c8a4cf1dd0a9b5ce, type: 3}
 --- !u!1 &8319406189313751700
 GameObject:
   m_ObjectHideFlags: 0
@@ -266,12 +329,13 @@ GameObject:
   - component: {fileID: 5471961448127250269}
   - component: {fileID: 6078674996233758070}
   - component: {fileID: 2794950492654616697}
-  m_Layer: 0
+  - component: {fileID: 6186174364178971477}
+  m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 123
   m_IsActive: 1
 --- !u!4 &5471961448127250269
 Transform:
@@ -313,8 +377,6 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -340,6 +402,28 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &6186174364178971477
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8319406189313751700}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -5495902117074765545, guid: 5e76350d448708c4c8a4cf1dd0a9b5ce, type: 3}
 --- !u!1 &8640679817603399676
 GameObject:
   m_ObjectHideFlags: 0
@@ -349,12 +433,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7145252352449099734}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Well
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 123
   m_IsActive: 1
 --- !u!4 &7145252352449099734
 Transform:

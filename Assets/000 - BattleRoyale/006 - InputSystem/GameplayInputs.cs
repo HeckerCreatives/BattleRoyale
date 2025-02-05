@@ -125,6 +125,15 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Reload"",
+                    ""type"": ""Button"",
+                    ""id"": ""c1f2592e-309b-47a5-b44c-685c44fd0ea0"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -259,6 +268,17 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""action"": ""Heal"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5f0c99c1-0ff1-450c-8542-a495facfdd8c"",
+                    ""path"": ""<Gamepad>/buttonWest"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Reload"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -295,6 +315,7 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
         m_Gameplay_SwitchTrap = m_Gameplay.FindAction("SwitchTrap", throwIfNotFound: true);
         m_Gameplay_ArmorRepair = m_Gameplay.FindAction("ArmorRepair", throwIfNotFound: true);
         m_Gameplay_Heal = m_Gameplay.FindAction("Heal", throwIfNotFound: true);
+        m_Gameplay_Reload = m_Gameplay.FindAction("Reload", throwIfNotFound: true);
     }
 
     ~@GameplayInputs()
@@ -372,6 +393,7 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Gameplay_SwitchTrap;
     private readonly InputAction m_Gameplay_ArmorRepair;
     private readonly InputAction m_Gameplay_Heal;
+    private readonly InputAction m_Gameplay_Reload;
     public struct GameplayActions
     {
         private @GameplayInputs m_Wrapper;
@@ -387,6 +409,7 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
         public InputAction @SwitchTrap => m_Wrapper.m_Gameplay_SwitchTrap;
         public InputAction @ArmorRepair => m_Wrapper.m_Gameplay_ArmorRepair;
         public InputAction @Heal => m_Wrapper.m_Gameplay_Heal;
+        public InputAction @Reload => m_Wrapper.m_Gameplay_Reload;
         public InputActionMap Get() { return m_Wrapper.m_Gameplay; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -429,6 +452,9 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
             @Heal.started += instance.OnHeal;
             @Heal.performed += instance.OnHeal;
             @Heal.canceled += instance.OnHeal;
+            @Reload.started += instance.OnReload;
+            @Reload.performed += instance.OnReload;
+            @Reload.canceled += instance.OnReload;
         }
 
         private void UnregisterCallbacks(IGameplayActions instance)
@@ -466,6 +492,9 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
             @Heal.started -= instance.OnHeal;
             @Heal.performed -= instance.OnHeal;
             @Heal.canceled -= instance.OnHeal;
+            @Reload.started -= instance.OnReload;
+            @Reload.performed -= instance.OnReload;
+            @Reload.canceled -= instance.OnReload;
         }
 
         public void RemoveCallbacks(IGameplayActions instance)
@@ -514,5 +543,6 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
         void OnSwitchTrap(InputAction.CallbackContext context);
         void OnArmorRepair(InputAction.CallbackContext context);
         void OnHeal(InputAction.CallbackContext context);
+        void OnReload(InputAction.CallbackContext context);
     }
 }

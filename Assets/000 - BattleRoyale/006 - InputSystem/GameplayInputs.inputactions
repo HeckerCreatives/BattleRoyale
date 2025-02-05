@@ -103,6 +103,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Reload",
+                    "type": "Button",
+                    "id": "c1f2592e-309b-47a5-b44c-685c44fd0ea0",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -235,6 +244,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Heal",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5f0c99c1-0ff1-450c-8542-a495facfdd8c",
+                    "path": "<Gamepad>/buttonWest",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Reload",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -11,12 +11,13 @@ GameObject:
   - component: {fileID: 4438574909731682}
   - component: {fileID: 33754707130291176}
   - component: {fileID: 23864279210860412}
-  m_Layer: 0
+  - component: {fileID: 4545158030341408223}
+  m_Layer: 6
   m_Name: Hure_Tree_1A2_B_LOD_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 123
   m_IsActive: 1
 --- !u!4 &4438574909731682
 Transform:
@@ -58,8 +59,6 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -85,6 +84,28 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!64 &4545158030341408223
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1655881664344978}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4300004, guid: f50c164a49c639645a295fa5cbbc7373, type: 3}
 --- !u!1 &1970841162057316
 GameObject:
   m_ObjectHideFlags: 0
@@ -98,12 +119,12 @@ GameObject:
   - component: {fileID: 23045446921120790}
   - component: {fileID: 64640731197610600}
   - component: {fileID: 205022466415555684}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Huge_Tree_1A2_B
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
+  m_StaticEditorFlags: 123
   m_IsActive: 1
 --- !u!4 &4541289776058916
 Transform:
@@ -113,9 +134,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1970841162057316}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 3.734882, y: 0, z: -30.149597}
-  m_LocalScale: {x: 0.30173, y: 0.30173, z: 0.30173}
+  m_LocalScale: {x: 0.31935, y: 0.31935, z: 0.31935}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4438574909731682}
@@ -146,8 +167,6 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:

@@ -21,7 +21,8 @@ public enum InputButton
     SwitchTrap,
     ActiveTouch,
     ArmorRepair,
-    Heal
+    Heal,
+    Reload
 }
 
 public enum HoldInputButtons
@@ -63,6 +64,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     [MyBox.ReadOnly][SerializeField] public bool SwitchTrap;
     [MyBox.ReadOnly][SerializeField] public bool ArmorRepair;
     [MyBox.ReadOnly][SerializeField] public bool Heal;
+    [MyBox.ReadOnly][SerializeField] public bool Reload;
     [MyBox.ReadOnly][SerializeField] public int ActiveTouch;
     [MyBox.ReadOnly][SerializeField] private bool resetInput;
     [MyBox.ReadOnly][SerializeField] private bool doneInitialize;
@@ -122,6 +124,8 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.Heal.canceled += _ => HealStop();
             gameplayInputs.Gameplay.ArmorRepair.started += _ => ArmorRepairStart();
             gameplayInputs.Gameplay.ArmorRepair.canceled += _ => ArmorRepairStop();
+            gameplayInputs.Gameplay.Reload.started += _ => ReloadStart();
+            gameplayInputs.Gameplay.Reload.canceled += _ => ReloadStop();
 
             Runner.AddCallbacks(this);
             Debug.Log($"Done init controls");
@@ -156,6 +160,8 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.Heal.canceled -= _ => HealStop();
             gameplayInputs.Gameplay.ArmorRepair.started -= _ => ArmorRepairStart();
             gameplayInputs.Gameplay.ArmorRepair.canceled -= _ => ArmorRepairStop();
+            gameplayInputs.Gameplay.Reload.started -= _ => ReloadStart();
+            gameplayInputs.Gameplay.Reload.canceled -= _ => ReloadStop();
 
             gameplayInputs.Disable();
             EnhancedTouchSupport.Disable();
@@ -284,6 +290,16 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         ArmorRepair = false;
     }
 
+    private void ReloadStart()
+    {
+        Reload = true;
+    }
+
+    private void ReloadStop()
+    {
+        Reload = false;
+    }
+
     #endregion
 
     #region NETWORK
@@ -315,6 +331,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         myInput.Buttons.Set(InputButton.SwitchTrap, SwitchTrap);
         myInput.Buttons.Set(InputButton.Heal, Heal);
         myInput.Buttons.Set(InputButton.ArmorRepair, ArmorRepair);
+        myInput.Buttons.Set(InputButton.Reload, Reload);
         myInput.HoldInputButtons.Set(HoldInputButtons.Shoot, Shoot);
     }
 

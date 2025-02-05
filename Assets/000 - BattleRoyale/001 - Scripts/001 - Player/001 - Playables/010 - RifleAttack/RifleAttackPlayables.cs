@@ -1,6 +1,5 @@
 using Fusion;
 using Fusion.Addons.SimpleKCC;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -30,12 +29,17 @@ public class RifleAttackPlayables : NetworkBehaviour
     [SerializeField] private AnimationClip shootCooldownClip;
     [SerializeField] private AnimationClip shootClip;
 
+    [Space]
+    [SerializeField] private AnimationClip idleCrouchClip;
+    [SerializeField] private AnimationClip shootCrouchClip;
 
     [Header("DEBUGGER LOCAL")]
     [SerializeField] private float idleWeight;
     [SerializeField] private float shootWeight;
     [SerializeField] private float reloadRifleWeight;
     [SerializeField] private float shootCooldownWeight;
+    [SerializeField] private float idleCrouchWeight;
+    [SerializeField] private float shootCrouchWeight;
 
     [field: Header("DEBUGGER NETWORK")]
     [Networked][field: SerializeField] public bool Attacking { get; set; } // Current combo step
@@ -62,6 +66,10 @@ public class RifleAttackPlayables : NetworkBehaviour
     public override void FixedUpdateNetwork()
     {
         InputControlls();
+    }
+
+    private void Update()
+    {
         AnimationBlend();
     }
 
@@ -74,6 +82,8 @@ public class RifleAttackPlayables : NetworkBehaviour
                 switch (change)
                 {
                     case nameof(ShootCooldown):
+                        if (!HasInputAuthority) return;
+
                         if (ShootCooldown)
                         {
                             var cooldownPlayable = clipPlayables[2];
@@ -87,15 +97,31 @@ public class RifleAttackPlayables : NetworkBehaviour
                         {
                             playerInventory.SecondaryWeapon.muzzleFlash.SetActive(true);
 
-                            var shootPlayable = clipPlayables[1];
+                            AnimationClipPlayable shootPlayable;
+
+                            if (playerController.IsCrouch)
+                            {
+                                shootPlayable = clipPlayables[5];
+                                shootPlayable.SetTime(0f); // Reset time
+                                shootPlayable.Play();    // Start playing
+                                break;
+                            }
+
+                            shootPlayable = clipPlayables[1];
                             shootPlayable.SetTime(0f); // Reset time
                             shootPlayable.Play();    // Start playing
                         }
                         break;
+                    case nameof(Reloading):
+                        if (Reloading)
+                        {
+                            var reloadPlayable = clipPlayables[3];
+                            reloadPlayable.SetTime(0);
+                            reloadPlayable.Play();
+                        }
+                        break;
                 }
             }
-
-            AnimationBlend();
         }
     }
 
@@ -103,7 +129,7 @@ public class RifleAttackPlayables : NetworkBehaviour
     {
         clipPlayables = new List<AnimationClipPlayable>();
 
-        movementMixer = AnimationMixerPlayable.Create(graph, 4);
+        movementMixer = AnimationMixerPlayable.Create(graph, 7);
 
         var idlePlayable = AnimationClipPlayable.Create(graph, idleClip);
         clipPlayables.Add(idlePlayable);
@@ -117,10 +143,18 @@ public class RifleAttackPlayables : NetworkBehaviour
         var reloadRiflePlayable = AnimationClipPlayable.Create(graph, reloadRifleClip);
         clipPlayables.Add(reloadRiflePlayable);
 
+        var crouchIdlePlayable = AnimationClipPlayable.Create(graph, idleCrouchClip);
+        clipPlayables.Add(crouchIdlePlayable);
+
+        var crouchShootPlayable = AnimationClipPlayable.Create(graph, shootCrouchClip);
+        clipPlayables.Add(crouchShootPlayable);
+
         graph.Connect(idlePlayable, 0, movementMixer, 0);
         graph.Connect(shootPlayable, 0, movementMixer, 1);
         graph.Connect(shootCooldownPlayable, 0, movementMixer, 2);
         graph.Connect(reloadRiflePlayable, 0, movementMixer, 3);
+        graph.Connect(crouchIdlePlayable, 0, movementMixer, 4);
+        graph.Connect(crouchShootPlayable, 0, movementMixer, 5);
     }
 
     private void InputControlls()
@@ -130,8 +164,48 @@ public class RifleAttackPlayables : NetworkBehaviour
         controllerInput = input;
 
         Attack();
+        Reload();
 
         PreviousButtons = input.Buttons;
+    }
+
+    private void Reload()
+    {
+        if (!HasStateAuthority) return;
+
+        if (playerInventory.WeaponIndex != 3) return;
+
+        if (playerInventory.SecondaryWeapon == null) return;
+
+        if (playerInventory.RifleAmmoCount <= 0) return;
+
+        if (playerInventory.SecondaryWeapon.Ammo >= 10) return;
+
+        if (!Attacking && !ShootCooldown && !Reloading && !playerController.IsProne && controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Reload))
+        {
+            Reloading = true;
+
+            var reloadPlayable = clipPlayables[3];
+            reloadPlayable.SetTime(0);
+            reloadPlayable.Play();
+
+            Invoke(nameof(ReloadAmmo), reloadRifleClip.length * 0.8f);
+            Invoke(nameof(ResetReload), reloadRifleClip.length + 0.25f);
+        }
+    }
+
+    private void ReloadAmmo()
+    {
+        int ammoNeeded = 10 - playerInventory.SecondaryWeapon.Ammo; // How much ammo is needed to fill the magazine
+        int ammoToLoad = Mathf.Min(ammoNeeded, playerInventory.RifleAmmoCount); // Take only what's available
+
+        playerInventory.SecondaryWeapon.Ammo += ammoToLoad;
+        playerInventory.RifleAmmoCount -= ammoToLoad;
+    }
+
+    private void ResetReload()
+    {
+        Reloading = false;
     }
 
     private void Attack()
@@ -142,15 +216,26 @@ public class RifleAttackPlayables : NetworkBehaviour
 
         if (playerInventory.SecondaryWeapon == null) return;
 
-        if (!Attacking && !ShootCooldown && !playerController.IsProne && controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Melee) && characterController.IsGrounded)
+        if (!Attacking && !ShootCooldown && !Reloading && !playerController.IsProne && controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Melee))
         {
-            //if (playerInventory.SecondaryWeapon.Ammo <= 0) return;
+            if (playerInventory.SecondaryWeapon.Ammo <= 0) return;
 
             Attacking = true;
 
-            var shootPlayable = clipPlayables[1];
-            SetAttackTickRate(shootPlayable); // Reset time
-            shootPlayable.Play();    // Start playing
+            AnimationClipPlayable shootPlayable;
+
+            if (playerController.IsCrouch)
+            {
+                shootPlayable = clipPlayables[5];
+                shootPlayable.SetTime(0f); // Reset time
+                shootPlayable.Play();    // Start playing
+            }
+            else
+            {
+                shootPlayable = clipPlayables[1];
+                shootPlayable.SetTime(0f); // Reset time
+                shootPlayable.Play();    // Start playing
+            }
 
             SpawnBullet();
 
@@ -202,10 +287,21 @@ public class RifleAttackPlayables : NetworkBehaviour
         {
             if (Attacking)
             {
-                shootWeight = Mathf.Lerp(shootWeight, 1f, Time.deltaTime * 4);
+                if (playerController.IsCrouch)
+                {
+                    shootCrouchWeight = Mathf.Lerp(shootCrouchWeight, 1f, Time.deltaTime * 4);
+                    shootWeight = Mathf.Lerp(shootWeight, 0f, Time.deltaTime * 4);
+                }
+                else
+                {
+                    shootWeight = Mathf.Lerp(shootWeight, 1f, Time.deltaTime * 4);
+                    shootCrouchWeight = Mathf.Lerp(shootCrouchWeight, 0f, Time.deltaTime * 4);
+                }
+
                 shootCooldownWeight = Mathf.Lerp(shootCooldownWeight, 0f, Time.deltaTime * 4);
                 reloadRifleWeight = Mathf.Lerp(reloadRifleWeight, 0f, Time.deltaTime * 4);
                 idleWeight = Mathf.Lerp(idleWeight, 0f, Time.deltaTime * 4);
+                idleCrouchWeight = Mathf.Lerp(idleCrouchWeight, 0f, Time.deltaTime * 4);
             }
             if (ShootCooldown)
             {
@@ -213,6 +309,8 @@ public class RifleAttackPlayables : NetworkBehaviour
                 idleWeight = Mathf.Lerp(idleWeight, 0f, Time.deltaTime * 4);
                 reloadRifleWeight = Mathf.Lerp(reloadRifleWeight, 0f, Time.deltaTime * 4);
                 shootWeight = Mathf.Lerp(shootWeight, 0f, Time.deltaTime * 4);
+                idleCrouchWeight = Mathf.Lerp(idleCrouchWeight, 0f, Time.deltaTime * 4);
+                shootCrouchWeight = Mathf.Lerp(shootCrouchWeight, 0f, Time.deltaTime * 4);
             }
             else if (Reloading)
             {
@@ -220,13 +318,26 @@ public class RifleAttackPlayables : NetworkBehaviour
                 idleWeight = Mathf.Lerp(idleWeight, 0f, Time.deltaTime * 4);
                 shootCooldownWeight = Mathf.Lerp(shootCooldownWeight, 0f, Time.deltaTime * 4);
                 shootWeight = Mathf.Lerp(shootWeight, 0f, Time.deltaTime * 4);
+                idleCrouchWeight = Mathf.Lerp(idleCrouchWeight, 0f, Time.deltaTime * 4);
+                shootCrouchWeight = Mathf.Lerp(shootCrouchWeight, 0f, Time.deltaTime * 4);
             }
             else
             {
-                idleWeight = Mathf.Lerp(idleWeight, 1f, Time.deltaTime * 4);
+                if (playerController.IsCrouch)
+                {
+                    idleCrouchWeight = Mathf.Lerp(idleCrouchWeight, 1f, Time.deltaTime * 4);
+                    idleWeight = Mathf.Lerp(idleWeight, 0f, Time.deltaTime * 4);
+                }
+                else
+                {
+                    idleWeight = Mathf.Lerp(idleWeight, 1f, Time.deltaTime * 4);
+                    idleCrouchWeight = Mathf.Lerp(idleCrouchWeight, 0f, Time.deltaTime * 4);
+                }
+
                 shootCooldownWeight = Mathf.Lerp(shootCooldownWeight, 0f, Time.deltaTime * 4);
                 reloadRifleWeight = Mathf.Lerp(reloadRifleWeight, 0f, Time.deltaTime * 4);
                 shootWeight = Mathf.Lerp(shootWeight, 0f, Time.deltaTime * 4);
+                shootCrouchWeight = Mathf.Lerp(shootCrouchWeight, 0f, Time.deltaTime * 4);
             }
 
 
@@ -234,6 +345,8 @@ public class RifleAttackPlayables : NetworkBehaviour
             movementMixer.SetInputWeight(1, shootWeight);
             movementMixer.SetInputWeight(2, shootCooldownWeight);
             movementMixer.SetInputWeight(3, reloadRifleWeight);
+            movementMixer.SetInputWeight(4, idleCrouchWeight);
+            movementMixer.SetInputWeight(5, shootCrouchWeight);
         }
     }
 

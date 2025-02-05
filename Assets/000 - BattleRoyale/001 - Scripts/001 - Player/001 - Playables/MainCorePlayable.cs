@@ -192,215 +192,148 @@ public class MainCorePlayable : NetworkBehaviour
         playableGraph.Play();
     }
 
-    public override void Render()
+    public void Update()
     {
-        if (playableGraph.IsValid())
+        if (!playableGraph.IsValid()) return;
+
+        if (!deathMovement.IsDead)
         {
-            if (!deathMovement.IsDead)
+            deadWeight = 0;
+
+            if (characterController.IsGrounded)
             {
+                // Healing & Repairing
+                SetWeight(ref healWeight, healPlayables.Healing);
+                SetWeight(ref repairArmorWeight, repairArmorPlayables.Repairing);
 
-                deadWeight = 0;
-                if (characterController.IsGrounded)
+                // Lower Body Mask (Non-Crouch & Non-Prone)
+                if (!controller.IsCrouch && !controller.IsProne)
                 {
-                    if (healPlayables.Healing)
-                    {
-                        healWeight = Mathf.Lerp(healWeight, 1f, Time.deltaTime * 5f);
-                    }
-                    else
-                    {
-                        healWeight = Mathf.Lerp(healWeight, 0f, Time.deltaTime * 5f);
-                    }
+                    SetWeaponMovementWeight();
+                    SetWeight(ref crouchWeight, false);
+                    SetWeight(ref proneWeight, false);
+                }
 
-                    if (repairArmorPlayables.Repairing)
-                    {
-                        repairArmorWeight = Mathf.Lerp(repairArmorWeight, 1f, Time.deltaTime * 5f);
-                    }
-                    else
-                    {
-                        repairArmorWeight = Mathf.Lerp(repairArmorWeight, 0f, Time.deltaTime * 5f);
-                    }
-
-                    #region LOWER BODY MASK
-
-                    if (!controller.IsCrouch && !controller.IsProne)
-                    {
-                        if (inventory.WeaponIndex == 1)
-                        {
-                            basicMovementWeight = Mathf.Lerp(basicMovementWeight, 1f, Time.deltaTime * 5f);
-                            swordBasicMovementWeight = Mathf.Lerp(swordBasicMovementWeight, 0f, Time.deltaTime * 5f);
-                            spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 0f, Time.deltaTime * 5f);
-                            rifleBasicWeight = Mathf.Lerp(rifleBasicWeight, 0f, Time.deltaTime * 5f);
-                        }
-                        else if (inventory.WeaponIndex == 2)
-                        {
-                            if (inventory.PrimaryWeapon.WeaponID == "001")
-                            {
-                                swordBasicMovementWeight = Mathf.Lerp(swordBasicMovementWeight, 1f, Time.deltaTime * 5f);
-                                spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 0f, Time.deltaTime * 5f);
-                            }
-                            else if (inventory.PrimaryWeapon.WeaponID == "002")
-                            {
-                                spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 1f, Time.deltaTime * 5f);
-                                swordBasicMovementWeight = Mathf.Lerp(swordBasicMovementWeight, 0f, Time.deltaTime * 5f);
-                            }
-
-                            basicMovementWeight = Mathf.Lerp(basicMovementWeight, 0f, Time.deltaTime * 5f);
-                            rifleBasicWeight = Mathf.Lerp(rifleBasicWeight, 0f, Time.deltaTime * 5f);
-                        }
-                        else if (inventory.WeaponIndex == 3)
-                        {
-                            if (inventory.SecondaryWeapon.WeaponID == "003")
-                            {
-                                rifleBasicWeight = Mathf.Lerp(rifleBasicWeight, 1f, Time.deltaTime * 5f);
-                            }
-
-                            basicMovementWeight = Mathf.Lerp(basicMovementWeight, 0f, Time.deltaTime * 5f);
-                        }
-
-                        crouchWeight = Mathf.Lerp(crouchWeight, 0f, Time.deltaTime * 5f);
-                        proneWeight = Mathf.Lerp(proneWeight, 0f, Time.deltaTime * 5f);
-                    }
-
-                    #endregion
-
-                    if (!controller.IsProne)
-                    {
-                        //  Bare Hands
-                        if (inventory.WeaponIndex == 1)
-                        {
-                            bareHandWeight = Mathf.Lerp(bareHandWeight, 1f, Time.deltaTime * 5f);
-                        }
-                        else
-                        {
-                            bareHandWeight = Mathf.Lerp(bareHandWeight, 0f, Time.deltaTime * 5f);
-                        }
-
-                        if (inventory.WeaponIndex == 2)
-                        {
-                            if (inventory.PrimaryWeapon.WeaponID == "001")
-                            {
-                                swordWeight = Mathf.Lerp(swordWeight, 1f, Time.deltaTime * 5f);
-                                spearWeight = Mathf.Lerp(spearWeight, 0f, Time.deltaTime * 5f);
-                            }
-                            else if (inventory.PrimaryWeapon.WeaponID == "002")
-                            {
-                                spearWeight = Mathf.Lerp(spearWeight, 1f, Time.deltaTime * 5f);
-                                swordWeight = Mathf.Lerp(swordWeight, 0f, Time.deltaTime * 5f);
-                            }
-                        }
-                        else
-                        {
-                            swordWeight = Mathf.Lerp(swordWeight, 0f, Time.deltaTime * 5f);
-                            spearWeight = Mathf.Lerp(spearWeight, 0f, Time.deltaTime * 5f);
-                        }
-
-                        if (inventory.WeaponIndex == 3)
-                        {
-                            if (inventory.SecondaryWeapon.WeaponID == "003")
-                            {
-                                rifleAttackWeight = Mathf.Lerp(rifleAttackWeight, 1f, Time.deltaTime * 5f);
-                            }
-                        }
-                        else
-                        {
-                            rifleAttackWeight = Mathf.Lerp(rifleAttackWeight, 0f, Time.deltaTime * 5f);
-                        }
-
-                        if (controller.IsCrouch)
-                        {
-                            crouchWeight = Mathf.Lerp(crouchWeight, 1f, Time.deltaTime * 5f);
-                            proneWeight = Mathf.Lerp(proneWeight, 0f, Time.deltaTime * 5f);
-                            basicMovementWeight = Mathf.Lerp(basicMovementWeight, 0f, Time.deltaTime * 5f);
-                            swordBasicMovementWeight = Mathf.Lerp(swordBasicMovementWeight, 0f, Time.deltaTime * 5f);
-                            spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 0f, Time.deltaTime * 5f);
-                            rifleBasicWeight = Mathf.Lerp(rifleBasicWeight, 0f, Time.deltaTime * 5f);
-                        }
-                        else
-                        {
-                            crouchWeight = Mathf.Lerp(crouchWeight, 0f, Time.deltaTime * 5f);
-                        }
-
-                        proneWeight = Mathf.Lerp(proneWeight, 0f, Time.deltaTime * 5f);
-                    }
-                    else
-                    {
-                        proneWeight = Mathf.Lerp(proneWeight, 1f, Time.deltaTime * 5f);
-                        crouchWeight = Mathf.Lerp(crouchWeight, 0f, Time.deltaTime * 5f);
-                        basicMovementWeight = Mathf.Lerp(basicMovementWeight, 0f, Time.deltaTime * 5f);
-                        bareHandWeight = Mathf.Lerp(bareHandWeight, 0f, Time.deltaTime * 5f);
-                        swordWeight = Mathf.Lerp(swordWeight, 0f, Time.deltaTime * 5f);
-                        swordBasicMovementWeight = Mathf.Lerp(swordBasicMovementWeight, 0f, Time.deltaTime * 5f);
-                        spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 0f, Time.deltaTime * 5f);
-                        spearWeight = Mathf.Lerp(spearWeight, 0f, Time.deltaTime * 5f);
-                        rifleBasicWeight = Mathf.Lerp(rifleBasicWeight, 0f, Time.deltaTime * 5f);
-                        rifleAttackWeight = Mathf.Lerp(rifleAttackWeight, 0f, Time.deltaTime * 5f);
-                    }
-
-                    jumpMovementWeight = 0;
-                    fallingWeight = 0;
+                // Prone Logic
+                if (!controller.IsProne)
+                {
+                    SetWeaponAttackWeight();
+                    SetWeight(ref crouchWeight, controller.IsCrouch);
+                    SetWeight(ref proneWeight, false);
                 }
                 else
                 {
-                    if (jumpMovement.IsJumping)
-                    {
-                        jumpMovementWeight = Mathf.Lerp(jumpMovementWeight, 1f, Time.deltaTime * 5f);
-                        fallingWeight = Mathf.Lerp(fallingWeight, 0f, Time.deltaTime * 5f);
-                    }
-                    else
-                    {
-                        fallingWeight = Mathf.Lerp(fallingWeight, 1f, Time.deltaTime * 5f);
-                        jumpMovementWeight = Mathf.Lerp(jumpMovementWeight, 0f, Time.deltaTime * 5f);
-                    }
-                    basicMovementWeight = Mathf.Lerp(basicMovementWeight, 0f, Time.deltaTime * 5f);
-                    swordBasicMovementWeight = Mathf.Lerp(swordBasicMovementWeight, 0f, Time.deltaTime * 5f);
-                    bareHandWeight = Mathf.Lerp(bareHandWeight, 0f, Time.deltaTime * 5f);
-                    crouchWeight = Mathf.Lerp(crouchWeight, 0f, Time.deltaTime * 5f);
-                    proneWeight = Mathf.Lerp(proneWeight, 0f, Time.deltaTime * 5f);
-                    swordWeight = Mathf.Lerp(swordWeight, 0f, Time.deltaTime * 5f);
-                    spearWeight = Mathf.Lerp(spearWeight, 0f, Time.deltaTime * 5f);
-                    spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 0f, Time.deltaTime * 5f);
-                    healWeight = Mathf.Lerp(healWeight, 0f, Time.deltaTime * 5f);
-                    repairArmorWeight = Mathf.Lerp(repairArmorWeight, 0f, Time.deltaTime * 5f);
-                    rifleBasicWeight = Mathf.Lerp(rifleBasicWeight, 0f, Time.deltaTime * 5f);
-                    rifleAttackWeight = Mathf.Lerp(rifleAttackWeight, 0f, Time.deltaTime * 5f);
+                    ResetAllMovementWeights();
+                    SetWeight(ref proneWeight, true);
                 }
+
+                // Reset Jump & Falling Weights
+                jumpMovementWeight = 0;
+                fallingWeight = 0;
             }
-            else
+            else // In-Air Logic (Jumping / Falling)
             {
-                basicMovementWeight = Mathf.Lerp(basicMovementWeight, 0f, Time.deltaTime * 5f);
-                swordBasicMovementWeight = Mathf.Lerp(swordBasicMovementWeight, 0f, Time.deltaTime * 5f);
-                spearBasicMovementWeight = Mathf.Lerp(spearBasicMovementWeight, 0f, Time.deltaTime * 5f);
-                bareHandWeight = Mathf.Lerp(bareHandWeight, 0f, Time.deltaTime * 5f);
-                crouchWeight = Mathf.Lerp(crouchWeight, 0f, Time.deltaTime * 5f);
-                proneWeight = Mathf.Lerp(proneWeight, 0f, Time.deltaTime * 5f);
-                jumpMovementWeight = Mathf.Lerp(jumpMovementWeight, 0f, Time.deltaTime * 5f);
-                fallingWeight = Mathf.Lerp(fallingWeight, 0f, Time.deltaTime * 5f);
-                swordWeight = Mathf.Lerp(swordWeight, 0f, Time.deltaTime * 5f);
-                spearWeight = Mathf.Lerp(spearWeight, 0f, Time.deltaTime * 5f);
-                healWeight = Mathf.Lerp(healWeight, 0f, Time.deltaTime * 5f);
-                repairArmorWeight = Mathf.Lerp(repairArmorWeight, 0f, Time.deltaTime * 5f);
-                deadWeight = Mathf.Lerp(deadWeight, 1f, Time.deltaTime * 5f);
-                rifleBasicWeight = Mathf.Lerp(rifleBasicWeight, 0f, Time.deltaTime * 5f);
-                rifleAttackWeight = Mathf.Lerp(rifleAttackWeight, 0f, Time.deltaTime * 5f);
+                SetWeight(ref jumpMovementWeight, jumpMovement.IsJumping);
+                SetWeight(ref fallingWeight, !jumpMovement.IsJumping);
+                SetWeaponAttackWeight();
+                ResetAllMovementWeights();
             }
-
-
-            mainPlayable.SetInputWeight(0, basicMovementWeight);
-            mainPlayable.SetInputWeight(1, bareHandWeight);
-            mainPlayable.SetInputWeight(2, jumpMovementWeight);
-            mainPlayable.SetInputWeight(3, fallingWeight);
-            mainPlayable.SetInputWeight(4, crouchWeight);
-            mainPlayable.SetInputWeight(5, proneWeight);
-            mainPlayable.SetInputWeight(6, deadWeight);
-            mainPlayable.SetInputWeight(7, swordWeight);
-            mainPlayable.SetInputWeight(8, swordBasicMovementWeight);
-            mainPlayable.SetInputWeight(9, spearWeight);
-            mainPlayable.SetInputWeight(10, spearBasicMovementWeight);
-            mainPlayable.SetInputWeight(11, healWeight);
-            mainPlayable.SetInputWeight(12, repairArmorWeight);
-            mainPlayable.SetInputWeight(13, rifleBasicWeight);
-            mainPlayable.SetInputWeight(14, rifleAttackWeight);
         }
+        else // Death Logic
+        {
+            ResetAllMovementWeights();
+            SetWeight(ref deadWeight, true);
+        }
+
+        ApplyWeightsToPlayable();
+    }
+
+    // Smoothly transitions weight using Lerp
+    private void SetWeight(ref float weight, bool isActive, float speed = 5f)
+    {
+        weight = Mathf.Lerp(weight, isActive ? 1f : 0f, Time.deltaTime * speed);
+    }
+
+    // Handles movement blending based on weapon type
+    private void SetWeaponMovementWeight()
+    {
+        switch (inventory.WeaponIndex)
+        {
+            case 1:
+                SetWeight(ref basicMovementWeight, true);
+                SetWeight(ref swordBasicMovementWeight, false);
+                SetWeight(ref spearBasicMovementWeight, false);
+                SetWeight(ref rifleBasicWeight, false);
+                break;
+            case 2:
+                bool isSword = inventory.PrimaryWeapon.WeaponID == "001";
+                bool isSpear = inventory.PrimaryWeapon.WeaponID == "002";
+                SetWeight(ref swordBasicMovementWeight, isSword);
+                SetWeight(ref spearBasicMovementWeight, isSpear);
+                SetWeight(ref basicMovementWeight, false);
+                SetWeight(ref rifleBasicWeight, false);
+                break;
+            case 3:
+                SetWeight(ref rifleBasicWeight, inventory.SecondaryWeapon.WeaponID == "003");
+                SetWeight(ref basicMovementWeight, false);
+                break;
+        }
+    }
+
+    // Handles attack blending based on weapon type
+    private void SetWeaponAttackWeight()
+    {
+        SetWeight(ref bareHandWeight, inventory.WeaponIndex == 1);
+
+        if (inventory.WeaponIndex == 2)
+        {
+            bool isSword = inventory.PrimaryWeapon.WeaponID == "001";
+            bool isSpear = inventory.PrimaryWeapon.WeaponID == "002";
+            SetWeight(ref swordWeight, isSword);
+            SetWeight(ref spearWeight, isSpear);
+        }
+        else
+        {
+            SetWeight(ref swordWeight, false);
+            SetWeight(ref spearWeight, false);
+        }
+
+        SetWeight(ref rifleAttackWeight, inventory.WeaponIndex == 3 && inventory.SecondaryWeapon.WeaponID == "003");
+    }
+
+    // Resets all movement-related weights
+    private void ResetAllMovementWeights()
+    {
+        SetWeight(ref basicMovementWeight, false);
+        SetWeight(ref swordBasicMovementWeight, false);
+        SetWeight(ref spearBasicMovementWeight, false);
+        SetWeight(ref rifleBasicWeight, false);
+        SetWeight(ref rifleAttackWeight, false);
+        SetWeight(ref bareHandWeight, false);
+        SetWeight(ref swordWeight, false);
+        SetWeight(ref spearWeight, false);
+        SetWeight(ref crouchWeight, false);
+        SetWeight(ref proneWeight, false);
+    }
+
+    // Applies weights to the playable animation system
+    private void ApplyWeightsToPlayable()
+    {
+        mainPlayable.SetInputWeight(0, basicMovementWeight);
+        mainPlayable.SetInputWeight(1, bareHandWeight);
+        mainPlayable.SetInputWeight(2, jumpMovementWeight);
+        mainPlayable.SetInputWeight(3, fallingWeight);
+        mainPlayable.SetInputWeight(4, crouchWeight);
+        mainPlayable.SetInputWeight(5, proneWeight);
+        mainPlayable.SetInputWeight(6, deadWeight);
+        mainPlayable.SetInputWeight(7, swordWeight);
+        mainPlayable.SetInputWeight(8, swordBasicMovementWeight);
+        mainPlayable.SetInputWeight(9, spearWeight);
+        mainPlayable.SetInputWeight(10, spearBasicMovementWeight);
+        mainPlayable.SetInputWeight(11, healWeight);
+        mainPlayable.SetInputWeight(12, repairArmorWeight);
+        mainPlayable.SetInputWeight(13, rifleBasicWeight);
+        mainPlayable.SetInputWeight(14, rifleAttackWeight);
     }
 
     private void OnDisable()
