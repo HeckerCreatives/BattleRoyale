@@ -147,14 +147,14 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         List<string> itemPool = new List<string>
         {
             "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", // 15%
-            //"bow", "bow", "bow", "bow", "bow", // 5%
+            "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", // 15%
             "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", // 20%
             "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", // 20%
             "heal", "heal", "heal", "heal", "heal", "heal", "heal", "heal", "heal", "heal", // 10%
             "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", // 10%
             "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", // 10%
-            "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", // Ammo items can be re-added similarly if needed
-            //"bow ammo", "bow ammo", "bow ammo", "bow ammo",
+            "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", // 
+            "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo" // 10%
         };
 
 
@@ -180,20 +180,23 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             string selectedItem = itemPool[UnityEngine.Random.Range(0, itemPool.Count)];
             string itemID = itemIDMap[selectedItem];
 
-            if (selectedItem == "rifle ammo" || selectedItem == "bow ammo")
+            if (selectedItem == "rifle ammo")
             {
-                if (selectedItems.ContainsKey(itemID))
-                {
-                    selectedItems[itemID] += UnityEngine.Random.Range(1, 61); // Add a random quantity between 1 and 60
-                }
-                else
-                {
-                    selectedItems[itemID] = UnityEngine.Random.Range(1, 61); // Set a random quantity between 1 and 60
-                }
+                if (!selectedItems.ContainsKey(itemID))
+                    selectedItems[itemID] = UnityEngine.Random.Range(10, 21); // Add a random quantity between 1 and 60
+            }
+            else if (selectedItem == "bow ammo")
+            {
+                if (!selectedItems.ContainsKey(itemID))
+                    selectedItems[itemID] = UnityEngine.Random.Range(5, 16); // Add a random quantity between 1 and 60
             }
             else if (selectedItem == "rifle")
             {
                 selectedItems[itemID] = 10;
+            }
+            else if (selectedItem == "bow")
+            {
+                selectedItems[itemID] = 5;
             }
             else if (selectedItem == "armor")
             {
@@ -532,6 +535,18 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         if (Players.TryGet(player, out NetworkObject clientPlayer))
         {
+            var playerinventory = clientPlayer.GetComponent<PlayerInventory>();
+
+            if (playerinventory.PrimaryWeapon != null) playerinventory.PrimaryWeapon.DropPrimaryWeapon();
+
+            if (playerinventory.SecondaryWeapon != null)
+            {
+                if (playerinventory.SecondaryWeapon.WeaponID == "003") playerinventory.SecondaryWeapon.DropSecondaryWeapon();
+                else if (playerinventory.SecondaryWeapon.WeaponID == "004") playerinventory.SecondaryWeapon.DropSecondaryWithAmmoCaseWeapon();
+            }
+
+            if (playerinventory.Shield != null) playerinventory.Shield.DropShield();
+
             Players.Remove(player);
             Runner.Despawn(clientPlayer);
 

@@ -31,8 +31,8 @@ public class ClientMatchmakingController : MonoBehaviour
     [ReadOnly][SerializeField] private float currentTime;
     [ReadOnly][SerializeField] private bool findingMatch;
     [ReadOnly][SerializeField] private bool matchFound;
-    [ReadOnly][SerializeField] string minutesFindMatch;
-    [ReadOnly][SerializeField] string secondsFindMatch;
+    [ReadOnly][SerializeField] int minutesFindMatch;
+    [ReadOnly][SerializeField] int secondsFindMatch;
 
     //  =====================
 
@@ -53,11 +53,11 @@ public class ClientMatchmakingController : MonoBehaviour
 
         currentTime += Time.deltaTime;
 
-        minutesFindMatch = Mathf.Floor(currentTime / 60).ToString("00");
+        minutesFindMatch = Mathf.FloorToInt(currentTime / 60);
 
-        secondsFindMatch = (currentTime % 60).ToString("00");
+        secondsFindMatch = Mathf.FloorToInt(currentTime % 60);
 
-        timerTMP.text = string.Format("{0} : {1}", minutesFindMatch, secondsFindMatch);
+        timerTMP.text = string.Format("{0:00} : {1:00}", minutesFindMatch, secondsFindMatch);
     }
 
     public async void FindMatch()

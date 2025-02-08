@@ -24,7 +24,7 @@ public class CrateController : NetworkBehaviour
     }
 
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    public void RPC_RemoveItem(NetworkString<_4> itemkey, string itemname, NetworkObject player, NetworkObject back, NetworkObject hand)
+    public void RPC_RemoveItem(NetworkString<_4> itemkey, string itemname, NetworkObject player, NetworkObject back, NetworkObject hand, NetworkObject ammoContainer = null)
     {
         if (!HasStateAuthority) return;
 
@@ -53,9 +53,25 @@ public class CrateController : NetworkBehaviour
                 if (isHand)
                     playerInventory.WeaponIndex = 2;
             }
-            else if (itemkey.ToString() == "003" || itemkey.ToString() == "004")
+            else if (itemkey.ToString() == "003")
             {
                 if (playerInventory.SecondaryWeapon != null) playerInventory.SecondaryWeapon.DropSecondaryWeapon();
+
+                isHand = playerInventory.WeaponIndex == 3 || playerInventory.WeaponIndex == 1;
+
+                if (isHand)
+                    playerInventory.WeaponIndex = 3;
+            }
+            else if (itemkey.ToString() == "004")
+            {
+                if (playerInventory.SecondaryWeapon != null) playerInventory.SecondaryWeapon.DropSecondaryWithAmmoCaseWeapon();
+
+                if (ammoContainer != null)
+                    Runner.Spawn(weaponSpawnData.GetItemObject("arrowcontainer"), ammoContainer.transform.position, Quaternion.identity, player.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                    {
+                        playerInventory.ArrowHolder = obj;
+                        obj.GetComponent<AmmoContainerController>().Initialize(ammoContainer);
+                    });
 
                 isHand = playerInventory.WeaponIndex == 3 || playerInventory.WeaponIndex == 1;
 
@@ -101,7 +117,15 @@ public class CrateController : NetworkBehaviour
 
                 if (playerInventory.RifleAmmoCount >= 999) playerInventory.RifleAmmoCount = 999;
             }
-            if (itemkey.ToString() == "008")
+            else if (itemkey.ToString() == "006")
+            {
+                if (playerInventory.ArrowAmmoCount >= 999) return;
+
+                playerInventory.ArrowAmmoCount += tempAmmo;
+
+                if (playerInventory.ArrowAmmoCount >= 999) playerInventory.ArrowAmmoCount = 999;
+            }
+            else if (itemkey.ToString() == "008")
             {
                 if (playerInventory.HealCount >= 4) return;
 

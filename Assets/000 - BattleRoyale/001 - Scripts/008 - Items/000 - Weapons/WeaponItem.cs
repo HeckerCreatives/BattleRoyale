@@ -107,6 +107,50 @@ public class WeaponItem : NetworkBehaviour
     }
 
     [Rpc(RpcSources.All, RpcTargets.StateAuthority, Channel = RpcChannel.Unreliable)]
+    public void RPC_RepickupSecondaryWeapon(NetworkObject tempPlayer, NetworkObject back, NetworkObject hand, bool isHand = false)
+    {
+        PlayerInventory playerInventory = tempPlayer.GetComponent<PlayerInventory>();
+
+        if (playerInventory.SecondaryWeapon != null) playerInventory.SecondaryWeapon.DropSecondaryWeapon();
+
+        Object.AssignInputAuthority(tempPlayer.InputAuthority);
+
+        TempPlayer = tempPlayer.GetComponent<PlayerNetworkLoader>();
+        ItemCheckerController = tempPlayer.GetComponent<PlayerItemCheckerController>();
+        playerInventory.SecondaryWeapon = this;
+
+        if (isHand)
+            playerInventory.WeaponIndex = 3;
+
+        Back = back;
+        Hand = hand;
+        IsPickedUp = true;
+        IsHand = isHand;
+    }
+
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority, Channel = RpcChannel.Unreliable)]
+    public void RPC_RepickupSecondaryWithAmmoCaseWeapon(NetworkObject tempPlayer, NetworkObject back, NetworkObject hand, bool isHand = false)
+    {
+        PlayerInventory playerInventory = tempPlayer.GetComponent<PlayerInventory>();
+
+        if (playerInventory.SecondaryWeapon != null) playerInventory.SecondaryWeapon.DropSecondaryWithAmmoCaseWeapon();
+
+        Object.AssignInputAuthority(tempPlayer.InputAuthority);
+
+        TempPlayer = tempPlayer.GetComponent<PlayerNetworkLoader>();
+        ItemCheckerController = tempPlayer.GetComponent<PlayerItemCheckerController>();
+        playerInventory.SecondaryWeapon = this;
+
+        if (isHand)
+            playerInventory.WeaponIndex = 3;
+
+        Back = back;
+        Hand = hand;
+        IsPickedUp = true;
+        IsHand = isHand;
+    }
+
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority, Channel = RpcChannel.Unreliable)]
     public void RPC_RepickupArmor(NetworkObject tempPlayer, NetworkObject back, NetworkObject hand)
     {
         PlayerInventory playerInventory = tempPlayer.GetComponent<PlayerInventory>();
@@ -153,6 +197,28 @@ public class WeaponItem : NetworkBehaviour
         DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
         transform.position = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
         TempPlayer.GetComponent<PlayerInventory>().SecondaryWeapon = null;
+        TempPlayer = null;
+        ItemCheckerController = null;
+
+        transform.rotation = Quaternion.Euler(dropRotation);
+        IsPickedUp = false;
+        Object.RemoveInputAuthority();
+    }
+
+    public void DropSecondaryWithAmmoCaseWeapon()
+    {
+        Back = null;
+        Hand = null;
+        IsHand = false;
+        transform.parent = null;
+
+        DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
+        transform.position = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
+        TempPlayer.GetComponent<PlayerInventory>().SecondaryWeapon = null;
+
+        Runner.Despawn(TempPlayer.GetComponent<PlayerInventory>().ArrowHolder);
+
+        TempPlayer.GetComponent<PlayerInventory>().ArrowHolder = null;
         TempPlayer = null;
         ItemCheckerController = null;
 
@@ -209,6 +275,9 @@ public class WeaponItem : NetworkBehaviour
         DropPosition = Vector3.zero;
         TempPlayer.GetComponent<PlayerInventory>().WeaponIndex = 1;
         TempPlayer.GetComponent<PlayerInventory>().SecondaryWeapon = null;
+
+        if (TempPlayer.GetComponent<PlayerInventory>().ArrowHolder != null) Runner.Despawn(TempPlayer.GetComponent<PlayerInventory>().ArrowHolder);
+
         TempPlayer = null;
         ItemCheckerController = null;
         IsPickedUp = false;

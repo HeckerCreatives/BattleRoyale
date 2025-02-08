@@ -11,10 +11,8 @@ GameObject:
   - component: {fileID: 1218355006974357699}
   - component: {fileID: 7782167564959681625}
   - component: {fileID: 8718209516328954601}
-  - component: {fileID: 263644497153106750}
+  - component: {fileID: 2827732567491044492}
   - component: {fileID: 2836240876747883898}
-  - component: {fileID: 8504250763141883849}
-  - component: {fileID: -1767894376440007154}
   m_Layer: 12
   m_Name: bow_Storage
   m_TagString: Weapon
@@ -62,8 +60,6 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
   m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -89,7 +85,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &263644497153106750
+--- !u!114 &2827732567491044492
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -98,20 +94,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 5713840924020863758}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 58e432449cdabfd42890861b85aa9062, type: 3}
+  m_Script: {fileID: 11500000, guid: c730071e9175004439bb6bc5f8c61ed6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _AnimatorID: 0
-  _WeaponID: 
-  _WeaponName: 
-  _Ammo: 0
-  _Owner: {fileID: 0}
-  _WeaponObject: {fileID: 0}
-  _Parent: {fileID: 0}
-  _Hand: {fileID: 0}
-  _IsPickedUp: 0
-  _IsHand: 0
-  dropRotation: {x: 0, y: 0, z: 0}
+  ContainerParent: {fileID: 0}
 --- !u!114 &2836240876747883898
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -129,42 +115,5 @@ MonoBehaviour:
   Flags: 262145
   NestedObjects: []
   NetworkedBehaviours:
-  - {fileID: 263644497153106750}
-  - {fileID: 8504250763141883849}
---- !u!114 &8504250763141883849
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5713840924020863758}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  SyncScale: 0
-  SyncParent: 1
-  _autoAOIOverride: 0
-  DisableSharedModeInterpolation: 0
---- !u!65 &-1767894376440007154
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5713840924020863758}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 1
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.5518529, y: 1.251889, z: 0.18324246}
-  m_Center: {x: 0.053807557, y: 1.4946419, z: -0.2614803}
+  - {fileID: 2827732567491044492}
+  ForceRemoteRenderTimeframe: 0

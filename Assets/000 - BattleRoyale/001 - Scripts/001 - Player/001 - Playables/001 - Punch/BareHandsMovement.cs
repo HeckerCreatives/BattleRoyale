@@ -196,6 +196,8 @@ public class BareHandsMovement : NetworkBehaviour
 
     private void AnimationBlend()
     {
+        if (!Object.IsValid) return;
+
         if (movementMixer.IsValid())
         {
             if (!playerController.IsCrouch)
@@ -261,7 +263,7 @@ public class BareHandsMovement : NetworkBehaviour
         if (playerInventory.WeaponIndex != 1)
             return;
 
-        if (controllerInput.Buttons.IsSet(InputButton.Melee) && characterController.IsGrounded && !healPlayables.Healing && !repairArmorPlayables.Repairing)
+        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Melee) && characterController.IsGrounded && !healPlayables.Healing && !repairArmorPlayables.Repairing && !playerController.IsProne)
         {
             if (AttackStep <= 2)
             {

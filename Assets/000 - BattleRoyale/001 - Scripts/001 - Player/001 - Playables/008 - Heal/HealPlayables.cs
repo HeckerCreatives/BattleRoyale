@@ -44,6 +44,8 @@ public class HealPlayables : NetworkBehaviour
 
     private ChangeDetector _changeDetector;
 
+    Coroutine warningCoroutine;
+
     //  =======================
 
     public void Initialize(PlayableGraph graph)
@@ -146,7 +148,7 @@ public class HealPlayables : NetworkBehaviour
     private void DoHealing()
     {
 
-        if (health.CurrentHealth >= 100f) return;
+        //if (health.CurrentHealth >= 100f) return;
 
         if (inventory.HealCount <= 0) return;
 
@@ -156,32 +158,38 @@ public class HealPlayables : NetworkBehaviour
 
         if (Healing) return;
 
-        if (playerController.IsProne)
+        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Heal) && characterController.IsGrounded)
         {
-            warningTMP.text = "Can't heal while prone";
-            warningTMP.gameObject.SetActive(true);
-            Invoke(nameof(TurnOffWarning), 3f);
-            return;
-        }
-        else
-        {
-            if (controllerInput.Buttons.IsSet(InputButton.Heal) && characterController.IsGrounded)
+            if (HasInputAuthority && playerController.IsProne)
             {
-                Healing = true;
+                warningTMP.text = "Can't heal while prone";
+                warningTMP.gameObject.SetActive(true);
+                
+                if (warningCoroutine != null) StopCoroutine(warningCoroutine);
 
-                var healingPlayable = clipPlayables[0];
-                healingPlayable.SetTime(0); // Reset time
-                healingPlayable.Play();    // Start playing
+                warningCoroutine = StartCoroutine(TurnOffWarning());
 
-                Invoke(nameof(HealPlayer), healClip.length * 0.6f); // Allow next combo towards the end of Punch1
-                Invoke(nameof(ResetHeal), healClip.length);
+                return;
             }
+
+            if (!HasStateAuthority) return;
+
+            Healing = true;
+
+            var healingPlayable = clipPlayables[0];
+            healingPlayable.SetTime(0); // Reset time
+            healingPlayable.Play();    // Start playing
+
+            Invoke(nameof(HealPlayer), healClip.length * 0.6f); // Allow next combo towards the end of Punch1
+            Invoke(nameof(ResetHeal), healClip.length);
         }
     }
 
 
-    private void TurnOffWarning()
+    IEnumerator TurnOffWarning()
     {
+        yield return new WaitForSeconds(3f);
+
         warningTMP.gameObject.SetActive(false);
         warningTMP.text = "";
     }

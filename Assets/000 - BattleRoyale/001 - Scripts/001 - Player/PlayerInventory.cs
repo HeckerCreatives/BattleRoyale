@@ -65,10 +65,12 @@ public class PlayerInventory : NetworkBehaviour
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public WeaponItem PrimaryWeapon { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public WeaponItem SecondaryWeapon { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public WeaponItem Shield { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkObject ArrowHolder { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int HealCount { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int ArmorRepairCount { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int RifleAmmoCount { get; set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool NotSafeToPickup { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public int ArrowAmmoCount { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public int TrapCount { get; set; }
 
 
 
@@ -108,7 +110,17 @@ public class PlayerInventory : NetworkBehaviour
             PrimaryBtn.SetIndicator(WeaponIndex == 2 ? true : false);
             PrimaryBtn.ChangeSpriteButton(PrimaryWeapon != null ? PrimaryWeapon.WeaponID : null, "");
             SecondaryBtn.SetIndicator(WeaponIndex == 3 ? true : false);
-            SecondaryBtn.ChangeSpriteButton(SecondaryWeapon != null ? SecondaryWeapon.WeaponID : null, $"{(SecondaryWeapon != null ? SecondaryWeapon.Ammo : 0)} / {RifleAmmoCount}", SecondaryWeapon != null);
+            
+            if (SecondaryWeapon != null)
+            {
+                if (SecondaryWeapon.WeaponID == "003")
+                    SecondaryBtn.ChangeSpriteButton(SecondaryWeapon != null ? SecondaryWeapon.WeaponID : null, $"{(SecondaryWeapon != null ? SecondaryWeapon.Ammo : 0)} / {RifleAmmoCount}", SecondaryWeapon != null);
+                else if (SecondaryWeapon.WeaponID == "004")
+                    SecondaryBtn.ChangeSpriteButton(SecondaryWeapon != null ? SecondaryWeapon.WeaponID : null, $"{(SecondaryWeapon != null ? (SecondaryWeapon.Ammo + ArrowAmmoCount) : 0)}", SecondaryWeapon != null);
+            }
+            else
+                SecondaryBtn.ChangeSpriteButton(null, "", false);
+
             healCountIndicator.fillAmount = 1 - (float)HealCount / 4;
             repairCountIndicator.fillAmount = 1 - (float)ArmorRepairCount / 4;
         }

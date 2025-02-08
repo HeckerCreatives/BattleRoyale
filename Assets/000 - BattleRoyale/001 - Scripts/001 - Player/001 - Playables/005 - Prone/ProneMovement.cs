@@ -27,6 +27,10 @@ public class ProneMovement : NetworkBehaviour
     [SerializeField] private AnimationClip rifleIdleClip;
     [SerializeField] private AnimationClip rifleMoveClip;
 
+    [Space]
+    [SerializeField] private AnimationClip bowIdleClip;
+    [SerializeField] private AnimationClip bowMoveClip;
+
     //  ============================
 
     private AnimationMixerPlayable movementMixer;
@@ -38,7 +42,7 @@ public class ProneMovement : NetworkBehaviour
     {
         clipPlayables = new List<AnimationClipPlayable>();
 
-        movementMixer = AnimationMixerPlayable.Create(graph, 8);
+        movementMixer = AnimationMixerPlayable.Create(graph, 10);
 
         var idlePlayable = AnimationClipPlayable.Create(graph, idleClip);
         clipPlayables.Add(idlePlayable);
@@ -64,6 +68,12 @@ public class ProneMovement : NetworkBehaviour
         var riflemovePlayable = AnimationClipPlayable.Create(graph, rifleMoveClip);
         clipPlayables.Add(riflemovePlayable);
 
+        var bowidlePlayable = AnimationClipPlayable.Create(graph, bowIdleClip);
+        clipPlayables.Add(bowidlePlayable);
+
+        var bowmovePlayable = AnimationClipPlayable.Create(graph, bowMoveClip);
+        clipPlayables.Add(bowmovePlayable);
+
         graph.Connect(idlePlayable, 0, movementMixer, 0);
         graph.Connect(movePlayable, 0, movementMixer, 1);
         graph.Connect(swordidlePlayable, 0, movementMixer, 2);
@@ -72,6 +82,8 @@ public class ProneMovement : NetworkBehaviour
         graph.Connect(spearmovePlayable, 0, movementMixer, 5);
         graph.Connect(rifleidlePlayable, 0, movementMixer, 6);
         graph.Connect(riflemovePlayable, 0, movementMixer, 7);
+        graph.Connect(bowidlePlayable, 0, movementMixer, 8);
+        graph.Connect(bowmovePlayable, 0, movementMixer, 9);
     }
 
     public override void Render()
@@ -163,6 +175,15 @@ public class ProneMovement : NetworkBehaviour
             {
                 movementMixer.SetInputWeight(6, idleWeight);
                 movementMixer.SetInputWeight(7, moveWeight);
+                movementMixer.SetInputWeight(8, 0);
+                movementMixer.SetInputWeight(9, 0);
+            }
+            else if (playerInventory.SecondaryWeapon.WeaponID == "004")
+            {
+                movementMixer.SetInputWeight(8, idleWeight);
+                movementMixer.SetInputWeight(9, moveWeight);
+                movementMixer.SetInputWeight(6, 0);
+                movementMixer.SetInputWeight(7, 0);
             }
 
             movementMixer.SetInputWeight(0, 0);

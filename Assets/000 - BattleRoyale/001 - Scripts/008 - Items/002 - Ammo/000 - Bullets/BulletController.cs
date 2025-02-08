@@ -97,7 +97,7 @@ public class BulletController : NetworkBehaviour
 
             if ((1 << TargetObj.GameObject.layer) == playerCollisionLayers)
             {
-                if (Vector3.Distance(TargetObj.GameObject.transform.position, TargetPos) <= 0f)
+                if (Vector3.Distance(TargetObj.Point, TargetPos) <= 1f)
                 {
                     HitEffectRotation = TargetObj.Normal;
 

@@ -45,6 +45,8 @@ public class RepairArmorPlayables : NetworkBehaviour
 
     private ChangeDetector _changeDetector;
 
+    Coroutine warningCoroutine;
+
     //  =======================
 
     public void Initialize(PlayableGraph graph)
@@ -146,7 +148,7 @@ public class RepairArmorPlayables : NetworkBehaviour
 
         if (inventory.Shield == null) return;
 
-        if (inventory.Shield.Ammo >= 100f) return;
+        //if (inventory.Shield.Ammo >= 100f) return;
 
         if (deathMovement.IsDead) return;
 
@@ -154,32 +156,37 @@ public class RepairArmorPlayables : NetworkBehaviour
 
         if (Repairing) return;
 
-
-        if (playerController.IsProne)
+        if (controllerInput.Buttons.IsSet(InputButton.ArmorRepair) && characterController.IsGrounded)
         {
-            warningTMP.text = "Can't repair armor while prone";
-            warningTMP.gameObject.SetActive(true);
-            Invoke(nameof(TurnOffWarning), 3f);
-            return;
-        }
-        else
-        {
-            if (controllerInput.Buttons.IsSet(InputButton.ArmorRepair) && characterController.IsGrounded)
+            if (HasInputAuthority && playerController.IsProne)
             {
-                Repairing = true;
+                warningTMP.text = "Can't repair armor while prone";
+                warningTMP.gameObject.SetActive(true);
 
-                var healingPlayable = clipPlayables[0];
-                healingPlayable.SetTime(0); // Reset time
-                healingPlayable.Play();    // Start playing
+                if (warningCoroutine != null) StopCoroutine(warningCoroutine);
 
-                Invoke(nameof(RepairPlayer), repairClip.length * 0.6f); // Allow next combo towards the end of Punch1
-                Invoke(nameof(ResetRepair), repairClip.length);
+                warningCoroutine = StartCoroutine(TurnOffWarning());
+
+                return;
             }
+
+            if (!HasStateAuthority) return;
+
+            Repairing = true;
+
+            var healingPlayable = clipPlayables[0];
+            healingPlayable.SetTime(0); // Reset time
+            healingPlayable.Play();    // Start playing
+
+            Invoke(nameof(RepairPlayer), repairClip.length * 0.6f); // Allow next combo towards the end of Punch1
+            Invoke(nameof(ResetRepair), repairClip.length);
         }
     }
 
-    private void TurnOffWarning()
+    IEnumerator TurnOffWarning()
     {
+        yield return new WaitForSeconds(3f);
+
         warningTMP.gameObject.SetActive(false);
         warningTMP.text = "";
     }

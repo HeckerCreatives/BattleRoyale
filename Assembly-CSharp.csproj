@@ -154,6 +154,7 @@
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Scripts\YuME_tilesetData.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralSequencer.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\MapZoomInOut.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\002 - Ammo\001 - Container\AmmoContainerController.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\001 - Playables\000 - Basic\BasicMovement.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\001 - Playables\008 - Heal\HealPlayables.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralSimpleUI.cs" />
@@ -205,6 +206,7 @@
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\001 - Playables\004 - Crouch\CrouchMovement.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\PostProcessingController.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\001 - Playables\003 - Falling\FallingAnimation.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\002 - Ammo\001 - Bow\ArrowController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LTDescrOptional.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\010 - KillCount\KillCountCounterController.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\NotificationController.cs" />
@@ -212,6 +214,7 @@
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\001 - Playables\001 - Punch\BareHandsMovement.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralAdvancedTechniques.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingIssue2.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\001 - Playables\011 - BowAttack\BowAttackPlayable.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingOptionalCancel.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -1262,6 +1265,10 @@
     </Reference>
     <Reference Include="Unity.Sysroot.Linux_x86_64">
       <HintPath>Library\ScriptAssemblies\Unity.Sysroot.Linux_x86_64.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Toolchain.Linux-x86_64">
+      <HintPath>Library\ScriptAssemblies\Unity.Toolchain.Linux-x86_64.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.RenderPipelines.Universal.Runtime">

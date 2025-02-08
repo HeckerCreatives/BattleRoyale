@@ -236,7 +236,7 @@ public class PlayerItemCheckerController : NetworkBehaviour
         {
             if (isCrateItem)
             {
-                CrateObject.RPC_RemoveItem(itemID, itemSpritesData.GetItemName(itemID), Object, Back(itemID), Hand(itemID));
+                CrateObject.RPC_RemoveItem(itemID, itemSpritesData.GetItemName(itemID), Object, Back(itemID), Hand(itemID), arrowBackHandle);
             }
             else
             {
@@ -255,6 +255,14 @@ public class PlayerItemCheckerController : NetworkBehaviour
                 else if (itemID == "007")
                 {
                     tempWeaponItem?.RPC_RepickupArmor(Object, Back(itemID), Hand(itemID));
+                }
+                else if (itemID == "003")
+                {
+                    tempWeaponItem?.RPC_RepickupSecondaryWeapon(Object, Back(itemID), Hand(itemID), playerInventory.WeaponIndex == 1 || playerInventory.WeaponIndex == 3);
+                }
+                else if (itemID == "004")
+                {
+                    tempWeaponItem?.RPC_RepickupSecondaryWithAmmoCaseWeapon(Object, Back(itemID), Hand(itemID), playerInventory.WeaponIndex == 1 || playerInventory.WeaponIndex == 3);
                 }
             }
         });
@@ -275,6 +283,8 @@ public class PlayerItemCheckerController : NetworkBehaviour
                 return spearHandHandle;
             case "003":
                 return rifleHandHandle;
+            case "004":
+                return bowHandHandle;
             case "007":
                 return shieldHandHandle;
             default:
@@ -292,6 +302,8 @@ public class PlayerItemCheckerController : NetworkBehaviour
                 return spearBackHandle;
             case "003":
                 return rifleBackHandle;
+            case "004":
+                return bowBackHandle;
             case "007":
                 return shieldHandHandle;
             default:

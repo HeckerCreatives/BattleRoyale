@@ -1,6 +1,7 @@
 using Fusion;
 using Fusion.Addons.SimpleKCC;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -95,7 +96,8 @@ public class RifleAttackPlayables : NetworkBehaviour
 
                         if (Attacking)
                         {
-                            playerInventory.SecondaryWeapon.muzzleFlash.SetActive(true);
+                            if (playerInventory.SecondaryWeapon.muzzleFlash != null)
+                                playerInventory.SecondaryWeapon.muzzleFlash.SetActive(true);
 
                             AnimationClipPlayable shootPlayable;
 
@@ -177,6 +179,8 @@ public class RifleAttackPlayables : NetworkBehaviour
 
         if (playerInventory.SecondaryWeapon == null) return;
 
+        if (playerInventory.SecondaryWeapon.WeaponID != "003") return;
+
         if (playerInventory.RifleAmmoCount <= 0) return;
 
         if (playerInventory.SecondaryWeapon.Ammo >= 10) return;
@@ -216,11 +220,58 @@ public class RifleAttackPlayables : NetworkBehaviour
 
         if (playerInventory.SecondaryWeapon == null) return;
 
+        if (playerInventory.SecondaryWeapon.WeaponID != "003") return;
+
         if (!Attacking && !ShootCooldown && !Reloading && !playerController.IsProne && controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Melee))
         {
             if (playerInventory.SecondaryWeapon.Ammo <= 0) return;
 
             Attacking = true;
+
+            SpawnBullet();
+        }
+    }
+
+    private async void SpawnBullet()
+    {
+        Ray tempRay = new Ray(controllerInput.CameraHitOrigin, controllerInput.CameraHitDirection);
+
+        LagCompensatedHit hit = new LagCompensatedHit();
+        bool validTargetFound = false;
+        Vector3 raystart = tempRay.origin;
+
+        while (!validTargetFound)
+        {
+            if (Runner.LagCompensation.Raycast(raystart, tempRay.direction, 999f, Object.InputAuthority, out hit, raycastLayerMask, HitOptions.IncludePhysX))
+            {
+                NetworkObject hitObject = hit.Hitbox?.Root.Object;
+
+                if (hitObject != null && hitObject.InputAuthority == Object.InputAuthority)
+                {
+                    raystart = hit.Point + tempRay.direction * 0.2f;
+                    continue;
+                }
+
+                validTargetFound = true;
+            }
+            else
+                break;
+
+            await Task.Yield();
+        }
+
+        if (validTargetFound)
+        {
+            Vector3 mouseWorldPosition = hit.Point;
+
+            Vector3 aimDir = (mouseWorldPosition - playerInventory.SecondaryWeapon.impactPoint.position).normalized;
+
+            NetworkObject tempbullet = Runner.Spawn(bulletNO, playerInventory.SecondaryWeapon.impactPoint.position, Quaternion.LookRotation(aimDir, Vector3.up), onBeforeSpawned: (NetworkRunner runner, NetworkObject nobject) =>
+            {
+                nobject.GetComponent<BulletController>().Fire(Object.InputAuthority, playerInventory.SecondaryWeapon.impactPoint.position, mainCorePlayable.Object, hit, playerNetworkLoader.Username);
+            });
+
+            tempbullet.GetComponent<BulletController>().CanTravel = true;
 
             AnimationClipPlayable shootPlayable;
 
@@ -237,30 +288,9 @@ public class RifleAttackPlayables : NetworkBehaviour
                 shootPlayable.Play();    // Start playing
             }
 
-            SpawnBullet();
-
             playerInventory.SecondaryWeapon.Ammo -= 1;
 
             Invoke(nameof(ShootCoolDown), shootClip.length + 0.25f);
-        }
-    }
-
-    private void SpawnBullet()
-    {
-        Ray tempRay = new Ray(controllerInput.CameraHitOrigin, controllerInput.CameraHitDirection);
-
-        if (Runner.LagCompensation.Raycast(tempRay.origin, tempRay.direction, 999f, Object.InputAuthority, out LagCompensatedHit hit, raycastLayerMask, HitOptions.IncludePhysX))
-        {
-            Vector3 mouseWorldPosition = hit.Point;
-
-            Vector3 aimDir = (mouseWorldPosition - playerInventory.SecondaryWeapon.impactPoint.position).normalized;
-
-            NetworkObject tempbullet = Runner.Spawn(bulletNO, playerInventory.SecondaryWeapon.impactPoint.position, Quaternion.LookRotation(aimDir, Vector3.up), onBeforeSpawned: (NetworkRunner runner, NetworkObject nobject) =>
-            {
-                nobject.GetComponent<BulletController>().Fire(Object.InputAuthority, playerInventory.SecondaryWeapon.impactPoint.position, mainCorePlayable.Object, hit, playerNetworkLoader.Username);
-            });
-
-            tempbullet.GetComponent<BulletController>().CanTravel = true;
         }
     }
 

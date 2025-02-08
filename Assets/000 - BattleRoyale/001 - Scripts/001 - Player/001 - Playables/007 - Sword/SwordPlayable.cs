@@ -264,7 +264,7 @@ public class SwordPlayable : NetworkBehaviour
 
         if (heal.Healing) return;
 
-        if (controllerInput.Buttons.IsSet(InputButton.Melee) && characterController.IsGrounded && !heal.Healing && !repairArmorPlayables.Repairing)
+        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Melee) && characterController.IsGrounded && !heal.Healing && !repairArmorPlayables.Repairing && !playerController.IsProne)
         {
             if (AttackStep <= 2)
             {
