@@ -1,0 +1,101 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-7280229709502438369
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 7
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: SafeZoneMask 1
+  m_Shader: {fileID: -6465566751694194690, guid: 868adc101554ff14d82e9f84962cd79c,
+    type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _ALPHATEST_ON
+  - _SURFACE_TYPE_TRANSPARENT
+  m_InvalidKeywords:
+  - _RECEIVE_SHADOWS_OFF
+  - _SPECULAR_SETUP
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: 3000
+  stringTagMap:
+    RenderType: Transparent
+  disabledShaderPasses:
+  - SHADOWCASTER
+  - DepthOnly
+  m_LockedProperties: _EdgeColor
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _SandStormTexture:
+        m_Texture: {fileID: 2800000, guid: 2abdaae86f8c35b48ace1d97fd4069bb, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaClip: 1
+    - _AlphaToMask: 0
+    - _Blend: 0
+    - _BlendModePreserveSpecular: 0
+    - _CameraDistance: 2
+    - _CastShadows: 0
+    - _ColorHeight: 155.6
+    - _Cull: 2
+    - _DstBlend: 10
+    - _Edge_Softness: 0.02
+    - _Fade_Strength: 1
+    - _Fersnel_Power: 5.05
+    - _FresnelPower: 0.28
+    - _Fresnel_Power: 0.94
+    - _IntersectionPower: 1.29
+    - _InverseFade: 0.1
+    - _Offset: 0.6
+    - _QueueControl: 0
+    - _QueueOffset: 0
+    - _Radius: 731.584
+    - _ReceiveShadows: 0
+    - _SeeThroughDistance: 0
+    - _SrcBlend: 5
+    - _Surface: 1
+    - _Test: 0
+    - _WorkflowMode: 0
+    - _ZTest: 4
+    - _ZWrite: 0
+    - _ZWriteControl: 2
+    m_Colors:
+    - _Center: {r: 576.3006, g: 72.444, b: 148.4756, a: 0}
+    - _Color: {r: 0.9150943, g: 0.5697757, b: 0, a: 1}
+    - _EdgeColor: {r: 0.6509434, g: 0.49252793, b: 0, a: 1}
+    - _Emission: {r: 1, g: 0.7580645, b: 0, a: 1}
+    - _Fresnel_Center: {r: 381.3006, g: 72.444, b: 148.4756, a: 0}
+    - _IntersectionColor: {r: 0.8490566, g: 0.500623, b: 0.03604484, a: 1}
+  m_BuildTextureStacks: []

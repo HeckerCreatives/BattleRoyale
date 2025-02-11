@@ -193,7 +193,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hitEffectObj: {fileID: 1719402305924115555}
-  bulletSpeed: 200
+  bulletSpeed: 350
   bulletRadius: 0.025
   environmentLayers:
     serializedVersion: 2
@@ -211,6 +211,7 @@ MonoBehaviour:
   _RemainingDistance: 0
   _HitEffectRotation: {x: 0, y: 0, z: 0}
   _CanTravel: 0
+  remainingDistance: 0
 --- !u!114 &5210724683350344643
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -301,6 +302,11 @@ PrefabInstance:
     - target: {fileID: 9151524833513866528, guid: 08735f343eb1cef4fb3e77176d295124,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 9154222583113208588, guid: 08735f343eb1cef4fb3e77176d295124,
+        type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9154229115824779020, guid: 08735f343eb1cef4fb3e77176d295124,

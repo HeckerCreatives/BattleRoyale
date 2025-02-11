@@ -103,6 +103,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [Header("PLAYING FIELDS")]
     [SerializeField] private GameObject waitingAreaArena;
     [SerializeField] private GameObject battleFieldArena;
+    [SerializeField] private float waitTimerForReadyAfterBattlePos;
 
     [Header("SAFE ZONE")]
     [SerializeField] private NetworkObject safeZoneNO;
@@ -154,7 +155,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", // 10%
             "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", // 10%
             "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", // 
-            "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo" // 10%
+            "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", // 10%
+            "trap", "trap", "trap", "trap", "trap", "trap", "trap", "trap", "trap", "trap", // 10%
         };
 
 
@@ -168,7 +170,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             { "bow ammo", "006" },
             { "armor", "007" },
             { "heal", "008" },
-            { "repair armor", "009" }
+            { "repair armor", "009" },
+            { "trap", "010" }
         };
 
         Dictionary<string, int> selectedItems = new Dictionary<string, int>();
@@ -400,7 +403,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     public override void FixedUpdateNetwork()
     {
         CountDownWaitingAreaTimer();
-        BattlePosition();
         CountDownSafeZoneTimer();
     }
 
@@ -429,6 +431,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             CurrentGameState = GameState.ARENA;
             CanCountWaitingAreaTimer = false;
             CurrentStateChange?.Invoke(this, EventArgs.Empty);
+
+            StartCoroutine(BattlePosition());
         }
     }
 
@@ -446,38 +450,46 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         }
     }
 
-    private void BattlePosition()
+    private IEnumerator BattlePosition()
     {
-        if (!HasStateAuthority) return;
+        if (!HasStateAuthority) yield break;
 
-        if (CurrentGameState != GameState.ARENA) return;
+        if (CurrentGameState != GameState.ARENA) yield break;
 
-        if (DonePlayerBattlePositions) return;
+        if (DonePlayerBattlePositions) yield break;
 
         ArenaEnabler(false, true);
 
-        bool allPlayersInPosition = true;
+        bool isDone = false;
 
-        for (int a = 0; a < Players.Count; a++)
+        while (!isDone)
         {
-
-            // Set player position
-            Players.ElementAt(a).Value.GetComponent<SimpleKCC>().SetPosition(spawnBattleAreaPositions[a].position);
-        }
-
-        for (int a = 0; a < Players.Count; a++)
-        {
-            if (Players.ElementAt(a).Value.transform.position != spawnBattleAreaPositions[a].position)
+            for (int a = 0; a < Players.Count; a++)
             {
-                allPlayersInPosition = false;
-                break;
+                // Set player position
+
+                if (Players.ElementAt(a).Value.transform.position.x != spawnBattleAreaPositions[a].position.x && Players.ElementAt(a).Value.transform.position.z != spawnBattleAreaPositions[a].position.z)
+                    Players.ElementAt(a).Value.GetComponent<SimpleKCC>().SetPosition(spawnBattleAreaPositions[a].position);
+            }
+
+            for (int a = 0; a < Players.Count; a++)
+            {
+                // Set player position
+
+                if (Players.ElementAt(a).Value.transform.position.x != spawnBattleAreaPositions[a].position.x && Players.ElementAt(a).Value.transform.position.z != spawnBattleAreaPositions[a].position.z)
+                    break;
+
+                if (a == Players.Count - 1) isDone = true;
             }
         }
 
-        if (allPlayersInPosition)
-            DonePlayerBattlePositions = true;
+        yield return new WaitForSeconds(5f);
 
-        SafeZoneTimer = 150f;
+        //  WAIT 5 SECONDS HERE
+
+        DonePlayerBattlePositions = true;
+
+        SafeZoneTimer = 100f;
         CurrentSafeZoneState = SafeZoneState.TIMER;
     }
 

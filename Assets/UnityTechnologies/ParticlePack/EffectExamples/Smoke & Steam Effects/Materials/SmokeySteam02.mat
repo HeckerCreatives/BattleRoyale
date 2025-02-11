@@ -13,6 +13,7 @@ Material:
   m_ModifiedSerializedProperties: 18
   m_ValidKeywords:
   - _ALPHAPREMULTIPLY_ON
+  - _ALPHATEST_ON
   - _EMISSION
   - _FADING_ON
   - _FLIPBOOKBLENDING_ON
@@ -41,6 +42,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AlphaClip: 1
+    - _Cutoff: 0.103
     - _DstBlend: 10
     - _Glossiness: 0
     - _Mode: 2
@@ -48,7 +51,7 @@ Material:
     - _ZWrite: 0
     m_Colors:
     - _CameraFadeParams: {r: 0, g: Infinity, b: 0, a: 0}
-    - _Color: {r: 0.19811314, g: 0.19811314, b: 0.19811314, a: 1}
+    - _Color: {r: 0.19811317, g: 0.19811317, b: 0.19811317, a: 1}
     - _EmissionColor: {r: 0.254717, g: 0.254717, b: 0.254717, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &1156810611706697373

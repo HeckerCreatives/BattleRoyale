@@ -6,6 +6,8 @@ using static Fusion.NetworkBehaviour;
 
 public class ArrowController : NetworkBehaviour
 {
+    [SerializeField] private GameObject arrowObject;
+
     [Space]
     [SerializeField] private float bulletSpeed;
     [SerializeField] private LayerMask environmentLayers;
@@ -22,12 +24,14 @@ public class ArrowController : NetworkBehaviour
     [field: SerializeField][Networked] public float Distance { get; set; }
     [field: SerializeField][Networked] public float RemainingDistance { get; set; }
     [field: SerializeField][Networked] public Vector3 HitEffectRotation { get; set; }
+    [field: SerializeField][Networked] public Vector3 Rotation { get; set; }
     [field: SerializeField][Networked] public bool CanTravel { get; set; }
 
 
-    //  =======================
+    private float travelTime = 0.1f; // Bullet should reach the target in 0.1 seconds
+    private float elapsedTime = 0f;
 
-    private ChangeDetector _changeDetector;
+    //  =======================
 
     public LagCompensatedHit TargetObj;
 
@@ -35,46 +39,38 @@ public class ArrowController : NetworkBehaviour
 
     public override void Spawned()
     {
-        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+        transform.position = StartPos;
     }
 
     public override void Render()
     {
-        //foreach (var change in _changeDetector.DetectChanges(this))
-        //{
-        //    switch (change)
-        //    {
-        //        case nameof(Destroyed):
-        //            if (Destroyed)
-        //            {
-        //                hitEffectObj.SetActive(true);
-        //            }
-        //            break;
-        //    }
-        //}
-
-        if (CanTravel)
-        {
-            transform.position = Vector3.Lerp(StartPos, TargetPoint, 1 - (RemainingDistance / Distance));
-        }
-        else
-        {
-            transform.position = StartPos;
-        }
+        transform.rotation = Quaternion.LookRotation(Rotation, Vector3.up);
     }
 
-    public void Fire(PlayerRef firedByPlayerRef, Vector3 startPos, NetworkObject firedByNetworkObject, LagCompensatedHit targetObj, string playerUName)
+    public void Fire(PlayerRef firedByPlayerRef, Vector3 startPos, Vector3 rotation, NetworkObject firedByNetworkObject, LagCompensatedHit targetObj, string playerUName)
     {
         StartPos = startPos;
         TargetPoint = targetObj.Point;
         TargetPos = targetObj.GameObject.transform.position;
         Distance = Vector3.Distance(transform.position, targetObj.Point);
         RemainingDistance = Distance;
+        Rotation = rotation;
 
         this.firedByPlayerRef = firedByPlayerRef;
         firedByNO = firedByNetworkObject;
         firedByPlayerUName = playerUName;
         TargetObj = targetObj;
+    }
+
+    private void Update()
+    {
+        if (CanTravel)
+        {
+            elapsedTime += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsedTime / travelTime); // Normalize to 0-1 range
+
+            transform.position = Vector3.Lerp(StartPos, TargetPoint, t);
+        }
     }
 
     public override void FixedUpdateNetwork()
@@ -97,47 +93,17 @@ public class ArrowController : NetworkBehaviour
                 {
                     HitEffectRotation = TargetObj.Normal;
 
-                    Hitbox temphitbox = TargetObj.Hitbox;
-
-                    PlayerHealth playerHealth = temphitbox.Root.GetComponent<PlayerHealth>();
-
-                    string tag = temphitbox.tag;
-
-                    float tempdamage = tag switch
-                    {
-                        "Head" => 55f,
-                        "Body" => 35f,
-                        "Thigh" => 25f,
-                        "Shin" => 20f,
-                        "Foot" => 15f,
-                        "Arm" => 30f,
-                        "Forearm" => 20f,
-                        _ => 0f
-                    };
-
-                    Debug.Log($"Hit by {firedByPlayerUName} to {temphitbox.Root.GetBehaviour<PlayerNetworkLoader>().Username}, damage: {tempdamage} in {tag}");
-
-                    playerHealth.ReduceHealth(tempdamage, firedByPlayerUName, firedByNO);
-
                     transform.position = TargetObj.Point;
 
-                    DestroyObject();
+                    Invoke(nameof(DestroyObject), 3f);
                 }
                 else
                 {
-                    Destroyed = true;
-
-                    transform.position = TargetObj.Point;
-
                     Invoke(nameof(DestroyObject), 3f);
                 }
             }
             else
             {
-                Destroyed = true;
-
-                transform.position = TargetObj.Point;
-
                 Invoke(nameof(DestroyObject), 3f);
             }
         }

@@ -137,6 +137,12 @@ public class CrateController : NetworkBehaviour
 
                 playerInventory.ArmorRepairCount++;
             }
+            else if (itemkey.ToString() == "010")
+            {
+                if (playerInventory.TrapCount >= 4) return;
+
+                playerInventory.TrapCount++;
+            }
         }
 
         Weapons.Remove(itemkey);

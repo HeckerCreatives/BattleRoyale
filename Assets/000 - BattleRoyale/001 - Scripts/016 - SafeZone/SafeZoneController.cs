@@ -8,7 +8,9 @@ using UnityEngine;
 
 public class SafeZoneController : NetworkBehaviour
 {
+    [SerializeField] private float shrinkSpeed = 3f;
     public List<Vector3> safeZoneShrinkSize;
+
 
     [field: Header("DEBUGGER")]
     [field: SerializeField][Networked] public Vector3 SpawnPosition { get; set; }
@@ -50,7 +52,7 @@ public class SafeZoneController : NetworkBehaviour
         {
             if (Vector3.Distance(transform.localScale, safeZoneShrinkSize[ShrinkSizeIndex]) <= 30f)
             { 
-                ServerManager.SafeZoneTimer = 150f;
+                ServerManager.SafeZoneTimer = 100f;
 
                 if (ShrinkSizeIndex < safeZoneShrinkSize.Count - 1)
                 {
@@ -66,7 +68,7 @@ public class SafeZoneController : NetworkBehaviour
             }
             else
             {
-                transform.localScale = Vector3.Lerp(transform.localScale, safeZoneShrinkSize[ShrinkSizeIndex], Runner.DeltaTime * 0.02f);
+                transform.localScale = Vector3.MoveTowards(transform.localScale, safeZoneShrinkSize[ShrinkSizeIndex], Runner.DeltaTime * shrinkSpeed);
                 CurrentShrinkSize = transform.localScale;
             }
         }

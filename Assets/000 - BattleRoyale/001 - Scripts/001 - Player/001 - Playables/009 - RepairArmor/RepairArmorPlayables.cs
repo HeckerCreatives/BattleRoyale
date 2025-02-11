@@ -148,7 +148,7 @@ public class RepairArmorPlayables : NetworkBehaviour
 
         if (inventory.Shield == null) return;
 
-        //if (inventory.Shield.Ammo >= 100f) return;
+        if (inventory.Shield.Ammo >= 100f) return;
 
         if (deathMovement.IsDead) return;
 

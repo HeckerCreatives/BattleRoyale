@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TMPro;
 using Unity.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -52,6 +53,9 @@ public class PlayerInventory : NetworkBehaviour
     [Header("HEAL")]
     [SerializeField] private Image healCountIndicator;
     [SerializeField] private Image repairCountIndicator;
+
+    [Header("TRAP")]
+    [SerializeField] private TextMeshProUGUI trapCountTMP;
 
     [field: Header("DEBUGGER NETWORK")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsSkinInitialized { get; set; }
@@ -121,6 +125,9 @@ public class PlayerInventory : NetworkBehaviour
             else
                 SecondaryBtn.ChangeSpriteButton(null, "", false);
 
+            trapCountTMP.text = $"{TrapCount} / 4";
+
+
             healCountIndicator.fillAmount = 1 - (float)HealCount / 4;
             repairCountIndicator.fillAmount = 1 - (float)ArmorRepairCount / 4;
         }
@@ -137,6 +144,13 @@ public class PlayerInventory : NetworkBehaviour
         ClothingColorIndex = characterSetting.clothingcolor;
         SkinColorIndex = characterSetting.skincolor;
         IsSkinInitialized = true;
+
+
+        hairStyles[HairStyle].SetActive(true);
+        hairMR[HairStyle].material.SetColor("_BaseColor", hairColor[HairColorIndex]);
+        upperClothingMR.material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
+        lowerClothingMR.materials[0].SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
+        bodyColorMR.material.SetColor("_BaseColor", skinColor[SkinColorIndex]);
     }
 
     private async void InitializeSkinOnStart()
@@ -195,6 +209,9 @@ public class PlayerInventory : NetworkBehaviour
     {
         HealCount = 0;
         ArmorRepairCount = 0;
+        ArrowAmmoCount = 0;
+        RifleAmmoCount = 0;
+        TrapCount = 0;
     }
 
     #endregion

@@ -404,15 +404,6 @@ public class PlayerController : NetworkBehaviour
 
     private void Prone()
     {
-        if (healPlayables.Healing || repairArmorPlayables.Repairing)
-        {
-            warningTMP.text = healPlayables.Healing ? "Can't prone while healing" : "Can't prone while repairing armor";
-            warningTMP.gameObject.SetActive(true);
-            Invoke(nameof(TurnOffWarning), 3f);
-
-            return;
-        }
-
         if (playerHealth.CurrentHealth <= 0) return;
 
         // Ensure we're on the ground
@@ -424,6 +415,15 @@ public class PlayerController : NetworkBehaviour
 
         if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Prone))
             return;
+
+        if (healPlayables.Healing || repairArmorPlayables.Repairing)
+        {
+            warningTMP.text = healPlayables.Healing ? "Can't prone while healing" : "Can't prone while repairing armor";
+            warningTMP.gameObject.SetActive(true);
+            Invoke(nameof(TurnOffWarning), 3f);
+
+            return;
+        }
 
         if (!IsProne)
         {

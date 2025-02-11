@@ -155,7 +155,7 @@ public class BowAttackPlayable : NetworkBehaviour
 
     private void AnimationBlend()
     {
-        if (!Object.IsValid) return;
+        if (Object == null) return;
 
         if (movementMixer.IsValid())
         {
@@ -227,7 +227,7 @@ public class BowAttackPlayable : NetworkBehaviour
 
             Attacking = true;
 
-            Invoke(nameof(SpawnBullet), shootClip.length * 0.7f);
+            SpawnBullet();
         }
     }
 
@@ -261,13 +261,36 @@ public class BowAttackPlayable : NetworkBehaviour
 
         if (validTargetFound)
         {
+            if (hit.Hitbox != null)
+            {
+                PlayerHealth playerHealth = hit.Hitbox.Root.GetComponent<PlayerHealth>();
+
+                string tag = hit.Hitbox.tag;
+
+                float tempdamage = tag switch
+                {
+                    "Head" => 55f,
+                    "Body" => 35f,
+                    "Thigh" => 25f,
+                    "Shin" => 20f,
+                    "Foot" => 15f,
+                    "Arm" => 30f,
+                    "Forearm" => 20f,
+                    _ => 0f
+                };
+
+                Debug.Log($"Hit by {playerNetworkLoader.Username} to {hit.Hitbox.Root.GetBehaviour<PlayerNetworkLoader>().Username}, damage: {tempdamage} in {tag}");
+
+                playerHealth.ReduceHealth(tempdamage, playerNetworkLoader.Username, mainCorePlayable.Object);
+            }
+
             Vector3 mouseWorldPosition = hit.Point;
 
             Vector3 aimDir = (mouseWorldPosition - playerInventory.SecondaryWeapon.impactPoint.position).normalized;
 
             NetworkObject tempbullet = Runner.Spawn(bulletNO, playerInventory.SecondaryWeapon.impactPoint.position, Quaternion.LookRotation(aimDir, Vector3.up), onBeforeSpawned: (NetworkRunner runner, NetworkObject nobject) =>
             {
-                nobject.GetComponent<ArrowController>().Fire(Object.InputAuthority, playerInventory.SecondaryWeapon.impactPoint.position, mainCorePlayable.Object, hit, playerNetworkLoader.Username);
+                nobject.GetComponent<ArrowController>().Fire(Object.InputAuthority, playerInventory.SecondaryWeapon.impactPoint.position, aimDir, mainCorePlayable.Object, hit, playerNetworkLoader.Username);
             });
 
             tempbullet.GetComponent<ArrowController>().CanTravel = true;

@@ -47,7 +47,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff05882ce14636d4083837e306ca4481, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bulletSpeed: 200
+  arrowObject: {fileID: 3398982603471659491}
+  bulletSpeed: 350
   environmentLayers:
     serializedVersion: 2
     m_Bits: 3136
@@ -63,6 +64,7 @@ MonoBehaviour:
   _Distance: 0
   _RemainingDistance: 0
   _HitEffectRotation: {x: 0, y: 0, z: 0}
+  _Rotation: {x: 0, y: 0, z: 0}
   _CanTravel: 0
 --- !u!114 &4326975171416847598
 MonoBehaviour:

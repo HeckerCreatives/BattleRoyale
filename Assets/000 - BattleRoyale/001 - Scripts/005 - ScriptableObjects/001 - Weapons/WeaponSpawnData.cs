@@ -17,6 +17,7 @@ public class WeaponSpawnData : ScriptableObject
     [SerializeField] private Sprite healList;
     [SerializeField] private Sprite repairList;
     [SerializeField] private Sprite armorList;
+    [SerializeField] private Sprite trapList;
 
     [Header("ITEM BUTTON")]
     [SerializeField] private Sprite swordBtn;
@@ -76,6 +77,8 @@ public class WeaponSpawnData : ScriptableObject
                 return healList;
             case "009":
                 return repairList;
+            case "010":
+                return trapList;
             default: return null;
         }
     }
@@ -102,6 +105,8 @@ public class WeaponSpawnData : ScriptableObject
                 return "Heal";
             case "009":
                 return "Armor Repair";
+            case "010":
+                return "Trap";
             default: return "";
         }
     }

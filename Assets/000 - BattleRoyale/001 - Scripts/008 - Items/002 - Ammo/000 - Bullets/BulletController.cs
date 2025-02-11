@@ -29,6 +29,9 @@ public class BulletController : NetworkBehaviour
     [field: SerializeField][Networked] public bool CanTravel { get; set; }
 
 
+    private float travelTime = 0.1f; // Bullet should reach the target in 0.1 seconds
+    private float elapsedTime = 0f;
+
     //  =======================
 
     private ChangeDetector _changeDetector;
@@ -40,6 +43,7 @@ public class BulletController : NetworkBehaviour
     public override void Spawned()
     {
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+        transform.position = StartPos;
     }
 
     public override void Render()
@@ -56,14 +60,16 @@ public class BulletController : NetworkBehaviour
                     break;
             }
         }
+    }
 
+    private void Update()
+    {
         if (CanTravel)
         {
-            transform.position = Vector3.Lerp(StartPos, TargetPoint, 1 - (RemainingDistance / Distance));
-        }
-        else
-        {
-            transform.position = StartPos;
+            elapsedTime += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsedTime / travelTime); // Normalize to 0-1 range
+
+            transform.position = Vector3.Lerp(StartPos, TargetPoint, t);
         }
     }
 
@@ -99,33 +105,13 @@ public class BulletController : NetworkBehaviour
             {
                 if (Vector3.Distance(TargetObj.Point, TargetPos) <= 1f)
                 {
+                    Destroyed = true;
+
                     HitEffectRotation = TargetObj.Normal;
-
-                    Hitbox temphitbox = TargetObj.Hitbox;
-
-                    PlayerHealth playerHealth = temphitbox.Root.GetComponent<PlayerHealth>();
-
-                    string tag = temphitbox.tag;
-
-                    float tempdamage = tag switch
-                    {
-                        "Head" => 55f,
-                        "Body" => 35f,
-                        "Thigh" => 25f,
-                        "Shin" => 20f,
-                        "Foot" => 15f,
-                        "Arm" => 30f,
-                        "Forearm" => 20f,
-                        _ => 0f
-                    };
-
-                    Debug.Log($"Hit by {firedByPlayerUName} to {temphitbox.Root.GetBehaviour<PlayerNetworkLoader>().Username}, damage: {tempdamage} in {tag}");
-
-                    playerHealth.ReduceHealth(tempdamage, firedByPlayerUName, firedByNO);
 
                     transform.position = TargetObj.Point;
 
-                    DestroyObject();
+                    Invoke(nameof(DestroyObject), 3f);
                 }
                 else
                 {

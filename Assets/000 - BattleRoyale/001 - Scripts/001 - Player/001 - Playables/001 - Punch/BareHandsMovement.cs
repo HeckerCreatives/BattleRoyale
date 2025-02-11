@@ -196,7 +196,7 @@ public class BareHandsMovement : NetworkBehaviour
 
     private void AnimationBlend()
     {
-        if (!Object.IsValid) return;
+        if (Object == null) return;
 
         if (movementMixer.IsValid())
         {

@@ -147,8 +147,7 @@ public class HealPlayables : NetworkBehaviour
 
     private void DoHealing()
     {
-
-        //if (health.CurrentHealth >= 100f) return;
+        if (health.CurrentHealth >= 100f) return;
 
         if (inventory.HealCount <= 0) return;
 
