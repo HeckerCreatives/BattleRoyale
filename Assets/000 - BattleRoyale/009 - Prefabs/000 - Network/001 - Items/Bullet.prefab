@@ -201,8 +201,6 @@ MonoBehaviour:
   playerCollisionLayers:
     serializedVersion: 2
     m_Bits: 8192
-  _firedByNO: {fileID: 0}
-  _firedByPlayerUName: 
   _Destroyed: 0
   _TargetPos: {x: 0, y: 0, z: 0}
   _TargetPoint: {x: 0, y: 0, z: 0}
@@ -211,7 +209,8 @@ MonoBehaviour:
   _RemainingDistance: 0
   _HitEffectRotation: {x: 0, y: 0, z: 0}
   _CanTravel: 0
-  remainingDistance: 0
+  _PoolIndex: 0
+  _Pooler: {fileID: 0}
 --- !u!114 &5210724683350344643
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -239,6 +238,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 6999263041303145624}
     m_Modifications:
+    - target: {fileID: 9064919875212695174, guid: 08735f343eb1cef4fb3e77176d295124,
+        type: 3}
+      propertyPath: stopAction
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9151524833513866528, guid: 08735f343eb1cef4fb3e77176d295124,
         type: 3}
       propertyPath: m_LocalScale.x

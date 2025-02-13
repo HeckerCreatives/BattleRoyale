@@ -127,7 +127,11 @@ public class PlayerHealth : NetworkBehaviour
         if (HasInputAuthority)
         {
             healthSlider.value = CurrentHealth / 100f;
-            armorSlider.value = CurrentArmor / 100f;
+
+            if (playerInventory.Shield != null)
+                armorSlider.value = playerInventory.Shield.Ammo / 100f;
+            else
+                armorSlider.value = 0;
 
             if (postProcessing.profile.TryGet<Vignette>(out circleVignette))
             {

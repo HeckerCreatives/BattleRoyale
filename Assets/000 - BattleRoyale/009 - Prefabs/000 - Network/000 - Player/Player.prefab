@@ -3895,11 +3895,42 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainCorePlayable: {fileID: 5516893389093601067}
   playerController: {fileID: 8343728195109147783}
+  characterController: {fileID: 6136798064161907215}
+  playerInventory: {fileID: 6475620730627094871}
   idleClip: {fileID: 7400000, guid: 415faf9d2a662b942bdc6347acb2a22f, type: 2}
   sideStrafeLeftClip: {fileID: 7400000, guid: daccc1abbcaa7df47ae09c118310fe59, type: 2}
   sideStrafeRightClip: {fileID: 7400000, guid: 16ac7769797b8a24da21fcc9598dbcfa, type: 2}
   backwardClip: {fileID: 7400000, guid: afd82a75f78a8934c901c2d3cfa82a60, type: 2}
   sprintClip: {fileID: 7400000, guid: 245e6f79565053244916c5cf26cbfde6, type: 2}
+  footstepSource: {fileID: 1596474947949541486}
+  weaponIndex: 3
+  weaponid: 003
+  grassClip:
+  - {fileID: 8300000, guid: 2e636772451246544aacc8377415a60b, type: 3}
+  - {fileID: 8300000, guid: fcd4ed36320afb845af13cbcb9a101ba, type: 3}
+  - {fileID: 8300000, guid: 2b82df644ef346b409dff6ab56a0ffbd, type: 3}
+  - {fileID: 8300000, guid: 70604f00b5a49e44d97c97992a164996, type: 3}
+  - {fileID: 8300000, guid: 23e2ffa4ed2be494689717e874a097b5, type: 3}
+  - {fileID: 8300000, guid: 26e21138e580cdc43a4ac889383b9969, type: 3}
+  dirtClip:
+  - {fileID: 8300000, guid: 57b882cb97d76f54aa370c642eacaa57, type: 3}
+  - {fileID: 8300000, guid: d05fe2658a8ccbc42a90177a98798cae, type: 3}
+  - {fileID: 8300000, guid: eb305e19a0e20da4fbfebb827978b9ba, type: 3}
+  - {fileID: 8300000, guid: 79618cdef7087844fb955f8391de544a, type: 3}
+  - {fileID: 8300000, guid: 612432629804b3f4c96ce80a1b95399d, type: 3}
+  - {fileID: 8300000, guid: d8cbbbbe7f005b9479cc38f1c1e19d96, type: 3}
+  stoneClip: []
+  waitingAreaTerrain: {fileID: 0}
+  battleAreaTerrain: {fileID: 0}
+  textureValues: []
+  terrainPosition: {x: 0, y: 0, z: 0}
+  mapPosition: {x: 0, y: 0, z: 0}
+  xCoord: 0
+  zCoord: 0
+  posX: 0
+  posZ: 0
+  selectedClip: {fileID: 0}
+  previousClip: {fileID: 0}
 --- !u!1 &828373904232459785
 GameObject:
   m_ObjectHideFlags: 0
@@ -7159,6 +7190,7 @@ MonoBehaviour:
   heal: {fileID: 5197847603733950257}
   repairArmorPlayables: {fileID: 8783202544427895658}
   playerNetworkLoader: {fileID: 2671049237676878303}
+  bulletObjectPool: {fileID: 80463784095349859}
   bulletNO: {fileID: 5210724683350344643, guid: 2e2fa1fafcd794c43b680fbc17217e07,
     type: 3}
   raycastLayerMask:
@@ -42554,12 +42586,12 @@ GameObject:
   - component: {fileID: 3857653672356755609}
   - component: {fileID: 1596474947949541486}
   m_Layer: 0
-  m_Name: Sounds
+  m_Name: FootstepSounds
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &3857653672356755609
 Transform:
   m_ObjectHideFlags: 0
@@ -42595,10 +42627,10 @@ AudioSource:
   SpatializePostEffects: 0
   Priority: 128
   DopplerLevel: 1
-  MinDistance: 1
-  MaxDistance: 500
+  MinDistance: 0
+  MaxDistance: 10
   Pan2D: 0
-  rolloffMode: 0
+  rolloffMode: 1
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -43035,11 +43067,42 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainCorePlayable: {fileID: 5516893389093601067}
   playerController: {fileID: 8343728195109147783}
+  characterController: {fileID: 6136798064161907215}
+  playerInventory: {fileID: 6475620730627094871}
   idleClip: {fileID: 7400000, guid: d17cc390a8ed80542973f65428bbcd5a, type: 2}
   sideStrafeLeftClip: {fileID: 7400000, guid: f4ff444ff1d8e484a90fb38ef11ae2de, type: 2}
   sideStrafeRightClip: {fileID: 7400000, guid: 7c55057ccd0efca43b38f28262965a45, type: 2}
   backwardClip: {fileID: 7400000, guid: 2d163dbdf55229845b4edef680df8d9f, type: 2}
   sprintClip: {fileID: 7400000, guid: efa5713ea02319749bbe918926e8313d, type: 2}
+  footstepSource: {fileID: 1596474947949541486}
+  weaponIndex: 3
+  weaponid: 004
+  grassClip:
+  - {fileID: 8300000, guid: 2e636772451246544aacc8377415a60b, type: 3}
+  - {fileID: 8300000, guid: fcd4ed36320afb845af13cbcb9a101ba, type: 3}
+  - {fileID: 8300000, guid: 2b82df644ef346b409dff6ab56a0ffbd, type: 3}
+  - {fileID: 8300000, guid: 70604f00b5a49e44d97c97992a164996, type: 3}
+  - {fileID: 8300000, guid: 23e2ffa4ed2be494689717e874a097b5, type: 3}
+  - {fileID: 8300000, guid: 26e21138e580cdc43a4ac889383b9969, type: 3}
+  dirtClip:
+  - {fileID: 8300000, guid: 57b882cb97d76f54aa370c642eacaa57, type: 3}
+  - {fileID: 8300000, guid: d05fe2658a8ccbc42a90177a98798cae, type: 3}
+  - {fileID: 8300000, guid: eb305e19a0e20da4fbfebb827978b9ba, type: 3}
+  - {fileID: 8300000, guid: 79618cdef7087844fb955f8391de544a, type: 3}
+  - {fileID: 8300000, guid: 612432629804b3f4c96ce80a1b95399d, type: 3}
+  - {fileID: 8300000, guid: d8cbbbbe7f005b9479cc38f1c1e19d96, type: 3}
+  stoneClip: []
+  waitingAreaTerrain: {fileID: 0}
+  battleAreaTerrain: {fileID: 0}
+  textureValues: []
+  terrainPosition: {x: 0, y: 0, z: 0}
+  mapPosition: {x: 0, y: 0, z: 0}
+  xCoord: 0
+  zCoord: 0
+  posX: 0
+  posZ: 0
+  selectedClip: {fileID: 0}
+  previousClip: {fileID: 0}
 --- !u!1 &6978170684007197438
 GameObject:
   m_ObjectHideFlags: 0
@@ -46395,11 +46458,42 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainCorePlayable: {fileID: 5516893389093601067}
   playerController: {fileID: 8343728195109147783}
+  characterController: {fileID: 6136798064161907215}
+  playerInventory: {fileID: 6475620730627094871}
   idleClip: {fileID: 7400000, guid: 0bd9af707f03cdd4cb312c61120d4318, type: 2}
   sideStrafeLeftClip: {fileID: 7400000, guid: 4a189315a3af9a9448b301bf4872d5d2, type: 2}
   sideStrafeRightClip: {fileID: 7400000, guid: c6e4d3d1791d85147b62734f659e75ea, type: 2}
   backwardClip: {fileID: 7400000, guid: 9e046c73d80deb441931c310da615adc, type: 2}
   sprintClip: {fileID: 7400000, guid: 320fd2e1c3204b44b84a85117b55aeee, type: 2}
+  footstepSource: {fileID: 1596474947949541486}
+  weaponIndex: 1
+  weaponid: 
+  grassClip:
+  - {fileID: 8300000, guid: 2e636772451246544aacc8377415a60b, type: 3}
+  - {fileID: 8300000, guid: fcd4ed36320afb845af13cbcb9a101ba, type: 3}
+  - {fileID: 8300000, guid: 2b82df644ef346b409dff6ab56a0ffbd, type: 3}
+  - {fileID: 8300000, guid: 70604f00b5a49e44d97c97992a164996, type: 3}
+  - {fileID: 8300000, guid: 23e2ffa4ed2be494689717e874a097b5, type: 3}
+  - {fileID: 8300000, guid: 26e21138e580cdc43a4ac889383b9969, type: 3}
+  dirtClip:
+  - {fileID: 8300000, guid: 57b882cb97d76f54aa370c642eacaa57, type: 3}
+  - {fileID: 8300000, guid: d05fe2658a8ccbc42a90177a98798cae, type: 3}
+  - {fileID: 8300000, guid: eb305e19a0e20da4fbfebb827978b9ba, type: 3}
+  - {fileID: 8300000, guid: 79618cdef7087844fb955f8391de544a, type: 3}
+  - {fileID: 8300000, guid: 612432629804b3f4c96ce80a1b95399d, type: 3}
+  - {fileID: 8300000, guid: d8cbbbbe7f005b9479cc38f1c1e19d96, type: 3}
+  stoneClip: []
+  waitingAreaTerrain: {fileID: 0}
+  battleAreaTerrain: {fileID: 0}
+  textureValues: []
+  terrainPosition: {x: 0, y: 0, z: 0}
+  mapPosition: {x: 0, y: 0, z: 0}
+  xCoord: 0
+  zCoord: 0
+  posX: 0
+  posZ: 0
+  selectedClip: {fileID: 0}
+  previousClip: {fileID: 0}
 --- !u!1 &7724044256646164581
 GameObject:
   m_ObjectHideFlags: 0
@@ -52419,6 +52513,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1582820687403535839}
+  - component: {fileID: 80463784095349859}
   - component: {fileID: 3197376394441458163}
   - component: {fileID: 4920152902683292829}
   - component: {fileID: 2630037937965088976}
@@ -52487,6 +52582,24 @@ Transform:
   - {fileID: 3122462780397039921}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &80463784095349859
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8689549338059659052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d8dd827e4c593e49b0aace600f98555, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _CurrentBulletIndex: 0
+  _LastBulletIndex: 0
+  _CurrentArrowIndex: 0
+  _DoneInitialize: 0
+  TempBullets: []
+  TempArrows: []
 --- !u!114 &3197376394441458163
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -52661,6 +52774,7 @@ MonoBehaviour:
   bowAttackWeight: 0
   trapWeight: 0
   _TickRateAnimation: 0
+  _ServerManager: {fileID: 0}
 --- !u!114 &2632271246272331152
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -53188,6 +53302,7 @@ MonoBehaviour:
   - {fileID: 2118416943823695513}
   - {fileID: 7720033416305080247}
   NetworkedBehaviours:
+  - {fileID: 80463784095349859}
   - {fileID: 3197376394441458163}
   - {fileID: 4920152902683292829}
   - {fileID: 2591908786426449395}

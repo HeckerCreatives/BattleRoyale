@@ -1,6 +1,9 @@
 using Fusion;
+using Fusion.Addons.SimpleKCC;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Services.Matchmaker.Models;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -9,6 +12,8 @@ public class BasicMovement : NetworkBehaviour
 {
     [SerializeField] private MainCorePlayable mainCorePlayable;
     [SerializeField] private PlayerController playerController;
+    [SerializeField] private SimpleKCC characterController;
+    [SerializeField] private PlayerInventory playerInventory;
 
     [Space]
     [SerializeField] private AnimationClip idleClip;
@@ -17,12 +22,49 @@ public class BasicMovement : NetworkBehaviour
     [SerializeField] private AnimationClip backwardClip;
     [SerializeField] private AnimationClip sprintClip;
 
+    [Space]
+    [SerializeField] private AudioSource footstepSource;
+    [SerializeField] private int weaponIndex;
+    [SerializeField] private string weaponid;
+    [SerializeField] private AudioClip[] grassClip;
+    [SerializeField] private AudioClip[] dirtClip;
+    [SerializeField] private AudioClip[] stoneClip;
+
+    [Header("DEBUGGER")]
+    [SerializeField] private Terrain waitingAreaTerrain;
+    [SerializeField] private Terrain battleAreaTerrain;
+    [SerializeField] private float[] textureValues;
+    [SerializeField] Vector3 terrainPosition;
+    [SerializeField] Vector3 mapPosition;
+    [SerializeField] float xCoord;
+    [SerializeField] float zCoord;
+    [SerializeField] int posX;
+    [SerializeField] int posZ;
+    [SerializeField] AudioClip selectedClip;
+    [SerializeField] AudioClip previousClip;
+
     //  ============================
-    
+
     private AnimationMixerPlayable movementMixer;
     private List<AnimationClipPlayable> clipPlayables;
 
+    private float lastFrameTime = 0f;
+
+    // Define footstep trigger times as percentages of the clip length
+    private float[] footstepPercents = { 0.13f, 0.78f };
+    private float[] footstepTimes;
+
     //  ============================
+
+    public override void Spawned()
+    {
+        if (HasStateAuthority) return;
+
+        textureValues = new float[2];
+
+        waitingAreaTerrain = GameObject.FindGameObjectWithTag("WaitingAreaStage").GetComponent<Terrain>();
+        battleAreaTerrain = GameObject.FindGameObjectWithTag("BattleAreaStage").GetComponent<Terrain>();
+    }
 
     public void Initialize(PlayableGraph graph)
     {
@@ -56,6 +98,13 @@ public class BasicMovement : NetworkBehaviour
         {
             movementMixer.SetInputWeight(i, 0.0f);
         }
+
+        footstepTimes = new float[footstepPercents.Length];
+
+        for (int i = 0; i < footstepPercents.Length; i++)
+        {
+            footstepTimes[i] = sprintClip.length * footstepPercents[i];
+        }
     }
 
     public override void Render()
@@ -71,6 +120,8 @@ public class BasicMovement : NetworkBehaviour
 
             UpdateBlendTreeWeights();
         }
+
+        PlayFootstepSound();
     }
 
     public override void FixedUpdateNetwork()
@@ -96,6 +147,8 @@ public class BasicMovement : NetworkBehaviour
     private void UpdateBlendTreeWeights()
     {
         if (!movementMixer.IsValid()) return;
+
+        if (!characterController.IsGrounded) return;
 
         float xMovement = playerController.XMovement;
         float yMovement = playerController.YMovement;
@@ -124,6 +177,104 @@ public class BasicMovement : NetworkBehaviour
         movementMixer.SetInputWeight(3, backwardWeight);
         movementMixer.SetInputWeight(4, sprintWeight);
     }
+    private void PlayFootstepSound()
+    {
+        if (!movementMixer.IsValid() || HasStateAuthority || !characterController.IsGrounded || mainCorePlayable.ServerManager == null) return;
+        if (playerInventory.WeaponIndex != weaponIndex) return;
+
+        if (!IsValidWeapon(playerInventory.WeaponIndex)) return;
+        if (playerController.XMovement == 0 && playerController.YMovement == 0) return;
+
+        GetTerrainTexture();
+
+        float currentTime = (float)clipPlayables[4].GetTime() % sprintClip.length;
+
+        for (int i = 0; i < footstepTimes.Length; i++)
+        {
+            if (lastFrameTime < footstepTimes[i] && currentTime >= footstepTimes[i])
+            {
+                if (textureValues[0] > 0)
+                {
+                    footstepSource.PlayOneShot(GetClip(grassClip));
+                }
+                if (textureValues[1] > 0)
+                {
+                    footstepSource.PlayOneShot(GetClip(dirtClip));
+                }
+            }
+        }
+
+        lastFrameTime = currentTime;
+    }
+
+    AudioClip GetClip(AudioClip[] clipArray)
+    {
+        int attempts = 3;
+        selectedClip = clipArray[UnityEngine.Random.Range(0, clipArray.Length - 1)];
+
+        while (selectedClip == previousClip && attempts > 0)
+        {
+            selectedClip =
+            clipArray[UnityEngine.Random.Range(0, clipArray.Length - 1)];
+
+            attempts--;
+        }
+
+        previousClip = selectedClip;
+        return selectedClip;
+    }
+
+    private bool IsValidWeapon(int weaponIndex)
+    {
+        return weaponIndex switch
+        {
+            2 => playerInventory.PrimaryWeapon.WeaponID == weaponid,
+            3 => playerInventory.SecondaryWeapon.WeaponID == weaponid,
+            _ => true
+        };
+    }
+
+    public void GetTerrainTexture()
+    {
+        ConvertPosition(transform.position);
+    }
+
+    private void ConvertPosition(Vector3 playerPosition)
+    {
+        Terrain tempterrain = mainCorePlayable.ServerManager.CurrentGameState == GameState.WAITINGAREA ? waitingAreaTerrain : battleAreaTerrain;
+
+        terrainPosition = playerPosition - tempterrain.transform.position;
+        mapPosition = new Vector3(terrainPosition.x / tempterrain.terrainData.size.x, 0,
+        terrainPosition.z / tempterrain.terrainData.size.z);
+
+        xCoord = mapPosition.x * tempterrain.terrainData.alphamapWidth;
+        zCoord = mapPosition.z * tempterrain.terrainData.alphamapHeight;
+
+        posX = (int)xCoord;
+        posZ = (int)zCoord;
+
+        CheckTexture(tempterrain);
+    }
+    private void CheckTexture(Terrain terrain)
+    {
+        float[,,] aMap = terrain.terrainData.GetAlphamaps(posX, posZ, 1, 1);
+
+        int numTextures = aMap.GetLength(2); // Get the number of available textures
+
+        if (numTextures < 2)
+        {
+            Debug.LogError($"Expected at least 2 terrain textures, but found {numTextures}");
+            return;
+        }
+
+        textureValues[0] = aMap[0, 0, 0];
+
+        if (numTextures > 1)
+        {
+            textureValues[1] = aMap[0, 0, 1];
+        }
+    }
+
 
     public Playable GetPlayable()
     {

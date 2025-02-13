@@ -112,6 +112,7 @@ public class TrapWeaponController : NetworkBehaviour
 
     private void DespawnObject()
     {
+        Debug.Log($"Start despawning. Is it valid ? {Object == null}");
         if (Object == null) return;
 
         Runner.Despawn(Object);

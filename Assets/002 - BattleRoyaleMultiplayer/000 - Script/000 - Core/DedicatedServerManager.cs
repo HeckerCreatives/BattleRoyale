@@ -92,6 +92,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
     [Header("PLAYER")]
     [SerializeField] private NetworkObject playerObj;
+    [SerializeField] private NetworkObject bulletNO;
+    [SerializeField] private NetworkObject arrowNO;
 
     [Header("CRATES")]
     [SerializeField] private NetworkObject createNO;
@@ -507,6 +509,12 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     {
         if (HasStateAuthority)
         {
+            //  OLD SPAWN BULLET
+            //Runner.Spawn(bulletNO, playerInventory.SecondaryWeapon.impactPoint.position, Quaternion.LookRotation(aimDir, Vector3.up), onBeforeSpawned: (NetworkRunner runner, NetworkObject nobject) =>
+            //{
+            //    nobject.GetComponent<BulletController>().Fire(Object.InputAuthority, playerInventory.SecondaryWeapon.impactPoint.position, mainCorePlayable.Object, hit, playerNetworkLoader.Username);
+            //});
+
             int tempspawnpos = UnityEngine.Random.Range(0, spawnWaitingAreaPositions.Count);
 
             NetworkObject playerCharacter = Runner.Spawn(playerObj, Vector3.up, Quaternion.identity, player, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
@@ -520,7 +528,29 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 obj.GetComponent<MapZoomInOut>().ServerManager = this;
                 obj.GetComponent<PlayerGameOverScreen>().ServerManager = this;
                 obj.GetComponent<PlayerShrinkZoneTimer>().ServerManager = this;
+                obj.GetComponent<MainCorePlayable>().ServerManager = this;
             });
+
+            BulletObjectPool temppool = playerCharacter.GetComponent<BulletObjectPool>();
+
+            for (int a = 0; a < 15; a++)
+            {
+                temppool.BulletQueue.Add(Runner.Spawn(bulletNO, Vector2.zero, Quaternion.identity, playerCharacter.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                {
+                    temppool.TempBullets.Add(obj);
+                    obj.GetComponent<BulletController>().PoolIndex = a;
+                    obj.GetComponent<BulletController>().Pooler = temppool;
+                    Debug.Log(obj.GetComponent<BulletController>().Pooler == null);
+                }), false);
+                temppool.ArrowQueue.Add(Runner.Spawn(arrowNO, Vector2.zero, Quaternion.identity, playerCharacter.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                {
+                    obj.GetComponent<ArrowController>().PoolIndex = a;
+                }), false);
+            }
+
+            playerCharacter.GetComponent<BulletObjectPool>().DoneInitialize = true;
+
+            Debug.Log($"Player bullet pool is done ? {playerCharacter.GetComponent<BulletObjectPool>().DoneInitialize}");
 
             Players.Add(player, playerCharacter);
             RemainingPlayers.Add(player, playerCharacter);

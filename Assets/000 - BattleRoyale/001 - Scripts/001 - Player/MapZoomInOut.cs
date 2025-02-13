@@ -65,6 +65,8 @@ public class MapZoomInOut : NetworkBehaviour
             mapCamera.orthographicSize = battleAreaMax;
             mapCamera.transform.position = battleAreaCenter;
         }
+
+        UpdateZoomInOut();
     }
 
     public void UpdateZoomInOut()

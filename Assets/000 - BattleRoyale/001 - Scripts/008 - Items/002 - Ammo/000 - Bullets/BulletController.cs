@@ -16,9 +16,6 @@ public class BulletController : NetworkBehaviour
     [SerializeField] private LayerMask playerCollisionLayers;
 
     [field: Space]
-    [field: SerializeField][Networked] public NetworkObject firedByNO { get; set; }
-    [field: SerializeField][Networked] public PlayerRef firedByPlayerRef { get; set; }
-    [field: SerializeField][Networked] public string firedByPlayerUName { get; set; }
     [field: SerializeField][Networked] public bool Destroyed { get; set; }
     [field: SerializeField][Networked] public Vector3 TargetPos { get; set; }
     [field: SerializeField][Networked] public Vector3 TargetPoint { get; set; }
@@ -27,6 +24,8 @@ public class BulletController : NetworkBehaviour
     [field: SerializeField][Networked] public float RemainingDistance { get; set; }
     [field: SerializeField][Networked] public Vector3 HitEffectRotation { get; set; }
     [field: SerializeField][Networked] public bool CanTravel { get; set; }
+    [field: SerializeField][Networked] public int PoolIndex { get; set; }
+    [field: SerializeField][Networked] public BulletObjectPool Pooler { get; set; }
 
 
     private float travelTime = 0.1f; // Bullet should reach the target in 0.1 seconds
@@ -44,6 +43,7 @@ public class BulletController : NetworkBehaviour
     {
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
         transform.position = StartPos;
+        Debug.Log($"Bullet controller {Pooler == null}");
     }
 
     public override void Render()
@@ -73,17 +73,15 @@ public class BulletController : NetworkBehaviour
         }
     }
 
-    public void Fire(PlayerRef firedByPlayerRef, Vector3 startPos, NetworkObject firedByNetworkObject, LagCompensatedHit targetObj, string playerUName)
+    public void Fire(Vector3 startPos, LagCompensatedHit targetObj)
     {
+        transform.position = startPos;
         StartPos = startPos;
         TargetPoint = targetObj.Point;
         TargetPos = targetObj.GameObject.transform.position;
         Distance = Vector3.Distance(transform.position, targetObj.Point);
         RemainingDistance = Distance;
 
-        this.firedByPlayerRef = firedByPlayerRef;
-        firedByNO = firedByNetworkObject;
-        firedByPlayerUName = playerUName;
         TargetObj = targetObj;
     }
 
@@ -144,9 +142,10 @@ public class BulletController : NetworkBehaviour
 
     private void DestroyObject()
     {
-        if (Object == null) return;
-
-        Runner.Despawn(Object);
+        CanTravel = false;
+        Destroyed = false;
+        Debug.Log($"is pooler null ? {Pooler == null}");
+        Pooler.DisableBullet(PoolIndex);
     }
 
     public void OnDrawGizmos()

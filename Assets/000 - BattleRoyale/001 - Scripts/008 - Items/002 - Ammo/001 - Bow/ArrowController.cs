@@ -26,6 +26,7 @@ public class ArrowController : NetworkBehaviour
     [field: SerializeField][Networked] public Vector3 HitEffectRotation { get; set; }
     [field: SerializeField][Networked] public Vector3 Rotation { get; set; }
     [field: SerializeField][Networked] public bool CanTravel { get; set; }
+    [field: SerializeField][Networked] public int PoolIndex { get; set; }
 
 
     private float travelTime = 0.1f; // Bullet should reach the target in 0.1 seconds

@@ -15,6 +15,7 @@ public class RifleAttackPlayables : NetworkBehaviour
     [SerializeField] private HealPlayables heal;
     [SerializeField] private RepairArmorPlayables repairArmorPlayables;
     [SerializeField] private PlayerNetworkLoader playerNetworkLoader;
+    [SerializeField] private BulletObjectPool bulletObjectPool;
 
 
     [Space]
@@ -289,12 +290,9 @@ public class RifleAttackPlayables : NetworkBehaviour
 
             Vector3 aimDir = (mouseWorldPosition - playerInventory.SecondaryWeapon.impactPoint.position).normalized;
 
-            NetworkObject tempbullet = Runner.Spawn(bulletNO, playerInventory.SecondaryWeapon.impactPoint.position, Quaternion.LookRotation(aimDir, Vector3.up), onBeforeSpawned: (NetworkRunner runner, NetworkObject nobject) =>
-            {
-                nobject.GetComponent<BulletController>().Fire(Object.InputAuthority, playerInventory.SecondaryWeapon.impactPoint.position, mainCorePlayable.Object, hit, playerNetworkLoader.Username);
-            });
+            bulletObjectPool.TempBullets[bulletObjectPool.CurrentBulletIndex].GetComponent<BulletController>().Fire(playerInventory.SecondaryWeapon.impactPoint.position, hit);
 
-            tempbullet.GetComponent<BulletController>().CanTravel = true;
+            bulletObjectPool.SetEnabledBullet();
 
             AnimationClipPlayable shootPlayable;
 
