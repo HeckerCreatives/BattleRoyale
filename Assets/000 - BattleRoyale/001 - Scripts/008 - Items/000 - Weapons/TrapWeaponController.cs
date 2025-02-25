@@ -10,6 +10,10 @@ public class TrapWeaponController : NetworkBehaviour
 {
     [SerializeField] private float detectRadius;
     [SerializeField] private LayerMask enemyLayerMask;
+    [SerializeField] private AudioClip trapPlaced;
+    [SerializeField] private AudioClip trapActivate;
+    [SerializeField] private AudioClip hitEffect;
+    [SerializeField] private AudioSource trapAudioSource;
 
     [Space]
     [SerializeField] private Transform firstTeethTF;
@@ -31,6 +35,10 @@ public class TrapWeaponController : NetworkBehaviour
     public override void Spawned()
     {
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+
+        if (HasStateAuthority) return;
+
+        trapAudioSource.PlayOneShot(trapPlaced);
     }
 
     public void Initialize(string spawnedby, Vector3 rotation)
@@ -50,6 +58,9 @@ public class TrapWeaponController : NetworkBehaviour
                 {
                     case nameof(CloseTrap):
                         if (!CloseTrap) return;
+
+                        trapAudioSource.PlayOneShot(trapActivate);
+                        trapAudioSource.PlayOneShot(hitEffect);
 
                         LeanTween.rotateX(firstTeethTF.gameObject, 60f, 0.25f).setEase(LeanTweenType.easeInOutSine);
                         LeanTween.rotateX(secondTeethTF.gameObject, -60f, 0.25f).setEase(LeanTweenType.easeInOutSine);
@@ -98,8 +109,6 @@ public class TrapWeaponController : NetworkBehaviour
             if (hitObject == null)
                 continue;
 
-            CloseTrap = true;
-
             if (!HasStateAuthority) return;
 
             PlayerHealth health = hitObject.GetComponent<PlayerHealth>();
@@ -107,6 +116,8 @@ public class TrapWeaponController : NetworkBehaviour
             health.ReduceHealth(20f, SpawnedBy, Object);
 
             Invoke(nameof(DespawnObject), 2f);
+
+            CloseTrap = true;
         }
     }
 

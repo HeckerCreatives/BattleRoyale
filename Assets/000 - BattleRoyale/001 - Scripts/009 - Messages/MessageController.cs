@@ -88,6 +88,7 @@ public class MessageController : MonoBehaviour
 
         yield return StartCoroutine(GameManager.Instance.GetRequest("/inbox/getinboxlist", "", false, (response) =>
         {
+
             if (response != null)
             {
                 List<MessageItem> tempresponsedata = JsonConvert.DeserializeObject<List<MessageItem>>(response.ToString());
@@ -106,6 +107,14 @@ public class MessageController : MonoBehaviour
                     CanAction = true;
                     getMessages = null;
                 }
+            }
+            else
+            {
+                noItemsYetObj.SetActive(true);
+                itemListLoader.SetActive(false);
+                itemContentLoader.SetActive(false);
+                CanAction = true;
+                getMessages = null;
             }
         }, () => { CanAction = true; }));
     }

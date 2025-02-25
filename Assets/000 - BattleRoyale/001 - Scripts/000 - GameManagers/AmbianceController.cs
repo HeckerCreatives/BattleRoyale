@@ -16,9 +16,27 @@ public class AmbianceController : MonoBehaviour
     {
         if (GameManager.Instance != null)
         {
-            //GameManager.Instance.AudioController.OnAmbientVolumeChange += AmbianceChange;
-            GameManager.Instance.AudioController.StopBGMusic();
+            ambienceCoroutine = StartCoroutine(SetAmbienceVolume());
+
+            GameManager.Instance.AudioController.OnAmbientVolumeChange += AmbianceChange;
+            GameManager.Instance.AudioController.OnVolumeChange += VolumeChange;
         }
+    }
+
+    private void OnDisable()
+    {
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.AudioController.OnAmbientVolumeChange -= AmbianceChange;
+            GameManager.Instance.AudioController.OnVolumeChange -= VolumeChange;
+        }
+    }
+
+    private void VolumeChange(object sender, EventArgs e)
+    {
+        if (ambienceCoroutine != null) StopCoroutine(ambienceCoroutine);
+
+        ambienceCoroutine = StartCoroutine(SetAmbienceVolume());
     }
 
     private void AmbianceChange(object sender, EventArgs e)

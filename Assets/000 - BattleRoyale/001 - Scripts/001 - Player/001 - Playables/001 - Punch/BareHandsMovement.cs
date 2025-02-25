@@ -16,6 +16,7 @@ public class BareHandsMovement : NetworkBehaviour
     [SerializeField] private DeathMovement deathMovement;
     [SerializeField] private HealPlayables healPlayables;
     [SerializeField] private RepairArmorPlayables repairArmorPlayables;
+    [SerializeField] private MeleeSoundController meleeSoundController;
 
     [Space]
     [SerializeField] private SimpleKCC characterController;
@@ -41,7 +42,6 @@ public class BareHandsMovement : NetworkBehaviour
     [Networked][field: SerializeField] public int AttackStep { get; set; } // Current combo step
     [Networked][field: SerializeField] public float LastAttackTime { get; set; } // Time when the last attack was performed
     [Networked][field: SerializeField] public bool CanCombo { get; set; }
-    [Networked][field: SerializeField] public bool CanAttack { get; set; }
     [Networked] public NetworkButtons PreviousButtons { get; set; }
 
     //  ============================
@@ -57,6 +57,8 @@ public class BareHandsMovement : NetworkBehaviour
 
     public override void Spawned()
     {
+        if (HasStateAuthority) CanCombo = true;
+
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
     }
 
@@ -76,12 +78,16 @@ public class BareHandsMovement : NetworkBehaviour
                                 var punchOnePlayable = clipPlayables[1];
                                 SetAttackTickRate(punchOnePlayable); // Reset time
                                 punchOnePlayable.Play();    // Start playing
+
+                                meleeSoundController.PlayAttackOne();
                             }
                             else if (AttackStep == 2)
                             {
                                 var punchTwoPlayable = clipPlayables[2];
                                 SetAttackTickRate(punchTwoPlayable); // Reset time
                                 punchTwoPlayable.Play();    // Start playing
+
+                                meleeSoundController.PlayAttackTwo();
                             }
                         }
                         else
@@ -91,12 +97,14 @@ public class BareHandsMovement : NetworkBehaviour
                                 var punchOnePlayable = clipPlayables[3];
                                 SetAttackTickRate(punchOnePlayable); // Reset time
                                 punchOnePlayable.Play();    // Start playing
+                                meleeSoundController.PlayAttackOne();
                             }
                             else if (AttackStep == 2)
                             {
                                 var punchTwoPlayable = clipPlayables[4];
                                 SetAttackTickRate(punchTwoPlayable); // Reset time
                                 punchTwoPlayable.Play();    // Start playing
+                                meleeSoundController.PlayAttackTwo();
                             }
                         }
                         break;
@@ -263,7 +271,7 @@ public class BareHandsMovement : NetworkBehaviour
         if (playerInventory.WeaponIndex != 1)
             return;
 
-        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Melee) && characterController.IsGrounded && !healPlayables.Healing && !repairArmorPlayables.Repairing && !playerController.IsProne)
+        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Melee) && CanCombo && characterController.IsGrounded && !healPlayables.Healing && !repairArmorPlayables.Repairing && !playerController.IsProne)
         {
             if (AttackStep <= 2)
             {
@@ -310,14 +318,10 @@ public class BareHandsMovement : NetworkBehaviour
 
             CanCombo = false;
 
-            CanAttack = false;
-
             if (!playerController.IsCrouch)
             {
                 if (AttackStep == 1)
                 {
-                    CanAttack = false;
-
                     ResetFirstAttack();
 
                     var punchOnePlayable = clipPlayables[1];
@@ -330,8 +334,6 @@ public class BareHandsMovement : NetworkBehaviour
                 }
                 else if (AttackStep == 2)
                 {
-                    CanAttack = false;
-
                     ResetSecondAttack();
 
                     var punchTwoPlayable = clipPlayables[2];
@@ -347,8 +349,6 @@ public class BareHandsMovement : NetworkBehaviour
             {
                 if (AttackStep == 1)
                 {
-                    CanAttack = false;
-
                     ResetFirstAttack();
 
                     var punchOnePlayable = clipPlayables[3];
@@ -361,8 +361,6 @@ public class BareHandsMovement : NetworkBehaviour
                 }
                 else if (AttackStep == 2)
                 {
-                    CanAttack = false;
-
                     ResetSecondAttack();
 
                     var punchTwoPlayable = clipPlayables[4];
@@ -407,15 +405,12 @@ public class BareHandsMovement : NetworkBehaviour
 
     private void ResetSecondAttack() => fistWeaponHandler.ResetSecondAttack();
 
-    private void CanNowAttack() => CanAttack = true;
-
     private void ResetAttackAnimation()
     {
         if (characterController.IsGrounded) return;
 
         AttackStep = 0;
-        CanAttack = false;
-        CanCombo = false;
+        CanCombo = true;
         Attacking = false;
     }
 
@@ -445,8 +440,7 @@ public class BareHandsMovement : NetworkBehaviour
         {
             Attacking = false;
             AttackStep = 0;
-            CanCombo = false;
-            CanAttack = false;
+            CanCombo = true;
 
             var idlePlayable = clipPlayables[0];
             idlePlayable.SetTime(0); // Reset idle animation

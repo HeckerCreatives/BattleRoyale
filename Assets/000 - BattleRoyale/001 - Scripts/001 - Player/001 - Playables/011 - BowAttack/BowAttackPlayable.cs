@@ -16,6 +16,7 @@ public class BowAttackPlayable : NetworkBehaviour
     [SerializeField] private HealPlayables heal;
     [SerializeField] private RepairArmorPlayables repairArmorPlayables;
     [SerializeField] private PlayerNetworkLoader playerNetworkLoader;
+    [SerializeField] private BulletObjectPool bulletObjectPool;
 
 
     [Space]
@@ -61,6 +62,7 @@ public class BowAttackPlayable : NetworkBehaviour
     {
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
     }
+
     private void Update()
     {
         AnimationBlend();
@@ -88,12 +90,16 @@ public class BowAttackPlayable : NetworkBehaviour
                                 shootPlayable = clipPlayables[3];
                                 shootPlayable.SetTime(0f); // Reset time
                                 shootPlayable.Play();    // Start playing
+
+                                playerInventory.SecondaryWeaponSFX.PlayGunshot();
                                 break;
                             }
 
                             shootPlayable = clipPlayables[1];
                             shootPlayable.SetTime(0f); // Reset time
                             shootPlayable.Play();    // Start playing
+
+                            playerInventory.SecondaryWeaponSFX.PlayGunshot();
                         }
                         break;
                     case nameof(Reloading):
@@ -269,13 +275,13 @@ public class BowAttackPlayable : NetworkBehaviour
 
                 float tempdamage = tag switch
                 {
-                    "Head" => 55f,
-                    "Body" => 35f,
-                    "Thigh" => 25f,
-                    "Shin" => 20f,
-                    "Foot" => 15f,
-                    "Arm" => 30f,
-                    "Forearm" => 20f,
+                    "Head" => 65f,
+                    "Body" => 45f,
+                    "Thigh" => 35f,
+                    "Shin" => 30f,
+                    "Foot" => 25f,
+                    "Arm" => 40f,
+                    "Forearm" => 30f,
                     _ => 0f
                 };
 
@@ -288,12 +294,9 @@ public class BowAttackPlayable : NetworkBehaviour
 
             Vector3 aimDir = (mouseWorldPosition - playerInventory.SecondaryWeapon.impactPoint.position).normalized;
 
-            NetworkObject tempbullet = Runner.Spawn(bulletNO, playerInventory.SecondaryWeapon.impactPoint.position, Quaternion.LookRotation(aimDir, Vector3.up), onBeforeSpawned: (NetworkRunner runner, NetworkObject nobject) =>
-            {
-                nobject.GetComponent<ArrowController>().Fire(Object.InputAuthority, playerInventory.SecondaryWeapon.impactPoint.position, aimDir, mainCorePlayable.Object, hit, playerNetworkLoader.Username);
-            });
+            bulletObjectPool.TempArrows[bulletObjectPool.CurrentArrowIndex].GetComponent<ArrowController>().Fire(playerInventory.SecondaryWeapon.impactPoint.position, aimDir, hit);
 
-            tempbullet.GetComponent<ArrowController>().CanTravel = true;
+            bulletObjectPool.SetEnabledArrow();
 
             AnimationClipPlayable shootPlayable;
 

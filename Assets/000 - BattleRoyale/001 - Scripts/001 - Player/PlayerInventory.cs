@@ -68,6 +68,8 @@ public class PlayerInventory : NetworkBehaviour
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int SkinColorIndex { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public WeaponItem PrimaryWeapon { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public WeaponItem SecondaryWeapon { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public MeleeSoundController PrimaryWeaponSFX { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public GunSoundController SecondaryWeaponSFX { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public WeaponItem Shield { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkObject ArrowHolder { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int HealCount { get; set; }

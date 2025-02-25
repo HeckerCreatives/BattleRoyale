@@ -103,8 +103,10 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [SerializeField] private List<Transform> spawnLocationsBattlefield;
 
     [Header("PLAYING FIELDS")]
-    [SerializeField] private GameObject waitingAreaArena;
-    [SerializeField] private GameObject battleFieldArena;
+    [SerializeField] private GameObject waitingAreaArenaObjects;
+    [SerializeField] private GameObject battleFieldArenaObjects;
+    public Terrain waitingAreaArena;
+    public Terrain battleFieldArena;
     [SerializeField] private float waitTimerForReadyAfterBattlePos;
 
     [Header("SAFE ZONE")]
@@ -140,6 +142,10 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         if (GameManager.Instance == null)
         {
             StartGame();
+        }
+        else
+        {
+            GameManager.Instance.AudioController.StopBGMusic();
         }
     }
 
@@ -497,8 +503,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
     private void ArenaEnabler(bool waitingArea, bool battleField)
     {
-        waitingAreaArena.SetActive(waitingArea);
-        battleFieldArena.SetActive(battleField);
+        waitingAreaArenaObjects.SetActive(waitingArea);
+        battleFieldArenaObjects.SetActive(battleField);
     }
 
     #endregion
@@ -540,17 +546,16 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                     temppool.TempBullets.Add(obj);
                     obj.GetComponent<BulletController>().PoolIndex = a;
                     obj.GetComponent<BulletController>().Pooler = temppool;
-                    Debug.Log(obj.GetComponent<BulletController>().Pooler == null);
                 }), false);
                 temppool.ArrowQueue.Add(Runner.Spawn(arrowNO, Vector2.zero, Quaternion.identity, playerCharacter.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
                 {
+                    temppool.TempArrows.Add(obj);
                     obj.GetComponent<ArrowController>().PoolIndex = a;
+                    obj.GetComponent<ArrowController>().Pooler = temppool;
                 }), false);
             }
 
             playerCharacter.GetComponent<BulletObjectPool>().DoneInitialize = true;
-
-            Debug.Log($"Player bullet pool is done ? {playerCharacter.GetComponent<BulletObjectPool>().DoneInitialize}");
 
             Players.Add(player, playerCharacter);
             RemainingPlayers.Add(player, playerCharacter);
@@ -588,6 +593,18 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             }
 
             if (playerinventory.Shield != null) playerinventory.Shield.DropShield();
+
+            var bulletPooler = clientPlayer.GetComponent<BulletObjectPool>();
+
+            for (int a = 0; a < bulletPooler.BulletQueue.Count; a++)
+            {
+                Runner.Despawn(bulletPooler.BulletQueue.ElementAt(a).Key);
+            }
+
+            for (int a = 0; a < bulletPooler.ArrowQueue.Count; a++)
+            {
+                Runner.Despawn(bulletPooler.ArrowQueue.ElementAt(a).Key);
+            }
 
             Players.Remove(player);
             Runner.Despawn(clientPlayer);

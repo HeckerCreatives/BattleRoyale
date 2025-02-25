@@ -2,6 +2,7 @@ using Fusion;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations;
 
 public class FistWeaponHandler : NetworkBehaviour
 {
@@ -15,6 +16,12 @@ public class FistWeaponHandler : NetworkBehaviour
     [SerializeField] private Transform impactFirstFistPoint;
     [SerializeField] private Transform impactSecondFistPoint;
 
+    [Space]
+    [SerializeField] private MeleeSoundController punchSoundController;
+
+    [field: Header("DEBUGGER")]
+    [field: SerializeField][Networked] public int Hit { get; set; }
+
     //  ================
 
     [Networked, Capacity(10)] public NetworkLinkedList<NetworkObject> hitEnemiesFirstFist { get; } = new NetworkLinkedList<NetworkObject>();
@@ -22,7 +29,30 @@ public class FistWeaponHandler : NetworkBehaviour
     private readonly List<LagCompensatedHit> hitsFirstFist = new List<LagCompensatedHit>();
     private readonly List<LagCompensatedHit> hitsSecondFist = new List<LagCompensatedHit>();
 
+    private ChangeDetector _changeDetector;
+
     //  ================
+
+    public override void Spawned()
+    {
+        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+    }
+
+    public override void Render()
+    {
+        if (!HasStateAuthority)
+        {
+            foreach (var change in _changeDetector.DetectChanges(this))
+            {
+                switch (change)
+                {
+                    case nameof(Hit):
+                        punchSoundController.PlayHit();
+                        break;
+                }
+            }
+        }
+    }
 
     public void PerformFirstAttack()
     {
@@ -74,6 +104,8 @@ public class FistWeaponHandler : NetworkBehaviour
 
                 // Mark as hit
                 hitEnemiesFirstFist.Add(hitObject);
+
+                Hit++;
             }
         }
     }
@@ -129,6 +161,8 @@ public class FistWeaponHandler : NetworkBehaviour
 
                 // Mark as hit
                 hitEnemiesSecondFist.Add(hitObject);
+
+                Hit++;
             }
         }
     }

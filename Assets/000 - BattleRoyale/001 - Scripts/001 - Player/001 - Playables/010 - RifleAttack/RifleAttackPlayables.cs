@@ -91,6 +91,8 @@ public class RifleAttackPlayables : NetworkBehaviour
                             var cooldownPlayable = clipPlayables[2];
                             cooldownPlayable.SetTime(0f); // Reset time
                             cooldownPlayable.Play();    // Start playing
+
+                            playerInventory.SecondaryWeaponSFX.PlayShootCooldown();
                         }
                         break;
                     case nameof(Attacking):
@@ -107,12 +109,16 @@ public class RifleAttackPlayables : NetworkBehaviour
                                 shootPlayable = clipPlayables[5];
                                 shootPlayable.SetTime(0f); // Reset time
                                 shootPlayable.Play();    // Start playing
+
+                                playerInventory.SecondaryWeaponSFX.PlayGunshot();
                                 break;
                             }
 
                             shootPlayable = clipPlayables[1];
                             shootPlayable.SetTime(0f); // Reset time
                             shootPlayable.Play();    // Start playing
+
+                            playerInventory.SecondaryWeaponSFX.PlayGunshot();
                         }
                         break;
                     case nameof(Reloading):
@@ -121,6 +127,7 @@ public class RifleAttackPlayables : NetworkBehaviour
                             var reloadPlayable = clipPlayables[3];
                             reloadPlayable.SetTime(0);
                             reloadPlayable.Play();
+                            playerInventory.SecondaryWeaponSFX.PlayReload();
                         }
                         break;
                 }
@@ -271,13 +278,13 @@ public class RifleAttackPlayables : NetworkBehaviour
 
                 float tempdamage = tag switch
                 {
-                    "Head" => 55f,
-                    "Body" => 35f,
-                    "Thigh" => 25f,
-                    "Shin" => 20f,
-                    "Foot" => 15f,
-                    "Arm" => 30f,
-                    "Forearm" => 20f,
+                    "Head" => 75f,
+                    "Body" => 55f,
+                    "Thigh" => 45f,
+                    "Shin" => 40f,
+                    "Foot" => 35f,
+                    "Arm" => 50f,
+                    "Forearm" => 40f,
                     _ => 0f
                 };
 

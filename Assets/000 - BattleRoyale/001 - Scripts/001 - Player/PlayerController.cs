@@ -41,6 +41,9 @@ public class PlayerController : NetworkBehaviour
     [SerializeField] private float groundedOffset;
     [SerializeField] private float groundedRadius;
     [SerializeField] private LayerMask groundLayers;
+    [SerializeField] private AudioSource landSource;
+    [SerializeField] private AudioClip landingClip;
+    [SerializeField] private AudioClip[] lowLandingClips;
 
     [Space]
     public RectTransform joystickArea; // The touch area for the joystick
@@ -70,6 +73,11 @@ public class PlayerController : NetworkBehaviour
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public NetworkBool IsCrouch { get;  set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float XMovement { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float YMovement { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public int Landing { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool Falling { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public float FallingVelocityY { get; set; }
+    [SerializeField] AudioClip selectedClip;
+    [SerializeField] AudioClip previousClip;
 
     //  ======================
 
@@ -78,6 +86,8 @@ public class PlayerController : NetworkBehaviour
     MyInput controllerInput;
 
     public GameplayController gameplayController;
+
+    private ChangeDetector _changeDetector;
 
     private Dictionary<int, string> touchRoles = new Dictionary<int, string>();
     private Dictionary<int, Vector2> lastTouchPositions = new Dictionary<int, Vector2>();
@@ -94,6 +104,7 @@ public class PlayerController : NetworkBehaviour
         EnhancedTouchSupport.Enable(); // Enable Enhanced Touch
         // Set custom gravity.
         characterController.SetGravity(Physics.gravity.y * 3f);
+        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
 
         while (!Runner) await Task.Yield();
 
@@ -103,6 +114,27 @@ public class PlayerController : NetworkBehaviour
         UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerDown += TouchFingerDown;
         UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerMove += TouchFingerMove;
         UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerUp += TouchFingeUp;
+    }
+
+    public override void Render()
+    {
+        if (!HasStateAuthority)
+        {
+            foreach (var change in _changeDetector.DetectChanges(this))
+            {
+                switch (change)
+                {
+                    case nameof(Landing):
+
+                        if (FallingVelocityY < 0 && FallingVelocityY > -10f)
+                            landSource.PlayOneShot(GetClip(lowLandingClips));
+                        else if (FallingVelocityY <= -10f && FallingVelocityY > -20f)
+                            landSource.PlayOneShot(landingClip);
+                        break;
+                }
+            }
+        }
+
     }
 
     private void OnDisable()
@@ -163,7 +195,7 @@ public class PlayerController : NetworkBehaviour
 
     private void TouchFingerDown(Finger finger)
     {
-        if (IsTouchInJoystickArea(finger.screenPosition) && !touchRoles.ContainsKey(finger.index))
+        if (AnalogStickDetector(finger.screenPosition) && !touchRoles.ContainsKey(finger.index))
         {
             touchRoles[finger.index] = "joystick";
         }
@@ -190,6 +222,7 @@ public class PlayerController : NetworkBehaviour
     public override void FixedUpdateNetwork()
     {
         InputControlls();
+        CheckFalling();
     }
 
     #endregion
@@ -252,6 +285,27 @@ public class PlayerController : NetworkBehaviour
 
         return raycastResults.Count > 0;  // Return true if UI was hit
     }
+    private bool AnalogStickDetector(Vector2 touchPosition)
+    {
+        PointerEventData pointerEventData = new PointerEventData(EventSystem.current)
+        {
+            position = touchPosition
+        };
+
+        List<RaycastResult> raycastResults = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(pointerEventData, raycastResults);
+
+        foreach (RaycastResult result in raycastResults)
+        {
+            if (result.gameObject.CompareTag("AnalogStick"))
+            {
+                return true; // Return true if an object with the tag "AnalogStick" is found
+            }
+        }
+
+        return false; // No UI element with the tag "AnalogStick" was found
+    }
+
 
     private void HandleJoystickMovement(UnityEngine.InputSystem.EnhancedTouch.Finger finger)
     {
@@ -299,6 +353,45 @@ public class PlayerController : NetworkBehaviour
 
         // Apply the movement
         characterController.Move(MoveDirection, jumpMovement.JumpImpulse);
+    }
+
+    private void CheckFalling()
+    {
+        if (!characterController.IsGrounded)
+        {
+            if (characterController.RealVelocity.y < 0 && characterController.RealVelocity.y > -20f) 
+            {
+                FallingVelocityY = characterController.RealVelocity.y;
+                Falling = true;
+            }
+        }
+
+        if (characterController.IsGrounded)
+        {
+            if (Falling)
+            {
+                Landing++;
+                Falling = false;
+            }
+        }
+    }
+
+
+    AudioClip GetClip(AudioClip[] clipArray)
+    {
+        int attempts = 3;
+        selectedClip = clipArray[UnityEngine.Random.Range(0, clipArray.Length - 1)];
+
+        while (selectedClip == previousClip && attempts > 0)
+        {
+            selectedClip =
+            clipArray[UnityEngine.Random.Range(0, clipArray.Length - 1)];
+
+            attempts--;
+        }
+
+        previousClip = selectedClip;
+        return selectedClip;
     }
 
     private void Crouch()

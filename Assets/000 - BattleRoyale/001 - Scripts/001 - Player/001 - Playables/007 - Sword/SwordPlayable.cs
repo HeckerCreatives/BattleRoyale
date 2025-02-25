@@ -19,6 +19,7 @@ public class SwordPlayable : NetworkBehaviour
     [SerializeField] private SimpleKCC characterController;
 
     [Space]
+    [SerializeField] private string weaponid;
     [SerializeField] private AnimationClip idleClip;
     [SerializeField] private AnimationClip swordOneClip;
     [SerializeField] private AnimationClip swordTwoClip;
@@ -45,7 +46,6 @@ public class SwordPlayable : NetworkBehaviour
     [Networked][field: SerializeField] public int AttackStep { get; set; } // Current combo step
     [Networked][field: SerializeField] public float LastAttackTime { get; set; } // Time when the last attack was performed
     [Networked][field: SerializeField] public bool CanCombo { get; set; }
-    [Networked][field: SerializeField] public bool CanAttack { get; set; }
     [Networked] public NetworkButtons PreviousButtons { get; set; }
 
     //  ============================
@@ -61,6 +61,8 @@ public class SwordPlayable : NetworkBehaviour
 
     public override void Spawned()
     {
+        if (HasStateAuthority) CanCombo = true;
+
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
     }
 
@@ -73,6 +75,9 @@ public class SwordPlayable : NetworkBehaviour
                 switch (change)
                 {
                     case nameof(AttackStep):
+
+                        if (playerInventory.PrimaryWeaponSFX == null) break;
+
                         if (!playerController.IsCrouch)
                         {
                             if (AttackStep == 1)
@@ -80,12 +85,16 @@ public class SwordPlayable : NetworkBehaviour
                                 var punchOnePlayable = clipPlayables[1];
                                 SetAttackTickRate(punchOnePlayable); // Reset time
                                 punchOnePlayable.Play();    // Start playing
+
+                                playerInventory.PrimaryWeaponSFX.PlayAttackOne();
                             }
                             else if (AttackStep == 2)
                             {
                                 var punchTwoPlayable = clipPlayables[2];
                                 SetAttackTickRate(punchTwoPlayable); // Reset time
                                 punchTwoPlayable.Play();    // Start playing
+
+                                playerInventory.PrimaryWeaponSFX.PlayAttackTwo();
                             }
                         }
                         else
@@ -95,12 +104,16 @@ public class SwordPlayable : NetworkBehaviour
                                 var punchOnePlayable = clipPlayables[3];
                                 SetAttackTickRate(punchOnePlayable); // Reset time
                                 punchOnePlayable.Play();    // Start playing
+
+                                playerInventory.PrimaryWeaponSFX.PlayAttackOne();
                             }
                             else if (AttackStep == 2)
                             {
                                 var punchTwoPlayable = clipPlayables[4];
                                 SetAttackTickRate(punchTwoPlayable); // Reset time
                                 punchTwoPlayable.Play();    // Start playing
+
+                                playerInventory.PrimaryWeaponSFX.PlayAttackTwo();
                             }
                         }
                         break;
@@ -262,9 +275,11 @@ public class SwordPlayable : NetworkBehaviour
         if (playerInventory.WeaponIndex != 2)
             return;
 
+        if (playerInventory.PrimaryWeapon.WeaponID != weaponid) return;
+
         if (heal.Healing) return;
 
-        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Melee) && characterController.IsGrounded && !heal.Healing && !repairArmorPlayables.Repairing && !playerController.IsProne)
+        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Melee) && CanCombo && characterController.IsGrounded && !heal.Healing && !repairArmorPlayables.Repairing && !playerController.IsProne)
         {
             if (AttackStep <= 2)
             {
@@ -306,14 +321,10 @@ public class SwordPlayable : NetworkBehaviour
 
             CanCombo = false;
 
-            CanAttack = false;
-
             if (!playerController.IsCrouch)
             {
                 if (AttackStep == 1)
                 {
-                    CanAttack = false;
-
                     ResetFirstAttack();
 
                     var punchOnePlayable = clipPlayables[1];
@@ -326,8 +337,6 @@ public class SwordPlayable : NetworkBehaviour
                 }
                 else if (AttackStep == 2)
                 {
-                    CanAttack = false;
-
                     ResetSecondAttack();
 
                     var punchTwoPlayable = clipPlayables[2];
@@ -343,8 +352,6 @@ public class SwordPlayable : NetworkBehaviour
             {
                 if (AttackStep == 1)
                 {
-                    CanAttack = false;
-
                     ResetFirstAttack();
 
                     var punchOnePlayable = clipPlayables[3];
@@ -357,8 +364,6 @@ public class SwordPlayable : NetworkBehaviour
                 }
                 else if (AttackStep == 2)
                 {
-                    CanAttack = false;
-
                     ResetSecondAttack();
 
                     var punchTwoPlayable = clipPlayables[4];
@@ -399,31 +404,16 @@ public class SwordPlayable : NetworkBehaviour
         }
     }
 
-    private IEnumerator PerformCanAttack(int delayInTicks)
-    {
-        int targetTick = Runner.Tick + delayInTicks;
-
-        while (Runner.Tick < targetTick)
-        {
-            yield return null;
-        }
-
-        CanAttack = true;
-    }
-
     private void ResetFirstAttack() => playerInventory.PrimaryWeapon.ResetFirstAttack();
 
     private void ResetSecondAttack() => playerInventory.PrimaryWeapon.ResetSecondAttack();
-
-    private void CanNowAttack() => CanAttack = true;
 
     private void ResetAttackAnimation()
     {
         if (characterController.IsGrounded) return;
 
         AttackStep = 0;
-        CanAttack = false;
-        CanCombo = false;
+        CanCombo = true;
         Attacking = false;
     }
 
@@ -453,8 +443,7 @@ public class SwordPlayable : NetworkBehaviour
         {
             Attacking = false;
             AttackStep = 0;
-            CanCombo = false;
-            CanAttack = false;
+            CanCombo = true;
 
             var idlePlayable = clipPlayables[0];
             idlePlayable.SetTime(0); // Reset idle animation

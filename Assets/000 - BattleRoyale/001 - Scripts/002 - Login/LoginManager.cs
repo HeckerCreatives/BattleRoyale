@@ -16,6 +16,9 @@ public class LoginManager : MonoBehaviour
     [SerializeField] private UserData userData;
 
     [Space]
+    [SerializeField] private AudioClip buttonClip;
+
+    [Space]
     [SerializeField] private GameObject loginObj;
     [SerializeField] private GameObject registerObj;
 
@@ -549,4 +552,6 @@ public class LoginManager : MonoBehaviour
     }
 
     public void OpenURL(string url) => Application.OpenURL(url);
+
+    public void ButtonPress() => GameManager.Instance.AudioController.PlaySFX(buttonClip);
 }

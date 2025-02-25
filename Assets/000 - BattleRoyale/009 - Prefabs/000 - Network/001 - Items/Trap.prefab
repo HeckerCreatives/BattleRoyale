@@ -261,6 +261,8 @@ GameObject:
   - component: {fileID: 5786415566250745775}
   - component: {fileID: 3903919334271738960}
   - component: {fileID: 7255135067462260282}
+  - component: {fileID: 6002779089064722847}
+  - component: {fileID: 397974116788107284}
   m_Layer: 0
   m_Name: Trap
   m_TagString: Untagged
@@ -322,10 +324,16 @@ MonoBehaviour:
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 8192
+  trapPlaced: {fileID: 8300000, guid: 17a0e6c632a30ef46aeedb711b7b75db, type: 3}
+  trapActivate: {fileID: 8300000, guid: fff726f88f738b444936a9bead445b5d, type: 3}
+  hitEffect: {fileID: 8300000, guid: 868aeb0c2827461458b51c1f1e03557d, type: 3}
+  trapAudioSource: {fileID: 6002779089064722847}
   firstTeethTF: {fileID: 5193335214156975206}
   secondTeethTF: {fileID: 6660586951360451328}
   _SpawnedBy: 
   _CloseTrap: 0
+  _Rotation: {x: 0, y: 0, z: 0}
+  _CanDamage: 0
 --- !u!114 &7255135067462260282
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -343,3 +351,140 @@ MonoBehaviour:
   SyncParent: 0
   _autoAOIOverride: 1
   DisableSharedModeInterpolation: 0
+--- !u!82 &6002779089064722847
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9139365946298080655}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 10
+  Pan2D: 0
+  rolloffMode: 2
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: -3.0689769
+      outSlope: -3.0689769
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.28875378
+    - serializedVersion: 3
+      time: 0.2
+      value: 0.5
+      inSlope: -2.077236
+      outSlope: -2.077236
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.4285713
+    - serializedVersion: 3
+      time: 0.4
+      value: 0.25
+      inSlope: -0.66293466
+      outSlope: -0.66293466
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.38475603
+    - serializedVersion: 3
+      time: 0.76655275
+      value: 0.06686401
+      inSlope: -0.35964793
+      outSlope: -0.35964793
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.5833554
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: -0.10003988
+      outSlope: -0.10003988
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &397974116788107284
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9139365946298080655}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 697fea4eb4bc51041b565378c2a8c26b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ambienceSources:
+  - {fileID: 6002779089064722847}

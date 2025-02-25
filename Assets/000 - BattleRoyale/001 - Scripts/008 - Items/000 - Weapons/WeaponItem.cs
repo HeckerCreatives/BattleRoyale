@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using static Fusion.NetworkBehaviour;
 
 public enum PlayerAction
 {
@@ -12,11 +13,21 @@ public enum PlayerAction
 
 public class WeaponItem : NetworkBehaviour
 {
+    [SerializeField] private MeleeSoundController meleeSoundController;
     [SerializeField] private Vector3 dropRotation;
     [SerializeField] private LayerMask enemyLayerMask;
     [SerializeField] private Vector3 impactSize;
     public GameObject muzzleFlash;
     public Transform impactPoint;
+
+    [Header("DAMAGE")]
+    [SerializeField] private float head;
+    [SerializeField] private float body;
+    [SerializeField] private float thigh;
+    [SerializeField] private float shin;
+    [SerializeField] private float foot;
+    [SerializeField] private float arm;
+    [SerializeField] private float forearm;
 
     [field: Header("DEBUGGER")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public string WeaponID { get; set; }
@@ -29,6 +40,7 @@ public class WeaponItem : NetworkBehaviour
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool IsPickedUp { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool IsHand { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public Vector3 DropPosition { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public int Hit { get; set; }
 
     //  ===========================
 
@@ -37,7 +49,14 @@ public class WeaponItem : NetworkBehaviour
     private readonly List<LagCompensatedHit> hitsFirst = new List<LagCompensatedHit>();
     private readonly List<LagCompensatedHit> hitsSecond = new List<LagCompensatedHit>();
 
+    private ChangeDetector _changeDetector;
+
     //  ===========================
+
+    public override void Spawned()
+    {
+        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+    }
 
     public void InitializeItem(string name, string id, NetworkObject tempPlayer, NetworkObject back, NetworkObject hand, int ammo, bool isHand = false)
     {
@@ -59,8 +78,21 @@ public class WeaponItem : NetworkBehaviour
         if (!IsPickedUp)
         {
             transform.parent = null;
-            transform.position = new Vector3(DropPosition.x, DropPosition.y + 0.1f, DropPosition.z);
+            transform.position = new Vector3(DropPosition.x, DropPosition.y + 0.01f, DropPosition.z);
             transform.rotation = Quaternion.Euler(dropRotation);
+        }
+
+        if (!HasStateAuthority)
+        {
+            foreach (var change in _changeDetector.DetectChanges(this))
+            {
+                switch (change)
+                {
+                    case nameof(Hit):
+                        meleeSoundController.PlayHit();
+                        break;
+                }
+            }
         }
     }
 
@@ -96,6 +128,7 @@ public class WeaponItem : NetworkBehaviour
         TempPlayer = tempPlayer.GetComponent<PlayerNetworkLoader>();
         ItemCheckerController = tempPlayer.GetComponent<PlayerItemCheckerController>();
         playerInventory.PrimaryWeapon = this;
+        playerInventory.PrimaryWeaponSFX = GetComponent<MeleeSoundController>();
 
         if (isHand)
             playerInventory.WeaponIndex = 2;
@@ -118,6 +151,7 @@ public class WeaponItem : NetworkBehaviour
         TempPlayer = tempPlayer.GetComponent<PlayerNetworkLoader>();
         ItemCheckerController = tempPlayer.GetComponent<PlayerItemCheckerController>();
         playerInventory.SecondaryWeapon = this;
+        playerInventory.SecondaryWeaponSFX = GetComponent<GunSoundController>();
 
         if (isHand)
             playerInventory.WeaponIndex = 3;
@@ -140,6 +174,7 @@ public class WeaponItem : NetworkBehaviour
         TempPlayer = tempPlayer.GetComponent<PlayerNetworkLoader>();
         ItemCheckerController = tempPlayer.GetComponent<PlayerItemCheckerController>();
         playerInventory.SecondaryWeapon = this;
+        playerInventory.SecondaryWeaponSFX = GetComponent<GunSoundController>();
 
         if (isHand)
             playerInventory.WeaponIndex = 3;
@@ -176,8 +211,8 @@ public class WeaponItem : NetworkBehaviour
         IsHand = false;
         transform.parent = null;
 
-        DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
-        transform.position = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
+        DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.01f, TempPlayer.transform.position.z);
+        transform.position = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.01f, TempPlayer.transform.position.z);
         TempPlayer.GetComponent<PlayerInventory>().PrimaryWeapon = null;
         TempPlayer = null;
         ItemCheckerController = null;
@@ -194,8 +229,8 @@ public class WeaponItem : NetworkBehaviour
         IsHand = false;
         transform.parent = null;
 
-        DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
-        transform.position = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
+        DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.01f, TempPlayer.transform.position.z);
+        transform.position = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.01f, TempPlayer.transform.position.z);
         TempPlayer.GetComponent<PlayerInventory>().SecondaryWeapon = null;
         TempPlayer = null;
         ItemCheckerController = null;
@@ -212,8 +247,8 @@ public class WeaponItem : NetworkBehaviour
         IsHand = false;
         transform.parent = null;
 
-        DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
-        transform.position = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.1f, TempPlayer.transform.position.z);
+        DropPosition = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.01f, TempPlayer.transform.position.z);
+        transform.position = new Vector3(TempPlayer.transform.position.x, TempPlayer.transform.position.y + 0.01f, TempPlayer.transform.position.z);
         TempPlayer.GetComponent<PlayerInventory>().SecondaryWeapon = null;
 
         Runner.Despawn(TempPlayer.GetComponent<PlayerInventory>().ArrowHolder);
@@ -337,13 +372,13 @@ public class WeaponItem : NetworkBehaviour
 
                 float tempdamage = tag switch
                 {
-                    "Head" => 30f,
-                    "Body" => 25f,
-                    "Thigh" => 20f,
-                    "Shin" => 15f,
-                    "Foot" => 10f,
-                    "Arm" => 20f,
-                    "Forearm" => 15f,
+                    "Head" => head,
+                    "Body" => body,
+                    "Thigh" => thigh,
+                    "Shin" => shin,
+                    "Foot" => foot,
+                    "Arm" => arm,
+                    "Forearm" => forearm,
                     _ => 0f
                 };
 
@@ -354,6 +389,8 @@ public class WeaponItem : NetworkBehaviour
 
                 // Mark as hit
                 hitEnemiesFirst.Add(hitObject);
+
+                Hit++;
             }
         }
     }
@@ -395,13 +432,20 @@ public class WeaponItem : NetworkBehaviour
 
                 float tempdamage = tag switch
                 {
-                    "Head" => 30f,
-                    "Body" => 25f,
-                    "Thigh" => 20f,
-                    "Shin" => 15f,
-                    "Foot" => 10f,
-                    "Arm" => 20f,
-                    "Forearm" => 15f,
+                    "Head" => head,
+                    "Body" => body,
+                    "Thigh" => thigh,
+                    "Shin" => shin,
+                    "Foot" => foot,
+                    "Arm" => arm,
+                    "Forearm" => forearm,
+                    //"Head" => 40f,
+                    //"Body" => 35f,
+                    //"Thigh" => 30f,
+                    //"Shin" => 25f,
+                    //"Foot" => 20f,
+                    //"Arm" => 30f,
+                    //"Forearm" => 25f,
                     _ => 0f
                 };
 
@@ -412,6 +456,8 @@ public class WeaponItem : NetworkBehaviour
 
                 // Mark as hit
                 hitEnemiesSecond.Add(hitObject);
+
+                Hit++;
             }
         }
     }

@@ -11,6 +11,7 @@ public class SettingsControlGameplayController : MonoBehaviour, IPointerDownHand
     [SerializeField] private RectTransform uiElementRectTransform;
     [SerializeField] private CanvasGroup uiImg;
     [SerializeField] private ControllerSetting controllerSetting;
+    public bool canChangeSize = true;
 
     private Vector2 pointerOffset;
     private bool isDragging = false;

@@ -2,6 +2,7 @@ using Fusion;
 using Fusion.Addons.SimpleKCC;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Unity.Services.Matchmaker.Models;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -29,10 +30,9 @@ public class BasicMovement : NetworkBehaviour
     [SerializeField] private AudioClip[] grassClip;
     [SerializeField] private AudioClip[] dirtClip;
     [SerializeField] private AudioClip[] stoneClip;
+    [SerializeField] private AudioClip[] woodClip;
 
     [Header("DEBUGGER")]
-    [SerializeField] private Terrain waitingAreaTerrain;
-    [SerializeField] private Terrain battleAreaTerrain;
     [SerializeField] private float[] textureValues;
     [SerializeField] Vector3 terrainPosition;
     [SerializeField] Vector3 mapPosition;
@@ -42,6 +42,7 @@ public class BasicMovement : NetworkBehaviour
     [SerializeField] int posZ;
     [SerializeField] AudioClip selectedClip;
     [SerializeField] AudioClip previousClip;
+    [SerializeField] private int audioClipIndex;
 
     //  ============================
 
@@ -51,19 +52,15 @@ public class BasicMovement : NetworkBehaviour
     private float lastFrameTime = 0f;
 
     // Define footstep trigger times as percentages of the clip length
-    private float[] footstepPercents = { 0.13f, 0.78f };
+    private float[] footstepPercents = { 0.25f, 0.75f };
+
     private float[] footstepTimes;
 
     //  ============================
 
     public override void Spawned()
     {
-        if (HasStateAuthority) return;
-
         textureValues = new float[2];
-
-        waitingAreaTerrain = GameObject.FindGameObjectWithTag("WaitingAreaStage").GetComponent<Terrain>();
-        battleAreaTerrain = GameObject.FindGameObjectWithTag("BattleAreaStage").GetComponent<Terrain>();
     }
 
     public void Initialize(PlayableGraph graph)
@@ -179,7 +176,7 @@ public class BasicMovement : NetworkBehaviour
     }
     private void PlayFootstepSound()
     {
-        if (!movementMixer.IsValid() || HasStateAuthority || !characterController.IsGrounded || mainCorePlayable.ServerManager == null) return;
+        if (!movementMixer.IsValid() || HasStateAuthority || !characterController.IsGrounded || mainCorePlayable.ServerManager == null || playerController.IsProne || playerController.IsCrouch) return;
         if (playerInventory.WeaponIndex != weaponIndex) return;
 
         if (!IsValidWeapon(playerInventory.WeaponIndex)) return;
@@ -193,14 +190,23 @@ public class BasicMovement : NetworkBehaviour
         {
             if (lastFrameTime < footstepTimes[i] && currentTime >= footstepTimes[i])
             {
-                if (textureValues[0] > 0)
+                if (mainCorePlayable.CurrentGround == MainCorePlayable.Ground.TERRAIN)
                 {
-                    footstepSource.PlayOneShot(GetClip(grassClip));
+                    if (textureValues[0] > 0)
+                    {
+                        footstepSource.PlayOneShot(GetClip(grassClip));
+                    }
+                    if (textureValues[1] > 0)
+                    {
+                        footstepSource.PlayOneShot(GetClip(dirtClip));
+                    }
                 }
-                if (textureValues[1] > 0)
-                {
+                else if (mainCorePlayable.CurrentGround == MainCorePlayable.Ground.DIRT)
                     footstepSource.PlayOneShot(GetClip(dirtClip));
-                }
+                else if (mainCorePlayable.CurrentGround == MainCorePlayable.Ground.STONE)
+                    footstepSource.PlayOneShot(GetClip(stoneClip));
+                else if (mainCorePlayable.CurrentGround == MainCorePlayable.Ground.WOOD)
+                    footstepSource.PlayOneShot(GetClip(woodClip));
             }
         }
 
@@ -209,16 +215,10 @@ public class BasicMovement : NetworkBehaviour
 
     AudioClip GetClip(AudioClip[] clipArray)
     {
-        int attempts = 3;
-        selectedClip = clipArray[UnityEngine.Random.Range(0, clipArray.Length - 1)];
-
-        while (selectedClip == previousClip && attempts > 0)
-        {
-            selectedClip =
-            clipArray[UnityEngine.Random.Range(0, clipArray.Length - 1)];
-
-            attempts--;
-        }
+        if (audioClipIndex > clipArray.Length)
+            audioClipIndex = 0;
+        
+        selectedClip = clipArray[audioClipIndex];
 
         previousClip = selectedClip;
         return selectedClip;
@@ -241,7 +241,7 @@ public class BasicMovement : NetworkBehaviour
 
     private void ConvertPosition(Vector3 playerPosition)
     {
-        Terrain tempterrain = mainCorePlayable.ServerManager.CurrentGameState == GameState.WAITINGAREA ? waitingAreaTerrain : battleAreaTerrain;
+        Terrain tempterrain = mainCorePlayable.ServerManager.CurrentGameState == GameState.WAITINGAREA ? mainCorePlayable.ServerManager.waitingAreaArena : mainCorePlayable.ServerManager.battleFieldArena;
 
         terrainPosition = playerPosition - tempterrain.transform.position;
         mapPosition = new Vector3(terrainPosition.x / tempterrain.terrainData.size.x, 0,

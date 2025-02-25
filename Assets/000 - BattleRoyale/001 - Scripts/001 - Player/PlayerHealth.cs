@@ -20,6 +20,10 @@ public class PlayerHealth : NetworkBehaviour
     [SerializeField] private SimpleKCC characterController;
     [SerializeField] private HealPlayables healPlayables;
     [SerializeField] private Volume postProcessing;
+    [SerializeField] private AudioClip[] gruntClips;
+    [SerializeField] private AudioClip thumpGruntClip;
+    [SerializeField] private AudioClip deathClip;
+    [SerializeField] private AudioSource damageSource;
 
     [Space]
     [SerializeField] private ParticleSystem bloodParticlesA;
@@ -49,7 +53,10 @@ public class PlayerHealth : NetworkBehaviour
     [Networked][field: SerializeField] public float CurrentArmor { get; set; }
     [Networked][field: SerializeField] public int DamagedHit { get; set; }
     [Networked][field: SerializeField] public int DamagedNoHit { get; set; }
+    [Networked][field: SerializeField] public int FallDamageHit { get; set; }
     [Networked][field: SerializeField] public bool DamagedSafeZone { get; set; }
+    [SerializeField] AudioClip selectedClip;
+    [SerializeField] AudioClip previousClip;
 
 
     [field: Space]
@@ -110,6 +117,11 @@ public class PlayerHealth : NetworkBehaviour
                         damageIndicatorLT = LeanTween.color(damageIndicator.rectTransform, new Color(255f, 255f, 255f, 0), 5f).setEase(LeanTweenType.easeInSine).setDelay(2f).id;
                     }).id;
 
+                    if (CurrentHealth <= 0)
+                        damageSource.PlayOneShot(deathClip);
+                    else
+                        damageSource.PlayOneShot(GetClip(gruntClips));
+
                     break;
                 case nameof(DamagedNoHit):
                     if (!HasInputAuthority) return;
@@ -120,6 +132,21 @@ public class PlayerHealth : NetworkBehaviour
                     {
                         damageIndicatorLT = LeanTween.color(damageIndicator.rectTransform, new Color(255f, 255f, 255f, 0), 5f).setEase(LeanTweenType.easeInSine).setDelay(2f).id;
                     }).id;
+                    break;
+                case nameof(FallDamageHit):
+                    if (HasStateAuthority) return;
+
+                    damageSource.PlayOneShot(thumpGruntClip);
+
+                    if (!HasInputAuthority) return;
+
+                    if (damageIndicatorLT != 0) LeanTween.cancel(damageIndicatorLT);
+
+                    damageIndicatorLT = LeanTween.color(damageIndicator.rectTransform, new Color(255f, 255f, 255f, 255f), 0.12f).setEase(LeanTweenType.easeInOutSine).setOnComplete(() =>
+                    {
+                        damageIndicatorLT = LeanTween.color(damageIndicator.rectTransform, new Color(255f, 255f, 255f, 0), 5f).setEase(LeanTweenType.easeInSine).setDelay(2f).id;
+                    }).id;
+
                     break;
             }
         }
@@ -163,23 +190,24 @@ public class PlayerHealth : NetworkBehaviour
     {
         if (!HasStateAuthority) return;
 
-        if (ServerManager.CurrentGameState != GameState.ARENA) return;
-
-        if (ServerManager.CurrentSafeZoneState == SafeZoneState.NONE) return;
-
-        if (!ServerManager.DonePlayerBattlePositions) return;
-
         if (CurrentHealth <= 0) return;
 
         if (characterController.RealVelocity.y <= -20f)
         {
-            Debug.Log("Adding fall damage");
-            PlayerFallDamage = Mathf.Abs(characterController.RealVelocity.y) - 5;
+            if (ServerManager.CurrentGameState == GameState.ARENA && ServerManager.CurrentSafeZoneState != SafeZoneState.NONE && ServerManager.DonePlayerBattlePositions)
+                PlayerFallDamage = Mathf.Abs(characterController.RealVelocity.y) - 5;
         }
 
         if (characterController.IsGrounded && PlayerFallDamage > 0)
         {
-            DamagedNoHit++;
+            FallDamageHit++;
+
+            if (ServerManager.CurrentGameState != GameState.ARENA) return;
+
+            if (ServerManager.CurrentSafeZoneState == SafeZoneState.NONE) return;
+
+            if (!ServerManager.DonePlayerBattlePositions) return;
+
             CurrentHealth -= PlayerFallDamage;
             PlayerFallDamage = 0f;
 
@@ -333,5 +361,22 @@ public class PlayerHealth : NetworkBehaviour
         if (HasStateAuthority) return;
 
         KillNotificationController.KillNotifInstance.ShowMessage(killer);
+    }
+
+    AudioClip GetClip(AudioClip[] clipArray)
+    {
+        int attempts = 3;
+        selectedClip = clipArray[UnityEngine.Random.Range(0, clipArray.Length - 1)];
+
+        while (selectedClip == previousClip && attempts > 0)
+        {
+            selectedClip =
+            clipArray[UnityEngine.Random.Range(0, clipArray.Length - 1)];
+
+            attempts--;
+        }
+
+        previousClip = selectedClip;
+        return selectedClip;
     }
 }

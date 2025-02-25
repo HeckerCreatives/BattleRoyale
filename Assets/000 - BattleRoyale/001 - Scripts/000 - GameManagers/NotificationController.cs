@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class NotificationController : MonoBehaviour
 {
-    [SerializeField] private GameManager gameManager;
+    [SerializeField] private AudioManager audioManager;
     [SerializeField] private AudioClip btnClip;
 
     [Header("GameObject")]
@@ -188,4 +188,6 @@ public class NotificationController : MonoBehaviour
     }
 
     #endregion
+
+    public void ButtonPress() => audioManager.PlaySFX(btnClip);
 }

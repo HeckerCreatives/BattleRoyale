@@ -8,11 +8,22 @@ using UnityEngine.Playables;
 
 public class MainCorePlayable : NetworkBehaviour
 {
+    public enum Ground
+    {
+        DIRT,
+        WOOD,
+        STONE,
+        WATER,
+        TERRAIN
+    }
+
     [SerializeField] private PlayerInventory inventory;
     [SerializeField] private PlayerController controller;
 
     [Space]
     [SerializeField] private SimpleKCC characterController;
+    [SerializeField] private Transform groundDetector;
+    [SerializeField] private LayerMask groundMask;
 
     [Space]
     [SerializeField] private Animator animator;
@@ -62,11 +73,15 @@ public class MainCorePlayable : NetworkBehaviour
     [field: Space]
     [Networked][field: SerializeField] public float TickRateAnimation { get; set; }
     [Networked][field: SerializeField] public DedicatedServerManager ServerManager { get; set; }
+    [Networked][field: SerializeField] public Ground CurrentGround { get; set; }
 
     //  =========================
 
     private PlayableGraph playableGraph;
     private AnimationLayerMixerPlayable mainPlayable;
+    LagCompensatedHit hit = new LagCompensatedHit();
+
+    //  =========================
 
     private void Start()
     {
@@ -246,6 +261,8 @@ public class MainCorePlayable : NetworkBehaviour
                         }
                         else if (inventory.WeaponIndex == 2)
                         {
+                            if (inventory.PrimaryWeapon == null) return;
+
                             if (inventory.PrimaryWeapon.WeaponID == "001")
                             {
                                 swordBasicMovementWeight = Mathf.MoveTowards(swordBasicMovementWeight, 1f, Time.deltaTime * 5f);
@@ -263,6 +280,8 @@ public class MainCorePlayable : NetworkBehaviour
                         }
                         else if (inventory.WeaponIndex == 3)
                         {
+                            if (inventory.SecondaryWeapon == null) return;
+
                             if (inventory.SecondaryWeapon.WeaponID == "003")
                             {
                                 rifleBasicWeight = Mathf.MoveTowards(rifleBasicWeight, 1f, Time.deltaTime * 5f);
@@ -480,6 +499,27 @@ public class MainCorePlayable : NetworkBehaviour
         if (HasStateAuthority)
         {
             TickRateAnimation = Runner.Tick * Runner.DeltaTime;
+            CheckGround();
         }
+    }
+
+    private void CheckGround()
+    {
+        if (!characterController.IsGrounded) return;
+
+        if (Runner.LagCompensation.Raycast(groundDetector.position, Vector3.down, 10f, Object.InputAuthority, out hit, groundMask, HitOptions.IncludePhysX))
+        {
+            if (hit.GameObject == null) return;
+
+            if (hit.GameObject.tag == "BattleAreaStage" || hit.GameObject.tag == "WaitingAreaStage") CurrentGround = Ground.TERRAIN;
+            else if (hit.GameObject.tag == "Stone") CurrentGround = Ground.STONE;
+            else if (hit.GameObject.tag == "Dirt") CurrentGround = Ground.DIRT;
+            else if (hit.GameObject.tag == "Wood") CurrentGround = Ground.WOOD;
+        }
+    }
+
+    private void CheckWater()
+    {
+
     }
 }

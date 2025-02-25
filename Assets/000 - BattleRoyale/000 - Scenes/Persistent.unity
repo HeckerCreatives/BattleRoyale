@@ -449,6 +449,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 425614882}
+        m_TargetAssemblyTypeName: NotificationController, Assembly-CSharp
+        m_MethodName: ButtonPress
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &218249332
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -696,8 +708,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 84f4556507a696d48b78cf067535911a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameManager: {fileID: 425614884}
-  btnClip: {fileID: 0}
+  audioManager: {fileID: 425614881}
+  btnClip: {fileID: 8300000, guid: 40a670030093b0c4593a0ceda29aa47d, type: 3}
   errorPanelObj: {fileID: 1261636378}
   confirmationPanelObj: {fileID: 1426180618}
   errorTMP: {fileID: 1190768200}
@@ -1011,6 +1023,18 @@ MonoBehaviour:
       - m_Target: {fileID: 425614882}
         m_TargetAssemblyTypeName: NotificationController, Assembly-CSharp
         m_MethodName: ConfirmedAction
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 425614882}
+        m_TargetAssemblyTypeName: NotificationController, Assembly-CSharp
+        m_MethodName: ButtonPress
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -3243,6 +3267,18 @@ MonoBehaviour:
       - m_Target: {fileID: 425614882}
         m_TargetAssemblyTypeName: NotificationController, Assembly-CSharp
         m_MethodName: CloseConfirmationAction
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 425614882}
+        m_TargetAssemblyTypeName: NotificationController, Assembly-CSharp
+        m_MethodName: ButtonPress
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

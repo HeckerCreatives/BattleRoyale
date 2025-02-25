@@ -100,7 +100,11 @@ public class ControllerSetting : Fusion.Behaviour
         else opacitySlider.enabled = true;
 
         if (selectedUIRT == null) sizeSlider.enabled = false;
-        else sizeSlider.enabled = true;
+        else
+        {
+            if (selectedUIRT.GetComponent<SettingsControlGameplayController>().canChangeSize) sizeSlider.enabled = true;
+            else sizeSlider.enabled = false;
+        }
     }
 
     private void CheckUIValues()

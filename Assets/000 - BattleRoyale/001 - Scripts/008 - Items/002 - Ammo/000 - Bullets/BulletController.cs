@@ -14,16 +14,18 @@ public class BulletController : NetworkBehaviour
     [SerializeField] private float bulletRadius;
     [SerializeField] private LayerMask environmentLayers;
     [SerializeField] private LayerMask playerCollisionLayers;
+    [SerializeField] private AudioSource bulletSource;
+    [SerializeField] private AudioClip flybyClip;
+    [SerializeField] private AudioClip hitClip;
+    [SerializeField] private AudioClip bodyHitClip;
 
     [field: Space]
-    [field: SerializeField][Networked] public bool Destroyed { get; set; }
     [field: SerializeField][Networked] public Vector3 TargetPos { get; set; }
     [field: SerializeField][Networked] public Vector3 TargetPoint { get; set; }
     [field: SerializeField][Networked] public Vector3 StartPos { get; set; }
-    [field: SerializeField][Networked] public float Distance { get; set; }
-    [field: SerializeField][Networked] public float RemainingDistance { get; set; }
     [field: SerializeField][Networked] public Vector3 HitEffectRotation { get; set; }
     [field: SerializeField][Networked] public bool CanTravel { get; set; }
+    [field: SerializeField][Networked] public bool Hit { get; set; }
     [field: SerializeField][Networked] public int PoolIndex { get; set; }
     [field: SerializeField][Networked] public BulletObjectPool Pooler { get; set; }
 
@@ -39,11 +41,16 @@ public class BulletController : NetworkBehaviour
 
     //  =======================
 
+    private void OnEnable()
+    {
+        if (Runner == null) return;
+
+        transform.position = StartPos;
+    }
+
     public override void Spawned()
     {
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
-        transform.position = StartPos;
-        Debug.Log($"Bullet controller {Pooler == null}");
     }
 
     public override void Render()
@@ -52,11 +59,25 @@ public class BulletController : NetworkBehaviour
         {
             switch (change)
             {
-                case nameof(Destroyed):
-                    if (Destroyed)
-                    {
-                        hitEffectObj.SetActive(true);
-                    }
+                case nameof(Hit):
+                    if (HasStateAuthority) return;
+
+                    if (!Hit) return;
+
+                    hitEffectObj.SetActive(true);
+
+                    if (TargetObj.Hitbox != null)
+                        bulletSource.PlayOneShot(bodyHitClip);
+                    else
+                        bulletSource.PlayOneShot(hitClip);
+
+                    break;
+                case nameof(CanTravel):
+                    if (HasStateAuthority) return;
+
+                    if (!CanTravel) return;
+
+                    bulletSource.PlayOneShot(flybyClip);
                     break;
             }
         }
@@ -79,10 +100,9 @@ public class BulletController : NetworkBehaviour
         StartPos = startPos;
         TargetPoint = targetObj.Point;
         TargetPos = targetObj.GameObject.transform.position;
-        Distance = Vector3.Distance(transform.position, targetObj.Point);
-        RemainingDistance = Distance;
 
         TargetObj = targetObj;
+        CanTravel = true;
     }
 
     public override void FixedUpdateNetwork()
@@ -91,60 +111,44 @@ public class BulletController : NetworkBehaviour
 
         if (!CanTravel) return;
 
-        if (RemainingDistance > 0)
-        {
-            RemainingDistance -= bulletSpeed * Runner.DeltaTime;
-        }
-        else
-        {
-            if (Destroyed) return;
+        if (transform.position != TargetPoint) return;
 
-            if ((1 << TargetObj.GameObject.layer) == playerCollisionLayers)
+        if (Hit) return;
+
+        Hit = true;
+
+        if ((1 << TargetObj.GameObject.layer) == playerCollisionLayers)
+        {
+            if (Vector3.Distance(TargetObj.Point, TargetPos) <= 1f)
             {
-                if (Vector3.Distance(TargetObj.Point, TargetPos) <= 1f)
-                {
-                    Destroyed = true;
 
-                    HitEffectRotation = TargetObj.Normal;
+                HitEffectRotation = TargetObj.Normal;
 
-                    transform.position = TargetObj.Point;
+                transform.position = TargetObj.Point;
 
-                    Invoke(nameof(DestroyObject), 3f);
-                }
-                else
-                {
-                    Destroyed = true;
-
-                    transform.position = TargetObj.Point;
-
-                    Invoke(nameof(DestroyObject), 3f);
-                }
+                Invoke(nameof(DestroyObject), 3f);
             }
             else
             {
-                Destroyed = true;
 
                 transform.position = TargetObj.Point;
 
                 Invoke(nameof(DestroyObject), 3f);
             }
         }
-    }
+        else
+        {
 
-    private void ContinueBulletTrajectory()
-    {
-        Vector3 moveDirection = (TargetPos - StartPos).normalized; // Get the last moving direction
+            transform.position = TargetObj.Point;
 
-        // Extend bullet movement past the original target
-        TargetPos += moveDirection * 5f; // Move it forward by 5 units
-        RemainingDistance = 5f; // Give it some more travel distance
+            Invoke(nameof(DestroyObject), 3f);
+        }
     }
 
     private void DestroyObject()
     {
         CanTravel = false;
-        Destroyed = false;
-        Debug.Log($"is pooler null ? {Pooler == null}");
+        Hit = false;
         Pooler.DisableBullet(PoolIndex);
     }
 

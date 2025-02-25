@@ -11,6 +11,9 @@ public class PlayerSpawnLocationController : NetworkBehaviour
     [SerializeField] public PlayerInventory inventory;
     [SerializeField] private PlayerController controller;
 
+    [Space]
+    [SerializeField] private AudioClip buttonClick;
+
     [field: Header("DEBUGGER")]
     [field: MyBox.ReadOnly][field: SerializeField] [Networked] public DedicatedServerManager ServerManager { get; set; }
     [MyBox.ReadOnly][SerializeField] private bool isSpawned; 
@@ -76,4 +79,6 @@ public class PlayerSpawnLocationController : NetworkBehaviour
     {
         while (!ServerManager.DonePlayerBattlePositions || inventory.PrimaryWeapon != null || inventory.SecondaryWeapon != null || inventory.Shield != null) yield return null;
     }
+
+    public void PlayBtnSound() => GameManager.Instance.AudioController.PlaySFX(buttonClick);
 }

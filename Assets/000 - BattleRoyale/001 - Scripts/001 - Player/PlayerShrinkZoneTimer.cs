@@ -8,7 +8,7 @@ using UnityEngine.UI;
 public class PlayerShrinkZoneTimer : NetworkBehaviour
 {
     [SerializeField] private Slider safeZoneSlider;
-    [SerializeField] private Slider distanceSlider;
+    //[SerializeField] private Slider distanceSlider;
     [SerializeField] private TextMeshProUGUI safeZoneTimerTMP;
 
     [field: Header("DEBUGGER")]
@@ -18,11 +18,13 @@ public class PlayerShrinkZoneTimer : NetworkBehaviour
     {
         if (!HasInputAuthority) return;
 
+        if (ServerManager == null) return;
+
         if (ServerManager.CurrentGameState != GameState.ARENA)
         {
             safeZoneTimerTMP.text = "00 : 00";
             safeZoneSlider.value = 0;
-            distanceSlider.value = 0;
+            //distanceSlider.value = 0;
             return;
         }
 
@@ -34,7 +36,7 @@ public class PlayerShrinkZoneTimer : NetworkBehaviour
         {
             safeZoneTimerTMP.text = "00 : 00";
             safeZoneSlider.value = 0;
-            distanceSlider.value = 0;
+            //distanceSlider.value = 0;
         }
 
 
@@ -43,18 +45,18 @@ public class PlayerShrinkZoneTimer : NetworkBehaviour
             ServerManager.SafeZone.CurrentShrink.magnitude,
             ServerManager.SafeZone.CurrentShrinkSize.magnitude
         );
-        float distanceFromCenter = Vector3.Distance(
-            new Vector3(transform.position.x, 0, transform.position.z),
-            new Vector3(ServerManager.SafeZone.transform.position.x, 0, ServerManager.SafeZone.transform.position.z)
-        );
+        //float distanceFromCenter = Vector3.Distance(
+        //    new Vector3(transform.position.x, 0, transform.position.z),
+        //    new Vector3(ServerManager.SafeZone.transform.position.x, 0, ServerManager.SafeZone.transform.position.z)
+        //);
 
-        float circleRadius = ServerManager.SafeZone.CurrentShrinkSize.x / 2; // Assuming scale.x is the diameter
+        //float circleRadius = ServerManager.SafeZone.CurrentShrinkSize.x / 2; // Assuming scale.x is the diameter
 
         // Calculate the absolute distance to the boundary
-        float distanceToEdge = Mathf.Abs(circleRadius - distanceFromCenter);
+        //float distanceToEdge = Mathf.Abs(circleRadius - distanceFromCenter);
 
         safeZoneSlider.value = percentage;
-        distanceSlider.value = Mathf.Clamp01(1 - (distanceToEdge / circleRadius));
+        //distanceSlider.value = Mathf.Clamp01(1 - (distanceToEdge / circleRadius));
     }
 
 

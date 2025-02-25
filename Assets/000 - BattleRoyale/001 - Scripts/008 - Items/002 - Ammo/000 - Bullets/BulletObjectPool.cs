@@ -2,6 +2,7 @@ using Fusion;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class BulletObjectPool : NetworkBehaviour
@@ -23,6 +24,8 @@ public class BulletObjectPool : NetworkBehaviour
 
     public override void Spawned()
     {
+        if (HasStateAuthority) return;
+
         foreach(var item in BulletQueue)
         {
             TempBullets.Add(item.Key);
@@ -36,15 +39,21 @@ public class BulletObjectPool : NetworkBehaviour
 
     public override void Render()
     {
+        if (HasStateAuthority || HasInputAuthority) return;
+
         if (!DoneInitialize) return;
+
+        if (BulletQueue.Count <= 0 || ArrowQueue.Count <= 0) return;
 
         foreach(var item in BulletQueue)
         {
+            if (item.Key == null) continue;
             item.Key.gameObject.SetActive(item.Value);
         }
 
         foreach(var item in ArrowQueue)
         {
+            if (item.Key == null) continue;
             item.Key.gameObject.SetActive(item.Value);
         }
     }
@@ -53,13 +62,17 @@ public class BulletObjectPool : NetworkBehaviour
     {
         if (!DoneInitialize) return;
 
+        if (BulletQueue.Count <= 0 || ArrowQueue.Count <= 0) return;
+
         foreach (var item in BulletQueue)
         {
+            if (item.Key == null) continue;
             item.Key.gameObject.SetActive(item.Value);
         }
 
         foreach (var item in ArrowQueue)
         {
+            if (item.Key == null) continue;
             item.Key.gameObject.SetActive(item.Value);
         }
     }
@@ -74,5 +87,18 @@ public class BulletObjectPool : NetworkBehaviour
             CurrentBulletIndex = 0;
     }
 
+
+    public void SetEnabledArrow()
+    {
+        ArrowQueue.Set(TempArrows[CurrentArrowIndex], true);
+
+        CurrentArrowIndex++;
+
+        if (CurrentArrowIndex >= ArrowQueue.Count - 1)
+            CurrentArrowIndex = 0;
+    }
+
     public void DisableBullet(int index) => BulletQueue.Set(TempBullets[index], false);
+
+    public void DisableArrow(int index) => ArrowQueue.Set(TempArrows[index], false);
 }

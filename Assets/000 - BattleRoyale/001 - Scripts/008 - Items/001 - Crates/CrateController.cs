@@ -99,9 +99,15 @@ public class CrateController : NetworkBehaviour
             });
 
             if (itemkey.ToString() == "001" || itemkey.ToString() == "002")
+            {
                 playerInventory.PrimaryWeapon = weapon.GetComponent<WeaponItem>();
+                playerInventory.PrimaryWeaponSFX = weapon.GetComponent<MeleeSoundController>();
+            }
             else if (itemkey.ToString() == "003" || itemkey.ToString() == "004")
+            {
                 playerInventory.SecondaryWeapon = weapon.GetComponent<WeaponItem>();
+                playerInventory.SecondaryWeaponSFX = weapon.GetComponent<GunSoundController>();
+            }
             else if (itemkey.ToString() == "007")
                 playerInventory.Shield = weapon.GetComponent<WeaponItem>();
 
