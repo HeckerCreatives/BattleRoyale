@@ -237,7 +237,7 @@ public class BowAttackPlayable : NetworkBehaviour
         }
     }
 
-    private void SpawnBullet()
+    private async void SpawnBullet()
     {
         Ray tempRay = new Ray(controllerInput.CameraHitOrigin, controllerInput.CameraHitDirection);
 
@@ -245,16 +245,22 @@ public class BowAttackPlayable : NetworkBehaviour
         bool validTargetFound = false;
         Vector3 raystart = tempRay.origin;
 
-        if (Runner.LagCompensation.Raycast(raystart, tempRay.direction, 999f, Object.InputAuthority, out hit, raycastLayerMask, HitOptions.IncludePhysX))
+        while (!validTargetFound)
         {
-            NetworkObject hitObject = hit.Hitbox?.Root.Object;
-
-            if (hitObject != null && hitObject.InputAuthority == Object.InputAuthority)
+            if (Runner.LagCompensation.Raycast(raystart, tempRay.direction, 999f, Object.InputAuthority, out hit, raycastLayerMask, HitOptions.IncludePhysX))
             {
-                raystart = hit.Point + tempRay.direction * 0.2f;
+                NetworkObject hitObject = hit.Hitbox?.Root.Object;
+
+                if (hitObject != null && hitObject.InputAuthority == Object.InputAuthority)
+                {
+                    raystart = hit.Point + tempRay.direction * 0.2f;
+                    continue;
+                }
+
+                validTargetFound = true;
             }
 
-            validTargetFound = true;
+            await Task.Yield();
         }
 
         if (validTargetFound)
