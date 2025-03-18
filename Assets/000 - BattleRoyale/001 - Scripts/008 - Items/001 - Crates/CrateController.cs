@@ -55,7 +55,14 @@ public class CrateController : NetworkBehaviour
             }
             else if (itemkey.ToString() == "003")
             {
-                if (playerInventory.SecondaryWeapon != null) playerInventory.SecondaryWeapon.DropSecondaryWeapon();
+                if (playerInventory.ArrowHolder != null)
+                {
+                    if (playerInventory.SecondaryWeapon != null) playerInventory.SecondaryWeapon.DropSecondaryWithAmmoCaseWeapon();
+                }
+                else
+                {
+                    if (playerInventory.SecondaryWeapon != null) playerInventory.SecondaryWeapon.DropSecondaryWeapon();
+                }
 
                 isHand = playerInventory.WeaponIndex == 3 || playerInventory.WeaponIndex == 1;
 

@@ -79,7 +79,7 @@ public class PlayerGameOverScreen : NetworkBehaviour
 
                     //  Leaderboard
 
-                    float rankpointLB = (100 - PlayerPlacement + 1) / 100f * 20;
+                    float rankpointLB = ((100 - PlayerPlacement + 1) / 100f) * 20;
                     rankpointLB = (float)Math.Truncate(rankpointLB);
                     float killpointLB = killCountCounterController.KillCount * 100f;
                     killpointLB = (float)Math.Truncate(killpointLB);
@@ -92,11 +92,11 @@ public class PlayerGameOverScreen : NetworkBehaviour
                     resultPointsTMP.text = finalresultpointLB.ToString("n0");
 
                     //  EXP
-                    float userlevelPoints = userData.GameDetails.level / 2f * 10;
+                    float userlevelPoints = (userData.GameDetails.level / 2) * 3;
                     userlevelPoints = (float)Math.Truncate(userlevelPoints);
-                    float rankxpPoints = (100 - PlayerPlacement + 1) / 100f * 20;
+                    float rankxpPoints = ((100 - PlayerPlacement + 1) / 100) * 20;
                     rankxpPoints = (float)Math.Truncate(rankxpPoints);
-                    float killxpPoints = killCountCounterController.KillCount * userData.GameDetails.level / 2f * 5;
+                    float killxpPoints = killCountCounterController.KillCount * ((userData.GameDetails.level / 4) + 1);
                     killxpPoints = (float)Math.Truncate(killxpPoints);
                     float finalxp = userlevelPoints + rankxpPoints + killxpPoints;
                     finalxp = (float)Math.Truncate(finalxp);
@@ -199,7 +199,7 @@ public class PlayerGameOverScreen : NetworkBehaviour
 
             //  Leaderboard
 
-            float rankpointLB = 100 - PlayerPlacement + 1 / 100 * 20;
+            float rankpointLB = ((100 - PlayerPlacement + 1) / 100) * 20;
             float killpointLB = killCountCounterController.KillCount * 100;
             float finalresultpointLB = rankpointLB + killpointLB + HitPoints;
             finalresultpointLB = (float)Math.Truncate(finalresultpointLB);
@@ -210,9 +210,12 @@ public class PlayerGameOverScreen : NetworkBehaviour
             resultPointsTMP.text = finalresultpointLB.ToString("n0");
 
             //  EXP
-            float userlevelPoints = userData.GameDetails.level / 2 * 10;
-            float rankxpPoints = 100 - PlayerPlacement + 1 / 100 * 20;
-            float killxpPoints = killCountCounterController.KillCount * userData.GameDetails.level / 2 * 5;
+            float userlevelPoints = (userData.GameDetails.level / 2) * 3;
+            userlevelPoints = (float)Math.Truncate(userlevelPoints);
+            float rankxpPoints = ((100 - PlayerPlacement + 1) / 100) * 20;
+            rankxpPoints = (float)Math.Truncate(rankxpPoints);
+            float killxpPoints = killCountCounterController.KillCount * ((userData.GameDetails.level / 4) + 1);
+            killxpPoints = (float)Math.Truncate(killxpPoints);
             float finalxp = userlevelPoints + rankxpPoints + killxpPoints;
             finalxp = (float)Math.Truncate(finalxp);
 
@@ -268,7 +271,7 @@ public class PlayerGameOverScreen : NetworkBehaviour
 
         //  Leaderboard
 
-        float rankpointLB = 100 - PlayerPlacement + 1 / 100 * 20;
+        float rankpointLB = ((100 - PlayerPlacement + 1) / 100) * 20;
         float killpointLB = killCountCounterController.KillCount * 100;
         float finalresultpointLB = rankpointLB + killpointLB + HitPoints;
         finalresultpointLB = (float)Math.Truncate(finalresultpointLB);
@@ -279,9 +282,12 @@ public class PlayerGameOverScreen : NetworkBehaviour
         resultPointsTMP.text = finalresultpointLB.ToString("n0");
 
         //  EXP
-        float userlevelPoints = userData.GameDetails.level / 2 * 10;
-        float rankxpPoints = 100 - PlayerPlacement + 1 / 100 * 20;
-        float killxpPoints = killCountCounterController.KillCount * userData.GameDetails.level / 2 * 5;
+        float userlevelPoints = (userData.GameDetails.level / 2) * 3;
+        userlevelPoints = (float)Math.Truncate(userlevelPoints);
+        float rankxpPoints = ((100 - PlayerPlacement + 1) / 100) * 20;
+        rankxpPoints = (float)Math.Truncate(rankxpPoints);
+        float killxpPoints = killCountCounterController.KillCount * ((userData.GameDetails.level / 4) + 1);
+        killxpPoints = (float)Math.Truncate(killxpPoints);
         float finalxp = userlevelPoints + rankxpPoints + killxpPoints;
         finalxp = (float)Math.Truncate(finalxp);
 

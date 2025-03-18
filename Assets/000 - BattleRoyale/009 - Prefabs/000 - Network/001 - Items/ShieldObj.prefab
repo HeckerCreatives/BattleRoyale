@@ -47,6 +47,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 58e432449cdabfd42890861b85aa9062, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  weponsData: {fileID: 11400000, guid: c12335f14c4d0e549986dfe35b8f1a53, type: 2}
+  meleeSoundController: {fileID: 0}
   dropRotation: {x: 0, y: 0, z: -92.173}
   enemyLayerMask:
     serializedVersion: 2
@@ -54,6 +56,13 @@ MonoBehaviour:
   impactSize: {x: 0, y: 0, z: 0}
   muzzleFlash: {fileID: 0}
   impactPoint: {fileID: 0}
+  head: 0
+  body: 0
+  thigh: 0
+  shin: 0
+  foot: 0
+  arm: 0
+  forearm: 0
   _WeaponID: 
   _WeaponName: 
   _Ammo: 0
@@ -64,6 +73,7 @@ MonoBehaviour:
   _IsPickedUp: 0
   _IsHand: 0
   _DropPosition: {x: 0, y: 0, z: 0}
+  _Hit: 0
   _hitEnemiesFirst: []
   _hitEnemiesSecond: []
 --- !u!114 &4704355298322194790

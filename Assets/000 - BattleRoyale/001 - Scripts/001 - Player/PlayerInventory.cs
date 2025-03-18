@@ -36,7 +36,7 @@ public class PlayerInventory : NetworkBehaviour
     [SerializeField] private NetworkObject spearHandle;
     [SerializeField] private NetworkObject rifleHandle;
     [SerializeField] private NetworkObject bowHandle;
-    [SerializeField] private NetworkObject arrowHandle;
+    public NetworkObject arrowHandle;
 
     [Header("WEAPON HAND HANDLE")]
     [SerializeField] private NetworkObject swordHandHandle;

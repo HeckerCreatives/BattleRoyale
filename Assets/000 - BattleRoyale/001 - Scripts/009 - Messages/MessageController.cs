@@ -34,12 +34,16 @@ public class MessageController : MonoBehaviour
 
     //  ==========================
 
+    [SerializeField] private UserData userData;
+
+    [Space]
     [SerializeField] private GameObject messageObj;
     [SerializeField] private Transform messageParentTF;
     [SerializeField] private GameObject itemsPrefab;
     [SerializeField] private GameObject itemListContentObj;
     [SerializeField] private GameObject contentViewportObj;
     [SerializeField] private GameObject noItemsYetObj;
+    [SerializeField] private GameObject unreadObj;
 
     [Header("LOADER")]
     [SerializeField] private GameObject itemListLoader;
@@ -50,6 +54,7 @@ public class MessageController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI messageFromTMP;
     [SerializeField] private TextMeshProUGUI messageDayTMP;
     [SerializeField] private TextMeshProUGUI messageContentTMP;
+    [SerializeField] private TextMeshProUGUI unreadValueTMP;
 
     [Header("DEBUGGER")]
     [ReadOnly][SerializeField] private MessageItem selectedItem;
@@ -91,11 +96,21 @@ public class MessageController : MonoBehaviour
 
             if (response != null)
             {
-                List<MessageItem> tempresponsedata = JsonConvert.DeserializeObject<List<MessageItem>>(response.ToString());
+                userData.Messages = JsonConvert.DeserializeObject<List<MessageItem>>(response.ToString());
 
-                if (tempresponsedata.Count > 0)
+                int unopenedCount = userData.Messages.Count(m => m.status == "unopen");
+
+                if (unopenedCount > 0)
                 {
-                    StartCoroutine(InstantiateItems(tempresponsedata));
+                    unreadValueTMP.text = unopenedCount.ToString("n0");
+                    unreadObj.SetActive(true);
+                }
+                else
+                    unreadObj.SetActive(false);
+
+                if (userData.Messages.Count > 0)
+                {
+                    StartCoroutine(InstantiateItems(userData.Messages));
                 }
                 else
                 {
@@ -180,6 +195,16 @@ public class MessageController : MonoBehaviour
         if (!CanAction) return;
 
         if (getMessages != null) StopCoroutine(getMessages);
+
+        int unopenedCount = userData.Messages.Count(m => m.status == "unopen");
+
+        if (unopenedCount > 0)
+        {
+            unreadValueTMP.text = unopenedCount.ToString("n0");
+            unreadObj.SetActive(true);
+        }
+        else
+            unreadObj.SetActive(false);
 
         messageObj.SetActive(false);
     }

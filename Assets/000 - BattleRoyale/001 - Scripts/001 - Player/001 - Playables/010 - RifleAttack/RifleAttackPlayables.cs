@@ -240,7 +240,7 @@ public class RifleAttackPlayables : NetworkBehaviour
         }
     }
 
-    private async void SpawnBullet()
+    private void SpawnBullet()
     {
         Ray tempRay = new Ray(controllerInput.CameraHitOrigin, controllerInput.CameraHitDirection);
 
@@ -248,24 +248,16 @@ public class RifleAttackPlayables : NetworkBehaviour
         bool validTargetFound = false;
         Vector3 raystart = tempRay.origin;
 
-        while (!validTargetFound)
+        if (Runner.LagCompensation.Raycast(raystart, tempRay.direction, 999f, Object.InputAuthority, out hit, raycastLayerMask, HitOptions.IncludePhysX))
         {
-            if (Runner.LagCompensation.Raycast(raystart, tempRay.direction, 999f, Object.InputAuthority, out hit, raycastLayerMask, HitOptions.IncludePhysX))
+            NetworkObject hitObject = hit.Hitbox?.Root.Object;
+
+            if (hitObject != null && hitObject.InputAuthority == Object.InputAuthority)
             {
-                NetworkObject hitObject = hit.Hitbox?.Root.Object;
-
-                if (hitObject != null && hitObject.InputAuthority == Object.InputAuthority)
-                {
-                    raystart = hit.Point + tempRay.direction * 0.2f;
-                    continue;
-                }
-
-                validTargetFound = true;
+                raystart = hit.Point + tempRay.direction * 0.2f;
             }
-            else
-                break;
 
-            await Task.Yield();
+            validTargetFound = true;
         }
 
         if (validTargetFound)
@@ -320,6 +312,8 @@ public class RifleAttackPlayables : NetworkBehaviour
 
             Invoke(nameof(ShootCoolDown), shootClip.length + 0.25f);
         }
+        else
+            ResetAttack();
     }
 
     private void ShootCoolDown()

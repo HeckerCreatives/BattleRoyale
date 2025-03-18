@@ -237,7 +237,7 @@ public class BowAttackPlayable : NetworkBehaviour
         }
     }
 
-    private async void SpawnBullet()
+    private void SpawnBullet()
     {
         Ray tempRay = new Ray(controllerInput.CameraHitOrigin, controllerInput.CameraHitDirection);
 
@@ -245,24 +245,16 @@ public class BowAttackPlayable : NetworkBehaviour
         bool validTargetFound = false;
         Vector3 raystart = tempRay.origin;
 
-        while (!validTargetFound)
+        if (Runner.LagCompensation.Raycast(raystart, tempRay.direction, 999f, Object.InputAuthority, out hit, raycastLayerMask, HitOptions.IncludePhysX))
         {
-            if (Runner.LagCompensation.Raycast(raystart, tempRay.direction, 999f, Object.InputAuthority, out hit, raycastLayerMask, HitOptions.IncludePhysX))
+            NetworkObject hitObject = hit.Hitbox?.Root.Object;
+
+            if (hitObject != null && hitObject.InputAuthority == Object.InputAuthority)
             {
-                NetworkObject hitObject = hit.Hitbox?.Root.Object;
-
-                if (hitObject != null && hitObject.InputAuthority == Object.InputAuthority)
-                {
-                    raystart = hit.Point + tempRay.direction * 0.2f;
-                    continue;
-                }
-
-                validTargetFound = true;
+                raystart = hit.Point + tempRay.direction * 0.2f;
             }
-            else
-                break;
 
-            await Task.Yield();
+            validTargetFound = true;
         }
 
         if (validTargetFound)
@@ -320,6 +312,8 @@ public class BowAttackPlayable : NetworkBehaviour
 
             Invoke(nameof(ReloadBow), shootClip.length + 0.25f);
         }
+        else
+            ResetAttack();
     }
 
     private void ReloadBow()
@@ -327,7 +321,10 @@ public class BowAttackPlayable : NetworkBehaviour
         Attacking = false;
 
         if (playerInventory.ArrowAmmoCount <= 0 && playerInventory.SecondaryWeapon.Ammo <= 0)
+        {
+            ResetAttack();
             return;
+        }
 
         var cooldownPlayable = clipPlayables[2];
         cooldownPlayable.SetTime(0f); // Reset time

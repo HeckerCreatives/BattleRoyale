@@ -18,6 +18,9 @@ public class UserData : ScriptableObject
     [field: Header("GAME USER DETAILS")]
     [field: ReadOnly][field: SerializeField] public GameUserDetails GameDetails { get; set; }
 
+    [field: Header("MESSAGES")]
+    [field: ReadOnly][field: SerializeField] public List<MessageItem> Messages { get; set; }
+
     //  ===========================
 
     //  SETTINGS
@@ -59,6 +62,7 @@ public class UserData : ScriptableObject
         RememberMe = false;
         CharacterSetting = new PlayerCharacterSetting();
         GameDetails = new GameUserDetails();
+        Messages = new List<MessageItem>();
     }
 
     public IEnumerator CheckControlSettingSave()

@@ -275,6 +275,8 @@ public class SwordPlayable : NetworkBehaviour
         if (playerInventory.WeaponIndex != 2)
             return;
 
+        if (playerInventory.PrimaryWeapon == null) return;
+
         if (playerInventory.PrimaryWeapon.WeaponID != weaponid) return;
 
         if (heal.Healing) return;

@@ -2,6 +2,8 @@ using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using TMPro;
 using UnityEngine;
 
 public class LobbyController : MonoBehaviour
@@ -17,6 +19,9 @@ public class LobbyController : MonoBehaviour
 
     [Space]
     [SerializeField] private AudioClip buttonClip;
+
+    [SerializeField] private GameObject unreadObj;
+    [SerializeField] private TextMeshProUGUI unreadValueTMP;
 
     private void Awake()
     {
@@ -109,6 +114,23 @@ public class LobbyController : MonoBehaviour
         GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetVolumeSlidersOnStart());
         GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetGraphicsOnStart());
         GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetLookSensitivityOnStart());
+        GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/inbox/getinboxlist", "", false, (response) =>
+        {
+            if (response != null)
+            {
+                userData.Messages = JsonConvert.DeserializeObject<List<MessageItem>>(response.ToString());
+
+                int unopenedCount = userData.Messages.Count(m => m.status == "unopen");
+
+                if (unopenedCount > 0)
+                {
+                    unreadValueTMP.text = unopenedCount.ToString("n0");
+                    unreadObj.SetActive(true);
+                }
+                else
+                    unreadObj.SetActive(false);
+            }
+        }, null));
         GameManager.Instance.AudioController.SetBGMusic(bgMusicClip);
         GameManager.Instance.SceneController.ActionPass = true;
     }

@@ -2,6 +2,7 @@ using Fusion;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Unity.Services.Matchmaker.Models;
 using UnityEngine;
 using static Fusion.NetworkBehaviour;
 
@@ -13,6 +14,7 @@ public enum PlayerAction
 
 public class WeaponItem : NetworkBehaviour
 {
+    [SerializeField] private WeaponSpawnData weponsData;
     [SerializeField] private MeleeSoundController meleeSoundController;
     [SerializeField] private Vector3 dropRotation;
     [SerializeField] private LayerMask enemyLayerMask;
@@ -144,7 +146,20 @@ public class WeaponItem : NetworkBehaviour
     {
         PlayerInventory playerInventory = tempPlayer.GetComponent<PlayerInventory>();
 
-        if (playerInventory.SecondaryWeapon != null) playerInventory.SecondaryWeapon.DropSecondaryWeapon();
+        if (playerInventory.ArrowHolder != null)
+        {
+            if (playerInventory.SecondaryWeapon != null)
+            {
+                playerInventory.SecondaryWeapon.DropSecondaryWithAmmoCaseWeapon();
+            }
+        }
+        else
+        {
+            if (playerInventory.SecondaryWeapon != null)
+            {
+                playerInventory.SecondaryWeapon.DropSecondaryWeapon();
+            }
+        }
 
         Object.AssignInputAuthority(tempPlayer.InputAuthority);
 
@@ -170,6 +185,12 @@ public class WeaponItem : NetworkBehaviour
         if (playerInventory.SecondaryWeapon != null) playerInventory.SecondaryWeapon.DropSecondaryWithAmmoCaseWeapon();
 
         Object.AssignInputAuthority(tempPlayer.InputAuthority);
+
+        Runner.Spawn(weponsData.GetItemObject("arrowcontainer"), playerInventory.arrowHandle.transform.position, Quaternion.identity, tempPlayer.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+        {
+            playerInventory.ArrowHolder = obj;
+            obj.GetComponent<AmmoContainerController>().Initialize(playerInventory.arrowHandle);
+        });
 
         TempPlayer = tempPlayer.GetComponent<PlayerNetworkLoader>();
         ItemCheckerController = tempPlayer.GetComponent<PlayerItemCheckerController>();

@@ -72,9 +72,10 @@ public class GameManager : MonoBehaviour
             jobs.Dequeue().Invoke();
     }
 
-    public IEnumerator GetRequest(string route, string query, bool loaderEndState, System.Action<System.Object> callback, System.Action errorAction)
+    public IEnumerator GetRequest(string route, string query, bool loaderEndState, System.Action<System.Object> callback, System.Action errorAction, bool requiredtoken = true)
     {
-        while (userData.UserToken == "") yield return null;
+        if (requiredtoken)
+            while (userData.UserToken == "") yield return null;
 
         UnityWebRequest apiRquest;
         if (env.TryParseEnvironmentVariable("API_URL", out string httpRequest))
@@ -153,7 +154,12 @@ public class GameManager : MonoBehaviour
         {
             try
             {
+                NoBGLoading.SetActive(loaderEndState);
+
+                errorAction?.Invoke();
+
                 Dictionary<string, object> apiresponse = JsonConvert.DeserializeObject<Dictionary<string, object>>(apiRquest.downloadHandler.text);
+
 
                 switch (apiRquest.responseCode)
                 {
@@ -170,10 +176,17 @@ public class GameManager : MonoBehaviour
                         SceneController.StopLoading();
                         SceneController.CurrentScene = "Lobby";
                         break;
+                    case 405:
+                        NotificationController.ShowError($"{apiresponse["data"]}", null);
+                        SceneController.StopLoading();
+                        SocketMngr.Socket.Disconnect();
+                        break;
                 }
+
             }
             catch (Exception ex)
             {
+                NoBGLoading.SetActive(loaderEndState);
                 Debug.Log("Error API CALL! Error Code: " + apiRquest.result + ", " + apiRquest.downloadHandler.text);
                 NotificationController.ShowError("There's a problem with your internet connection! Please check your connection and try again.", null);
                 errorAction?.Invoke();
@@ -281,7 +294,11 @@ public class GameManager : MonoBehaviour
         {
             try
             {
+                NoBGLoading.SetActive(false);
+                errorAction?.Invoke();
+
                 Dictionary<string, object> apiresponse = JsonConvert.DeserializeObject<Dictionary<string, object>>(apiRquest.downloadHandler.text);
+
 
                 switch (apiRquest.responseCode)
                 {
@@ -300,6 +317,11 @@ public class GameManager : MonoBehaviour
                         SceneController.StopLoading();
                         SceneController.CurrentScene = "Lobby";
                         NoBGLoading.SetActive(false);
+                        break;
+                    case 405:
+                        NotificationController.ShowError($"{apiresponse["data"]}", null);
+                        SceneController.StopLoading();
+                        SocketMngr.Socket.Disconnect();
                         break;
                 }
             }

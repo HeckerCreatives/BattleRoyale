@@ -60,117 +60,123 @@ public class ClientMatchmakingController : MonoBehaviour
         timerTMP.text = string.Format("{0:00} : {1:00}", minutesFindMatch, secondsFindMatch);
     }
 
-    public async void FindMatch()
+    public void FindMatch()
     {
         if (findingMatch) return;
 
-        if (useMultiplay)
+        GameManager.Instance.NoBGLoading.SetActive(true);
+
+        StartCoroutine(GameManager.Instance.GetRequest("/usergamedetail/checkingamemaintenance", "", false, async (resposne) =>
         {
-
-            if (UnityServices.State == ServicesInitializationState.Uninitialized)
+            if (useMultiplay)
             {
-                await UnityServices.InitializeAsync();
+                if (UnityServices.State == ServicesInitializationState.Uninitialized)
+                {
+                    await UnityServices.InitializeAsync();
+                }
+
+                if (!AuthenticationService.Instance.IsSignedIn)
+                {
+                    await AuthenticationService.Instance.SignInAnonymouslyAsync();
+                }
+
+                matchmakingObj.SetActive(true);
+
+                findingMatch = true;
+
+                cancelBtn.interactable = true;
+
+                currentRunnerInstance = Instantiate(instanceRunner);
+
+                currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
+
+                var players = new List<Unity.Services.Matchmaker.Models.Player>
+                {
+                    new Unity.Services.Matchmaker.Models.Player(userData.Username, new Dictionary<string, object>())
+                };
+
+                var options = new CreateTicketOptions(
+                      "BattleRoyale", // The name of the queue defined in the previous step,
+                      new Dictionary<string, object>());
+
+                Debug.Log("JOINING LOBBY");
+
+                await JoinLobby("AsiaBR");
+
+                Debug.Log("DONE JOINING LOBBY, RECEIVING TICKET RESPONSE");
+
+                ticketResponse = await MatchmakerService.Instance.CreateTicketAsync(players, options);
+
+                Debug.Log($"ticket id: {ticketResponse.Id}");
+
+                MultiplayAssignment assignment = null;
+                bool gotAssignment = false;
+                bool matchfound = false;
+
+                do
+                {
+                    //Rate limit delay
+                    await Task.Delay(TimeSpan.FromSeconds(1f));
+
+                    // Poll ticket
+                    var ticketStatus = await MatchmakerService.Instance.GetTicketAsync(ticketResponse.Id);
+
+                    if (ticketStatus == null)
+                    {
+                        continue;
+                    }
+
+                    //Convert to platform assignment data (IOneOf conversion)
+                    if (ticketStatus.Type == typeof(MultiplayAssignment))
+                    {
+                        assignment = ticketStatus.Value as MultiplayAssignment;
+                    }
+
+                    switch (assignment?.Status)
+                    {
+                        case MultiplayAssignment.StatusOptions.Found:
+                            gotAssignment = true;
+                            matchfound = true;
+                            break;
+                        case MultiplayAssignment.StatusOptions.InProgress:
+                            //...
+                            break;
+                        case MultiplayAssignment.StatusOptions.Failed:
+                            gotAssignment = true;
+                            Debug.LogError("Failed to get ticket status. Error: " + assignment.Message);
+                            break;
+                        case MultiplayAssignment.StatusOptions.Timeout:
+                            Debug.LogError("Failed to get ticket status. Ticket timed out. Retrying to find match");
+                            break;
+                        default:
+                            throw new InvalidOperationException();
+                    }
+                } while (!gotAssignment && findingMatch);
+
+                if (matchfound)
+                {
+                    Debug.Log($"Server IP: {assignment.Ip}   Port: {(ushort)assignment.Port}");
+
+                    JoinDropballSession();
+                }
             }
-
-            if (!AuthenticationService.Instance.IsSignedIn)
+            else
             {
-                await AuthenticationService.Instance.SignInAnonymouslyAsync();
-            }
+                Debug.Log("Not using multiplay, starting photon find match");
 
-            findingMatch = true;
+                matchmakingObj.SetActive(true);
 
-            cancelBtn.interactable = true;
+                findingMatch = true;
 
-            currentRunnerInstance = Instantiate(instanceRunner);
+                cancelBtn.interactable = true;
 
-            currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
+                currentRunnerInstance = Instantiate(instanceRunner);
 
-            var players = new List<Unity.Services.Matchmaker.Models.Player>
-        {
-            new Unity.Services.Matchmaker.Models.Player(userData.Username, new Dictionary<string, object>())
-        };
-
-            var options = new CreateTicketOptions(
-                  "BattleRoyale", // The name of the queue defined in the previous step,
-                  new Dictionary<string, object>());
-
-            Debug.Log("JOINING LOBBY");
-
-            await JoinLobby("AsiaBR");
-
-            Debug.Log("DONE JOINING LOBBY, RECEIVING TICKET RESPONSE");
-
-            ticketResponse = await MatchmakerService.Instance.CreateTicketAsync(players, options);
-
-            Debug.Log($"ticket id: {ticketResponse.Id}");
-
-            MultiplayAssignment assignment = null;
-            bool gotAssignment = false;
-            bool matchfound = false;
-
-            do
-            {
-                //Rate limit delay
-                await Task.Delay(TimeSpan.FromSeconds(1f));
-
-                // Poll ticket
-                var ticketStatus = await MatchmakerService.Instance.GetTicketAsync(ticketResponse.Id);
-
-                if (ticketStatus == null)
-                {
-                    continue;
-                }
-
-                //Convert to platform assignment data (IOneOf conversion)
-                if (ticketStatus.Type == typeof(MultiplayAssignment))
-                {
-                    assignment = ticketStatus.Value as MultiplayAssignment;
-                }
-
-                switch (assignment?.Status)
-                {
-                    case MultiplayAssignment.StatusOptions.Found:
-                        gotAssignment = true;
-                        matchfound = true;
-                        break;
-                    case MultiplayAssignment.StatusOptions.InProgress:
-                        //...
-                        break;
-                    case MultiplayAssignment.StatusOptions.Failed:
-                        gotAssignment = true;
-                        Debug.LogError("Failed to get ticket status. Error: " + assignment.Message);
-                        break;
-                    case MultiplayAssignment.StatusOptions.Timeout:
-                        Debug.LogError("Failed to get ticket status. Ticket timed out. Retrying to find match");
-                        break;
-                    default:
-                        throw new InvalidOperationException();
-                }
-            } while (!gotAssignment && findingMatch);
-
-            if (matchfound)
-            {
-                Debug.Log($"Server IP: {assignment.Ip}   Port: {(ushort)assignment.Port}");
+                currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
 
                 JoinDropballSession();
             }
-        }
-        else
-        {
-            Debug.Log("Not using multiplay, starting photon find match");
-
-
-            findingMatch = true;
-
-            cancelBtn.interactable = true;
-
-            currentRunnerInstance = Instantiate(instanceRunner);
-
-            currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
-
-            JoinDropballSession();
-        }
-        
+        }, null));
     }
 
     private async void JoinDropballSession()

@@ -427,7 +427,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         WaitingAreaTimer -= Runner.DeltaTime;
 
 
-        if (WaitingAreaTimer <= 60f && networkRunner.SessionInfo.IsOpen)
+        if (WaitingAreaTimer <= 30f && networkRunner.SessionInfo.IsOpen)
         {
             networkRunner.SessionInfo.IsOpen = false;
             networkRunner.SessionInfo.IsVisible = false;

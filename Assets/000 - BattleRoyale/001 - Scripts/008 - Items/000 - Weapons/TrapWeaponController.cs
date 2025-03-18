@@ -111,13 +111,17 @@ public class TrapWeaponController : NetworkBehaviour
 
             if (!HasStateAuthority) return;
 
+            CanDamage = false;
+
             PlayerHealth health = hitObject.GetComponent<PlayerHealth>();
 
-            health.ReduceHealth(20f, SpawnedBy, Object);
+            health.ReduceHealth(20f, SpawnedBy, hitObject.GetComponent<NetworkObject>());
 
             Invoke(nameof(DespawnObject), 2f);
 
             CloseTrap = true;
+
+            break;
         }
     }
 

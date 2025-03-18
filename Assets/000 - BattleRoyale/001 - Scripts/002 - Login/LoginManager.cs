@@ -10,6 +10,8 @@ using CandyCoded.env;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using System.Text.RegularExpressions;
+using System.Security.Policy;
+using System.Buffers;
 
 public class LoginManager : MonoBehaviour
 {
@@ -553,5 +555,37 @@ public class LoginManager : MonoBehaviour
 
     public void OpenURL(string url) => Application.OpenURL(url);
 
+    public void OpenSocialLinks(string titlename)
+    {
+        GameManager.Instance.NoBGLoading.SetActive(true);
+
+        StartCoroutine(GameManager.Instance.GetRequest("/sociallinks/getspecificsociallink", $"?title={titlename}", false, (response) =>
+        {
+            if (response != null)
+            {
+                SocialLinkData tempdata = JsonConvert.DeserializeObject<SocialLinkData>(response.ToString());
+
+                if (tempdata == null)
+                {
+                    GameManager.Instance.NotificationController.ShowError("This social media link is still not yet live! Please stay tuned.");
+                    return;
+                }
+
+                Application.OpenURL(tempdata.link);
+            }
+            else
+                GameManager.Instance.NotificationController.ShowError("This social media link is still not yet live! Please stay tuned.");
+        }, null, false));
+    }
+
     public void ButtonPress() => GameManager.Instance.AudioController.PlaySFX(buttonClip);
+}
+
+[System.Serializable]
+public class SocialLinkData
+{
+    public string _id;
+    public string link;
+    public string title;
+    public string type;
 }

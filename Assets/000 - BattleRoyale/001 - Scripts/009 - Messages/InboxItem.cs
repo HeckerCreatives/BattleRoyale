@@ -14,6 +14,8 @@ public class InboxItem : MonoBehaviour
 
     //  ==============================
 
+    [SerializeField] private UserData userData;
+
     [Header("IMAGES")]
     [SerializeField] private Image newMessageIconImg;
     [SerializeField] private Image inboxIconImg;
@@ -91,6 +93,7 @@ public class InboxItem : MonoBehaviour
                 { "itemid", ItemData.id }
             }, false, (response) =>
             {
+                userData.Messages.Find(x => x.id == ItemData.id).status = "opened";
                 Controller.SetMessageContent();
             }, () => { }));
         }
