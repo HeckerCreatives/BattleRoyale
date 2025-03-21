@@ -247,6 +247,7 @@ public class RifleAttackPlayables : NetworkBehaviour
         LagCompensatedHit hit = new LagCompensatedHit();
         bool validTargetFound = false;
         Vector3 raystart = tempRay.origin;
+        float resettemptime = Runner.Tick + (shootClip.length + 0.25f);
 
         while (!validTargetFound)
         {
@@ -262,6 +263,9 @@ public class RifleAttackPlayables : NetworkBehaviour
 
                 validTargetFound = true;
             }
+
+            if (Runner.Tick >= resettemptime)
+                break;
 
             await Task.Yield();
         }
