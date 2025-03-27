@@ -9,7 +9,9 @@ using UnityEngine;
 public class WaitingAreaTimerController : NetworkBehaviour
 {
     [SerializeField] public GameObject Timer;
-    [SerializeField] private TextMeshProUGUI timerTMP; 
+    [SerializeField] public GameObject TimerGetReady;
+    [SerializeField] private TextMeshProUGUI timerTMP;
+    [SerializeField] private TextMeshProUGUI timerGetReadyTMP;
 
     [field: Header("DEBUGGER")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
@@ -23,13 +25,23 @@ public class WaitingAreaTimerController : NetworkBehaviour
             if (ServerManager.CurrentGameState != GameState.WAITINGAREA)
             {
                 Timer.gameObject.SetActive(false);
+                TimerGetReady.SetActive(false);
                 return;
             }
 
-            if (ServerManager.WaitingAreaTimer > 0f)
+            if (ServerManager.CurrentWaitingAreaTimerState == WaitingAreaTimerState.WAITING)
             {
                 Timer.gameObject.SetActive(true);
+                TimerGetReady.SetActive(false);
+
                 timerTMP.text = $"{GameManager.Instance.GetMinuteSecondsTime(ServerManager.WaitingAreaTimer)}";
+            }
+            else
+            {
+                TimerGetReady.SetActive(true);
+                Timer.gameObject.SetActive(false);
+
+                timerGetReadyTMP.text = $"{GameManager.Instance.GetMinuteSecondsTime(ServerManager.WaitingAreaTimer)}";
             }
         }
     }

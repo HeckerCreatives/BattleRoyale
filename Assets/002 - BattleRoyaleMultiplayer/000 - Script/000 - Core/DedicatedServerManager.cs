@@ -24,6 +24,12 @@ public enum SafeZoneState
     SHRINK
 }
 
+public enum WaitingAreaTimerState
+{
+    WAITING,
+    GETREADY
+}
+
 public struct PlayerBattleSpawnPosition : INetworkStruct
 {
     [Networked, Capacity(43)] public NetworkArray<Vector3> NetworkSpawnLocation => default;
@@ -123,6 +129,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [field: Space]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public GameState CurrentGameState { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public SafeZoneState CurrentSafeZoneState { get; set; }
+    [field: MyBox.ReadOnly][field: SerializeField][Networked] public WaitingAreaTimerState CurrentWaitingAreaTimerState { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float WaitingAreaTimer { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float SafeZoneTimer { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool CanCountWaitingAreaTimer { get; set; }
@@ -426,22 +433,34 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         WaitingAreaTimer -= Runner.DeltaTime;
 
-
-        if (WaitingAreaTimer <= 30f && networkRunner.SessionInfo.IsOpen)
+        if (CurrentWaitingAreaTimerState == WaitingAreaTimerState.WAITING)
         {
-            networkRunner.SessionInfo.IsOpen = false;
-            networkRunner.SessionInfo.IsVisible = false;
+            if (WaitingAreaTimer <= 0f)
+            {
+                WaitingAreaTimer = 30f;
+                CurrentWaitingAreaTimerState = WaitingAreaTimerState.GETREADY;
+            }
+        }
+        else if (CurrentWaitingAreaTimerState == WaitingAreaTimerState.GETREADY)
+        {
+            if (WaitingAreaTimer <= 30f && networkRunner.SessionInfo.IsOpen)
+            {
+                networkRunner.SessionInfo.IsOpen = false;
+                networkRunner.SessionInfo.IsVisible = false;
+            }
+
+            if (WaitingAreaTimer <= 0f)
+            {
+                StartBattleRoyale = true;
+                CurrentGameState = GameState.ARENA;
+                CanCountWaitingAreaTimer = false;
+                CurrentStateChange?.Invoke(this, EventArgs.Empty);
+
+                StartCoroutine(BattlePosition());
+            }
         }
 
-        if (WaitingAreaTimer <= 0f)
-        {
-            StartBattleRoyale = true;
-            CurrentGameState = GameState.ARENA;
-            CanCountWaitingAreaTimer = false;
-            CurrentStateChange?.Invoke(this, EventArgs.Empty);
-
-            StartCoroutine(BattlePosition());
-        }
+        
     }
 
     private void CountDownSafeZoneTimer()
@@ -561,13 +580,16 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             RemainingPlayers.Add(player, playerCharacter);
             PlayerCountChange?.Invoke(this, EventArgs.Empty);
 
-            if (!CanCountWaitingAreaTimer && Players.Count >= playerRequired)
+            if (Players.Count >= 1 && !CanCountWaitingAreaTimer)
             {
                 CanCountWaitingAreaTimer = true;
             }
 
-            if (CanCountWaitingAreaTimer && WaitingAreaTimer > 60 && Players.Count >= Players.Capacity)
-                WaitingAreaTimer = 60;
+            if (CanCountWaitingAreaTimer && WaitingAreaTimer > 60 && Players.Count >= Players.Capacity && CurrentWaitingAreaTimerState == WaitingAreaTimerState.WAITING)
+            {
+                CurrentWaitingAreaTimerState = WaitingAreaTimerState.GETREADY;
+                WaitingAreaTimer = 30;
+            }
         }
     }
 
@@ -613,6 +635,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             {
                 WaitingAreaTimer = waitingAreaStartTimer;
                 CanCountWaitingAreaTimer = false;
+                CurrentWaitingAreaTimerState = WaitingAreaTimerState.WAITING;
             }
 
             if (CurrentGameState == GameState.DONE && Players.Count <= 0)
