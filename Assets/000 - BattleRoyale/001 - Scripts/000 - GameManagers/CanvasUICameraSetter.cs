@@ -10,7 +10,7 @@ public class CanvasUICameraSetter : MonoBehaviour
     {
         if (GameManager.Instance == null) return;
 
-        canvas.worldCamera = GameManager.Instance.Camera;
+        canvas.worldCamera = GameManager.Instance.UICamera;
     }
 
     public void ChangeCanvasCamera(Camera cam) => canvas.worldCamera = cam;
