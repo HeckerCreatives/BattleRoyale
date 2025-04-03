@@ -89,7 +89,7 @@ public class UserData : ScriptableObject
     {
         ControlSetting = new Dictionary<string, ControllerSettingData>
             {
-                { "AnalogStick", new ControllerSettingData{ sizeDeltaX = 278.7875f, sizeDeltaY = 278.79f, localPositionX = 206f, localPositionY = 168f, opacity = 1f} },
+                { "AnalogStick", new ControllerSettingData{ sizeDeltaX = 278.7875f, sizeDeltaY = 278.79f, localPositionX = -801f, localPositionY = -259f, opacity = 1f} },
                 { "LeftAttack", new ControllerSettingData{ sizeDeltaX = 108f, sizeDeltaY = 108f, localPositionX = 66f, localPositionY = 505f, opacity = 1f} },
                 { "RightAttack", new ControllerSettingData{ sizeDeltaX = 177.88f, sizeDeltaY = 177.88f, localPositionX = -301f, localPositionY = 195f, opacity = 1f} },
                 { "Aim", new ControllerSettingData{ sizeDeltaX = 115.7508f, sizeDeltaY = 115.7508f, localPositionX = -296f, localPositionY = 435f, opacity = 1f} },

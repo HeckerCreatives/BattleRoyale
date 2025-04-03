@@ -310,19 +310,26 @@ public class PlayerController : NetworkBehaviour
     private void HandleJoystickMovement(UnityEngine.InputSystem.EnhancedTouch.Finger finger)
     {
         Vector2 localTouchPosition;
-        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(joystickArea, finger.currentTouch.screenPosition, null, out localTouchPosition))
+
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                joystickArea,
+                finger.currentTouch.screenPosition,
+                GameManager.Instance.UICamera, // ? Use the correct UI Camera
+                out localTouchPosition))
         {
-            localTouchPosition.x = (localTouchPosition.x / joystickArea.sizeDelta.x);
-            localTouchPosition.y = (localTouchPosition.y / joystickArea.sizeDelta.y);
-
-            inputVector = new Vector2((localTouchPosition.x - 0.5f) * 2f, (localTouchPosition.y - 0.5f) * 2f);
-            inputVector = Vector2.ClampMagnitude(inputVector, 1.0f);
-
-            joystickHandle.anchoredPosition = new Vector2(
-                inputVector.x * (joystickArea.sizeDelta.x / 3),
-                inputVector.y * (joystickArea.sizeDelta.y / 3)
+            // Normalize the position based on joystick area
+            Vector2 normalizedPosition = new Vector2(
+                (localTouchPosition.x / (joystickArea.sizeDelta.x * 0.5f)), // Adjust for pivot
+                (localTouchPosition.y / (joystickArea.sizeDelta.y * 0.5f))
             );
 
+            // Clamp joystick movement
+            inputVector = Vector2.ClampMagnitude(normalizedPosition, 1.0f);
+
+            // Move the joystick handle
+            joystickHandle.anchoredPosition = inputVector * (joystickArea.sizeDelta.x * 0.3f);
+
+            // Set movement direction
             gameplayController.MovementDirection = inputVector.normalized;
         }
     }
