@@ -19,7 +19,7 @@ public class SettingsControlGameplayController : MonoBehaviour, IPointerDownHand
     public void OnPointerDown(PointerEventData eventData)
     {
         // Calculate the offset between the pointer position and the UI element's position
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(uiElementRectTransform, eventData.position, null, out pointerOffset);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(uiElementRectTransform, eventData.position, GameManager.Instance.UICamera, out pointerOffset);
         controllerSetting.SelectedUIImg = uiImg;
         controllerSetting.SelectedUIRT = uiElementRectTransform;
         isDragging = true;
@@ -31,7 +31,7 @@ public class SettingsControlGameplayController : MonoBehaviour, IPointerDownHand
 
         // Update the UI element's position based on the pointer position and offset with sensitivity
         Vector2 localPointerPosition;
-        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(uiElementRectTransform.parent as RectTransform, eventData.position, null, out localPointerPosition))
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(uiElementRectTransform.parent as RectTransform, eventData.position, GameManager.Instance.UICamera, out localPointerPosition))
         {
             uiElementRectTransform.localPosition = (localPointerPosition - pointerOffset);
         }
