@@ -298,6 +298,13 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         networkRunner = Instantiate(serverNetworkRunnerPrefab);
 
+        var regions = await NetworkRunner.GetAvailableRegions();
+
+        foreach(var region in regions )
+        {
+            Debug.Log(region.RegionCode);
+        }
+
         SceneRef sceneRef = default;
 
         var scenePath = SceneManager.GetActiveScene().path;

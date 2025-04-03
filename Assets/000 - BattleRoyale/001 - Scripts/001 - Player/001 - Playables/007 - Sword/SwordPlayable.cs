@@ -406,9 +406,23 @@ public class SwordPlayable : NetworkBehaviour
         }
     }
 
-    private void ResetFirstAttack() => playerInventory.PrimaryWeapon.ResetFirstAttack();
+    private void ResetFirstAttack()
+    {
+        if (playerInventory == null) return;
 
-    private void ResetSecondAttack() => playerInventory.PrimaryWeapon.ResetSecondAttack();
+        if (playerInventory.PrimaryWeapon == null) return;
+
+        playerInventory.PrimaryWeapon.ResetFirstAttack();
+    }
+
+    private void ResetSecondAttack()
+    {
+        if (playerInventory == null) return;
+
+        if (playerInventory.PrimaryWeapon == null) return;
+
+        playerInventory.PrimaryWeapon.ResetSecondAttack();
+    }
 
     private void ResetAttackAnimation()
     {
