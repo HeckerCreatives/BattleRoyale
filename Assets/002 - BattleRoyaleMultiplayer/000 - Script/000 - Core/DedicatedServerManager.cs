@@ -1,5 +1,6 @@
 using Fusion;
 using Fusion.Addons.SimpleKCC;
+using Fusion.Photon.Realtime;
 using Fusion.Sockets;
 using MyBox;
 using System;
@@ -292,18 +293,36 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
     #region SERVER INITIALIZE
 
+    private FusionAppSettings BuildCustomAppSetting(string region)
+    {
+
+        var appSettings = PhotonAppSettings.Global.AppSettings.GetCopy(); ;
+
+        appSettings.UseNameServer = true;
+        //appSettings.AppVersion = appVersion;
+
+        //if (string.IsNullOrEmpty(customAppID) == false)
+        //{
+        //    appSettings.AppIdFusion = customAppID;
+        //}
+
+        if (string.IsNullOrEmpty(region) == false)
+        {
+            appSettings.FixedRegion = region.ToLower();
+        }
+
+        // If the Region is set to China (CN),
+        // the Name Server will be automatically changed to the right one
+        // appSettings.Server = "ns.photonengine.cn";
+
+        return appSettings;
+    }
+
     private async Task StartGame()
     {
         Debug.Log($"Starting Photon Server");
 
         networkRunner = Instantiate(serverNetworkRunnerPrefab);
-
-        var regions = await NetworkRunner.GetAvailableRegions();
-
-        foreach(var region in regions )
-        {
-            Debug.Log(region.RegionCode);
-        }
 
         SceneRef sceneRef = default;
 
@@ -324,6 +343,16 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             networkSceneInfo.AddSceneRef(sceneRef, LoadSceneMode.Single, LocalPhysicsMode.None, true);
         }
 
+        var args = CommandLineHelper.GetArgs();
+
+        FusionAppSettings appSettings;
+
+        if (args.TryGetValue("region", out string region))
+            appSettings = BuildCustomAppSetting(region);
+        else
+            appSettings = BuildCustomAppSetting("asia");
+
+        Debug.Log($"STARTING REGION: {appSettings.FixedRegion}");
 
         await networkRunner.StartGame(new StartGameArgs()
         {
@@ -336,6 +365,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             PlayerCount = maxPlayers,
             Address = NetAddress.Any(),
             CustomLobbyName = lobby,
+            CustomPhotonAppSettings = appSettings
         });
 
         if (networkRunner.IsRunning)

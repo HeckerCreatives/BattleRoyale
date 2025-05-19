@@ -11,6 +11,7 @@ public class UserData : ScriptableObject
     [field: ReadOnly][field: SerializeField] public string Username { get; set; }
     [field: ReadOnly][field: SerializeField] public string Password { get; set; }
     [field: ReadOnly][field: SerializeField] public bool RememberMe { get; set; }
+    [field: ReadOnly][field: SerializeField] public string SelectedServer { get; set; }
 
     [field: Header("CHARACTER")]
     [field: ReadOnly][field: SerializeField] public PlayerCharacterSetting CharacterSetting { get; set; }
@@ -59,6 +60,7 @@ public class UserData : ScriptableObject
         UserToken = "";
         Username = "";
         Password = "";
+        SelectedServer = "";
         RememberMe = false;
         CharacterSetting = new PlayerCharacterSetting();
         GameDetails = new GameUserDetails();
@@ -130,6 +132,7 @@ public class UserData : ScriptableObject
         PlayerPrefs.DeleteKey("Username");
         PlayerPrefs.DeleteKey("Password");
         PlayerPrefs.DeleteKey("RememberMe");
+        PlayerPrefs.DeleteKey("server");
     }
 
     public void LoadRememberMe()
@@ -140,6 +143,7 @@ public class UserData : ScriptableObject
             RememberMe = true;
             Username = PlayerPrefs.GetString("Username");
             Password = PlayerPrefs.GetString("Password");
+            SelectedServer = PlayerPrefs.GetString("server");
         }
     }
 
@@ -149,6 +153,7 @@ public class UserData : ScriptableObject
         UserToken = "";
         Username = "";
         Password = "";
+        SelectedServer = "";
         RememberMe = false;
         LoadRememberMe();
         ControlSetting = new Dictionary<string, ControllerSettingData>();

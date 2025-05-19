@@ -12,10 +12,15 @@ using UnityEngine.Rendering.Universal;
 using System.Text.RegularExpressions;
 using System.Security.Policy;
 using System.Buffers;
+using Fusion;
+using System.Threading;
+using System.Linq;
+using System.Threading.Tasks;
 
 public class LoginManager : MonoBehaviour
 {
     [SerializeField] private UserData userData;
+    [SerializeField] private NetworkRunner instanceRunner;
 
     [Space]
     [SerializeField] private AudioClip buttonClip;
@@ -42,10 +47,23 @@ public class LoginManager : MonoBehaviour
     [SerializeField] private TMP_InputField emailRegister;
     [SerializeField] private TMP_Dropdown countryDropdowns;
 
+    [Space]
+    [SerializeField] private GameObject loadingServerList;
+    [SerializeField] private GameObject serverList;
+    [SerializeField] private GameObject selectedServer;
+    [SerializeField] private TextMeshProUGUI selectedServerTMP;
+    [SerializeField] private Sprite goodPing;
+    [SerializeField] private Sprite mediumPing;
+    [SerializeField] private Sprite badPing;
+    [SerializeField] private Image pingImg;
+    [SerializeField] private Button startGameBtn;
+
+    [Header("DEBUGGER")]
+    [ReadOnly][SerializeField] public NetworkRunner currentRunnerInstance;
+
     //  ============================
 
     ColorAdjustments colorAdjustments;
-
 
     Dictionary<string, string> countryDictionary = new Dictionary<string, string>
         {
@@ -294,6 +312,8 @@ public class LoginManager : MonoBehaviour
             { "Zimbabwe", "ZW" }
         };
 
+    public Dictionary<string, int> AvailableServers = new Dictionary<string, int>();
+
     //  ============================
 
     private void Awake()
@@ -422,13 +442,12 @@ public class LoginManager : MonoBehaviour
                 {
                     userData.RememberMeDelete();
                 }
-                Debug.Log("starting initialize socket");
-                GameManager.Instance.SocketMngr.InitializeSocket();
 
-                while (GameManager.Instance.SocketMngr.ConnectionStatus != "Connected") yield return null;
-
-                GameManager.Instance.NoBGLoading.SetActive(false);
-                GameManager.Instance.SceneController.CurrentScene = "Lobby";
+                Debug.Log("Getting available regions");
+                GetAvailableRegions(() =>
+                {
+                    CheckSelectedServer();
+                });
             }
             else
             {
@@ -454,6 +473,52 @@ public class LoginManager : MonoBehaviour
                 GameManager.Instance.NoBGLoading.SetActive(false);
             }
         }
+    }
+
+    public async void StartGame()
+    {
+        GameManager.Instance.NoBGLoading.SetActive(true);
+
+        Debug.Log("starting initialize socket");
+        GameManager.Instance.SocketMngr.InitializeSocket();
+
+        while (GameManager.Instance.SocketMngr.ConnectionStatus != "Connected") await Task.Yield();
+
+        GameManager.Instance.NoBGLoading.SetActive(false);
+
+        GameManager.Instance.SceneController.CurrentScene = "Lobby";
+    }
+
+    public void CheckSelectedServer()
+    {
+        if (userData.SelectedServer == "")
+        {
+            var lowest = AvailableServers.Aggregate((x, y) => x.Value < y.Value ? x : y);
+
+            userData.SelectedServer = lowest.Key;
+
+            selectedServerTMP.text = $"{GameManager.GetRegionName(lowest.Key)} <size=25>(Ping: {(lowest.Value < 100 ? $"<color=#00BA0D>{lowest.Value}</color>" : lowest.Value > 100 && lowest.Value < 250 ? $"<color=orange>{lowest.Value}</color>" : $"<color=red>{lowest.Value}</color>")})</size>";
+            pingImg.sprite = lowest.Value < 100 ? goodPing : lowest.Value > 100 && lowest.Value < 250 ? mediumPing : badPing;
+            startGameBtn.interactable = true;
+        }
+        else
+        {
+            if (AvailableServers.ContainsKey(userData.SelectedServer))
+            {
+                selectedServerTMP.text = $"{GameManager.GetRegionName(userData.SelectedServer)} <size=25>{(AvailableServers[userData.SelectedServer] < 100 ? $"<color=#00BA0D>{AvailableServers[userData.SelectedServer]}ms</color>" : AvailableServers[userData.SelectedServer] > 100 && AvailableServers[userData.SelectedServer] < 250 ? $"<color=#D26E05>{AvailableServers[userData.SelectedServer]}ms</color>" : $"<color=red>{AvailableServers[userData.SelectedServer]}ms</color>")}</size>";
+                pingImg.sprite = AvailableServers[userData.SelectedServer] < 100 ? goodPing : AvailableServers[userData.SelectedServer] > 100 && AvailableServers[userData.SelectedServer] < 250 ? mediumPing : badPing;
+                startGameBtn.interactable = true;
+            }
+            else
+            {
+                selectedServerTMP.text = $"{GameManager.GetRegionName(userData.SelectedServer)} <size=25>(<color=red>Not Available</color>)</size>";
+                pingImg.sprite = badPing;
+                startGameBtn.interactable = false;
+            }
+        }
+
+        if (rememberMe.isOn)
+            PlayerPrefs.SetString("server", userData.SelectedServer);
     }
 
     public void Register()
@@ -579,6 +644,87 @@ public class LoginManager : MonoBehaviour
     }
 
     public void ButtonPress() => GameManager.Instance.AudioController.PlaySFX(buttonClip);
+
+
+    public async void GetAvailableRegions(Action action = null)
+    {
+        if (currentRunnerInstance != null)
+        {
+            Destroy(currentRunnerInstance.gameObject);
+
+            currentRunnerInstance = null;
+        }
+        else
+        {
+            currentRunnerInstance = Instantiate(instanceRunner);
+        }
+
+        var _tokenSource = new CancellationTokenSource();
+
+        var regions = await NetworkRunner.GetAvailableRegions(cancellationToken: _tokenSource.Token);
+
+        AvailableServers.Clear();
+
+        foreach (var region in regions)
+        {
+            AvailableServers.Add(region.RegionCode, region.RegionPing);
+        }
+
+        action?.Invoke();
+
+        Destroy(currentRunnerInstance.gameObject);
+
+        currentRunnerInstance = null;
+
+        loginObj.SetActive(false);
+        selectedServer.SetActive(true);
+
+        GameManager.Instance.NoBGLoading.SetActive(false);
+    }
+
+    public async void RefreshAvailableRegions()
+    {
+        loadingServerList.SetActive(true);
+        serverList.SetActive(false);
+
+        Debug.Log("Starting refreshing available regions");
+
+        if (currentRunnerInstance != null)
+        {
+            Destroy(currentRunnerInstance.gameObject);
+
+            currentRunnerInstance = null;
+        }
+        else
+        {
+            currentRunnerInstance = Instantiate(instanceRunner);
+        }
+
+
+        Debug.Log("Start refresh api call");
+
+        var _tokenSource = new CancellationTokenSource();
+
+        var regions = await NetworkRunner.GetAvailableRegions(cancellationToken: _tokenSource.Token);
+
+        Debug.Log("Clearing Available Servers");
+
+        AvailableServers.Clear();
+
+        foreach (var region in regions)
+        {
+            AvailableServers.Add(region.RegionCode, region.RegionPing);
+        }
+
+        Destroy(currentRunnerInstance.gameObject);
+
+        currentRunnerInstance = null;
+
+        loadingServerList.SetActive(false);
+        serverList.SetActive(true);
+
+        Debug.Log("Done Refresh");
+    }
 }
 
 [System.Serializable]

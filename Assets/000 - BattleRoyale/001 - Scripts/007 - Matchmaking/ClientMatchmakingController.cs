@@ -13,18 +13,55 @@ using System;
 using Unity.Services.Matchmaker.Models;
 using Unity.Services.Core;
 using Unity.Services.Authentication;
+using System.Linq;
+using System.Threading;
+using Unity.VisualScripting.Antlr3.Runtime;
+using System.Drawing;
+using Fusion.Photon.Realtime;
 
 public class ClientMatchmakingController : MonoBehaviour
 {
+    private event EventHandler ServerChange;
+    public event EventHandler OnServerChange
+    {
+        add
+        {
+            if (ServerChange == null || ServerChange.GetInvocationList().Contains(value))
+                ServerChange += value;
+        }
+        remove { ServerChange -= value; }
+    }
+    public void AddServerSelected(string server)
+    {
+        if (serverSelected.Contains(server)) return;
+
+        serverSelected.Add(server);
+    }
+    public void RemoveServerSelected(string server)
+    {
+        if (!serverSelected.Contains(server)) return;
+
+        serverSelected.Remove(server);
+    }
+    public List<string> ServerSelected
+    {
+        get => serverSelected;
+    }
+
+    //  ========================
+
     [SerializeField] private UserData userData;
     [SerializeField] private bool useMultiplay;
 
     [Space]
-    //  delete this after today's presentation
     [SerializeField] private NetworkRunner instanceRunner;
     [SerializeField] private TextMeshProUGUI timerTMP;
     [SerializeField] private Button cancelBtn;
     [SerializeField] private GameObject matchmakingObj;
+
+    [Space]
+    [SerializeField] private GameObject serverListLoader;
+    [SerializeField] private GameObject serverListContent;
 
     [Header("DEBUGGER")]
     [ReadOnly][SerializeField] public NetworkRunner currentRunnerInstance;
@@ -33,6 +70,7 @@ public class ClientMatchmakingController : MonoBehaviour
     [ReadOnly][SerializeField] private bool matchFound;
     [ReadOnly][SerializeField] int minutesFindMatch;
     [ReadOnly][SerializeField] int secondsFindMatch;
+    [SerializeField] private List<string> serverSelected;
 
     //  =====================
 
@@ -58,6 +96,31 @@ public class ClientMatchmakingController : MonoBehaviour
         secondsFindMatch = Mathf.FloorToInt(currentTime % 60);
 
         timerTMP.text = string.Format("{0:00} : {1:00}", minutesFindMatch, secondsFindMatch);
+    }
+
+    private FusionAppSettings BuildCustomAppSetting(string region)
+    {
+
+        var appSettings = PhotonAppSettings.Global.AppSettings.GetCopy(); ;
+
+        appSettings.UseNameServer = true;
+        //appSettings.AppVersion = appVersion;
+
+        //if (string.IsNullOrEmpty(customAppID) == false)
+        //{
+        //    appSettings.AppIdFusion = customAppID;
+        //}
+
+        if (string.IsNullOrEmpty(region) == false)
+        {
+            appSettings.FixedRegion = region.ToLower();
+        }
+
+        // If the Region is set to China (CN),
+        // the Name Server will be automatically changed to the right one
+        // appSettings.Server = "ns.photonengine.cn";
+
+        return appSettings;
     }
 
     public void FindMatch()
@@ -96,7 +159,7 @@ public class ClientMatchmakingController : MonoBehaviour
                 };
 
                 var options = new CreateTicketOptions(
-                      "BattleRoyale", // The name of the queue defined in the previous step,
+                      GameManager.GetRegionName(userData.SelectedServer), // The name of the queue defined in the previous step,
                       new Dictionary<string, object>());
 
                 Debug.Log("JOINING LOBBY");
@@ -261,11 +324,14 @@ public class ClientMatchmakingController : MonoBehaviour
                     networkSceneInfo.AddSceneRef(sceneRef, LoadSceneMode.Single, LocalPhysicsMode.None, true);
                 }
 
+                var appSettings = BuildCustomAppSetting(userData.SelectedServer);
+
                 return runner.StartGame(new StartGameArgs()
                 {
                     GameMode = gameMode,
                     SceneManager = runner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
-                    Scene = sceneRef
+                    Scene = sceneRef,
+                    CustomPhotonAppSettings = appSettings
                 });
             }
         }
@@ -305,6 +371,8 @@ public class ClientMatchmakingController : MonoBehaviour
         Destroy(currentRunnerInstance.gameObject);
 
         currentRunnerInstance = null;
+
+        currentRunnerInstance = Instantiate(instanceRunner);
 
         matchmakingObj.SetActive(false);
     }

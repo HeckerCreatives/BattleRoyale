@@ -523,6 +523,30 @@ public class GameManager : MonoBehaviour
     {
         jobs.Enqueue(newJob);
     }
+
+    public static string GetRegionName(string code)
+    {
+        switch (code)
+        {
+            case "asia": return "Asia";
+            case "au": return "Australia";
+            case "cae": return "Canada East";
+            case "cn": return "Chinese Mainland";
+            case "eu": return "Europe";
+            case "hk": return "HongKong";
+            case "in": return "India";
+            case "jp": return "Japan";
+            case "za": return "South Africa";
+            case "sa": return "South America";
+            case "kr": return "South Korea";
+            case "tr": return "Turkey";
+            case "uae": return "U.A.E.";
+            case "us": return "USA East";
+            case "usw": return "USA West";
+            case "ussc": return "USA South Central";
+            default: return $"Unknown Region ({code})";
+        }
+    }
 }
 
 public static class ClipboardExtension
@@ -553,5 +577,26 @@ public static class Shuffler
 
             await Task.Delay(100);
         }
+    }
+}
+
+public static class CommandLineHelper
+{
+    public static Dictionary<string, string> GetArgs()
+    {
+        var args = Environment.GetCommandLineArgs();
+        var result = new Dictionary<string, string>();
+
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (args[i].StartsWith("-"))
+            {
+                string key = args[i].TrimStart('-');
+                string value = (i + 1 < args.Length && !args[i + 1].StartsWith("-")) ? args[i + 1] : "true";
+                result[key] = value;
+            }
+        }
+
+        return result;
     }
 }
