@@ -296,7 +296,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     private FusionAppSettings BuildCustomAppSetting(string region)
     {
 
-        var appSettings = PhotonAppSettings.Global.AppSettings.GetCopy(); ;
+        var appSettings = PhotonAppSettings.Global.AppSettings.GetCopy();
 
         appSettings.UseNameServer = true;
         //appSettings.AppVersion = appVersion;
