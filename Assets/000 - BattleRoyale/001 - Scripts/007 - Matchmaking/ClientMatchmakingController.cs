@@ -159,7 +159,7 @@ public class ClientMatchmakingController : MonoBehaviour
                 };
 
                 var options = new CreateTicketOptions(
-                      GameManager.GetRegionName(userData.SelectedServer), // The name of the queue defined in the previous step,
+                      GameManager.GetRegionName(userData.SelectedServer) + "Test", // The name of the queue defined in the previous step,
                       new Dictionary<string, object>());
 
                 Debug.Log("JOINING LOBBY");
