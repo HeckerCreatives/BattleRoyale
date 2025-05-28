@@ -547,6 +547,30 @@ public class GameManager : MonoBehaviour
             default: return $"Unknown Region ({code})";
         }
     }
+
+    public static string GetServerRegionName(string code)
+    {
+        switch (code)
+        {
+            case "asia": return "Asia";
+            case "au": return "Australia";
+            case "cae": return "CanadaEast";
+            case "cn": return "ChineseMainland";
+            case "eu": return "Europe";
+            case "hk": return "HongKong";
+            case "in": return "India";
+            case "jp": return "Japan";
+            case "za": return "SouthAfrica";
+            case "sa": return "SouthAmerica";
+            case "kr": return "SouthKorea";
+            case "tr": return "Turkey";
+            case "uae": return "UAE";
+            case "us": return "USAEast";
+            case "usw": return "USAWest";
+            case "ussc": return "USASouthCentral";
+            default: return $"Unknown Region ({code})";
+        }
+    }
 }
 
 public static class ClipboardExtension
