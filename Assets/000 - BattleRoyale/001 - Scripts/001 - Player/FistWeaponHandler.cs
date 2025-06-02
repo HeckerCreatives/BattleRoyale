@@ -83,17 +83,19 @@ public class FistWeaponHandler : NetworkBehaviour
             // Avoid duplicate hits
             if (!hitEnemiesFirstFist.Contains(hitObject))
             {
+                bareHandsMovement.CanDamage = false;
+
                 string tag = hitbox.tag;
 
                 float tempdamage = tag switch
                 {
-                    "Head" => 30f,
-                    "Body" => 25f,
-                    "Thigh" => 20f,
-                    "Shin" => 15f,
-                    "Foot" => 10f,
-                    "Arm" => 20f,
-                    "Forearm" => 15f,
+                    "Head" => 40f,
+                    "Body" => 35f,
+                    "Thigh" => 30f,
+                    "Shin" => 25f,
+                    "Foot" => 20f,
+                    "Arm" => 30f,
+                    "Forearm" => 25f,
                     _ => 0f
                 };
 
@@ -140,17 +142,19 @@ public class FistWeaponHandler : NetworkBehaviour
             // Avoid duplicate hits
             if (!hitEnemiesSecondFist.Contains(hitObject))
             {
+                bareHandsMovement.CanDamage = false;
+
                 string tag = hitbox.tag;
 
                 float tempdamage = tag switch
                 {
-                    "Head" => 30f,
-                    "Body" => 25f,
-                    "Thigh" => 20f,
-                    "Shin" => 15f,
-                    "Foot" => 10f,
-                    "Arm" => 20f,
-                    "Forearm" => 15f,
+                    "Head" => 40f,
+                    "Body" => 35f,
+                    "Thigh" => 30f,
+                    "Shin" => 25f,
+                    "Foot" => 20f,
+                    "Arm" => 30f,
+                    "Forearm" => 25f,
                     _ => 0f
                 };
 

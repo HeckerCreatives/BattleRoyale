@@ -42,6 +42,7 @@ public class BareHandsMovement : NetworkBehaviour
     [Networked][field: SerializeField] public int AttackStep { get; set; } // Current combo step
     [Networked][field: SerializeField] public float LastAttackTime { get; set; } // Time when the last attack was performed
     [Networked][field: SerializeField] public bool CanCombo { get; set; }
+    [Networked][field: SerializeField] public bool CanDamage { get; set; }
     [Networked] public NetworkButtons PreviousButtons { get; set; }
 
     //  ============================
@@ -154,6 +155,15 @@ public class BareHandsMovement : NetworkBehaviour
             }
             else
                 ResetAttackAnimation();
+
+            if (CanDamage)
+            {
+                if (AttackStep == 1)
+                    fistWeaponHandler.PerformFirstAttack();
+
+                else if (AttackStep == 2)
+                    fistWeaponHandler.PerformSecondAttack();
+            }
         }
     }
 
@@ -271,7 +281,7 @@ public class BareHandsMovement : NetworkBehaviour
         if (playerInventory.WeaponIndex != 1)
             return;
 
-        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Melee) && CanCombo && characterController.IsGrounded && !healPlayables.Healing && !repairArmorPlayables.Repairing && !playerController.IsProne)
+        if (controllerInput.HoldInputButtons.WasPressed(PreviousButtons, HoldInputButtons.Shoot) && CanCombo && characterController.IsGrounded && !healPlayables.Healing && !repairArmorPlayables.Repairing && !playerController.IsProne)
         {
             if (AttackStep <= 2)
             {
@@ -289,7 +299,8 @@ public class BareHandsMovement : NetworkBehaviour
 
         if (deathMovement.IsDead) return;
 
-        fistWeaponHandler.PerformFirstAttack();
+        CanDamage = true;
+
     }
 
     private void AttackSecondDamage()
@@ -298,7 +309,7 @@ public class BareHandsMovement : NetworkBehaviour
 
         if (deathMovement.IsDead) return;
 
-        fistWeaponHandler.PerformSecondAttack();
+        CanDamage = true;
     }
 
     private void HandleComboInput()
@@ -401,9 +412,17 @@ public class BareHandsMovement : NetworkBehaviour
         }
     }
 
-    private void ResetFirstAttack() => fistWeaponHandler.ResetFirstAttack();
+    private void ResetFirstAttack()
+    {
+        CanDamage = false;
+        fistWeaponHandler.ResetFirstAttack();
+    }
 
-    private void ResetSecondAttack() => fistWeaponHandler.ResetSecondAttack();
+    private void ResetSecondAttack()
+    {
+        CanDamage = false;
+        fistWeaponHandler.ResetSecondAttack();
+    }
 
     private void ResetAttackAnimation()
     {
@@ -438,6 +457,7 @@ public class BareHandsMovement : NetworkBehaviour
 
         if (mainCorePlayable.TickRateAnimation - LastAttackTime > templength && Attacking)
         {
+            CanDamage = false;
             Attacking = false;
             AttackStep = 0;
             CanCombo = true;

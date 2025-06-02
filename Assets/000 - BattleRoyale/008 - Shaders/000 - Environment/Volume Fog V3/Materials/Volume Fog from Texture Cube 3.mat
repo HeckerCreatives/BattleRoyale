@@ -26,7 +26,6 @@ Material:
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords:
-  - _ALPHATEST_ON
   - _SURFACE_TYPE_TRANSPARENT
   m_InvalidKeywords:
   - _BOOLEAN
@@ -35,12 +34,12 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 3000
+  m_CustomRenderQueue: 3002
   stringTagMap:
     RenderType: Transparent
   disabledShaderPasses:
-  - DepthOnly
   - SHADOWCASTER
+  - DepthOnly
   m_LockedProperties: _Noise2DPower
   m_SavedProperties:
     serializedVersion: 3
@@ -92,7 +91,7 @@ Material:
     - Vector1_C8E4C00D: 0
     - Vector1_FADB2BB0: 0
     - Vector1_FDB42E7D: 0.2
-    - _AlphaClip: 1
+    - _AlphaClip: 0
     - _AlphaToMask: 0
     - _BOOLEAN: 1
     - _BUILTIN_QueueControl: -1
@@ -106,28 +105,28 @@ Material:
     - _Cull: 1
     - _DstBlend: 10
     - _LoopStop: 3.95
-    - _Multiplier: 2
+    - _Multiplier: 0.05
     - _Noise2DPower: 3.1
     - _Noise2DScale: 0.576
     - _QueueControl: 1
     - _QueueOffset: 0
-    - _Radius: -8.538406
+    - _Radius: -84.41402
     - _Randomness: 0.41
     - _SHADOW_ENABLED: 1
     - _SHADOW_ENABLED_EDITOR_ONLY: 1
-    - _Samples: 59
+    - _Samples: 10
     - _ShadowAdd: 1
     - _ShadowMulti: -0.16
     - _Shadow_Add: -0.3
     - _Shadow_Multi: 3.52
-    - _Size: 5.69
+    - _Size: 4
     - _SrcBlend: 5
     - _Surface: 1
     - _Threshold: -3.18
-    - _YtoSizeRation: 0.26
-    - _ZTest: 4
+    - _YtoSizeRation: 1
+    - _ZTest: 5
     - _ZWrite: 0
-    - _ZWriteControl: 2
+    - _ZWriteControl: 0
     - _clipping: 0
     - _shadowEdge: 0.41
     - _shadow_multi: 17.62
@@ -138,9 +137,9 @@ Material:
     - Color_69AD1AD: {r: 1, g: 0.6878307, b: 0, a: 0}
     - Vector3_478B0511: {r: -8.43, g: 0.53, b: 2, a: 0}
     - Vector4_52CE31FB: {r: 0, g: 0, b: 0, a: 0}
-    - _Center: {r: 90.3006, g: 72.444, b: 667.4756, a: 0}
-    - _Offset: {r: 0, g: 0, b: 0, a: 0}
-    - _Shadow_Tint: {r: 0.53742653, g: 0.5471698, b: 0.15744035, a: 0}
+    - _Center: {r: 381.3006, g: 72.444, b: 148.4756, a: 0}
+    - _Offset: {r: -200.6, g: 15.64, b: 0, a: 0}
+    - _Shadow_Tint: {r: 0.39354795, g: 0.4056604, b: 0.001913497, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &8148561074471052155
 MonoBehaviour:

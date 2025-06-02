@@ -34,12 +34,15 @@ public class SocketManager : MonoBehaviour
     [field: Header("DEBUGGER")]
     [field: SerializeField] public string ConnectionStatus { get; private set; }
     [field: SerializeField] public LoginState LoginStatus { get; private set; }
+    [field: SerializeField] public int missedPingCount;
 
     //  ===========================
 
     public SocketIOUnity Socket {get; private set; }
 
     private CancellationTokenSource pingTimeoutCts;
+
+    private const int MaxMissedPings = 3;
 
     //  ===========================
 
@@ -91,36 +94,47 @@ public class SocketManager : MonoBehaviour
         {
             await Task.Delay(5000);
             // Respond with "pong" after 5 seconds
-            DateTime utcNow = DateTime.UtcNow;
-            EmitEvent("pong", utcNow);
-
+            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            EmitEvent("pong", timestamp);
+            missedPingCount = 0;
             // Start or reset the timeout timer
-            StartPingTimeout();
+            RestartPingTimeout();
         });
 
     EmitEvent("login", userData.Username);
     }
 
-    private void StartPingTimeout()
+    private void RestartPingTimeout()
     {
-        CancelPingTimeout(); // Cancel any existing timeout
+        CancelPingTimeout(); // Cancel existing timeout
 
         pingTimeoutCts = new CancellationTokenSource();
-        CancellationToken token = pingTimeoutCts.Token;
+        var token = pingTimeoutCts.Token;
 
         Task.Run(async () =>
         {
             try
             {
-                await Task.Delay(10000, token); // Set timeout duration (e.g., 10 seconds)
+                await Task.Delay(10000, token);
                 if (!token.IsCancellationRequested)
                 {
-                    GameManager.Instance.SocketMngr.Socket.Disconnect();
+                    missedPingCount++;
+                    Debug.LogWarning($"Missed ping! Count: {missedPingCount}");
+
+                    if (missedPingCount >= MaxMissedPings)
+                    {
+                        Debug.LogError("Too many missed pings. Disconnecting...");
+                        GameManager.Instance.SocketMngr.Socket.Disconnect();
+                    }
+                    else
+                    {
+                        RestartPingTimeout(); // Keep waiting for the next ping
+                    }
                 }
             }
             catch (TaskCanceledException)
             {
-                // Task was canceled, no action needed
+                // Expected when a new ping arrives in time
             }
         }, token);
     }

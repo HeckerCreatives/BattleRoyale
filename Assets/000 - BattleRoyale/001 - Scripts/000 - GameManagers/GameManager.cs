@@ -533,7 +533,7 @@ public class GameManager : MonoBehaviour
             case "cae": return "Canada East";
             case "cn": return "Chinese Mainland";
             case "eu": return "Europe";
-            case "hk": return "HongKong";
+            case "hk": return "Hong Kong";
             case "in": return "India";
             case "jp": return "Japan";
             case "za": return "South Africa";

@@ -46,6 +46,7 @@ public class SwordPlayable : NetworkBehaviour
     [Networked][field: SerializeField] public int AttackStep { get; set; } // Current combo step
     [Networked][field: SerializeField] public float LastAttackTime { get; set; } // Time when the last attack was performed
     [Networked][field: SerializeField] public bool CanCombo { get; set; }
+    [Networked][field: SerializeField] public bool CanDamage { get; set; }
     [Networked] public NetworkButtons PreviousButtons { get; set; }
 
     //  ============================
@@ -160,6 +161,15 @@ public class SwordPlayable : NetworkBehaviour
             }
             else
                 ResetAttackAnimation();
+
+            if (CanDamage)
+            {
+                if (AttackStep == 1)
+                    playerInventory.PrimaryWeapon.PerformFirstAttack(() => CanDamage = false);
+
+                else if (AttackStep == 2)
+                    playerInventory.PrimaryWeapon.PerformSecondAttack(() => CanDamage = false);
+            }
         }
     }
 
@@ -281,7 +291,7 @@ public class SwordPlayable : NetworkBehaviour
 
         if (heal.Healing) return;
 
-        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Melee) && CanCombo && characterController.IsGrounded && !heal.Healing && !repairArmorPlayables.Repairing && !playerController.IsProne)
+        if (controllerInput.HoldInputButtons.WasPressed(PreviousButtons, HoldInputButtons.Shoot) && CanCombo && characterController.IsGrounded && !heal.Healing && !repairArmorPlayables.Repairing && !playerController.IsProne)
         {
             if (AttackStep <= 2)
             {
@@ -298,7 +308,7 @@ public class SwordPlayable : NetworkBehaviour
 
         if (deathMovement.IsDead) return;
 
-        playerInventory.PrimaryWeapon.PerformFirstAttack();
+        CanDamage = true;
     }
 
     private void AttackSecondDamage()
@@ -307,7 +317,7 @@ public class SwordPlayable : NetworkBehaviour
 
         if (deathMovement.IsDead) return;
 
-        playerInventory.PrimaryWeapon.PerformSecondAttack();
+        CanDamage = true;
     }
 
     private void HandleComboInput()
@@ -412,6 +422,8 @@ public class SwordPlayable : NetworkBehaviour
 
         if (playerInventory.PrimaryWeapon == null) return;
 
+        CanDamage = false;
+
         playerInventory.PrimaryWeapon.ResetFirstAttack();
     }
 
@@ -420,6 +432,8 @@ public class SwordPlayable : NetworkBehaviour
         if (playerInventory == null) return;
 
         if (playerInventory.PrimaryWeapon == null) return;
+
+        CanDamage = false;
 
         playerInventory.PrimaryWeapon.ResetSecondAttack();
     }
@@ -457,6 +471,7 @@ public class SwordPlayable : NetworkBehaviour
 
         if (mainCorePlayable.TickRateAnimation - LastAttackTime > templength && Attacking)
         {
+            CanDamage = false;
             Attacking = false;
             AttackStep = 0;
             CanCombo = true;

@@ -12,7 +12,6 @@ public enum InputButton
 {
     Jump,
     Aim,
-    Melee,
     Crouch,
     Prone,
     SwitchHands,
@@ -106,7 +105,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.Jump.canceled += _ => JumpTurnOff();
             gameplayInputs.Gameplay.Aim.started += _ => AimStart();
             gameplayInputs.Gameplay.Aim.canceled += _ => AimStop();
-            gameplayInputs.Gameplay.Shoot.started += _ => ShootStart();
+            gameplayInputs.Gameplay.Shoot.performed += _ => ShootStart();
             gameplayInputs.Gameplay.Shoot.canceled += _ => ShootStop();
             gameplayInputs.Gameplay.Crouch.started += _ => CrouchStart();
             gameplayInputs.Gameplay.Crouch.canceled += _ => CrouchStop();
@@ -142,7 +141,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.Jump.canceled -= _ => JumpTurnOff();
             gameplayInputs.Gameplay.Aim.started -= _ => AimStart();
             gameplayInputs.Gameplay.Aim.canceled -= _ => AimStop();
-            gameplayInputs.Gameplay.Shoot.started -= _ => ShootStart();
+            gameplayInputs.Gameplay.Shoot.performed -= _ => ShootStart();
             gameplayInputs.Gameplay.Shoot.canceled -= _ => ShootStop();
             gameplayInputs.Gameplay.Crouch.started -= _ => CrouchStart();
             gameplayInputs.Gameplay.Crouch.canceled -= _ => CrouchStop();
@@ -322,7 +321,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         myInput.CameraHitDirection.Set(CameraHitDirection.x, CameraHitDirection.y, CameraHitDirection.z);
         myInput.Buttons.Set(InputButton.Jump, Jump);
         myInput.Buttons.Set(InputButton.Aim, Aim);
-        myInput.Buttons.Set(InputButton.Melee, Shoot);
         myInput.Buttons.Set(InputButton.Crouch, Crouch);
         myInput.Buttons.Set(InputButton.Prone, Prone);
         myInput.Buttons.Set(InputButton.SwitchHands, SwitchHands);

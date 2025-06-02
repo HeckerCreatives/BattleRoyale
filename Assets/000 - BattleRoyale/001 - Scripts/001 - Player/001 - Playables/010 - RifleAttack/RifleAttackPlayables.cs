@@ -230,7 +230,7 @@ public class RifleAttackPlayables : NetworkBehaviour
 
         if (playerInventory.SecondaryWeapon.WeaponID != "003") return;
 
-        if (!Attacking && !ShootCooldown && !Reloading && !playerController.IsProne && controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Melee))
+        if (!Attacking && !ShootCooldown && !Reloading && !playerController.IsProne && controllerInput.HoldInputButtons.WasPressed(PreviousButtons, HoldInputButtons.Shoot))
         {
             if (playerInventory.SecondaryWeapon.Ammo <= 0) return;
 
@@ -280,13 +280,13 @@ public class RifleAttackPlayables : NetworkBehaviour
 
                 float tempdamage = tag switch
                 {
-                    "Head" => 75f,
-                    "Body" => 55f,
-                    "Thigh" => 45f,
-                    "Shin" => 40f,
-                    "Foot" => 35f,
-                    "Arm" => 50f,
-                    "Forearm" => 40f,
+                    "Head" => 85f,
+                    "Body" => 65f,
+                    "Thigh" => 55f,
+                    "Shin" => 50f,
+                    "Foot" => 45f,
+                    "Arm" => 60f,
+                    "Forearm" => 50f,
                     _ => 0f
                 };
 

@@ -227,7 +227,7 @@ public class BowAttackPlayable : NetworkBehaviour
 
         if (playerInventory.SecondaryWeapon.WeaponID != "004") return;
 
-        if (!Attacking && !Reloading && !playerController.IsProne && controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Melee))
+        if (!Attacking && !Reloading && !playerController.IsProne && controllerInput.HoldInputButtons.WasPressed(PreviousButtons, HoldInputButtons.Shoot))
         {
             if (playerInventory.SecondaryWeapon.Ammo <= 0 && playerInventory.ArrowAmmoCount <= 0) return;
 
@@ -277,13 +277,13 @@ public class BowAttackPlayable : NetworkBehaviour
 
                 float tempdamage = tag switch
                 {
-                    "Head" => 65f,
-                    "Body" => 45f,
-                    "Thigh" => 35f,
-                    "Shin" => 30f,
-                    "Foot" => 25f,
-                    "Arm" => 40f,
-                    "Forearm" => 30f,
+                    "Head" => 75f,
+                    "Body" => 55f,
+                    "Thigh" => 45f,
+                    "Shin" => 40f,
+                    "Foot" => 35f,
+                    "Arm" => 50f,
+                    "Forearm" => 40f,
                     _ => 0f
                 };
 

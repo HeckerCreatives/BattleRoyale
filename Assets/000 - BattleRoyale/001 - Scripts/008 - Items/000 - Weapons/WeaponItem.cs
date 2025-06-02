@@ -357,7 +357,7 @@ public class WeaponItem : NetworkBehaviour
         Object.RemoveInputAuthority();
     }
 
-    public void PerformFirstAttack()
+    public void PerformFirstAttack(Action action = null)
     {
         if (TempPlayer == null) return;
 
@@ -389,6 +389,8 @@ public class WeaponItem : NetworkBehaviour
             // Avoid duplicate hits
             if (!hitEnemiesFirst.Contains(hitObject))
             {
+                action?.Invoke();
+
                 string tag = hitbox.tag;
 
                 float tempdamage = tag switch
@@ -416,7 +418,7 @@ public class WeaponItem : NetworkBehaviour
         }
     }
 
-    public void PerformSecondAttack()
+    public void PerformSecondAttack(Action action = null)
     {
         if (TempPlayer == null) return;
 
@@ -449,6 +451,8 @@ public class WeaponItem : NetworkBehaviour
             // Avoid duplicate hits
             if (!hitEnemiesSecond.Contains(hitObject))
             {
+                action?.Invoke();
+
                 string tag = hitbox.tag;
 
                 float tempdamage = tag switch

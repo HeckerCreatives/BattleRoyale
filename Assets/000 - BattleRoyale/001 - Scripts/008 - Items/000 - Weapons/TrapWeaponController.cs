@@ -115,7 +115,7 @@ public class TrapWeaponController : NetworkBehaviour
 
             PlayerHealth health = hitObject.GetComponent<PlayerHealth>();
 
-            health.ReduceHealth(20f, SpawnedBy, hitObject.GetComponent<NetworkObject>());
+            health.ReduceHealth(30f, SpawnedBy, hitObject.GetComponent<NetworkObject>());
 
             Invoke(nameof(DespawnObject), 2f);
 

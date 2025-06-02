@@ -16,6 +16,7 @@ public class LobbyController : MonoBehaviour
     [SerializeField] private LobbyUserProfile userProfile;
     [SerializeField] private List<LeaderboardItem> leaderboardItems;
     [SerializeField] private AudioClip bgMusicClip;
+    [SerializeField] private TextMeshProUGUI serverTMP;
 
     [Space]
     [SerializeField] private AudioClip buttonClip;
@@ -133,6 +134,8 @@ public class LobbyController : MonoBehaviour
         }, null));
         GameManager.Instance.AudioController.SetBGMusic(bgMusicClip);
         GameManager.Instance.SceneController.ActionPass = true;
+
+        serverTMP.text = $"Server: {GameManager.GetRegionName(userData.SelectedServer)}";
     }
 
     public void ChangeScene()

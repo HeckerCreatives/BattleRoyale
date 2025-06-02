@@ -159,8 +159,8 @@ public class ClientMatchmakingController : MonoBehaviour
                 };
 
                 var options = new CreateTicketOptions(
-                      //GameManager.GetRegionName(userData.SelectedServer) + "Test", // The name of the queue defined in the previous step,
-                      GameManager.GetServerRegionName(userData.SelectedServer),
+                      //GameManager.GetServerRegionName(userData.SelectedServer) + "Test", // The name of the queue defined in the previous step,
+                      GameManager.GetServerRegionName(userData.SelectedServer), 
                       new Dictionary<string, object>());
 
                 Debug.Log("JOINING LOBBY");
@@ -207,13 +207,26 @@ public class ClientMatchmakingController : MonoBehaviour
                             break;
                         case MultiplayAssignment.StatusOptions.Failed:
                             gotAssignment = true;
-                            Debug.LogError("Failed to get ticket status. Error: " + assignment.Message);
+
+                            if (assignment.Message.Contains("maximum capacity reached"))
+                                GameManager.Instance.NotificationController.ShowError("Due to high number of players, the current map is currently closed. Please try again later", null);
+                            else
+                                GameManager.Instance.NotificationController.ShowError($"There's a problem finding a match! Error: {assignment.Message}", null);
+
+                            CancelMatch();
                             break;
                         case MultiplayAssignment.StatusOptions.Timeout:
-                            Debug.LogError("Failed to get ticket status. Ticket timed out. Retrying to find match");
+
+                            CancelMatch();
+
+                            GameManager.Instance.NotificationController.ShowConfirmation("Due to low number of players, the game couldn't find a match. Would you like to adjust the settings automatically and find a match again?", FindMatch, null);
                             break;
                         default:
-                            throw new InvalidOperationException();
+                            CancelMatch();
+
+                            GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later", null);
+
+                            break;
                     }
                 } while (!gotAssignment && findingMatch);
 

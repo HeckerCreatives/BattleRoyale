@@ -283,7 +283,15 @@ public class PlayerController : NetworkBehaviour
         List<RaycastResult> raycastResults = new List<RaycastResult>();
         EventSystem.current.RaycastAll(pointerEventData, raycastResults);
 
-        return raycastResults.Count > 0;  // Return true if UI was hit
+        foreach (RaycastResult result in raycastResults)
+        {
+            // Ignore minimap or decorative UI
+            if (result.gameObject.CompareTag("NonBlockingUI")) continue;
+
+            return true;
+        }
+
+        return false;
     }
     private bool AnalogStickDetector(Vector2 touchPosition)
     {
