@@ -12,8 +12,6 @@ public enum InputButton
 {
     Jump,
     Aim,
-    Crouch,
-    Prone,
     SwitchHands,
     SwitchPrimary,
     SwitchSecondary,
@@ -26,7 +24,8 @@ public enum InputButton
 
 public enum HoldInputButtons
 {
-    Shoot
+    Shoot,
+    Sprint
 }
 
 public struct MyInput : INetworkInput
@@ -46,33 +45,27 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
     [SerializeField] private LayerMask cameraLayerMask;
 
-    [Header("DEBUGGER")]
-    [MyBox.ReadOnly][SerializeField] private bool cursorLocked = true;
-
     [Header("DEBUGGER GLOBAL")]
-    [MyBox.ReadOnly][SerializeField] public Vector2 MovementDirection;
-    [MyBox.ReadOnly][SerializeField] public Vector2 LookDirection;
-    [MyBox.ReadOnly][SerializeField] public bool Jump;
-    [MyBox.ReadOnly][SerializeField] public bool Aim;
-    [MyBox.ReadOnly][SerializeField] public bool Shoot;
-    [MyBox.ReadOnly][SerializeField] public bool Crouch;
-    [MyBox.ReadOnly][SerializeField] public bool Prone;
-    [MyBox.ReadOnly][SerializeField] public bool SwitchHands;
-    [MyBox.ReadOnly][SerializeField] public bool SwitchPrimary;
-    [MyBox.ReadOnly][SerializeField] public bool SwitchSecondary;
-    [MyBox.ReadOnly][SerializeField] public bool SwitchTrap;
-    [MyBox.ReadOnly][SerializeField] public bool ArmorRepair;
-    [MyBox.ReadOnly][SerializeField] public bool Heal;
-    [MyBox.ReadOnly][SerializeField] public bool Reload;
-    [MyBox.ReadOnly][SerializeField] public int ActiveTouch;
-    [MyBox.ReadOnly][SerializeField] private bool resetInput;
-    [MyBox.ReadOnly][SerializeField] private bool doneInitialize;
-    [MyBox.ReadOnly][SerializeField] private Vector2 firstTouch;
-    [MyBox.ReadOnly][SerializeField] private Vector3 ScreenCenterPoint;
-    [MyBox.ReadOnly][SerializeField] private Vector3 CameraHitOrigin;
-    [MyBox.ReadOnly][SerializeField] private Vector3 CameraHitDirection;
+    [SerializeField] public Vector2 MovementDirection;
+    [SerializeField] public Vector2 LookDirection;
+    [SerializeField] public bool Jump;
+    [SerializeField] public bool Aim;
+    [SerializeField] public bool Shoot;
 
-
+    [SerializeField] public bool SwitchHands;
+    [SerializeField] public bool SwitchPrimary;
+    [SerializeField] public bool SwitchSecondary;
+    [SerializeField] public bool SwitchTrap;
+    [SerializeField] public bool ArmorRepair;
+    [SerializeField] public bool Heal;
+    [SerializeField] public bool Reload;
+    [SerializeField] public int ActiveTouch;
+    [SerializeField] private bool resetInput;
+    [SerializeField] private bool doneInitialize;
+    [SerializeField] private Vector2 firstTouch;
+    [SerializeField] private Vector3 ScreenCenterPoint;
+    [SerializeField] private Vector3 CameraHitOrigin;
+    [SerializeField] private Vector3 CameraHitDirection;
 
     //  =========================
 
@@ -90,13 +83,10 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
         while (Runner == null) yield return null;
 
-        Debug.Log($"Is Runner null: {Runner == null}  Is Clien: {Runner.IsClient}");
-
         if (Runner != null)
         {
             myInput = new MyInput();
 
-            Debug.Log($"Starting init controls");
             gameplayInputs = new GameplayInputs();
             gameplayInputs.Enable();
             EnhancedTouchSupport.Enable();
@@ -107,10 +97,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.Aim.canceled += _ => AimStop();
             gameplayInputs.Gameplay.Shoot.performed += _ => ShootStart();
             gameplayInputs.Gameplay.Shoot.canceled += _ => ShootStop();
-            gameplayInputs.Gameplay.Crouch.started += _ => CrouchStart();
-            gameplayInputs.Gameplay.Crouch.canceled += _ => CrouchStop();
-            gameplayInputs.Gameplay.Prone.started += _ => ProneStart();
-            gameplayInputs.Gameplay.Prone.canceled += _ => ProneStop();
             gameplayInputs.Gameplay.SwitchHands.started += _ => SwitchHandsStart();
             gameplayInputs.Gameplay.SwitchHands.canceled += _ => SwitchHandsStop();
             gameplayInputs.Gameplay.SwitchPrimary.started += _ => SwitchPrimaryStart();
@@ -127,7 +113,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.Reload.canceled += _ => ReloadStop();
 
             Runner.AddCallbacks(this);
-            Debug.Log($"Done init controls");
         }
 
         doneInitialize = true;
@@ -143,10 +128,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.Aim.canceled -= _ => AimStop();
             gameplayInputs.Gameplay.Shoot.performed -= _ => ShootStart();
             gameplayInputs.Gameplay.Shoot.canceled -= _ => ShootStop();
-            gameplayInputs.Gameplay.Crouch.started -= _ => CrouchStart();
-            gameplayInputs.Gameplay.Crouch.canceled -= _ => CrouchStop();
-            gameplayInputs.Gameplay.Prone.started += _ => ProneStart();
-            gameplayInputs.Gameplay.Prone.canceled += _ => ProneStop();
             gameplayInputs.Gameplay.SwitchHands.started -= _ => SwitchHandsStart();
             gameplayInputs.Gameplay.SwitchHands.canceled -= _ => SwitchHandsStop();
             gameplayInputs.Gameplay.SwitchPrimary.started -= _ => SwitchPrimaryStart();
@@ -206,27 +187,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     public void ShootStop()
     {
         Shoot = false;
-        myInput.HoldInputButtons = default;
-    }
-
-    private void CrouchStart()
-    {
-        Crouch = true;
-    }
-
-    public void CrouchStop()
-    {
-        Crouch = false;
-    }
-
-    private void ProneStart()
-    {
-        Prone = true;
-    }
-
-    public void ProneStop()
-    {
-        Prone = false;
     }
 
     public void SwitchTrapStop()
@@ -312,7 +272,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             myInput.LookDirection = default;
             myInput.Buttons = default;
         }
-
         // Iterate over all touches
 
         myInput.MovementDirection.Set(MovementDirection.x, MovementDirection.y);
@@ -321,8 +280,6 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         myInput.CameraHitDirection.Set(CameraHitDirection.x, CameraHitDirection.y, CameraHitDirection.z);
         myInput.Buttons.Set(InputButton.Jump, Jump);
         myInput.Buttons.Set(InputButton.Aim, Aim);
-        myInput.Buttons.Set(InputButton.Crouch, Crouch);
-        myInput.Buttons.Set(InputButton.Prone, Prone);
         myInput.Buttons.Set(InputButton.SwitchHands, SwitchHands);
         myInput.Buttons.Set(InputButton.SwitchPrimary, SwitchPrimary);
         myInput.Buttons.Set(InputButton.SwitchSecondary, SwitchSecondary);
@@ -330,6 +287,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         myInput.Buttons.Set(InputButton.Heal, Heal);
         myInput.Buttons.Set(InputButton.ArmorRepair, ArmorRepair);
         myInput.Buttons.Set(InputButton.Reload, Reload);
+        myInput.HoldInputButtons.Set(HoldInputButtons.Shoot, Shoot);
         myInput.HoldInputButtons.Set(HoldInputButtons.Shoot, Shoot);
     }
 

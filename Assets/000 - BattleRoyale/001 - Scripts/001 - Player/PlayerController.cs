@@ -420,8 +420,8 @@ public class PlayerController : NetworkBehaviour
             return;
         }
 
-        if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Crouch))
-            return;
+        //if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Crouch))
+        //    return;
 
         if (!IsCrouch)
         {
@@ -451,8 +451,8 @@ public class PlayerController : NetworkBehaviour
             return;
         }
 
-        if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Prone))
-            return;
+        //if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Prone))
+        //    return;
 
         if (healPlayables.Healing || repairArmorPlayables.Repairing)
         {
