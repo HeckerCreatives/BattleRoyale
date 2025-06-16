@@ -1,15 +1,31 @@
 using Fusion;
 using Fusion.Addons.SimpleKCC;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.EnhancedTouch;
+using UnityEngine.Windows;
 
 public class PlayerMovementV2 : NetworkBehaviour
 {
+    public float SprintSpeed
+    {
+        get => sprintSpeed;
+    }
+
+    public float MoveSpeed
+    {
+        get => moveSpeed;
+    }
+
+    //  ====================
 
     [SerializeField] private SimpleKCC characterController;
-
+    [SerializeField] private PlayerCameraRotation cameraRotation;
+    [SerializeField] private PlayerStamina stamina;
+    
     [Space]
     [SerializeField] private float moveSpeed;
     [SerializeField] private float sprintSpeed;
@@ -24,9 +40,11 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     [field: Header("DEBUGGER NETWORK")]
     [field: SerializeField][Networked] public Vector3 MoveDirection { get; set; }
+    [field: SerializeField][Networked] public Vector3 MoveDir { get; set; }
     [field: SerializeField][Networked] public float XMovement { get; set; }
     [field: SerializeField][Networked] public float YMovement { get; set; }
     [field: SerializeField][Networked] public bool IsSprint { get; set; }
+    [field: SerializeField][Networked] public bool IsRoll { get; set; }
 
     //  =======================
 
@@ -44,14 +62,21 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     //  =======================
 
-    public void PlayerMovementInitialize(GameplayController gameplayController)
+    private void OnEnable()
+    {
+        PlayerMovementInitialize();
+    }
+
+    public async void PlayerMovementInitialize()
     {
         characterController.SetGravity(Physics.gravity.y * 3f);
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
 
+        while (!Runner) await Task.Yield();
+
         if (!HasInputAuthority) return;
 
-        this.gameplayController = gameplayController;
+        gameplayController = Runner.GetComponent<GameplayController>();
 
         UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerDown += TouchFingerDown;
         UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerMove += TouchFingerMove;
@@ -80,6 +105,11 @@ public class PlayerMovementV2 : NetworkBehaviour
                     gameplayController.LookDirection = Vector2.zero; // Reset camera movement
             }
         }
+    }
+
+    public override void FixedUpdateNetwork()
+    {
+        InputControlls();
     }
 
     #region TOUCH INPUTS
@@ -245,6 +275,7 @@ public class PlayerMovementV2 : NetworkBehaviour
 
         Move();
         Sprint();
+        Roll();
         //Shoot();
         //Crouch();
         //Prone();
@@ -260,17 +291,47 @@ public class PlayerMovementV2 : NetworkBehaviour
 
         //if (playerHealth.CurrentHealth <= 0) return;
 
-        MoveDirection = characterController.TransformRotation * new Vector3(controllerInput.MovementDirection.x, 0f, controllerInput.MovementDirection.y) * (IsSprint ? sprintSpeed : moveSpeed) * Runner.DeltaTime;
+        if (MoveDir.sqrMagnitude > 0.01f && !IsRoll)
+        {
+            // Normalize to prevent sprinting from affecting rotation
+            MoveDir.Normalize();
 
-        MoveDirection.Normalize();
+            // Optional: Smooth rotation
+            Quaternion targetRotation = Quaternion.LookRotation(MoveDir);
+            characterController.SetLookRotation(Quaternion.Slerp(characterController.TransformRotation, targetRotation, Runner.DeltaTime * 10f));
+        }
 
-        // Apply the movement
-        characterController.Move(MoveDirection, 0f);
+        MoveDir = PlayerLookDirection();
+
+        float moveSpeedValue = IsSprint ? SprintSpeed : MoveSpeed;
+        MoveDirection = MoveDir * moveSpeedValue * Runner.DeltaTime;
+
+        if (!IsRoll)
+            characterController.Move(MoveDirection, 0f);
+        else
+            characterController.Move(characterController.TransformDirection * 300f, 0f);
+    }
+
+    public Vector3 PlayerLookDirection()
+    {
+        float yawRad = cameraRotation._cinemachineTargetYaw * Mathf.Deg2Rad;
+        Vector3 camForward = new Vector3(Mathf.Sin(yawRad), 0f, Mathf.Cos(yawRad));
+        Vector3 camRight = new Vector3(camForward.z, 0f, -camForward.x); // rotate forward 90°
+
+        Vector3 worldDirection = camForward * YMovement + camRight * XMovement;
+
+        return worldDirection.normalized;
     }
 
     private void Sprint()
     {
         //if (playerHealth.CurrentHealth <= 0) return;
+
+        if (stamina.Stamina <= 0f)
+        {
+            IsSprint = false;
+            return;
+        }
 
         if (!controllerInput.HoldInputButtons.WasPressed(PreviousButtons, HoldInputButtons.Sprint))
         {
@@ -279,6 +340,15 @@ public class PlayerMovementV2 : NetworkBehaviour
         }
 
         IsSprint = true;
+    }
+
+    private void Roll()
+    {
+        if (stamina.Stamina < 50)
+            return;
+
+        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Roll))
+            IsRoll = true;
     }
 
     #endregion

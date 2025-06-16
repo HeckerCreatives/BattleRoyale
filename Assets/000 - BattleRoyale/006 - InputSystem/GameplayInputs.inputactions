@@ -33,7 +33,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Crouch",
+                    "name": "Sprint",
                     "type": "Button",
                     "id": "59e81cad-6dec-498b-9f98-7843631f0fb0",
                     "expectedControlType": "",
@@ -42,9 +42,9 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Prone",
+                    "name": "Roll",
                     "type": "Button",
-                    "id": "204bfd16-fe84-4878-bcb4-3efd12dec256",
+                    "id": "0438cbd7-8d32-44f4-938c-31f0f8658848",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -166,18 +166,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Crouch",
+                    "action": "Sprint",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
-                    "id": "a9fc4cb8-fc0c-46f5-b7bd-39cbcf74fcba",
-                    "path": "<Gamepad>/buttonNorth",
+                    "id": "f6dcd7c0-d609-4bf8-a01a-646f7dc2e60f",
+                    "path": "<Keyboard>/shift",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Prone",
+                    "action": "Sprint",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -255,6 +255,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "Reload",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4375c4fe-c906-4dc3-ab1f-7213d103b537",
+                    "path": "<Keyboard>/v",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Roll",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "61690e72-5a20-4670-b664-aabbb1b21632",
+                    "path": "<Gamepad>/buttonWest",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Roll",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

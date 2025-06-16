@@ -55,7 +55,7 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Crouch"",
+                    ""name"": ""Sprint"",
                     ""type"": ""Button"",
                     ""id"": ""59e81cad-6dec-498b-9f98-7843631f0fb0"",
                     ""expectedControlType"": """",
@@ -64,9 +64,9 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": false
                 },
                 {
-                    ""name"": ""Prone"",
+                    ""name"": ""Roll"",
                     ""type"": ""Button"",
-                    ""id"": ""204bfd16-fe84-4878-bcb4-3efd12dec256"",
+                    ""id"": ""0438cbd7-8d32-44f4-938c-31f0f8658848"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -188,18 +188,18 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Crouch"",
+                    ""action"": ""Sprint"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
                 {
                     ""name"": """",
-                    ""id"": ""a9fc4cb8-fc0c-46f5-b7bd-39cbcf74fcba"",
-                    ""path"": ""<Gamepad>/buttonNorth"",
+                    ""id"": ""f6dcd7c0-d609-4bf8-a01a-646f7dc2e60f"",
+                    ""path"": ""<Keyboard>/shift"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Prone"",
+                    ""action"": ""Sprint"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -279,6 +279,28 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""action"": ""Reload"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4375c4fe-c906-4dc3-ab1f-7213d103b537"",
+                    ""path"": ""<Keyboard>/v"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Roll"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""61690e72-5a20-4670-b664-aabbb1b21632"",
+                    ""path"": ""<Gamepad>/buttonWest"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Roll"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -307,8 +329,8 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
         m_Gameplay_Jump = m_Gameplay.FindAction("Jump", throwIfNotFound: true);
         m_Gameplay_Aim = m_Gameplay.FindAction("Aim", throwIfNotFound: true);
         m_Gameplay_Shoot = m_Gameplay.FindAction("Shoot", throwIfNotFound: true);
-        m_Gameplay_Crouch = m_Gameplay.FindAction("Crouch", throwIfNotFound: true);
-        m_Gameplay_Prone = m_Gameplay.FindAction("Prone", throwIfNotFound: true);
+        m_Gameplay_Sprint = m_Gameplay.FindAction("Sprint", throwIfNotFound: true);
+        m_Gameplay_Roll = m_Gameplay.FindAction("Roll", throwIfNotFound: true);
         m_Gameplay_SwitchHands = m_Gameplay.FindAction("SwitchHands", throwIfNotFound: true);
         m_Gameplay_SwitchPrimary = m_Gameplay.FindAction("SwitchPrimary", throwIfNotFound: true);
         m_Gameplay_SwitchSecondary = m_Gameplay.FindAction("SwitchSecondary", throwIfNotFound: true);
@@ -385,8 +407,8 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Gameplay_Jump;
     private readonly InputAction m_Gameplay_Aim;
     private readonly InputAction m_Gameplay_Shoot;
-    private readonly InputAction m_Gameplay_Crouch;
-    private readonly InputAction m_Gameplay_Prone;
+    private readonly InputAction m_Gameplay_Sprint;
+    private readonly InputAction m_Gameplay_Roll;
     private readonly InputAction m_Gameplay_SwitchHands;
     private readonly InputAction m_Gameplay_SwitchPrimary;
     private readonly InputAction m_Gameplay_SwitchSecondary;
@@ -401,8 +423,8 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
         public InputAction @Jump => m_Wrapper.m_Gameplay_Jump;
         public InputAction @Aim => m_Wrapper.m_Gameplay_Aim;
         public InputAction @Shoot => m_Wrapper.m_Gameplay_Shoot;
-        public InputAction @Crouch => m_Wrapper.m_Gameplay_Crouch;
-        public InputAction @Prone => m_Wrapper.m_Gameplay_Prone;
+        public InputAction @Sprint => m_Wrapper.m_Gameplay_Sprint;
+        public InputAction @Roll => m_Wrapper.m_Gameplay_Roll;
         public InputAction @SwitchHands => m_Wrapper.m_Gameplay_SwitchHands;
         public InputAction @SwitchPrimary => m_Wrapper.m_Gameplay_SwitchPrimary;
         public InputAction @SwitchSecondary => m_Wrapper.m_Gameplay_SwitchSecondary;
@@ -428,12 +450,12 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
             @Shoot.started += instance.OnShoot;
             @Shoot.performed += instance.OnShoot;
             @Shoot.canceled += instance.OnShoot;
-            @Crouch.started += instance.OnCrouch;
-            @Crouch.performed += instance.OnCrouch;
-            @Crouch.canceled += instance.OnCrouch;
-            @Prone.started += instance.OnProne;
-            @Prone.performed += instance.OnProne;
-            @Prone.canceled += instance.OnProne;
+            @Sprint.started += instance.OnSprint;
+            @Sprint.performed += instance.OnSprint;
+            @Sprint.canceled += instance.OnSprint;
+            @Roll.started += instance.OnRoll;
+            @Roll.performed += instance.OnRoll;
+            @Roll.canceled += instance.OnRoll;
             @SwitchHands.started += instance.OnSwitchHands;
             @SwitchHands.performed += instance.OnSwitchHands;
             @SwitchHands.canceled += instance.OnSwitchHands;
@@ -468,12 +490,12 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
             @Shoot.started -= instance.OnShoot;
             @Shoot.performed -= instance.OnShoot;
             @Shoot.canceled -= instance.OnShoot;
-            @Crouch.started -= instance.OnCrouch;
-            @Crouch.performed -= instance.OnCrouch;
-            @Crouch.canceled -= instance.OnCrouch;
-            @Prone.started -= instance.OnProne;
-            @Prone.performed -= instance.OnProne;
-            @Prone.canceled -= instance.OnProne;
+            @Sprint.started -= instance.OnSprint;
+            @Sprint.performed -= instance.OnSprint;
+            @Sprint.canceled -= instance.OnSprint;
+            @Roll.started -= instance.OnRoll;
+            @Roll.performed -= instance.OnRoll;
+            @Roll.canceled -= instance.OnRoll;
             @SwitchHands.started -= instance.OnSwitchHands;
             @SwitchHands.performed -= instance.OnSwitchHands;
             @SwitchHands.canceled -= instance.OnSwitchHands;
@@ -535,8 +557,8 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
         void OnJump(InputAction.CallbackContext context);
         void OnAim(InputAction.CallbackContext context);
         void OnShoot(InputAction.CallbackContext context);
-        void OnCrouch(InputAction.CallbackContext context);
-        void OnProne(InputAction.CallbackContext context);
+        void OnSprint(InputAction.CallbackContext context);
+        void OnRoll(InputAction.CallbackContext context);
         void OnSwitchHands(InputAction.CallbackContext context);
         void OnSwitchPrimary(InputAction.CallbackContext context);
         void OnSwitchSecondary(InputAction.CallbackContext context);

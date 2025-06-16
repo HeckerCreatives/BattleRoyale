@@ -19,9 +19,7 @@ public class PlayerCameraRotation : NetworkBehaviour
     [Header("References")]
     [SerializeField] private PlayerAim playerAim;
     [SerializeField] private PlayerHealth playerHealth;
-    [SerializeField] private PlayerController playerController;
     [SerializeField] private GameObject target;
-    [SerializeField] private SimpleKCC playerObj;
 
     [Header("CAMERA HEIGHT")]
     [SerializeField] private float standCamHeight;
@@ -84,10 +82,10 @@ public class PlayerCameraRotation : NetworkBehaviour
         HandleMobileCameraInput();
     }
 
-    private void LateUpdate()
-    {
-        CameraHeight();
-    }
+    //private void LateUpdate()
+    //{
+    //    CameraHeight();
+    //}
 
     private void LookSensitivityChanged(object sender, EventArgs e)
     {
@@ -116,12 +114,14 @@ public class PlayerCameraRotation : NetworkBehaviour
     {
         if (GetInput<MyInput>(out var input) == false) return;
 
-        if (playerHealth.CurrentHealth <= 0) return;
+        //if (playerHealth.CurrentHealth <= 0) return;
 
         if (input.LookDirection.sqrMagnitude >= _threshold)
         {
-            _cinemachineTargetYaw += input.LookDirection.x * Runner.DeltaTime * (playerAim.IsAim ? CurrentAdsSensitivity : CurrentSensitivity);
-            _cinemachineTargetPitch += -input.LookDirection.y * Runner.DeltaTime * (playerAim.IsAim ? CurrentAdsSensitivity : CurrentSensitivity);
+            //_cinemachineTargetYaw += input.LookDirection.x * Runner.DeltaTime * (playerAim.IsAim ? CurrentAdsSensitivity : CurrentSensitivity);
+            //_cinemachineTargetPitch += -input.LookDirection.y * Runner.DeltaTime * (playerAim.IsAim ? CurrentAdsSensitivity : CurrentSensitivity);
+            _cinemachineTargetYaw += input.LookDirection.x * Runner.DeltaTime * CurrentSensitivity;
+            _cinemachineTargetPitch += -input.LookDirection.y * Runner.DeltaTime * CurrentSensitivity;
         }
 
         _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
@@ -133,17 +133,16 @@ public class PlayerCameraRotation : NetworkBehaviour
             Mathf.Cos(_cinemachineTargetPitch * Mathf.Deg2Rad) * Mathf.Cos(_cinemachineTargetYaw * Mathf.Deg2Rad)
         );
 
-        playerObj.SetLookRotation(_cinemachineTargetPitch + CameraAngleOverride, _cinemachineTargetYaw);
         target.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride, _cinemachineTargetYaw, 0.0f);
         aimTF.position = transform.position + Direction * AimDistance;
     }
 
-    private void CameraHeight()
-    {
-        if (playerController.IsProne) target.transform.localPosition = new Vector3(target.transform.localPosition.x, proneCamHeight, target.transform.localPosition.z);
-        else if (playerController.IsCrouch) target.transform.localPosition = new Vector3(target.transform.localPosition.x, crouchCamHeight, target.transform.localPosition.z);
-        else target.transform.localPosition = new Vector3(target.transform.localPosition.x, standCamHeight, target.transform.localPosition.z);
-    }
+    //private void CameraHeight()
+    //{
+    //    if (playerController.IsProne) target.transform.localPosition = new Vector3(target.transform.localPosition.x, proneCamHeight, target.transform.localPosition.z);
+    //    else if (playerController.IsCrouch) target.transform.localPosition = new Vector3(target.transform.localPosition.x, crouchCamHeight, target.transform.localPosition.z);
+    //    else target.transform.localPosition = new Vector3(target.transform.localPosition.x, standCamHeight, target.transform.localPosition.z);
+    //}
 
     private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
     {

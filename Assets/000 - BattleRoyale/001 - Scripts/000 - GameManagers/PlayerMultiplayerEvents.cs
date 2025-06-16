@@ -19,17 +19,6 @@ public class PlayerMultiplayerEvents : SimulationBehaviour, INetworkRunnerCallba
 
     //  ================
 
-    #region LOADING SCENE
-
-    IEnumerator CheckIfDoneLoadingScreen()
-    {
-        while (!doneLoadingScene) yield return null;
-
-        doneLoadingScene = false;
-    }
-
-    #endregion
-
     #region NETWORK
 
     public void OnConnectedToServer(NetworkRunner runner)
@@ -90,12 +79,11 @@ public class PlayerMultiplayerEvents : SimulationBehaviour, INetworkRunnerCallba
 
     public void OnSceneLoadDone(NetworkRunner runner)
     {
-        GameManager.Instance.SceneController.AddActionLoadinList(gameplayController.InitializeControllers());
+        gameplayController.InitializeControllers();
     }
 
     public void OnSceneLoadStart(NetworkRunner runner)
     {
-        GameManager.Instance.SceneController.AddActionLoadinList(CheckIfDoneLoadingScreen());
     }
 
     public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)

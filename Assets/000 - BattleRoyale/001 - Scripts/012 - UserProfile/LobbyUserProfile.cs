@@ -24,8 +24,8 @@ public class LobbyUserProfile : MonoBehaviour
     public void SetData()
     {
         usernameTMP.text = userData.Username;
-        levelTMP.text = $"Level: {userData.GameDetails.level:n0}";
-        xpTMP.text = $"XP: {userData.GameDetails.xp:n0} / {80 * userData.GameDetails.level}";
+        levelTMP.text = $"{userData.GameDetails.level:n0}";
+        xpTMP.text = $"{userData.GameDetails.xp:n0} / {80 * userData.GameDetails.level}";
 
         usernameProfileTMP.text = userData.Username;
         levelProfileTMP.text = $"{userData.GameDetails.level:n0}";

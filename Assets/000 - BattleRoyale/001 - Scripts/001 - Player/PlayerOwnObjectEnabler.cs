@@ -14,8 +14,17 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     [SerializeField] private GameObject playerMinimapCam;
     [SerializeField] private GameObject playerSpawnLocCam;
 
-    public override void Spawned()
+    private async void OnEnable()
     {
+        while (!Runner)
+        {
+            Debug.Log($"waiting for runner");
+            await Task.Yield();
+        }
+
+
+        Debug.Log($"player has input authority? {HasInputAuthority}");
+
         if (!HasInputAuthority) return;
 
         canvasPlayer.SetActive(true);
@@ -26,7 +35,8 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         playerMinimapCam.SetActive(true);
         playerSpawnLocCam.SetActive(true);
 
-
+        Debug.Log(GameManager.Instance.SceneController.ActionPass);
         GameManager.Instance.SceneController.ActionPass = true;
+        Debug.Log(GameManager.Instance.SceneController.ActionPass);
     }
 }

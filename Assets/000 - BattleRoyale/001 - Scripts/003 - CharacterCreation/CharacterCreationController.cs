@@ -214,7 +214,7 @@ public class CharacterCreationController : MonoBehaviour
         }
         else
         {
-            customizerLT = LeanTween.value(customizerTF.gameObject, customizerTF.anchoredPosition.x, 370f, easeDuration).setOnUpdate((float val) =>
+            customizerLT = LeanTween.value(customizerTF.gameObject, customizerTF.anchoredPosition.x, 309f, easeDuration).setOnUpdate((float val) =>
             {
                 customizerTF.anchoredPosition = new Vector3(val, customizerTF.anchoredPosition.y, 0f);
             }).setEase(easeType).id;

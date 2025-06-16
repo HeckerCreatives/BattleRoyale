@@ -283,26 +283,35 @@ public class SceneController : MonoBehaviour
 
         yield return new WaitWhile(() => loadingCG.alpha != 1f);
 
-        while (!actionPass) yield return null;
+        while (!actionPass)
+        {
+            Debug.Log(GetActionLoadingList.Count); yield return null;
+        }
 
         actionPass = false; //  THIS IS FOR RESET
 
-        for (int a = 0; a < GetActionLoadingList.Count; a++)
+        if (GetActionLoadingList.Count > 0)
         {
-            yield return StartCoroutine(GetActionLoadingList[a]);
+            for (int a = 0; a < GetActionLoadingList.Count; a++)
+            {
+                yield return StartCoroutine(GetActionLoadingList[a]);
 
-            int index = a + 1;
+                int index = a + 1;
 
-            totalSceneProgress = (float)index / (1 + GetActionLoadingList.Count);
+                totalSceneProgress = (float)index / (1 + GetActionLoadingList.Count);
 
-            LeanTween.value(loadingSlider.gameObject, a => { loadingSlider.value = a; loadingPercentageTMP.text = $"{a * 100:n0}%"; }, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
+                LeanTween.value(loadingSlider.gameObject, a => { loadingSlider.value = a; loadingPercentageTMP.text = $"{a * 100:n0}%"; }, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
 
-            yield return new WaitWhile(() => loadingSlider.value != totalSceneProgress);
+                yield return new WaitWhile(() => loadingSlider.value != totalSceneProgress);
 
-            yield return null;
+                yield return null;
+            }
+
+
+            totalSceneProgress = scenesLoading.progress;
         }
-
-        totalSceneProgress = scenesLoading.progress;
+        else
+            totalSceneProgress = 1f;
 
         LeanTween.value(loadingSlider.gameObject, a => { loadingSlider.value = a; loadingPercentageTMP.text = $"{a * 100:n0}%"; }, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
 

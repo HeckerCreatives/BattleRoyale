@@ -58,6 +58,7 @@ public class ClientMatchmakingController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI timerTMP;
     [SerializeField] private Button cancelBtn;
     [SerializeField] private GameObject matchmakingObj;
+    [SerializeField] private GameObject findABattleObj;
 
     [Space]
     [SerializeField] private GameObject serverListLoader;
@@ -144,6 +145,8 @@ public class ClientMatchmakingController : MonoBehaviour
                 }
 
                 matchmakingObj.SetActive(true);
+
+                findABattleObj.SetActive(false);
 
                 findingMatch = true;
 
@@ -243,6 +246,8 @@ public class ClientMatchmakingController : MonoBehaviour
 
                 matchmakingObj.SetActive(true);
 
+                findABattleObj.SetActive(false);
+
                 findingMatch = true;
 
                 cancelBtn.interactable = true;
@@ -338,14 +343,14 @@ public class ClientMatchmakingController : MonoBehaviour
                     networkSceneInfo.AddSceneRef(sceneRef, LoadSceneMode.Single, LocalPhysicsMode.None, true);
                 }
 
-                var appSettings = BuildCustomAppSetting(userData.SelectedServer);
+                //var appSettings = BuildCustomAppSetting(userData.SelectedServer);
 
                 return runner.StartGame(new StartGameArgs()
                 {
                     GameMode = gameMode,
                     SceneManager = runner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
                     Scene = sceneRef,
-                    CustomPhotonAppSettings = appSettings
+                    //CustomPhotonAppSettings = appSettings
                 });
             }
         }
@@ -389,5 +394,7 @@ public class ClientMatchmakingController : MonoBehaviour
         currentRunnerInstance = Instantiate(instanceRunner);
 
         matchmakingObj.SetActive(false);
+
+        findABattleObj.SetActive(true);
     }
 }

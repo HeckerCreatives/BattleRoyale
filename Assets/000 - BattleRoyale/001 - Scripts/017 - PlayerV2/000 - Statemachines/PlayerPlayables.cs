@@ -1,18 +1,72 @@
+using Fusion;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations;
+using UnityEngine.Playables;
 
-public class PlayerPlayables : MonoBehaviour
+public class PlayerPlayables : NetworkBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public PlayerStamina stamina;
+
+    [Space]
+    [SerializeField] private Animator playerAnimator;
+
+    [Space]
+    public PlayerBasicMovement basicMovement;
+
+    //  =======================
+
+    public PlayableGraph playableGraph;
+    public PlayablesChanger changer;
+    public AnimationMixerPlayable finalMixer;
+
+    //  =======================
+
+    private void OnEnable()
     {
-        
+        changer = new PlayablesChanger();
+
+        playableGraph = PlayableGraph.Create();
+
+        var playableOutput = AnimationPlayableOutput.Create(playableGraph, "PlayerAnimation", playerAnimator);
+
+        var splitter = AnimationMixerPlayable.Create(playableGraph, 1);
+
+        playableGraph.Connect(splitter, 0, basicMovement.Initialize(), 0);
+
+        finalMixer = AnimationMixerPlayable.Create(playableGraph, 1);
+
+        playableGraph.Connect(basicMovement.mixerPlayable, 0, finalMixer, 0);   //  BASIC MOVEMENT
+        //playableGraph.Connect(mixerPlayable2, 0, splitter2, 1);
+
+        playableOutput.SetSourcePlayable(finalMixer);
+
+        changer.Initialize(basicMovement.IdlePlayable);
+
+        finalMixer.SetInputWeight(0, 1f);
+
+        playableGraph.Play();
+
+        GraphVisualizerClient.Show(playableGraph);
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnDisable()
     {
-        
+        playableGraph.Destroy();
+    }
+
+    public override void Render()
+    {
+        if (changer.CurrentState == null) return;
+
+        changer.CurrentState.LogicUpdate();
+    }
+
+    public override void FixedUpdateNetwork()
+    {
+        if (changer.CurrentState == null) return;
+
+        changer.CurrentState.NetworkUpdate();
     }
 }

@@ -345,14 +345,14 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         var args = CommandLineHelper.GetArgs();
 
-        FusionAppSettings appSettings;
+        //FusionAppSettings appSettings;
 
-        if (args.TryGetValue("region", out string region))
-            appSettings = BuildCustomAppSetting(region);
-        else
-            appSettings = BuildCustomAppSetting("asia");
+        //if (args.TryGetValue("region", out string region))
+        //    appSettings = BuildCustomAppSetting(region);
+        //else
+        //    appSettings = BuildCustomAppSetting("asia");
 
-        Debug.Log($"STARTING REGION: {appSettings.FixedRegion}");
+        //Debug.Log($"STARTING REGION: {appSettings.FixedRegion}");
 
         await networkRunner.StartGame(new StartGameArgs()
         {
@@ -365,8 +365,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             PlayerCount = maxPlayers,
             Address = NetAddress.Any(),
             CustomLobbyName = lobby,
-            CustomPhotonAppSettings = appSettings
+            //CustomPhotonAppSettings = appSettings
         });
+
 
         if (networkRunner.IsRunning)
         {
@@ -582,15 +583,15 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             NetworkObject playerCharacter = Runner.Spawn(playerObj, Vector3.up, Quaternion.identity, player, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
             {
                 obj.GetComponent<SimpleKCC>().SetPosition(spawnWaitingAreaPositions[tempspawnpos].position);
-                obj.GetComponent<KillCountCounterController>().ServerManager = this;
-                obj.GetComponent<WaitingAreaTimerController>().ServerManager = this;
-                obj.GetComponent<PlayerHealth>().ServerManager = this;
-                obj.GetComponent<PlayerSpawnLocationController>().ServerManager = this;
-                obj.GetComponent<PlayerQuitController>().ServerManager = this;
-                obj.GetComponent<MapZoomInOut>().ServerManager = this;
-                obj.GetComponent<PlayerGameOverScreen>().ServerManager = this;
-                obj.GetComponent<PlayerShrinkZoneTimer>().ServerManager = this;
-                obj.GetComponent<MainCorePlayable>().ServerManager = this;
+                //obj.GetComponent<KillCountCounterController>().ServerManager = this;
+                //obj.GetComponent<WaitingAreaTimerController>().ServerManager = this;
+                //obj.GetComponent<PlayerHealth>().ServerManager = this;
+                //obj.GetComponent<PlayerSpawnLocationController>().ServerManager = this;
+                //obj.GetComponent<PlayerQuitController>().ServerManager = this;
+                //obj.GetComponent<MapZoomInOut>().ServerManager = this;
+                //obj.GetComponent<PlayerGameOverScreen>().ServerManager = this;
+                //obj.GetComponent<PlayerShrinkZoneTimer>().ServerManager = this;
+                //obj.GetComponent<MainCorePlayable>().ServerManager = this;
             });
 
             BulletObjectPool temppool = playerCharacter.GetComponent<BulletObjectPool>();
@@ -641,17 +642,17 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         if (Players.TryGet(player, out NetworkObject clientPlayer))
         {
-            var playerinventory = clientPlayer.GetComponent<PlayerInventory>();
+            //var playerinventory = clientPlayer.GetComponent<PlayerInventory>();
 
-            if (playerinventory.PrimaryWeapon != null) playerinventory.PrimaryWeapon.DropPrimaryWeapon();
+            //if (playerinventory.PrimaryWeapon != null) playerinventory.PrimaryWeapon.DropPrimaryWeapon();
 
-            if (playerinventory.SecondaryWeapon != null)
-            {
-                if (playerinventory.SecondaryWeapon.WeaponID == "003") playerinventory.SecondaryWeapon.DropSecondaryWeapon();
-                else if (playerinventory.SecondaryWeapon.WeaponID == "004") playerinventory.SecondaryWeapon.DropSecondaryWithAmmoCaseWeapon();
-            }
+            //if (playerinventory.SecondaryWeapon != null)
+            //{
+            //    if (playerinventory.SecondaryWeapon.WeaponID == "003") playerinventory.SecondaryWeapon.DropSecondaryWeapon();
+            //    else if (playerinventory.SecondaryWeapon.WeaponID == "004") playerinventory.SecondaryWeapon.DropSecondaryWithAmmoCaseWeapon();
+            //}
 
-            if (playerinventory.Shield != null) playerinventory.Shield.DropShield();
+            //if (playerinventory.Shield != null) playerinventory.Shield.DropShield();
 
             var bulletPooler = clientPlayer.GetComponent<BulletObjectPool>();
 
@@ -683,6 +684,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         PlayerCountChange?.Invoke(this, EventArgs.Empty);
     }
+
+
 
     #endregion
 }

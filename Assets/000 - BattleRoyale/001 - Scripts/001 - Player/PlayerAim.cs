@@ -28,63 +28,63 @@ public class PlayerAim : NetworkBehaviour
 
     //  ====================
 
-    public override void Render()
-    {
-        if (!HasStateAuthority) 
-        {
-            HipsWeightNetwork();
-        }
-    }
+    //public override void Render()
+    //{
+    //    if (!HasStateAuthority) 
+    //    {
+    //        HipsWeightNetwork();
+    //    }
+    //}
 
-    public override void FixedUpdateNetwork()
-    {
-        NetworkAim();
+    //public override void FixedUpdateNetwork()
+    //{
+    //    NetworkAim();
 
-        if (HasStateAuthority)
-            HipsWeightNetwork();
-    }
+    //    if (HasStateAuthority)
+    //        HipsWeightNetwork();
+    //}
 
-    private void NetworkAim()
-    {
-        if (GetInput<MyInput>(out var input) == false) return;
+    //private void NetworkAim()
+    //{
+    //    if (GetInput<MyInput>(out var input) == false) return;
 
-        if (input.Buttons.WasPressed(ButtonsPrevious, InputButton.Aim))
-            IsAim = !IsAim;
+    //    if (input.Buttons.WasPressed(ButtonsPrevious, InputButton.Aim))
+    //        IsAim = !IsAim;
 
-        PlayerAimCamera();
+    //    PlayerAimCamera();
 
-        ButtonsPrevious = input.Buttons;
-    }
+    //    ButtonsPrevious = input.Buttons;
+    //}
 
-    private void PlayerAimCamera()
-    {
-        if (!HasInputAuthority) return;
+    //private void PlayerAimCamera()
+    //{
+    //    if (!HasInputAuthority) return;
 
-        if (IsAim)
-            aimVcam.gameObject.SetActive(true);
-        else
-            aimVcam.gameObject.SetActive(false);
-    }
+    //    if (IsAim)
+    //        aimVcam.gameObject.SetActive(true);
+    //    else
+    //        aimVcam.gameObject.SetActive(false);
+    //}
 
-    private void HipsWeightNetwork()
-    {
-        if (playerController.IsProne)
-        {
-            hipsRig.weight = 0f;
-            return;
-        }
+    //private void HipsWeightNetwork()
+    //{
+    //    if (playerController.IsProne)
+    //    {
+    //        hipsRig.weight = 0f;
+    //        return;
+    //    }
 
-        if (IsAim)
-            hipsRig.weight = 1f;
-        else
-        {
-            if (playerInventory.WeaponIndex != 3)
-            {
-                hipsRig.weight = 0f;
-                return;
-            }
+    //    if (IsAim)
+    //        hipsRig.weight = 1f;
+    //    else
+    //    {
+    //        if (playerInventory.WeaponIndex != 3)
+    //        {
+    //            hipsRig.weight = 0f;
+    //            return;
+    //        }
 
-            hipsRig.weight = 1f;
-        }
-    }
+    //        hipsRig.weight = 1f;
+    //    }
+    //}
 }

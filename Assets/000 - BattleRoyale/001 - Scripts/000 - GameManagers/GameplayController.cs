@@ -19,7 +19,8 @@ public enum InputButton
     ActiveTouch,
     ArmorRepair,
     Heal,
-    Reload
+    Reload,
+    Roll
 }
 
 public enum HoldInputButtons
@@ -51,7 +52,8 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     [SerializeField] public bool Jump;
     [SerializeField] public bool Aim;
     [SerializeField] public bool Shoot;
-
+    [SerializeField] private bool Roll;
+    [SerializeField] public bool Sprint;
     [SerializeField] public bool SwitchHands;
     [SerializeField] public bool SwitchPrimary;
     [SerializeField] public bool SwitchSecondary;
@@ -77,43 +79,42 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
     //  =========================
 
-    public IEnumerator InitializeControllers()
+    public void InitializeControllers()
     {
         Debug.Log("Starting To Initialize Controlls");
 
-        while (Runner == null) yield return null;
+        myInput = new MyInput();
 
-        if (Runner != null)
-        {
-            myInput = new MyInput();
+        gameplayInputs = new GameplayInputs();
+        gameplayInputs.Enable();
+        EnhancedTouchSupport.Enable();
 
-            gameplayInputs = new GameplayInputs();
-            gameplayInputs.Enable();
-            EnhancedTouchSupport.Enable();
+        gameplayInputs.Gameplay.Jump.started += _ => JumpStart();
+        gameplayInputs.Gameplay.Jump.canceled += _ => JumpTurnOff();
+        gameplayInputs.Gameplay.Aim.started += _ => AimStart();
+        gameplayInputs.Gameplay.Aim.canceled += _ => AimStop();
+        gameplayInputs.Gameplay.Shoot.performed += _ => ShootStart();
+        gameplayInputs.Gameplay.Shoot.canceled += _ => ShootStop();
+        gameplayInputs.Gameplay.Sprint.performed += _ => SprintStart();
+        gameplayInputs.Gameplay.Sprint.canceled += _ => SprintStop();
+        gameplayInputs.Gameplay.Roll.performed += _ => RollStart();
+        gameplayInputs.Gameplay.Roll.canceled += _ => RollStop();
+        gameplayInputs.Gameplay.SwitchHands.started += _ => SwitchHandsStart();
+        gameplayInputs.Gameplay.SwitchHands.canceled += _ => SwitchHandsStop();
+        gameplayInputs.Gameplay.SwitchPrimary.started += _ => SwitchPrimaryStart();
+        gameplayInputs.Gameplay.SwitchPrimary.canceled += _ => SwitchPrimaryStop();
+        gameplayInputs.Gameplay.SwitchSecondary.started += _ => SwitchSecondaryStart();
+        gameplayInputs.Gameplay.SwitchSecondary.canceled += _ => SwitchSecondaryStop();
+        gameplayInputs.Gameplay.SwitchTrap.started += _ => SwitchTrapStart();
+        gameplayInputs.Gameplay.SwitchTrap.canceled += _ => SwitchTrapStop();
+        gameplayInputs.Gameplay.Heal.started += _ => HealStart();
+        gameplayInputs.Gameplay.Heal.canceled += _ => HealStop();
+        gameplayInputs.Gameplay.ArmorRepair.started += _ => ArmorRepairStart();
+        gameplayInputs.Gameplay.ArmorRepair.canceled += _ => ArmorRepairStop();
+        gameplayInputs.Gameplay.Reload.started += _ => ReloadStart();
+        gameplayInputs.Gameplay.Reload.canceled += _ => ReloadStop();
 
-            gameplayInputs.Gameplay.Jump.started += _ => JumpStart();
-            gameplayInputs.Gameplay.Jump.canceled += _ => JumpTurnOff();
-            gameplayInputs.Gameplay.Aim.started += _ => AimStart();
-            gameplayInputs.Gameplay.Aim.canceled += _ => AimStop();
-            gameplayInputs.Gameplay.Shoot.performed += _ => ShootStart();
-            gameplayInputs.Gameplay.Shoot.canceled += _ => ShootStop();
-            gameplayInputs.Gameplay.SwitchHands.started += _ => SwitchHandsStart();
-            gameplayInputs.Gameplay.SwitchHands.canceled += _ => SwitchHandsStop();
-            gameplayInputs.Gameplay.SwitchPrimary.started += _ => SwitchPrimaryStart();
-            gameplayInputs.Gameplay.SwitchPrimary.canceled += _ => SwitchPrimaryStop();
-            gameplayInputs.Gameplay.SwitchSecondary.started += _ => SwitchSecondaryStart();
-            gameplayInputs.Gameplay.SwitchSecondary.canceled += _ => SwitchSecondaryStop();
-            gameplayInputs.Gameplay.SwitchTrap.started += _ => SwitchTrapStart();
-            gameplayInputs.Gameplay.SwitchTrap.canceled += _ => SwitchTrapStop();
-            gameplayInputs.Gameplay.Heal.started += _ => HealStart();
-            gameplayInputs.Gameplay.Heal.canceled += _ => HealStop();
-            gameplayInputs.Gameplay.ArmorRepair.started += _ => ArmorRepairStart();
-            gameplayInputs.Gameplay.ArmorRepair.canceled += _ => ArmorRepairStop();
-            gameplayInputs.Gameplay.Reload.started += _ => ReloadStart();
-            gameplayInputs.Gameplay.Reload.canceled += _ => ReloadStop();
-
-            Runner.AddCallbacks(this);
-        }
+        Runner.AddCallbacks(this);
 
         doneInitialize = true;
     }
@@ -128,6 +129,10 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.Aim.canceled -= _ => AimStop();
             gameplayInputs.Gameplay.Shoot.performed -= _ => ShootStart();
             gameplayInputs.Gameplay.Shoot.canceled -= _ => ShootStop();
+            gameplayInputs.Gameplay.Sprint.performed -= _ => SprintStart();
+            gameplayInputs.Gameplay.Sprint.canceled -= _ => SprintStop();
+            gameplayInputs.Gameplay.Roll.performed -= _ => RollStart();
+            gameplayInputs.Gameplay.Roll.canceled -= _ => RollStop();
             gameplayInputs.Gameplay.SwitchHands.started -= _ => SwitchHandsStart();
             gameplayInputs.Gameplay.SwitchHands.canceled -= _ => SwitchHandsStop();
             gameplayInputs.Gameplay.SwitchPrimary.started -= _ => SwitchPrimaryStart();
@@ -187,6 +192,26 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     public void ShootStop()
     {
         Shoot = false;
+    }
+
+    private void SprintStart()
+    {
+        Sprint = true;
+    }
+
+    private void SprintStop()
+    {
+        Sprint = false;
+    }
+
+    private void RollStart()
+    {
+        Roll = true;
+    }
+
+    private void RollStop()
+    {
+        Roll = false;
     }
 
     public void SwitchTrapStop()
@@ -287,8 +312,10 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         myInput.Buttons.Set(InputButton.Heal, Heal);
         myInput.Buttons.Set(InputButton.ArmorRepair, ArmorRepair);
         myInput.Buttons.Set(InputButton.Reload, Reload);
+        myInput.Buttons.Set(InputButton.Roll, Roll);
         myInput.HoldInputButtons.Set(HoldInputButtons.Shoot, Shoot);
         myInput.HoldInputButtons.Set(HoldInputButtons.Shoot, Shoot);
+        myInput.HoldInputButtons.Set(HoldInputButtons.Sprint, Sprint);
     }
 
     public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player)
