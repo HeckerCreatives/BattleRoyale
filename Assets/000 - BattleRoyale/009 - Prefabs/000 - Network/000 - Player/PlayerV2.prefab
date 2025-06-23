@@ -17377,6 +17377,7 @@ MonoBehaviour:
   stamina: {fileID: 8616249203308704524}
   playerAnimator: {fileID: 3399706004004648953}
   basicMovement: {fileID: 6738106062886253463}
+  _TickRateAnimation: 0
 --- !u!114 &878466383140911213
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17434,8 +17435,12 @@ MonoBehaviour:
   _MoveDir: {x: 0, y: 0, z: 0}
   _XMovement: 0
   _YMovement: 0
-  _IsSprint: 0
-  _IsRoll: 0
+  _IsSprint:
+    _value: 0
+  _IsRoll:
+    _value: 0
+  _Attacking:
+    _value: 0
 --- !u!114 &8616249203308704524
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -21620,12 +21625,18 @@ MonoBehaviour:
   - run
   - sprint
   - roll
+  - punch1
+  - punch2
+  - punch3
   mixernames:
   - basic
   idle: {fileID: 7400000, guid: d65feb32960f492459675a9dea0f15bb, type: 2}
   run: {fileID: 7400000, guid: e2bea28b3ee855049914f88f468356a3, type: 2}
   sprint: {fileID: 7400000, guid: 69322c6189ce6104db4827a8cfa09919, type: 2}
-  roll: {fileID: 0}
+  roll: {fileID: 7400000, guid: fe822fdc159815c4ea20b7479538af82, type: 2}
+  punch1: {fileID: 7400000, guid: 02fed47f0b7ee5c4fa9c5067066adc80, type: 2}
+  punch2: {fileID: 7400000, guid: 10bc3194180c6d947bcad3b30236038f, type: 2}
+  punch3: {fileID: 7400000, guid: 7914ac96726d5734c9124be1cd1a362a, type: 2}
 --- !u!1 &2351408018424846397
 GameObject:
   m_ObjectHideFlags: 0
@@ -46167,7 +46178,7 @@ Animator:
   m_GameObject: {fileID: 5596937213187951944}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: d7a20a7de967fe445b312dbbdd8930bb, type: 3}
-  m_Controller: {fileID: 9100000, guid: 48b648c1a942dbd49b950ed3a4db0d8d, type: 2}
+  m_Controller: {fileID: 0}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 0

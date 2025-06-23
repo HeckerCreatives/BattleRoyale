@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using SocketIOClient;
-using UnityEngine.Networking;
 using CandyCoded.env;
 using System;
 using SocketIOClient.Newtonsoft.Json;
@@ -64,7 +63,7 @@ public class SocketManager : MonoBehaviour
             {
                 { "token", "UNITY" }
             },
-                    EIO = 4,
+                    EIO = EngineIO.V4,
                     Transport = SocketIOClient.Transport.TransportProtocol.WebSocket
                 });
 

@@ -15,6 +15,9 @@ public class PlayerPlayables : NetworkBehaviour
     [Space]
     public PlayerBasicMovement basicMovement;
 
+    [field: Header("NETWORK DEBUGGER")]
+    [Networked][field: SerializeField] public float TickRateAnimation { get; set; }
+
     //  =======================
 
     public PlayableGraph playableGraph;
@@ -65,6 +68,8 @@ public class PlayerPlayables : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
+        TickRateAnimation = Runner.Tick * Runner.DeltaTime;
+
         if (changer.CurrentState == null) return;
 
         changer.CurrentState.NetworkUpdate();

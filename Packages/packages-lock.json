@@ -1,13 +1,12 @@
 {
   "dependencies": {
     "com.itisnajim.socketiounity": {
-      "version": "https://github.com/itisnajim/SocketIOUnity.git",
+      "version": "file:SocketIOUnity",
       "depth": 0,
-      "source": "git",
+      "source": "embedded",
       "dependencies": {
         "com.unity.nuget.newtonsoft-json": "3.0.2"
-      },
-      "hash": "c9e06b15391449ad42fd9b0f39fea48054751bcd"
+      }
     },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
@@ -107,11 +106,10 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.playablegraph-visualizer": {
-      "version": "https://github.com/Unity-Technologies/graph-visualizer.git",
+      "version": "file:graph-visualizer-master",
       "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "cfb3a9f75dd2ef7cc4253b0439806646cdd79814"
+      "source": "embedded",
+      "dependencies": {}
     },
     "com.unity.postprocessing": {
       "version": "3.4.0",
@@ -188,9 +186,9 @@
       "depth": 1,
       "source": "registry",
       "dependencies": {
-        "com.unity.modules.androidjni": "1.0.0",
+        "com.unity.modules.unitywebrequest": "1.0.0",
         "com.unity.nuget.newtonsoft-json": "3.2.1",
-        "com.unity.modules.unitywebrequest": "1.0.0"
+        "com.unity.modules.androidjni": "1.0.0"
       },
       "url": "https://packages.unity.com"
     },
@@ -334,11 +332,10 @@
       "url": "https://packages.unity.com"
     },
     "com.whinarn.unitymeshsimplifier": {
-      "version": "https://github.com/Whinarn/UnityMeshSimplifier.git",
+      "version": "file:UnityMeshSimplifier-master",
       "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "d741912bfeaad8da4fe0f258f4f3eefe1fe7b3f3"
+      "source": "embedded",
+      "dependencies": {}
     },
     "com.unity.modules.ai": {
       "version": "1.0.0",

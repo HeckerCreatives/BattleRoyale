@@ -43,8 +43,9 @@ public class PlayerMovementV2 : NetworkBehaviour
     [field: SerializeField][Networked] public Vector3 MoveDir { get; set; }
     [field: SerializeField][Networked] public float XMovement { get; set; }
     [field: SerializeField][Networked] public float YMovement { get; set; }
-    [field: SerializeField][Networked] public bool IsSprint { get; set; }
-    [field: SerializeField][Networked] public bool IsRoll { get; set; }
+    [field: SerializeField][Networked] public NetworkBool IsSprint { get; set; }
+    [field: SerializeField][Networked] public NetworkBool IsRoll { get; set; }
+    [field: SerializeField][Networked] public NetworkBool Attacking { get; set; }
 
     //  =======================
 
@@ -276,7 +277,7 @@ public class PlayerMovementV2 : NetworkBehaviour
         Move();
         Sprint();
         Roll();
-        //Shoot();
+        Shoot();
         //Crouch();
         //Prone();
         //PlayerRotateAnimation();
@@ -286,6 +287,8 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     private void Move()
     {
+        if (IsRoll) return;
+
         XMovement = controllerInput.MovementDirection.x;
         YMovement = controllerInput.MovementDirection.y;
 
@@ -306,10 +309,7 @@ public class PlayerMovementV2 : NetworkBehaviour
         float moveSpeedValue = IsSprint ? SprintSpeed : MoveSpeed;
         MoveDirection = MoveDir * moveSpeedValue * Runner.DeltaTime;
 
-        if (!IsRoll)
-            characterController.Move(MoveDirection, 0f);
-        else
-            characterController.Move(characterController.TransformDirection * 300f, 0f);
+        characterController.Move(MoveDirection, 0f);
     }
 
     public Vector3 PlayerLookDirection()
@@ -347,8 +347,26 @@ public class PlayerMovementV2 : NetworkBehaviour
         if (stamina.Stamina < 50)
             return;
 
+        if (IsRoll) return;
+
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Roll))
             IsRoll = true;
+    }
+
+    private void Shoot()
+    {
+        if (controllerInput.HoldInputButtons.WasPressed(PreviousButtons, HoldInputButtons.Shoot))
+        {
+            if (Attacking) return;
+
+            Attacking = true;
+        }
+        else
+        {
+            if (!Attacking) return;
+
+            Attacking = false;
+        }
     }
 
     #endregion

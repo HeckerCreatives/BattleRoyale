@@ -6,8 +6,7 @@ using UnityEngine.Animations;
 
 public class IdleState : PlayerOnGround
 {
-
-    public IdleState(SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername)
+    public IdleState(SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
     }
 
@@ -32,8 +31,15 @@ public class IdleState : PlayerOnGround
                 playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
         }
 
+        if (playerMovement.Attacking)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.Punch1Playable);
+        }
+
         if (playerMovement.IsRoll)
+        {
             playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
+        }
 
         playerPlayables.stamina.RecoverStamina(5f);
     }

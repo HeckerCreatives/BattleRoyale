@@ -8,6 +8,7 @@ using UnityEngine.Playables;
 
 public class AnimationPlayable
 {
+    public float animationLength;
 
     string animationname;
     string mixername;
@@ -22,10 +23,12 @@ public class AnimationPlayable
     public PlayablesChanger playablesChanger;
     public PlayerPlayables playerPlayables;
     public SimpleKCC characterController;
+    AnimationClipPlayable animationClipPlayable;
+    bool oncePlay;
 
     //  ======================
 
-    public AnimationPlayable(SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername)
+    public AnimationPlayable(SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay    )
     {
         this.characterController = characterController;
         this.playablesChanger = playablesChanger;
@@ -36,12 +39,28 @@ public class AnimationPlayable
         this.mixers = mixers;
         this.animationname = animationname;
         this.mixername = mixername;
+        this.animationLength = animationLength;
+        this.animationClipPlayable = animationClipPlayable;
+        this.oncePlay = oncePlay;
+
+        if (oncePlay)
+        {
+            animationClipPlayable.SetTime(0f);
+            animationClipPlayable.Pause();
+        }
     }
 
     public virtual void Enter()
     {
         Debug.Log($"ENTER mixer count: {animations.Count}  animationanme: {animationname}");
         mixerPlayable.SetInputWeight(animations.IndexOf(animationname), 1f);
+
+        if (oncePlay)
+        {
+            animationClipPlayable.SetTime(0f);
+            animationClipPlayable.Play();
+        }
+
         playerPlayables.finalMixer.SetInputWeight(mixers.IndexOf(mixername), 1f);
     }
 
