@@ -24,6 +24,12 @@ public class LobbyController : MonoBehaviour
     [SerializeField] private GameObject unreadObj;
     [SerializeField] private TextMeshProUGUI unreadValueTMP;
 
+    [Space]
+    [SerializeField] private TextMeshProUGUI resetTimerTMP;
+
+    [Header("DEBUGGER")]
+    [SerializeField] private bool cancountdowntime;
+
     private void Awake()
     {
         GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/characters/getcharactersetting", "", false, (response) =>
@@ -53,12 +59,15 @@ public class LobbyController : MonoBehaviour
         }));
         GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/usergamedetail/getusergamedetails", "", false, (response) =>
         {
+            Debug.Log(response.ToString());
             try
             {
                 GameUserDetails gameUserDetails = JsonConvert.DeserializeObject<GameUserDetails>(response.ToString());
 
                 userData.GameDetails = gameUserDetails;
                 userProfile.SetData();
+
+                cancountdowntime = true;
             }
             catch (Exception ex)
             {
@@ -136,6 +145,32 @@ public class LobbyController : MonoBehaviour
         GameManager.Instance.SceneController.ActionPass = true;
 
         serverTMP.text = $"Server: {GameManager.GetRegionName(userData.SelectedServer)}";
+    }
+
+    private void Update()
+    {
+        if (cancountdowntime)
+        {
+            if (userData.GameDetails.energyresettime > 0)
+            {
+                userData.GameDetails.energyresettime -= Time.unscaledDeltaTime;
+
+                float totalSeconds = userData.GameDetails.energyresettime; // example: 86400 seconds = 24 hours
+
+                float hours = totalSeconds / 3600;
+                float minutes = (totalSeconds % 3600) / 60;
+
+                string formatted = $"{hours:00}h {minutes:00}m";
+
+                resetTimerTMP.text = $"<size=18>RESET IN</size> <size=30>{formatted}</size>";
+            }
+            else
+            {
+                userData.GameDetails.energy = 10;
+
+                userData.GameDetails.energyresettime = 86400; // Reset to 24 hours
+            }
+        }
     }
 
     public void ChangeScene()

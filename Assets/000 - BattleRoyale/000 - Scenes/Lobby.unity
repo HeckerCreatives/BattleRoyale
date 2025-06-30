@@ -8051,7 +8051,7 @@ GameObject:
   - component: {fileID: 256042852}
   - component: {fileID: 256042851}
   m_Layer: 5
-  m_Name: Text (TMP) (1)
+  m_Name: Timer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -62433,6 +62433,8 @@ MonoBehaviour:
   buttonClip: {fileID: 8300000, guid: 40a670030093b0c4593a0ceda29aa47d, type: 3}
   unreadObj: {fileID: 1846568877}
   unreadValueTMP: {fileID: 2040904236}
+  resetTimerTMP: {fileID: 256042851}
+  cancountdowntime: 0
 --- !u!114 &1747119141
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -62766,12 +62768,14 @@ MonoBehaviour:
   levelTMP: {fileID: 341062074}
   xpTMP: {fileID: 108715101}
   userDetailsObj: {fileID: 0}
+  leaderboardValueTMP: {fileID: 1823888387}
   usernameProfileTMP: {fileID: 1823249771}
   levelProfileTMP: {fileID: 574131744}
   xpProfileTMP: {fileID: 318683915}
   killProfileTMP: {fileID: 81758257}
   deathProfileTMP: {fileID: 1881271088}
   rankProfileTMP: {fileID: 742698248}
+  energyTMP: {fileID: 2117129526}
 --- !u!1001 &1748495659
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -77300,7 +77304,7 @@ GameObject:
   - component: {fileID: 2117129527}
   - component: {fileID: 2117129526}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: Energy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

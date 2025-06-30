@@ -12,6 +12,7 @@ public class LobbyUserProfile : MonoBehaviour
     [SerializeField] private TextMeshProUGUI levelTMP;
     [SerializeField] private TextMeshProUGUI xpTMP;
     [SerializeField] private GameObject userDetailsObj;
+    [SerializeField] private TextMeshProUGUI leaderboardValueTMP;
 
     [Header("PROFILE")]
     [SerializeField] private TextMeshProUGUI usernameProfileTMP;
@@ -21,11 +22,15 @@ public class LobbyUserProfile : MonoBehaviour
     [SerializeField] private TextMeshProUGUI deathProfileTMP;
     [SerializeField] private TextMeshProUGUI rankProfileTMP;
 
+    [Header("ENERGY")]
+    [SerializeField] private TextMeshProUGUI energyTMP;
+
     public void SetData()
     {
         usernameTMP.text = userData.Username;
         levelTMP.text = $"{userData.GameDetails.level:n0}";
         xpTMP.text = $"{userData.GameDetails.xp:n0} / {80 * userData.GameDetails.level}";
+        leaderboardValueTMP.text = $"{userData.GameDetails.leaderboard:n0}";
 
         usernameProfileTMP.text = userData.Username;
         levelProfileTMP.text = $"{userData.GameDetails.level:n0}";
@@ -33,6 +38,8 @@ public class LobbyUserProfile : MonoBehaviour
         killProfileTMP.text = $"{userData.GameDetails.kill:n0}";
         deathProfileTMP.text = $"{userData.GameDetails.death:n0}";
         rankProfileTMP.text = $"{userData.GameDetails.userrank:n0}";
+
+        energyTMP.text = $"{userData.GameDetails.energy:n0} / 10";
     }
 }
 
@@ -44,4 +51,7 @@ public class GameUserDetails
     public int level;
     public int xp;
     public int userrank;
+    public int energy;
+    public int leaderboard;
+    public float energyresettime;
 }

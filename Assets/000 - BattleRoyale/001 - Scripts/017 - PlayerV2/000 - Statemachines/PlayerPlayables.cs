@@ -26,7 +26,35 @@ public class PlayerPlayables : NetworkBehaviour
 
     //  =======================
 
-    private void OnEnable()
+    public override void Spawned()
+    {
+        if (HasInputAuthority) return;
+
+        InitializePlayables();
+    }
+
+    private void OnDisable()
+    {
+        playableGraph.Destroy();
+    }
+
+    public override void Render()
+    {
+        if (changer.CurrentState == null) return;
+
+        changer.CurrentState.LogicUpdate();
+    }
+
+    public override void FixedUpdateNetwork()
+    {
+        TickRateAnimation = Runner.Tick * Runner.DeltaTime;
+
+        if (changer.CurrentState == null) return;
+
+        changer.CurrentState.NetworkUpdate();
+    }
+
+    public void InitializePlayables()
     {
         changer = new PlayablesChanger();
 
@@ -52,26 +80,5 @@ public class PlayerPlayables : NetworkBehaviour
         playableGraph.Play();
 
         GraphVisualizerClient.Show(playableGraph);
-    }
-
-    private void OnDisable()
-    {
-        playableGraph.Destroy();
-    }
-
-    public override void Render()
-    {
-        if (changer.CurrentState == null) return;
-
-        changer.CurrentState.LogicUpdate();
-    }
-
-    public override void FixedUpdateNetwork()
-    {
-        TickRateAnimation = Runner.Tick * Runner.DeltaTime;
-
-        if (changer.CurrentState == null) return;
-
-        changer.CurrentState.NetworkUpdate();
     }
 }

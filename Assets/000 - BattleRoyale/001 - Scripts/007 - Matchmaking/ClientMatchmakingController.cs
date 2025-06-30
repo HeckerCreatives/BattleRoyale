@@ -128,6 +128,20 @@ public class ClientMatchmakingController : MonoBehaviour
     {
         if (findingMatch) return;
 
+        if (userData.GameDetails.energy <= 0)
+        {
+            GameManager.Instance.NotificationController.ShowConfirmation("Your energy is empty! You can still queue for the game but you won't gain any xp and points. Would you like to continue?", () => 
+            {
+                Matching();
+            }, null);
+        }
+        else
+            Matching();
+    }
+
+    private void Matching()
+    {
+
         GameManager.Instance.NoBGLoading.SetActive(true);
 
         StartCoroutine(GameManager.Instance.GetRequest("/usergamedetail/checkingamemaintenance", "", false, async (resposne) =>
@@ -163,7 +177,7 @@ public class ClientMatchmakingController : MonoBehaviour
 
                 var options = new CreateTicketOptions(
                       //GameManager.GetServerRegionName(userData.SelectedServer) + "Test", // The name of the queue defined in the previous step,
-                      GameManager.GetServerRegionName(userData.SelectedServer), 
+                      GameManager.GetServerRegionName(userData.SelectedServer),
                       new Dictionary<string, object>());
 
                 Debug.Log("JOINING LOBBY");

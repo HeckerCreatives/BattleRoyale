@@ -8500,9 +8500,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1863746084979324618}
+  - component: {fileID: 4992708156218680165}
   m_Layer: 0
   m_Name: mixamorig:LeftFoot
-  m_TagString: Untagged
+  m_TagString: Foot
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -8523,6 +8524,26 @@ Transform:
   - {fileID: 1018358663654344999}
   m_Father: {fileID: 6343190983200440270}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4992708156218680165
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 908032309115626808}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1014831617, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Type: 1
+  SphereRadius: 0
+  CapsuleRadius: 0
+  BoxExtents: {x: 0.09, y: 0.09, z: 0.06}
+  CapsuleExtents: 0
+  Offset: {x: 0, y: 0.1, z: 0}
+  Root: {fileID: 697121353735635553}
+  GizmosColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &917097218216471514
 GameObject:
   m_ObjectHideFlags: 0
@@ -10067,9 +10088,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7485744320879586698}
+  - component: {fileID: 2427880474745806833}
   m_Layer: 0
   m_Name: mixamorig:RightUpLeg
-  m_TagString: Untagged
+  m_TagString: Thigh
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -10090,6 +10112,26 @@ Transform:
   - {fileID: 5414892694377276516}
   m_Father: {fileID: 8738469233900563936}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2427880474745806833
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1223033190019005539}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1014831617, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Type: 1
+  SphereRadius: 0
+  CapsuleRadius: 0
+  BoxExtents: {x: 0.1, y: 0.28, z: 0.13}
+  CapsuleExtents: 0
+  Offset: {x: 0, y: 0.15, z: 0}
+  Root: {fileID: 697121353735635553}
+  GizmosColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &1231470245287477390
 GameObject:
   m_ObjectHideFlags: 0
@@ -16277,9 +16319,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5918389199435091386}
+  - component: {fileID: 8410058763022574994}
   m_Layer: 0
   m_Name: mixamorig:RightFoot
-  m_TagString: Untagged
+  m_TagString: Foot
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -16300,6 +16343,26 @@ Transform:
   - {fileID: 127919922989584481}
   m_Father: {fileID: 5414892694377276516}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8410058763022574994
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1471423438229986621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1014831617, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Type: 1
+  SphereRadius: 0
+  CapsuleRadius: 0
+  BoxExtents: {x: 0.09, y: 0.09, z: 0.06}
+  CapsuleExtents: 0
+  Offset: {x: 0, y: 0.1, z: 0}
+  Root: {fileID: 697121353735635553}
+  GizmosColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &1476166896631432208
 GameObject:
   m_ObjectHideFlags: 0
@@ -17250,10 +17313,12 @@ GameObject:
   - component: {fileID: 878466383140911213}
   - component: {fileID: 3997184430777469837}
   - component: {fileID: 8616249203308704524}
+  - component: {fileID: 6716398142436743886}
   - component: {fileID: 7325305681741820489}
   - component: {fileID: 6656396114835972110}
   - component: {fileID: 8443036603811109016}
   - component: {fileID: 419389618843496134}
+  - component: {fileID: 697121353735635553}
   m_Layer: 0
   m_Name: PlayerV2
   m_TagString: Untagged
@@ -17304,6 +17369,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77f5b4cf9f4a2dd44ab7f281d328b312, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  userData: {fileID: 0}
+  playerPlayables: {fileID: 0}
   canvasPlayer: {fileID: 8026870294703961982}
   playerVcam: {fileID: 1215740564578381670}
   playerAimVCam: {fileID: 3078478559899486563}
@@ -17458,6 +17525,18 @@ MonoBehaviour:
   _Stamina: 0
   _RecoverTime: 0
   _CanRecover: 0
+--- !u!114 &6716398142436743886
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1572221092642448185}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 812bad5440bdb904d8e664a9dcdba462, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &7325305681741820489
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17561,9 +17640,40 @@ MonoBehaviour:
   - {fileID: 878466383140911213}
   - {fileID: 3997184430777469837}
   - {fileID: 8616249203308704524}
+  - {fileID: 6716398142436743886}
   - {fileID: 7325305681741820489}
+  - {fileID: 697121353735635553}
   - {fileID: 5266470600977974503}
   ForceRemoteRenderTimeframe: 0
+--- !u!114 &697121353735635553
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1572221092642448185}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1039544458, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Config: 3
+  BroadRadius: 2.1226554
+  Offset: {x: 0, y: 0, z: 0}
+  GizmosColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  Hitboxes:
+  - {fileID: 2540127511420091461}
+  - {fileID: 2427880474745806833}
+  - {fileID: 2181215431630287299}
+  - {fileID: 3375957988231169618}
+  - {fileID: 4992708156218680165}
+  - {fileID: 8410058763022574994}
+  - {fileID: 1610435169256318222}
+  - {fileID: 5014964692651881797}
+  - {fileID: 2253379906184453541}
+  - {fileID: 8214176316864695101}
+  - {fileID: 1689506483982822151}
+  - {fileID: 4772422771580239214}
 --- !u!1 &1581068535897572761
 GameObject:
   m_ObjectHideFlags: 0
@@ -25930,9 +26040,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8750486824658429447}
+  - component: {fileID: 2540127511420091461}
   m_Layer: 0
   m_Name: mixamorig:LeftUpLeg
-  m_TagString: Untagged
+  m_TagString: Thigh
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -25953,6 +26064,26 @@ Transform:
   - {fileID: 6343190983200440270}
   m_Father: {fileID: 8738469233900563936}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2540127511420091461
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2921980837610259920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1014831617, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Type: 1
+  SphereRadius: 0
+  CapsuleRadius: 0
+  BoxExtents: {x: 0.1, y: 0.28, z: 0.13}
+  CapsuleExtents: 0
+  Offset: {x: 0, y: 0.15, z: 0}
+  Root: {fileID: 697121353735635553}
+  GizmosColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &2932695787033357847
 GameObject:
   m_ObjectHideFlags: 0
@@ -27820,9 +27951,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5414892694377276516}
+  - component: {fileID: 3375957988231169618}
   m_Layer: 0
   m_Name: mixamorig:RightLeg
-  m_TagString: Untagged
+  m_TagString: Shin
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -27843,6 +27975,26 @@ Transform:
   - {fileID: 5918389199435091386}
   m_Father: {fileID: 7485744320879586698}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3375957988231169618
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3277527224283236109}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1014831617, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Type: 1
+  SphereRadius: 0
+  CapsuleRadius: 0
+  BoxExtents: {x: 0.08, y: 0.18, z: 0.12}
+  CapsuleExtents: 0
+  Offset: {x: 0, y: 0.15, z: 0}
+  Root: {fileID: 697121353735635553}
+  GizmosColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &3292045779340947490
 GameObject:
   m_ObjectHideFlags: 0
@@ -34988,9 +35140,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8736020198739032053}
+  - component: {fileID: 1610435169256318222}
   m_Layer: 0
   m_Name: mixamorig:Spine2
-  m_TagString: Untagged
+  m_TagString: Body
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -35013,6 +35166,26 @@ Transform:
   - {fileID: 801888273884370075}
   m_Father: {fileID: 1506761005944748828}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1610435169256318222
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3709757554213054370}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1014831617, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Type: 1
+  SphereRadius: 0
+  CapsuleRadius: 0
+  BoxExtents: {x: 0.24, y: 0.4, z: 0.21}
+  CapsuleExtents: 0
+  Offset: {x: 0, y: -0.11, z: 0}
+  Root: {fileID: 697121353735635553}
+  GizmosColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &3713322015693266306
 GameObject:
   m_ObjectHideFlags: 0
@@ -36227,9 +36400,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3134631366664499833}
+  - component: {fileID: 8214176316864695101}
   m_Layer: 0
   m_Name: mixamorig:RightArm
-  m_TagString: Untagged
+  m_TagString: Arm
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -36250,6 +36424,26 @@ Transform:
   - {fileID: 5105149230822266613}
   m_Father: {fileID: 801888273884370075}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8214176316864695101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3876718263918771881}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1014831617, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Type: 1
+  SphereRadius: 0
+  CapsuleRadius: 0
+  BoxExtents: {x: 0.14, y: 0.21, z: 0.12}
+  CapsuleExtents: 0
+  Offset: {x: 0, y: 0.1, z: 0}
+  Root: {fileID: 697121353735635553}
+  GizmosColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &3897019509860472634
 GameObject:
   m_ObjectHideFlags: 0
@@ -43039,9 +43233,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 941135650145954417}
+  - component: {fileID: 2253379906184453541}
   m_Layer: 0
   m_Name: mixamorig:Head
-  m_TagString: Untagged
+  m_TagString: Head
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -43062,6 +43257,26 @@ Transform:
   - {fileID: 7334448890054342861}
   m_Father: {fileID: 3903835350263261976}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2253379906184453541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5104751153754780549}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1014831617, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Type: 1
+  SphereRadius: 0
+  CapsuleRadius: 0
+  BoxExtents: {x: 0.11, y: 0.12, z: 0.15}
+  CapsuleExtents: 0
+  Offset: {x: 0, y: 0.15, z: 0.03}
+  Root: {fileID: 697121353735635553}
+  GizmosColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &5114086027287817687
 GameObject:
   m_ObjectHideFlags: 0
@@ -52737,9 +52952,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1625661945023908142}
+  - component: {fileID: 1689506483982822151}
   m_Layer: 0
   m_Name: mixamorig:LeftForeArm
-  m_TagString: Untagged
+  m_TagString: Forearm
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -52760,6 +52976,26 @@ Transform:
   - {fileID: 672611801383697635}
   m_Father: {fileID: 7635333278291217361}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1689506483982822151
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6824789911105190760}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1014831617, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Type: 1
+  SphereRadius: 0
+  CapsuleRadius: 0
+  BoxExtents: {x: 0.09, y: 0.12, z: 0.06}
+  CapsuleExtents: 0
+  Offset: {x: 0, y: 0.15, z: 0}
+  Root: {fileID: 697121353735635553}
+  GizmosColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &6833216144433762229
 GameObject:
   m_ObjectHideFlags: 0
@@ -55369,9 +55605,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5105149230822266613}
+  - component: {fileID: 4772422771580239214}
   m_Layer: 0
   m_Name: mixamorig:RightForeArm
-  m_TagString: Untagged
+  m_TagString: Forearm
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -55392,6 +55629,26 @@ Transform:
   - {fileID: 582479332863376532}
   m_Father: {fileID: 3134631366664499833}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4772422771580239214
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7259665321142106605}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1014831617, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Type: 1
+  SphereRadius: 0
+  CapsuleRadius: 0
+  BoxExtents: {x: 0.09, y: 0.12, z: 0.09}
+  CapsuleExtents: 0
+  Offset: {x: 0, y: 0.15, z: 0}
+  Root: {fileID: 697121353735635553}
+  GizmosColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &7272930467351515795
 GameObject:
   m_ObjectHideFlags: 0
@@ -55669,9 +55926,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6343190983200440270}
+  - component: {fileID: 2181215431630287299}
   m_Layer: 0
   m_Name: mixamorig:LeftLeg
-  m_TagString: Untagged
+  m_TagString: Shin
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -55692,6 +55950,26 @@ Transform:
   - {fileID: 1863746084979324618}
   m_Father: {fileID: 8750486824658429447}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2181215431630287299
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7274159123949024485}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1014831617, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Type: 1
+  SphereRadius: 0
+  CapsuleRadius: 0
+  BoxExtents: {x: 0.08, y: 0.18, z: 0.12}
+  CapsuleExtents: 0
+  Offset: {x: 0, y: 0.15, z: 0}
+  Root: {fileID: 697121353735635553}
+  GizmosColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &7275049740382012920
 GameObject:
   m_ObjectHideFlags: 0
@@ -67815,9 +68093,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7635333278291217361}
+  - component: {fileID: 5014964692651881797}
   m_Layer: 0
   m_Name: mixamorig:LeftArm
-  m_TagString: Untagged
+  m_TagString: Arm
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -67838,6 +68117,26 @@ Transform:
   - {fileID: 1625661945023908142}
   m_Father: {fileID: 677566447126014046}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5014964692651881797
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8751265520176148709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1014831617, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Type: 1
+  SphereRadius: 0
+  CapsuleRadius: 0
+  BoxExtents: {x: 0.13, y: 0.22, z: 0.09}
+  CapsuleExtents: 0
+  Offset: {x: 0, y: 0.09, z: 0}
+  Root: {fileID: 697121353735635553}
+  GizmosColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!1 &8769862427702807392
 GameObject:
   m_ObjectHideFlags: 0

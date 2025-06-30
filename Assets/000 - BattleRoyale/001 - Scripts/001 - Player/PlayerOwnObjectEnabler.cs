@@ -1,4 +1,6 @@
 using Fusion;
+using Newtonsoft.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -6,6 +8,12 @@ using UnityEngine;
 
 public class PlayerOwnObjectEnabler : NetworkBehaviour
 {
+    [SerializeField] private UserData userData;
+
+    [Space]
+    [SerializeField] private PlayerPlayables playerPlayables;
+
+    [Space]
     [SerializeField] private GameObject canvasPlayer;
     [SerializeField] private GameObject playerVcam;
     [SerializeField] private GameObject playerAimVCam;
@@ -14,18 +22,25 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     [SerializeField] private GameObject playerMinimapCam;
     [SerializeField] private GameObject playerSpawnLocCam;
 
-    private async void OnEnable()
+    public async override void Spawned()
     {
-        while (!Runner)
-        {
-            Debug.Log($"waiting for runner");
-            await Task.Yield();
-        }
-
-
-        Debug.Log($"player has input authority? {HasInputAuthority}");
+        while (!Runner) await Task.Yield();
 
         if (!HasInputAuthority) return;
+
+        GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.PostRequest("/usergamedetail/useenergy", "", null, false, (response) =>
+        {
+            userData.GameDetails.energy -= userData.GameDetails.energy > 0 ? 1 : 0;
+        }, () =>
+        {
+            Runner.Shutdown(true);
+            GameManager.Instance.SceneController.StopLoading();
+            GameManager.Instance.SocketMngr.Socket.Disconnect();
+            GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later.", null);
+            GameManager.Instance.SceneController.CurrentScene = "Login";
+        }));
+        GameManager.Instance.SceneController.AddActionLoadinList(InitializePlayer());
+        GameManager.Instance.SceneController.ActionPass = true;
 
         canvasPlayer.SetActive(true);
         playerVcam.SetActive(true);
@@ -34,9 +49,11 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         playerMapIcon.SetActive(true);
         playerMinimapCam.SetActive(true);
         playerSpawnLocCam.SetActive(true);
+    }
 
-        Debug.Log(GameManager.Instance.SceneController.ActionPass);
-        GameManager.Instance.SceneController.ActionPass = true;
-        Debug.Log(GameManager.Instance.SceneController.ActionPass);
+    IEnumerator InitializePlayer()
+    {
+        playerPlayables.InitializePlayables();
+        yield return null;
     }
 }

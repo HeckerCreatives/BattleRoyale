@@ -142,6 +142,7 @@
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\PlayablesChanger.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\004 - MainMenu\ButtonSelector.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\005 - ScriptableObjects\000 - Player\MovementData.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\PlayerHealthV2.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\002 - Ammo\000 - Bullets\BulletObjectPool.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\001 - Playables\MainCorePlayable.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\007 - Matchmaking\ClientMatchmakingController.cs" />
@@ -648,7 +649,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Text.Json">
-      <HintPath>Packages\SocketIOUnity\Runtime\libs\System.Text.Json.dll</HintPath>
+      <HintPath>Library\PackageCache\com.itisnajim.socketiounity@00e176cdc3\Runtime\libs\System.Text.Json.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Fusion.Log">
@@ -680,7 +681,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces">
-      <HintPath>Packages\SocketIOUnity\Runtime\libs\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
+      <HintPath>Library\PackageCache\com.itisnajim.socketiounity@00e176cdc3\Runtime\libs\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.Antlr3.Runtime">
@@ -692,7 +693,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Text.Encodings.Web">
-      <HintPath>Packages\SocketIOUnity\Runtime\libs\System.Text.Encodings.Web.dll</HintPath>
+      <HintPath>Library\PackageCache\com.itisnajim.socketiounity@00e176cdc3\Runtime\libs\System.Text.Encodings.Web.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json">
@@ -708,7 +709,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Runtime.CompilerServices.Unsafe">
-      <HintPath>Packages\SocketIOUnity\Runtime\libs\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+      <HintPath>Library\PackageCache\com.itisnajim.socketiounity@00e176cdc3\Runtime\libs\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Android.Types">
@@ -1227,6 +1228,10 @@
       <HintPath>Library\ScriptAssemblies\Unity.Services.Analytics.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="SocketIOUnityAssembly">
+      <HintPath>Library\ScriptAssemblies\SocketIOUnityAssembly.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.RenderPipelines.Core.Runtime">
       <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Runtime.dll</HintPath>
       <Private>False</Private>
@@ -1445,10 +1450,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="SocketIOUnityAssembly.csproj">
-      <Project>{77A7C189-E0EF-9C75-CCD8-897C65E3D78D}</Project>
-      <Name>SocketIOUnityAssembly</Name>
-    </ProjectReference>
     <ProjectReference Include="Whinarn.UnityMeshSimplifier.Editor.csproj">
       <Project>{8D04A87E-A94C-FA46-86A1-73DF94CCA09A}</Project>
       <Name>Whinarn.UnityMeshSimplifier.Editor</Name>
