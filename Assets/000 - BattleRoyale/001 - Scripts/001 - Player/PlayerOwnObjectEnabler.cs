@@ -12,6 +12,8 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
 
     [Space]
     [SerializeField] private PlayerPlayables playerPlayables;
+    [SerializeField] private PlayerCameraRotation cameraRotation;
+    [SerializeField] private PlayerMovementV2 movementV2;
 
     [Space]
     [SerializeField] private GameObject canvasPlayer;
@@ -28,7 +30,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
 
         if (!HasInputAuthority) return;
 
-        GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.PostRequest("/usergamedetail/useenergy", "", null, false, (response) =>
+        GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.PostRequest("/usergamedetail/useenergy", "", new Dictionary<string, object> { }, false, (response) =>
         {
             userData.GameDetails.energy -= userData.GameDetails.energy > 0 ? 1 : 0;
         }, () =>
@@ -53,7 +55,8 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
 
     IEnumerator InitializePlayer()
     {
-        playerPlayables.InitializePlayables();
+        cameraRotation.InitializeCameraRotationSensitivity();
+        movementV2.PlayerMovementInitialize();
         yield return null;
     }
 }

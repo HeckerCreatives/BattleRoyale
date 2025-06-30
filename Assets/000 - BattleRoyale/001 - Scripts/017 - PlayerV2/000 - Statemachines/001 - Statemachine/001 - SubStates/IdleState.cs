@@ -22,7 +22,16 @@ public class IdleState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
-        if (playerMovement.MoveDirection != Vector3.zero)
+        if (!characterController.IsGrounded)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
+
+        if (playerMovement.IsJumping)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.JumpPlayable);
+
+        if (playerMovement.IsBlocking)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.BlockPlayable);
+
+        if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
         {
             if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
                 playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
@@ -36,7 +45,7 @@ public class IdleState : PlayerOnGround
             playablesChanger.ChangeState(playerPlayables.basicMovement.Punch1Playable);
         }
 
-        if (playerMovement.IsRoll)
+        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
         {
             playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
         }

@@ -1,5 +1,6 @@
 
 using Fusion.Addons.SimpleKCC;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -28,6 +29,19 @@ public class AnimationPlayable
 
     //  ======================
 
+    public float blendDuration = 0.25f; // Duration of blend in seconds
+
+    public Coroutine blendCoroutine;
+
+    private MonoBehaviour coroutineHost; // host to start coroutine
+
+    public void SetCoroutineHost(MonoBehaviour host)
+    {
+        coroutineHost = host;
+    }
+
+    //  ======================
+
     public AnimationPlayable(SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay    )
     {
         this.characterController = characterController;
@@ -53,7 +67,6 @@ public class AnimationPlayable
     public virtual void Enter()
     {
         Debug.Log($"ENTER mixer count: {animations.Count}  animationanme: {animationname}");
-        mixerPlayable.SetInputWeight(animations.IndexOf(animationname), 1f);
 
         if (oncePlay)
         {
@@ -61,17 +74,44 @@ public class AnimationPlayable
             animationClipPlayable.Play();
         }
 
-        playerPlayables.finalMixer.SetInputWeight(mixers.IndexOf(mixername), 1f);
+        int mixerIndex = mixers.IndexOf(mixername);
+        int animIndex = animations.IndexOf(animationname);
+
+        if (blendCoroutine != null) coroutineHost.StopCoroutine(blendCoroutine);
+        blendCoroutine = coroutineHost.StartCoroutine(BlendWeights(mixerPlayable, animIndex, 1f));
+        coroutineHost.StartCoroutine(BlendWeights(playerPlayables.finalMixer, mixerIndex, 1f));
     }
 
     public virtual void Exit()
     {
         Debug.Log($"EXIT mixer count: {animations.Count}  animationanme: {animationname}");
-        playerPlayables.finalMixer.SetInputWeight(mixers.IndexOf(mixername), 0f);
-        mixerPlayable.SetInputWeight(animations.IndexOf(animationname), 0f);
+
+        int mixerIndex = mixers.IndexOf(mixername);
+        int animIndex = animations.IndexOf(animationname);
+
+        if (blendCoroutine != null) coroutineHost.StopCoroutine(blendCoroutine);
+        blendCoroutine = coroutineHost.StartCoroutine(BlendWeights(mixerPlayable, animIndex, 0f));
+        coroutineHost.StartCoroutine(BlendWeights(playerPlayables.finalMixer, mixerIndex, 0f));
     }
 
     public virtual void LogicUpdate(){ }
 
     public virtual void NetworkUpdate() { }
+
+    private IEnumerator BlendWeights(Playable mixer, int index, float targetWeight)
+    {
+        float startWeight = mixer.GetInputWeight(index);
+        float time = 0f;
+
+        while (time < blendDuration)
+        {
+            time += Time.deltaTime;
+            float t = time / blendDuration;
+            float newWeight = Mathf.Lerp(startWeight, targetWeight, t);
+            mixer.SetInputWeight(index, newWeight);
+            yield return null;
+        }
+
+        mixer.SetInputWeight(index, targetWeight); // Final snap to target
+    }
 }

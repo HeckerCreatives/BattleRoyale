@@ -134,6 +134,15 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Block"",
+                    ""type"": ""Button"",
+                    ""id"": ""d00237b1-46a4-4214-a658-30faa95b845a"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -294,11 +303,22 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""61690e72-5a20-4670-b664-aabbb1b21632"",
-                    ""path"": ""<Gamepad>/buttonWest"",
+                    ""path"": ""<Gamepad>/buttonNorth"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""Roll"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0a7db189-97ed-44d2-bd8e-980ea5a1fa5f"",
+                    ""path"": ""<Gamepad>/rightStickPress"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Block"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -338,6 +358,7 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
         m_Gameplay_ArmorRepair = m_Gameplay.FindAction("ArmorRepair", throwIfNotFound: true);
         m_Gameplay_Heal = m_Gameplay.FindAction("Heal", throwIfNotFound: true);
         m_Gameplay_Reload = m_Gameplay.FindAction("Reload", throwIfNotFound: true);
+        m_Gameplay_Block = m_Gameplay.FindAction("Block", throwIfNotFound: true);
     }
 
     ~@GameplayInputs()
@@ -416,6 +437,7 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
     private readonly InputAction m_Gameplay_ArmorRepair;
     private readonly InputAction m_Gameplay_Heal;
     private readonly InputAction m_Gameplay_Reload;
+    private readonly InputAction m_Gameplay_Block;
     public struct GameplayActions
     {
         private @GameplayInputs m_Wrapper;
@@ -432,6 +454,7 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
         public InputAction @ArmorRepair => m_Wrapper.m_Gameplay_ArmorRepair;
         public InputAction @Heal => m_Wrapper.m_Gameplay_Heal;
         public InputAction @Reload => m_Wrapper.m_Gameplay_Reload;
+        public InputAction @Block => m_Wrapper.m_Gameplay_Block;
         public InputActionMap Get() { return m_Wrapper.m_Gameplay; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -477,6 +500,9 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
             @Reload.started += instance.OnReload;
             @Reload.performed += instance.OnReload;
             @Reload.canceled += instance.OnReload;
+            @Block.started += instance.OnBlock;
+            @Block.performed += instance.OnBlock;
+            @Block.canceled += instance.OnBlock;
         }
 
         private void UnregisterCallbacks(IGameplayActions instance)
@@ -517,6 +543,9 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
             @Reload.started -= instance.OnReload;
             @Reload.performed -= instance.OnReload;
             @Reload.canceled -= instance.OnReload;
+            @Block.started -= instance.OnBlock;
+            @Block.performed -= instance.OnBlock;
+            @Block.canceled -= instance.OnBlock;
         }
 
         public void RemoveCallbacks(IGameplayActions instance)
@@ -566,5 +595,6 @@ public partial class @GameplayInputs: IInputActionCollection2, IDisposable
         void OnArmorRepair(InputAction.CallbackContext context);
         void OnHeal(InputAction.CallbackContext context);
         void OnReload(InputAction.CallbackContext context);
+        void OnBlock(InputAction.CallbackContext context);
     }
 }

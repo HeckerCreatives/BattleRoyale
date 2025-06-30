@@ -7,7 +7,9 @@ using UnityEngine.Animations;
 public class FinalPunchState : PlayerOnGround
 {
     float timer;
+    float moveTimer;
     bool canAction;
+    bool canMove;
 
     public FinalPunchState(SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
@@ -18,7 +20,9 @@ public class FinalPunchState : PlayerOnGround
         base.Enter();
 
         timer = playerPlayables.TickRateAnimation + animationLength;
+        moveTimer = playerPlayables.TickRateAnimation + 0.30f;
         canAction = true;
+        canMove = true;
     }
 
     public override void Exit()
@@ -42,7 +46,12 @@ public class FinalPunchState : PlayerOnGround
             else
                 playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
 
-            //characterController.Move(characterController.TransformDirection * 5f, 0f);
+        }
+
+        if (playerPlayables.TickRateAnimation >= moveTimer && canMove)
+        {
+            characterController.Move(characterController.TransformDirection * 50f, 0f);
+            canMove = false;
         }
     }
 }

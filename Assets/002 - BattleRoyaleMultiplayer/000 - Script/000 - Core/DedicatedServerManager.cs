@@ -583,7 +583,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             NetworkObject playerCharacter = Runner.Spawn(playerObj, Vector3.up, Quaternion.identity, player, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
             {
                 obj.GetComponent<SimpleKCC>().SetPosition(spawnWaitingAreaPositions[tempspawnpos].position);
-                //obj.GetComponent<KillCountCounterController>().ServerManager = this;
+                obj.GetComponent<PlayerHealthV2>().ServerManager = this;
                 //obj.GetComponent<WaitingAreaTimerController>().ServerManager = this;
                 //obj.GetComponent<PlayerHealth>().ServerManager = this;
                 //obj.GetComponent<PlayerSpawnLocationController>().ServerManager = this;

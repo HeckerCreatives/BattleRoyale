@@ -7,6 +7,7 @@ using UnityEngine.Animations;
 public class MiddlePunchState : PlayerOnGround
 {
     float timer;
+    float nextPunchWindow;
     bool canAction;
 
     public MiddlePunchState(SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
@@ -18,6 +19,7 @@ public class MiddlePunchState : PlayerOnGround
         base.Enter();
 
         timer = playerPlayables.TickRateAnimation + (animationLength * 0.9f);
+        nextPunchWindow = playerPlayables.TickRateAnimation + (animationLength - 0.2f);
         canAction = true;
     }
 
@@ -29,14 +31,23 @@ public class MiddlePunchState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
-        if (playerPlayables.TickRateAnimation >= timer && canAction)
+        if (!characterController.IsGrounded)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
+
+
+        if (canAction)
         {
-            if (playerMovement.Attacking)
-            {
+            if (playerPlayables.TickRateAnimation >= nextPunchWindow && playerMovement.Attacking)
                 playablesChanger.ChangeState(playerPlayables.basicMovement.Punch3Playable);
-            }
-            else
+
+            if (playerPlayables.TickRateAnimation >= timer)
             {
+                if (playerMovement.IsBlocking)
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.BlockPlayable);
+
+                if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
+
                 if (playerMovement.MoveDirection != Vector3.zero)
                 {
                     if (playerMovement.IsSprint)

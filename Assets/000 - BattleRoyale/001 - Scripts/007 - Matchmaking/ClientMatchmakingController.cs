@@ -141,6 +141,7 @@ public class ClientMatchmakingController : MonoBehaviour
 
     private void Matching()
     {
+        findABattleObj.gameObject.SetActive(false);
 
         GameManager.Instance.NoBGLoading.SetActive(true);
 

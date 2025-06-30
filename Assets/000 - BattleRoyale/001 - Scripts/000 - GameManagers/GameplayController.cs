@@ -20,7 +20,8 @@ public enum InputButton
     ArmorRepair,
     Heal,
     Reload,
-    Roll
+    Roll,
+    Block
 }
 
 public enum HoldInputButtons
@@ -52,7 +53,8 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     [SerializeField] public bool Jump;
     [SerializeField] public bool Aim;
     [SerializeField] public bool Shoot;
-    [SerializeField] private bool Roll;
+    [SerializeField] public bool Roll;
+    [SerializeField] public bool Block;
     [SerializeField] public bool Sprint;
     [SerializeField] public bool SwitchHands;
     [SerializeField] public bool SwitchPrimary;
@@ -97,8 +99,10 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         gameplayInputs.Gameplay.Shoot.canceled += _ => ShootStop();
         gameplayInputs.Gameplay.Sprint.performed += _ => SprintStart();
         gameplayInputs.Gameplay.Sprint.canceled += _ => SprintStop();
-        gameplayInputs.Gameplay.Roll.performed += _ => RollStart();
+        gameplayInputs.Gameplay.Roll.started += _ => RollStart();
         gameplayInputs.Gameplay.Roll.canceled += _ => RollStop();
+        gameplayInputs.Gameplay.Block.started += _ => BlockStart();
+        gameplayInputs.Gameplay.Block.canceled += _ => BlockStop();
         gameplayInputs.Gameplay.SwitchHands.started += _ => SwitchHandsStart();
         gameplayInputs.Gameplay.SwitchHands.canceled += _ => SwitchHandsStop();
         gameplayInputs.Gameplay.SwitchPrimary.started += _ => SwitchPrimaryStart();
@@ -131,8 +135,10 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.Shoot.canceled -= _ => ShootStop();
             gameplayInputs.Gameplay.Sprint.performed -= _ => SprintStart();
             gameplayInputs.Gameplay.Sprint.canceled -= _ => SprintStop();
-            gameplayInputs.Gameplay.Roll.performed -= _ => RollStart();
+            gameplayInputs.Gameplay.Roll.started -= _ => RollStart();
             gameplayInputs.Gameplay.Roll.canceled -= _ => RollStop();
+            gameplayInputs.Gameplay.Block.started -= _ => BlockStart();
+            gameplayInputs.Gameplay.Block.canceled -= _ => BlockStop();
             gameplayInputs.Gameplay.SwitchHands.started -= _ => SwitchHandsStart();
             gameplayInputs.Gameplay.SwitchHands.canceled -= _ => SwitchHandsStop();
             gameplayInputs.Gameplay.SwitchPrimary.started -= _ => SwitchPrimaryStart();
@@ -212,6 +218,16 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     private void RollStop()
     {
         Roll = false;
+    }
+
+    private void BlockStart()
+    {
+        Block = true;
+    }
+
+    private void BlockStop()
+    {
+        Block = false;
     }
 
     public void SwitchTrapStop()
@@ -313,6 +329,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         myInput.Buttons.Set(InputButton.ArmorRepair, ArmorRepair);
         myInput.Buttons.Set(InputButton.Reload, Reload);
         myInput.Buttons.Set(InputButton.Roll, Roll);
+        myInput.Buttons.Set(InputButton.Block, Block);
         myInput.HoldInputButtons.Set(HoldInputButtons.Shoot, Shoot);
         myInput.HoldInputButtons.Set(HoldInputButtons.Shoot, Shoot);
         myInput.HoldInputButtons.Set(HoldInputButtons.Sprint, Sprint);

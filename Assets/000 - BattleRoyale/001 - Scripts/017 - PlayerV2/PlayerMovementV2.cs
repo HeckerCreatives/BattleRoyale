@@ -6,6 +6,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.EnhancedTouch;
+using UnityEngine.InputSystem.XR;
 using UnityEngine.Windows;
 
 public class PlayerMovementV2 : NetworkBehaviour
@@ -29,6 +30,7 @@ public class PlayerMovementV2 : NetworkBehaviour
     [Space]
     [SerializeField] private float moveSpeed;
     [SerializeField] private float sprintSpeed;
+    [SerializeField] private float jumpHeight;
 
     [Space]
     public RectTransform joystickArea;
@@ -46,6 +48,9 @@ public class PlayerMovementV2 : NetworkBehaviour
     [field: SerializeField][Networked] public NetworkBool IsSprint { get; set; }
     [field: SerializeField][Networked] public NetworkBool IsRoll { get; set; }
     [field: SerializeField][Networked] public NetworkBool Attacking { get; set; }
+    [field: SerializeField][Networked] public float JumpImpulse { get; set; }
+    [field: SerializeField][Networked] public NetworkBool IsJumping { get; set; }
+    [field: SerializeField][Networked] public NetworkBool IsBlocking { get; set; }
 
     //  =======================
 
@@ -65,15 +70,14 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     private void OnEnable()
     {
-        PlayerMovementInitialize();
+        characterController.SetGravity(Physics.gravity.y * 3f);
+        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
     }
 
-    public async void PlayerMovementInitialize()
+    public void PlayerMovementInitialize()
     {
         characterController.SetGravity(Physics.gravity.y * 3f);
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
-
-        while (!Runner) await Task.Yield();
 
         if (!HasInputAuthority) return;
 
@@ -110,6 +114,7 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
+        FallingAfterJump();
         InputControlls();
     }
 
@@ -276,7 +281,9 @@ public class PlayerMovementV2 : NetworkBehaviour
 
         Move();
         Sprint();
+        Jump();
         Roll();
+        Block();
         Shoot();
         //Crouch();
         //Prone();
@@ -287,13 +294,14 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     private void Move()
     {
-        if (IsRoll) return;
-
         XMovement = controllerInput.MovementDirection.x;
         YMovement = controllerInput.MovementDirection.y;
 
         //if (playerHealth.CurrentHealth <= 0) return;
+    }
 
+    public void MoveCharacter()
+    {
         if (MoveDir.sqrMagnitude > 0.01f && !IsRoll)
         {
             // Normalize to prevent sprinting from affecting rotation
@@ -309,7 +317,7 @@ public class PlayerMovementV2 : NetworkBehaviour
         float moveSpeedValue = IsSprint ? SprintSpeed : MoveSpeed;
         MoveDirection = MoveDir * moveSpeedValue * Runner.DeltaTime;
 
-        characterController.Move(MoveDirection, 0f);
+        characterController.Move(MoveDirection, JumpImpulse);
     }
 
     public Vector3 PlayerLookDirection()
@@ -342,15 +350,43 @@ public class PlayerMovementV2 : NetworkBehaviour
         IsSprint = true;
     }
 
+    private void Jump()
+    {
+        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Jump) && characterController.IsGrounded && !IsJumping)
+        {
+            IsJumping = true;
+            JumpImpulse = jumpHeight;
+        }
+    }
+
+    public void FallingAfterJump()
+    {
+        if (!characterController.IsGrounded)
+        {
+            JumpImpulse -= Mathf.Abs(Physics.gravity.y) * 3f * Runner.DeltaTime;
+
+            if (JumpImpulse <= 0f)
+            {
+                JumpImpulse = 0f;
+                IsJumping = false;
+            }
+        }
+    }
+
     private void Roll()
     {
-        if (stamina.Stamina < 50)
-            return;
-
-        if (IsRoll) return;
-
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Roll))
             IsRoll = true;
+        else
+            IsRoll = false;
+    }
+
+    private void Block()
+    {
+        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Block))
+            IsBlocking = true;
+        else
+            IsBlocking = false;
     }
 
     private void Shoot()

@@ -46,14 +46,9 @@ public class PlayerCameraRotation : NetworkBehaviour
 
     async public override void Spawned()
     {
-        while (!Runner) await Task.Yield();
-
         if (!HasInputAuthority) return;
 
         _threshold = 0.01f;
-
-        Rpc_HandleSensitivity(GameManager.Instance.GameSettingManager.CurrentLookSensitivity);
-        Rpc_HandleAdsSensitivity(GameManager.Instance.GameSettingManager.CurrentLookAdsSensitivity);
 
         GameManager.Instance.GameSettingManager.OnLookSensitivityChanged += LookSensitivityChanged;
         GameManager.Instance.GameSettingManager.OnLookAdsSensitivityChanged += LookAdsSensitivityChanged;
@@ -94,6 +89,12 @@ public class PlayerCameraRotation : NetworkBehaviour
 
     private void LookAdsSensitivityChanged(object sender, EventArgs e)
     {
+        Rpc_HandleAdsSensitivity(GameManager.Instance.GameSettingManager.CurrentLookAdsSensitivity);
+    }
+
+    public void InitializeCameraRotationSensitivity()
+    {
+        Rpc_HandleSensitivity(GameManager.Instance.GameSettingManager.CurrentLookSensitivity);
         Rpc_HandleAdsSensitivity(GameManager.Instance.GameSettingManager.CurrentLookAdsSensitivity);
     }
 

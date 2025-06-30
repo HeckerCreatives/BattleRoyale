@@ -18,7 +18,7 @@ public class RollState : PlayerOnGround
     {
         base.Enter();
 
-        timer = playerPlayables.TickRateAnimation + (animationLength * 0.9f);
+        timer = playerPlayables.TickRateAnimation + animationLength;
         canAction = true;
 
         playerPlayables.stamina.ReduceStamina(50f);
@@ -32,10 +32,11 @@ public class RollState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
+        if (!characterController.IsGrounded)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
+
         if (playerPlayables.TickRateAnimation >= timer && canAction)
         {
-            playerMovement.IsRoll = false;
-
             if (playerMovement.MoveDirection != Vector3.zero)
             {
                 if (playerMovement.IsSprint)

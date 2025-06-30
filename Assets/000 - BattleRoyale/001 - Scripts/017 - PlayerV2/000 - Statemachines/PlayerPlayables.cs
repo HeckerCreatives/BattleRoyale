@@ -26,10 +26,8 @@ public class PlayerPlayables : NetworkBehaviour
 
     //  =======================
 
-    public override void Spawned()
+    public void OnEnable()
     {
-        if (HasInputAuthority) return;
-
         InitializePlayables();
     }
 
@@ -57,6 +55,8 @@ public class PlayerPlayables : NetworkBehaviour
     public void InitializePlayables()
     {
         changer = new PlayablesChanger();
+
+        changer.coroutineHost = this;
 
         playableGraph = PlayableGraph.Create();
 
