@@ -8,6 +8,8 @@ public class FinalPunchState : PlayerOnGround
 {
     float timer;
     float moveTimer;
+    float damageWindowStart;
+    float damageWindowEnd;
     bool canAction;
     bool canMove;
 
@@ -21,6 +23,8 @@ public class FinalPunchState : PlayerOnGround
 
         timer = playerPlayables.TickRateAnimation + animationLength;
         moveTimer = playerPlayables.TickRateAnimation + 0.30f;
+        damageWindowStart = playerPlayables.TickRateAnimation + 0.45f;
+        damageWindowEnd = playerPlayables.TickRateAnimation + 0.50f;
         canAction = true;
         canMove = true;
     }
@@ -28,10 +32,36 @@ public class FinalPunchState : PlayerOnGround
     public override void Exit()
     {
         base.Exit();
+        playerPlayables.basicMovement.ResetFirstAttack();
         canAction = false;
     }
 
+    public override void LogicUpdate()
+    {
+        base.LogicUpdate();
+
+        Animation();
+    }
+
     public override void NetworkUpdate()
+    {
+        if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
+        {
+            playerPlayables.basicMovement.PerformFinalAttack();
+        }
+
+        Animation();
+
+        if (playerPlayables.TickRateAnimation >= moveTimer && canMove)
+        {
+            characterController.Move(characterController.TransformDirection * 50f, 0f);
+            canMove = false;
+        }
+
+        playerPlayables.stamina.RecoverStamina(5f);
+    }
+
+    private  void Animation()
     {
         if (playerPlayables.TickRateAnimation >= timer && canAction)
         {
@@ -46,12 +76,6 @@ public class FinalPunchState : PlayerOnGround
             else
                 playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
 
-        }
-
-        if (playerPlayables.TickRateAnimation >= moveTimer && canMove)
-        {
-            characterController.Move(characterController.TransformDirection * 50f, 0f);
-            canMove = false;
         }
     }
 }

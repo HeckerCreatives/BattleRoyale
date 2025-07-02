@@ -30,7 +30,20 @@ public class RollState : PlayerOnGround
         canAction = false;
     }
 
+    public override void LogicUpdate()
+    {
+        base.LogicUpdate();
+        Animation();
+    }
+
     public override void NetworkUpdate()
+    {
+        Animation();
+
+        characterController.Move(characterController.TransformDirection * 5f, 0f);
+    }
+
+    private void Animation()
     {
         if (!characterController.IsGrounded)
             playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
@@ -48,7 +61,5 @@ public class RollState : PlayerOnGround
             else
                 playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
         }
-
-        characterController.Move(characterController.TransformDirection * 5f, 0f);
     }
 }

@@ -66,8 +66,6 @@ public class AnimationPlayable
 
     public virtual void Enter()
     {
-        Debug.Log($"ENTER mixer count: {animations.Count}  animationanme: {animationname}");
-
         if (oncePlay)
         {
             animationClipPlayable.SetTime(0f);
@@ -84,8 +82,6 @@ public class AnimationPlayable
 
     public virtual void Exit()
     {
-        Debug.Log($"EXIT mixer count: {animations.Count}  animationanme: {animationname}");
-
         int mixerIndex = mixers.IndexOf(mixername);
         int animIndex = animations.IndexOf(animationname);
 
@@ -94,7 +90,10 @@ public class AnimationPlayable
         coroutineHost.StartCoroutine(BlendWeights(playerPlayables.finalMixer, mixerIndex, 0f));
     }
 
-    public virtual void LogicUpdate(){ }
+    public virtual void LogicUpdate()
+    {
+        if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority) return;
+    }
 
     public virtual void NetworkUpdate() { }
 

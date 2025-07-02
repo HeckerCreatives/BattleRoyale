@@ -17,19 +17,54 @@ public class IdleState : PlayerOnGround
 
     public override void LogicUpdate()
     {
-
+        base.LogicUpdate();
+        Animation();
     }
 
     public override void NetworkUpdate()
     {
+        Animation();
+
+        playerPlayables.stamina.RecoverStamina(5f);
+    }
+
+    private void Animation()
+    {
         if (!characterController.IsGrounded)
+        {
             playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
+            return;
+        }
 
         if (playerMovement.IsJumping)
+        {
             playablesChanger.ChangeState(playerPlayables.basicMovement.JumpPlayable);
+            return;
+        }
 
         if (playerMovement.IsBlocking)
+        {
             playablesChanger.ChangeState(playerPlayables.basicMovement.BlockPlayable);
+            return;
+        }
+
+        if (playerPlayables.healthV2.IsHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            return;
+        }
+
+        if (playerPlayables.healthV2.IsSecondHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            return;
+        }
+
+        if (playerPlayables.healthV2.IsStagger)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.StaggerHitPlayable);
+            return;
+        }
 
         if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
         {
@@ -38,18 +73,20 @@ public class IdleState : PlayerOnGround
 
             else
                 playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+
+            return;
         }
 
         if (playerMovement.Attacking)
         {
             playablesChanger.ChangeState(playerPlayables.basicMovement.Punch1Playable);
+            return;
         }
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
         {
             playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
+            return;
         }
-
-        playerPlayables.stamina.RecoverStamina(5f);
     }
 }

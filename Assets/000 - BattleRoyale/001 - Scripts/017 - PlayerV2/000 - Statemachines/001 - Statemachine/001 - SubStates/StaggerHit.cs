@@ -1,0 +1,72 @@
+using Fusion.Addons.SimpleKCC;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Animations;
+
+public class StaggerHit : PlayerOnGround
+{
+    float timer;
+    float moveTimer;
+    bool canAction;
+
+    public StaggerHit(SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    {
+    }
+
+    public override void Enter()
+    {
+        base.Enter();
+
+        timer = playerPlayables.TickRateAnimation + animationLength;
+        moveTimer = playerPlayables.TickRateAnimation + 0.8f;
+        canAction = true;
+    }
+
+    public override void Exit() 
+    {
+        base.Exit();
+
+        canAction = false;
+        playerPlayables.healthV2.IsStagger = false;
+    }
+
+    public override void LogicUpdate()
+    {
+        base.LogicUpdate();
+
+        Animation();
+    }
+
+    public override void NetworkUpdate()
+    {
+        if (canAction)
+        {
+            if (playerPlayables.TickRateAnimation < moveTimer)
+                characterController.Move(characterController.TransformDirection * -10f, 0f);
+        }
+
+        Animation();
+        playerPlayables.stamina.RecoverStamina(5f);
+    }
+
+    private void Animation()
+    {
+        if (!characterController.IsGrounded)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
+            return;
+        }
+
+        if (canAction)
+        {
+            if (playerPlayables.TickRateAnimation >= timer)
+            {
+                if (playerMovement.IsRoll)
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
+                else
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.GettingUpPlayable);
+            }
+        }
+    }
+}

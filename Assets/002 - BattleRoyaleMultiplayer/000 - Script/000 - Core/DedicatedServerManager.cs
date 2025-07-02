@@ -594,40 +594,40 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 //obj.GetComponent<MainCorePlayable>().ServerManager = this;
             });
 
-            BulletObjectPool temppool = playerCharacter.GetComponent<BulletObjectPool>();
+            //BulletObjectPool temppool = playerCharacter.GetComponent<BulletObjectPool>();
 
-            for (int a = 0; a < 15; a++)
-            {
-                temppool.BulletQueue.Add(Runner.Spawn(bulletNO, Vector2.zero, Quaternion.identity, playerCharacter.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
-                {
-                    temppool.TempBullets.Add(obj);
-                    obj.GetComponent<BulletController>().PoolIndex = a;
-                    obj.GetComponent<BulletController>().Pooler = temppool;
-                }), false);
-                temppool.ArrowQueue.Add(Runner.Spawn(arrowNO, Vector2.zero, Quaternion.identity, playerCharacter.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
-                {
-                    temppool.TempArrows.Add(obj);
-                    obj.GetComponent<ArrowController>().PoolIndex = a;
-                    obj.GetComponent<ArrowController>().Pooler = temppool;
-                }), false);
-            }
+            //for (int a = 0; a < 15; a++)
+            //{
+            //    temppool.BulletQueue.Add(Runner.Spawn(bulletNO, Vector2.zero, Quaternion.identity, playerCharacter.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+            //    {
+            //        temppool.TempBullets.Add(obj);
+            //        obj.GetComponent<BulletController>().PoolIndex = a;
+            //        obj.GetComponent<BulletController>().Pooler = temppool;
+            //    }), false);
+            //    temppool.ArrowQueue.Add(Runner.Spawn(arrowNO, Vector2.zero, Quaternion.identity, playerCharacter.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+            //    {
+            //        temppool.TempArrows.Add(obj);
+            //        obj.GetComponent<ArrowController>().PoolIndex = a;
+            //        obj.GetComponent<ArrowController>().Pooler = temppool;
+            //    }), false);
+            //}
 
-            playerCharacter.GetComponent<BulletObjectPool>().DoneInitialize = true;
+            //playerCharacter.GetComponent<BulletObjectPool>().DoneInitialize = true;
 
             Players.Add(player, playerCharacter);
             RemainingPlayers.Add(player, playerCharacter);
             PlayerCountChange?.Invoke(this, EventArgs.Empty);
 
-            if (Players.Count >= 1 && !CanCountWaitingAreaTimer)
-            {
-                CanCountWaitingAreaTimer = true;
-            }
+            //if (Players.Count >= 1 && !CanCountWaitingAreaTimer)
+            //{
+            //    CanCountWaitingAreaTimer = true;
+            //}
 
-            if (CanCountWaitingAreaTimer && WaitingAreaTimer > 60 && Players.Count >= Players.Capacity && CurrentWaitingAreaTimerState == WaitingAreaTimerState.WAITING)
-            {
-                CurrentWaitingAreaTimerState = WaitingAreaTimerState.GETREADY;
-                WaitingAreaTimer = 30;
-            }
+            //if (CanCountWaitingAreaTimer && WaitingAreaTimer > 60 && Players.Count >= Players.Capacity && CurrentWaitingAreaTimerState == WaitingAreaTimerState.WAITING)
+            //{
+            //    CurrentWaitingAreaTimerState = WaitingAreaTimerState.GETREADY;
+            //    WaitingAreaTimer = 30;
+            //}
         }
     }
 
@@ -654,17 +654,17 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             //if (playerinventory.Shield != null) playerinventory.Shield.DropShield();
 
-            var bulletPooler = clientPlayer.GetComponent<BulletObjectPool>();
+            //var bulletPooler = clientPlayer.GetComponent<BulletObjectPool>();
 
-            for (int a = 0; a < bulletPooler.BulletQueue.Count; a++)
-            {
-                Runner.Despawn(bulletPooler.BulletQueue.ElementAt(a).Key);
-            }
+            //for (int a = 0; a < bulletPooler.BulletQueue.Count; a++)
+            //{
+            //    Runner.Despawn(bulletPooler.BulletQueue.ElementAt(a).Key);
+            //}
 
-            for (int a = 0; a < bulletPooler.ArrowQueue.Count; a++)
-            {
-                Runner.Despawn(bulletPooler.ArrowQueue.ElementAt(a).Key);
-            }
+            //for (int a = 0; a < bulletPooler.ArrowQueue.Count; a++)
+            //{
+            //    Runner.Despawn(bulletPooler.ArrowQueue.ElementAt(a).Key);
+            //}
 
             Players.Remove(player);
             Runner.Despawn(clientPlayer);

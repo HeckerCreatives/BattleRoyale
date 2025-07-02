@@ -177,8 +177,8 @@ public class ClientMatchmakingController : MonoBehaviour
                 };
 
                 var options = new CreateTicketOptions(
-                      //GameManager.GetServerRegionName(userData.SelectedServer) + "Test", // The name of the queue defined in the previous step,
-                      GameManager.GetServerRegionName(userData.SelectedServer),
+                      "HongKongTest",
+                      //GameManager.GetServerRegionName(userData.SelectedServer), // The name of the queue defined in the previous step,
                       new Dictionary<string, object>());
 
                 Debug.Log("JOINING LOBBY");
@@ -385,6 +385,8 @@ public class ClientMatchmakingController : MonoBehaviour
         timerTMP.text = "Canceling matchmaking...";
 
         ShutdownServer();
+
+        findABattleObj.SetActive(true);
     }
 
     public async Task ShutdownServer()

@@ -10,10 +10,21 @@ public class FallingState : AnimationPlayable
     {
     }
 
+    public override void LogicUpdate()
+    {
+        base.LogicUpdate();
+        Animation();
+    }
+
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
+        Animation();
+        playerPlayables.stamina.RecoverStamina(5f);
+    }
 
+    private void Animation()
+    {
         if (playerMovement.Attacking)
             playablesChanger.ChangeState(playerPlayables.basicMovement.JumpPunchPlayable);
 

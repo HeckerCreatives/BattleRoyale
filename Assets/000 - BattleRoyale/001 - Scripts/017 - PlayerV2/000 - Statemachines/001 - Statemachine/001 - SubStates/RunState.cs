@@ -18,12 +18,20 @@ public class RunState : PlayerOnGround
 
     public override void LogicUpdate()
     {
+        base.LogicUpdate();
+
+        Animation();
     }
 
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
+        Animation();
+        playerPlayables.stamina.RecoverStamina(5f);
+    }
 
+    private void Animation()
+    {
         if (!characterController.IsGrounded)
             playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
 
@@ -44,7 +52,5 @@ public class RunState : PlayerOnGround
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
             playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
-
-        playerPlayables.stamina.RecoverStamina(5f);
     }
 }

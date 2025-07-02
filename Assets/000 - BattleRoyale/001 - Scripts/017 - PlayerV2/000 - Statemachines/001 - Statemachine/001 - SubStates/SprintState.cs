@@ -13,14 +13,25 @@ public class SprintState : PlayerOnGround
 
     public override void LogicUpdate()
     {
-        
+        base.LogicUpdate();
 
+        Animation();
     }
 
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
 
+        Animation();
+
+        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
+
+        playerPlayables.stamina.DecreaseStamina(20f);
+    }
+
+    private void Animation()
+    {
         if (!characterController.IsGrounded)
             playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
 
@@ -48,10 +59,5 @@ public class SprintState : PlayerOnGround
         {
             playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
         }
-        
-        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
-
-        playerPlayables.stamina.DecreaseStamina(20f);
     }
 }

@@ -12,10 +12,16 @@ public class PlayerHealthV2 : NetworkBehaviour
     [SerializeField] private Slider healthSlider;
     [SerializeField] private Slider armorSlider;
 
+    [Space]
+    [SerializeField] private PlayerPlayables playerPlayables;
+
     [field: Header("DEBUGGER")]
     [Networked][field: SerializeField] public DedicatedServerManager ServerManager { get; set; }
     [Networked][field: SerializeField] public float CurrentHealth { get; set; }
     [Networked][field: SerializeField] public float CurrentArmor { get; set; }
+    [Networked][field: SerializeField] public NetworkBool IsHit { get; set; }
+    [Networked][field: SerializeField] public NetworkBool IsSecondHit { get; set; }
+    [Networked][field: SerializeField] public NetworkBool IsStagger { get; set; }
 
     //  ========================
 
@@ -51,13 +57,13 @@ public class PlayerHealthV2 : NetworkBehaviour
         }
     }
 
-    public void ReduceHealth(float damage, string killer, NetworkObject nobject)
+    public void ApplyDamage(float damage, string killer, NetworkObject nobject)
     {
         if (CurrentHealth <= 0) return;
 
-        //DamagedHit++;
-
         if (ServerManager.CurrentGameState != GameState.ARENA) return;
+
+        //DamagedHit++;
 
         float remainingDamage = damage;
 

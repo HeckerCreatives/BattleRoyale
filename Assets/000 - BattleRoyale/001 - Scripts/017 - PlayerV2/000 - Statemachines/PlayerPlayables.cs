@@ -13,6 +13,7 @@ public class PlayerPlayables : NetworkBehaviour
     [SerializeField] private Animator playerAnimator;
 
     [Space]
+    public PlayerHealthV2 healthV2;
     public PlayerBasicMovement basicMovement;
 
     [field: Header("NETWORK DEBUGGER")]

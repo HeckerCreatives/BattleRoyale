@@ -30,7 +30,20 @@ public class BlockState : PlayerOnGround
         canAction = false;
     }
 
+    public override void LogicUpdate()
+    {
+        base.LogicUpdate();
+
+        Animation();
+    }
+
     public override void NetworkUpdate()
+    {
+        Animation();
+        playerPlayables.stamina.RecoverStamina(5f);
+    }
+
+    private void Animation()
     {
         if (playerPlayables.TickRateAnimation >= timer && canAction)
         {

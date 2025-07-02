@@ -9,6 +9,8 @@ public class PunchState : PlayerOnGround
     float timer;
     float nextPunchWindow;
     float moveTimer;
+    float damageWindowStart;
+    float damageWindowEnd;
     bool canAction;
     bool canMove;
 
@@ -23,6 +25,8 @@ public class PunchState : PlayerOnGround
         timer = playerPlayables.TickRateAnimation + animationLength;
         nextPunchWindow = playerPlayables.TickRateAnimation + (animationLength - 0.2f);
         moveTimer = playerPlayables.TickRateAnimation + 0.30f;
+        damageWindowStart = playerPlayables.TickRateAnimation + 0.18f;
+        damageWindowEnd = playerPlayables.TickRateAnimation + 0.23f;
         canAction = true;
         canMove = true;
     }
@@ -30,10 +34,37 @@ public class PunchState : PlayerOnGround
     public override void Exit()
     {
         base.Exit();
+
+        playerPlayables.basicMovement.ResetFirstAttack();
         canAction = false;
     }
 
+    public override void LogicUpdate()
+    {
+        base.LogicUpdate();
+
+        Animation();
+    }
+
     public override void NetworkUpdate()
+    {
+        if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
+        {
+            playerPlayables.basicMovement.PerformFirstAttack();
+        }
+
+        Animation();
+
+        if (playerPlayables.TickRateAnimation >= moveTimer && canMove)
+        {
+            characterController.Move(characterController.TransformDirection * 25f, 0f);
+            canMove = false;
+        }
+
+        playerPlayables.stamina.RecoverStamina(5f);
+    }
+
+    private void Animation()
     {
         if (!characterController.IsGrounded)
             playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
@@ -62,12 +93,6 @@ public class PunchState : PlayerOnGround
             }
             else
                 playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
-        }
-
-        if (playerPlayables.TickRateAnimation >= moveTimer && canMove)
-        {
-            characterController.Move(characterController.TransformDirection * 25f, 0f);
-            canMove = false;
         }
     }
 }

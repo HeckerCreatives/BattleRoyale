@@ -8355,7 +8355,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: e44e4857c75677f469d7751726a1854e, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 65e1b03e01fee1147b1f810fc6e09afc, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -8670,7 +8670,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1863746084979324618}
   - component: {fileID: 4992708156218680165}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: mixamorig:LeftFoot
   m_TagString: Foot
   m_Icon: {fileID: 0}
@@ -10360,7 +10360,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7485744320879586698}
   - component: {fileID: 2427880474745806833}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: mixamorig:RightUpLeg
   m_TagString: Thigh
   m_Icon: {fileID: 0}
@@ -16591,7 +16591,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5918389199435091386}
   - component: {fileID: 8410058763022574994}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: mixamorig:RightFoot
   m_TagString: Foot
   m_Icon: {fileID: 0}
@@ -17717,6 +17717,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   stamina: {fileID: 8616249203308704524}
   playerAnimator: {fileID: 3399706004004648953}
+  healthV2: {fileID: 6716398142436743886}
   basicMovement: {fileID: 6738106062886253463}
   _TickRateAnimation: 0
 --- !u!114 &878466383140911213
@@ -17820,9 +17821,16 @@ MonoBehaviour:
   startingHealth: 100
   healthSlider: {fileID: 2344162232471040052}
   armorSlider: {fileID: 7109068911225709653}
+  playerPlayables: {fileID: 7268080577510237573}
   _ServerManager: {fileID: 0}
   _CurrentHealth: 0
   _CurrentArmor: 0
+  _IsHit:
+    _value: 0
+  _IsSecondHit:
+    _value: 0
+  _IsStagger:
+    _value: 0
 --- !u!114 &7077205552742513072
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18009,6 +18017,7 @@ MonoBehaviour:
   - {fileID: 4341653016439015886}
   - {fileID: 1526123745319045554}
   - {fileID: 7356548565232799119}
+  - {fileID: 6738106062886253463}
   - {fileID: 5266470600977974503}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &697121353735635553
@@ -22110,6 +22119,9 @@ MonoBehaviour:
   - falling
   - jumppunch
   - block
+  - hit
+  - staggerhit
+  - gettingup
   mixernames:
   - basic
   idle: {fileID: 7400000, guid: d65feb32960f492459675a9dea0f15bb, type: 2}
@@ -22123,7 +22135,18 @@ MonoBehaviour:
   jumpidle: {fileID: 7400000, guid: aabcc45cf10f11d45850c8da35c43fcc, type: 2}
   falling: {fileID: 7400000, guid: b845044d37595194b90c23b406a3a9b2, type: 2}
   jumpPunch: {fileID: 7400000, guid: a921bc7abc7f292489ed32dd687525c0, type: 2}
-  block: {fileID: 7400000, guid: 886c98afbe292be4ab64a1b099deaf0b, type: 2}
+  block: {fileID: 7400000, guid: ae46264378fae2e4fb39f9bbdc4e4363, type: 2}
+  hit: {fileID: 7400000, guid: 7c2263d837c50754fb19bffd887c8cdb, type: 2}
+  staggerHit: {fileID: 7400000, guid: d0a144cd94641f24d9561a9d3e6c3dca, type: 2}
+  gettingUp: {fileID: 7400000, guid: 8b46af13b9e28494d901f09f907c8a5c, type: 2}
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 8192
+  attackRadius: 0.21
+  impactFirstFistPoint: {fileID: 7676875061744211559}
+  impactSecondFistPoint: {fileID: 6022364666796658043}
+  _hitEnemiesFirstFist: []
+  _hitEnemiesSecondFist: []
 --- !u!1 &2351408018424846397
 GameObject:
   m_ObjectHideFlags: 0
@@ -26418,7 +26441,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8750486824658429447}
   - component: {fileID: 2540127511420091461}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: mixamorig:LeftUpLeg
   m_TagString: Thigh
   m_Icon: {fileID: 0}
@@ -28329,7 +28352,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5414892694377276516}
   - component: {fileID: 3375957988231169618}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: mixamorig:RightLeg
   m_TagString: Shin
   m_Icon: {fileID: 0}
@@ -35518,7 +35541,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8736020198739032053}
   - component: {fileID: 1610435169256318222}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: mixamorig:Spine2
   m_TagString: Body
   m_Icon: {fileID: 0}
@@ -36778,7 +36801,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3134631366664499833}
   - component: {fileID: 8214176316864695101}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: mixamorig:RightArm
   m_TagString: Arm
   m_Icon: {fileID: 0}
@@ -43611,7 +43634,7 @@ GameObject:
   m_Component:
   - component: {fileID: 941135650145954417}
   - component: {fileID: 2253379906184453541}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: mixamorig:Head
   m_TagString: Head
   m_Icon: {fileID: 0}
@@ -53333,7 +53356,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1625661945023908142}
   - component: {fileID: 1689506483982822151}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: mixamorig:LeftForeArm
   m_TagString: Forearm
   m_Icon: {fileID: 0}
@@ -56088,7 +56111,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5105149230822266613}
   - component: {fileID: 4772422771580239214}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: mixamorig:RightForeArm
   m_TagString: Forearm
   m_Icon: {fileID: 0}
@@ -56409,7 +56432,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6343190983200440270}
   - component: {fileID: 2181215431630287299}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: mixamorig:LeftLeg
   m_TagString: Shin
   m_Icon: {fileID: 0}
@@ -68678,7 +68701,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7635333278291217361}
   - component: {fileID: 5014964692651881797}
-  m_Layer: 0
+  m_Layer: 13
   m_Name: mixamorig:LeftArm
   m_TagString: Arm
   m_Icon: {fileID: 0}

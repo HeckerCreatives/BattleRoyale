@@ -10,6 +10,14 @@ public class JumpPunchState : PlayerOnGround
     {
     }
 
+    public override void LogicUpdate()
+    {
+        base.LogicUpdate();
+
+        if (characterController.IsGrounded)
+            Animation();
+    }
+
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
@@ -18,17 +26,23 @@ public class JumpPunchState : PlayerOnGround
         {
             playerMovement.IsJumping = false;
             playerMovement.JumpImpulse = 0;
-
-            if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
-            {
-                if (playerMovement.IsSprint)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
-
-                else
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
-            }
-            else
-                playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
+            Animation();
         }
+
+        playerPlayables.stamina.RecoverStamina(5f);
+    }
+
+    private void Animation()
+    {
+        if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
+        {
+            if (playerMovement.IsSprint)
+                playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
+
+            else
+                playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+        }
+        else
+            playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
     }
 }
