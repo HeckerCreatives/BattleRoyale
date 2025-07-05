@@ -109,8 +109,8 @@ public class ControllerSetting : Fusion.Behaviour
 
     private void CheckUIValues()
     {
-        initialWidth = SelectedUIRT.sizeDelta.x;
-        initialHeight = SelectedUIRT.sizeDelta.y;
+        initialWidth = SelectedUIRT.localScale.x;
+        initialHeight = SelectedUIRT.localScale.y;
         initialOpacity = SelectedUIImg.alpha;
 
         sizeSlider.value = (initialHeight - minYSize) / (maxYSize - minYSize) * (1f - 0f) + 0f;
@@ -121,7 +121,7 @@ public class ControllerSetting : Fusion.Behaviour
     {
         float newSize = Mathf.Lerp(minXSize, maxXSize, sizeSlider.value);
         float ratio = initialWidth / initialHeight;
-        selectedUIRT.sizeDelta = new Vector2(newSize * ratio, newSize); // Resize the UI element maintaining aspect ratio
+        selectedUIRT.localScale = new Vector2(newSize * ratio, newSize); // Resize the UI element maintaining aspect ratio
     }
 
     public void OnOpacitySliderChange()

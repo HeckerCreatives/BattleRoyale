@@ -374,9 +374,9 @@ public class GameSettingController : MonoBehaviour
         CheckBrightnessButtons();
     }
 
-    public void ChangeGraphicsDropdown(int index)
+    public void ChangeGraphicsDropdown()
     {
-        GameManager.Instance.GraphicsManager.CurrentGraphicsQualityIndex = index;
+        GameManager.Instance.GraphicsManager.CurrentGraphicsQualityIndex = graphicsDropdown.value;
 
         if (graphicsDropdown.value == 0)
         {
@@ -422,24 +422,24 @@ public class GameSettingController : MonoBehaviour
         }
     }
 
-    public void ChangeResolutionDropdown(int index)
+    public void ChangeResolutionDropdown()
     {
-        GameManager.Instance.GraphicsManager.CurrentResolutionIndex = index;
+        GameManager.Instance.GraphicsManager.CurrentResolutionIndex = resolutionDropdown.value;
     }
 
-    public void ChangeFrameRateDropdown(int index)
+    public void ChangeFrameRateDropdown()
     {
-        GameManager.Instance.GraphicsManager.CurrentFrameRateIndex = index;
+        GameManager.Instance.GraphicsManager.CurrentFrameRateIndex = frameRateDropdown.value;
     }
 
-    public void ChangeShadowDropdown(int index)
+    public void ChangeShadowDropdown()
     {
-        GameManager.Instance.GraphicsManager.CurrentShadowIndex = index;
+        GameManager.Instance.GraphicsManager.CurrentShadowIndex = shadowDropdown.value;
     }
 
-    public void ChangeAntiAliasingDropdown(int index)
+    public void ChangeAntiAliasingDropdown()
     {
-        GameManager.Instance.GraphicsManager.CurrentAntiAliasingIndex = index;
+        GameManager.Instance.GraphicsManager.CurrentAntiAliasingIndex = antiAliasingDropdown.value;
     }
 
     #region BUTTON

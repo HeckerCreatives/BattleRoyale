@@ -34,8 +34,9 @@ public class UserData : ScriptableObject
         "RightAttack",
         "Aim",
         "Jump",
-        "Crouch",
-        "Prone",
+        "Sprint",
+        "Roll",
+        "Block",
         "Punch",
         "Primary",
         "Secondary",
@@ -48,9 +49,12 @@ public class UserData : ScriptableObject
         "Settings",
         "KillNotification",
         "Reload",
+        "Stamina",
         "SafeZoneTimer",
         "GameStatus",
-        "HealthArmor"
+        "HealthArmor",
+        "Slot 1",
+        "Slot 2"
     };
 
     //  ===========================
@@ -91,28 +95,31 @@ public class UserData : ScriptableObject
     {
         ControlSetting = new Dictionary<string, ControllerSettingData>
             {
-                { "AnalogStick", new ControllerSettingData{ sizeDeltaX = 278.7875f, sizeDeltaY = 278.79f, localPositionX = -801f, localPositionY = -259f, opacity = 1f} },
-                { "LeftAttack", new ControllerSettingData{ sizeDeltaX = 108f, sizeDeltaY = 108f, localPositionX = 66f, localPositionY = 505f, opacity = 1f} },
-                { "RightAttack", new ControllerSettingData{ sizeDeltaX = 177.88f, sizeDeltaY = 177.88f, localPositionX = -301f, localPositionY = 195f, opacity = 1f} },
-                { "Aim", new ControllerSettingData{ sizeDeltaX = 115.7508f, sizeDeltaY = 115.7508f, localPositionX = -296f, localPositionY = 435f, opacity = 1f} },
-                { "Jump", new ControllerSettingData{ sizeDeltaX = 108f, sizeDeltaY = 108f, localPositionX = -149f, localPositionY = 363f, opacity = 1f} },
-                { "Crouch", new ControllerSettingData{ sizeDeltaX = 108f, sizeDeltaY = 108f, localPositionX = -82f, localPositionY = 218f, opacity = 1f} },
-                { "Prone", new ControllerSettingData{ sizeDeltaX = 108f, sizeDeltaY = 108f, localPositionX = -82f, localPositionY = 72f, opacity = 1f} },
-                { "Punch", new ControllerSettingData{ sizeDeltaX = 123.2555f, sizeDeltaY = 79.816f, localPositionX = -283f, localPositionY = 119f, opacity = 1f} },
-                { "Primary", new ControllerSettingData{ sizeDeltaX = 192.5475f, sizeDeltaY = 79.816f, localPositionX = -114f, localPositionY = 119f, opacity = 1f} },
-                { "Secondary", new ControllerSettingData{ sizeDeltaX = 192.5475f, sizeDeltaY = 79.816f, localPositionX = 95f, localPositionY = 119f, opacity = 1f} },
-                { "Trap", new ControllerSettingData{ sizeDeltaX = 123.2555f, sizeDeltaY = 79.816f, localPositionX = 260.7891f, localPositionY = 119f, opacity = 1f} },
-                { "Heal", new ControllerSettingData{ sizeDeltaX = 84.3541f, sizeDeltaY = 84.3541f, localPositionX = 348.9229f, localPositionY = 22.7f, opacity = 1f} },
-                { "RepairArmor", new ControllerSettingData{ sizeDeltaX = 84.3541f, sizeDeltaY = 84.3541f, localPositionX = 445.3f, localPositionY = 22.7f, opacity = 1f} },
-                { "Minimap", new ControllerSettingData{ sizeDeltaX = 285.7246f, sizeDeltaY = 285.7245f, localPositionX = -16f, localPositionY = -15f, opacity = 1f} },
-                { "Pickup", new ControllerSettingData{ sizeDeltaX = 44.24683f, sizeDeltaY = 44.24683f, localPositionX = -430f, localPositionY = -180.7532f, opacity = 1f} },
-                { "PickupItemList", new ControllerSettingData{ sizeDeltaX = 493.4304f, sizeDeltaY = 277.6669f, localPositionX = -424f, localPositionY = -232f, opacity = 1f} },
-                { "Settings", new ControllerSettingData{ sizeDeltaX = 68f, sizeDeltaY = 62f, localPositionX = -319.6f, localPositionY = -15.70001f, opacity = 1f} },
-                { "KillNotification", new ControllerSettingData{ sizeDeltaX = 324.3863f, sizeDeltaY = 108.84f, localPositionX = 17.96462f, localPositionY = -128.128f, opacity = 1f} },
-                { "Reload", new ControllerSettingData{ sizeDeltaX = 115.7508f, sizeDeltaY = 115.7508f, localPositionX = -269f, localPositionY = 25f, opacity = 1f} },
-                { "SafeZoneTimer", new ControllerSettingData{ sizeDeltaX = 285f, sizeDeltaY = 26.9905f, localPositionX = -16f, localPositionY = -313f, opacity = 1f} },
-                { "GameStatus", new ControllerSettingData{ sizeDeltaX = 288f, sizeDeltaY = 64f, localPositionX = 0f, localPositionY = -23f, opacity = 1f} },
-                { "HealthArmor", new ControllerSettingData{ sizeDeltaX = 514f, sizeDeltaY = 77f, localPositionX = -20.675f, localPositionY = 60f, opacity = 1f} }
+                { "AnalogStick", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -733f, localPositionY = -219f, opacity = 1f} },
+                { "LeftAttack", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -463f, localPositionY = -20f, opacity = 1f} },
+                { "RightAttack", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 675f, localPositionY = -312f, opacity = 1f} },
+                { "Aim", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 654f, localPositionY = -90.999f, opacity = 1f} },
+                { "Jump", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 831f, localPositionY = -91f, opacity = 1f} },
+                { "Block", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 1008f, localPositionY = 21f, opacity = 1f} },
+                { "Sprint", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 895f, localPositionY = -265f, opacity = 1f} },
+                { "Roll", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 895f, localPositionY = -421f, opacity = 1f} },
+                { "Stamina", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 0f, localPositionY = -306f, opacity = 1f} },
+                { "Punch", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -283f, localPositionY = -360.092f, opacity = 1f} },
+                { "Primary", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -114f, localPositionY = -360.092f, opacity = 1f} },
+                { "Secondary", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 95f, localPositionY = -360.092f, opacity = 1f} },
+                { "Trap", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 260.7891f, localPositionY = -360.092f, opacity = 1f} },
+                { "Heal", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 308.6229f, localPositionY = -454.123f, opacity = 1f} },
+                { "RepairArmor", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 405f, localPositionY = -454.123f, opacity = 1f} },
+                { "Minimap", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 965.1377f, localPositionY = 361.1377f, opacity = 1f} },
+                { "PickupItemList", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 453.2848f, localPositionY = 148.1666f, opacity = 1f} },
+                { "Settings", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 770.3998f, localPositionY = 472.3001f, opacity = 1f} },
+                { "KillNotification", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -944.5391f, localPositionY = 341.4225f, opacity = 1f} },
+                { "Reload", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 380f, localPositionY = -361.682f, opacity = 1f} },
+                { "SafeZoneTimer", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 965.5f, localPositionY = 192.5048f, opacity = 1f} },
+                { "GameStatus", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 0f, localPositionY = -23f, opacity = 1f} },
+                { "HealthArmor", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -20.67504f, localPositionY = -459f, opacity = 1f} },
+                { "Slot 1", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -458.377f, localPositionY = -454.123f, opacity = 1f} },
+                { "Slot 2", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -362f, localPositionY =- 454.123f, opacity = 1f} }
             };
 
         PlayerPrefs.SetString("ControlSetting", JsonConvert.SerializeObject(ControlSetting));

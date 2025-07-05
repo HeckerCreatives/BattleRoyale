@@ -49,7 +49,7 @@ public class PlayerCameraRotation : NetworkBehaviour
         if (!HasInputAuthority) return;
 
         _threshold = 0.01f;
-
+        target.transform.parent = null;
         GameManager.Instance.GameSettingManager.OnLookSensitivityChanged += LookSensitivityChanged;
         GameManager.Instance.GameSettingManager.OnLookAdsSensitivityChanged += LookAdsSensitivityChanged;
     }
@@ -77,10 +77,12 @@ public class PlayerCameraRotation : NetworkBehaviour
         HandleMobileCameraInput();
     }
 
-    //private void LateUpdate()
-    //{
-    //    CameraHeight();
-    //}
+    private void LateUpdate()
+    {
+        if (!HasInputAuthority) return;
+
+        target.transform.position = new Vector3(transform.position.x, transform.position.y + 1.568005f, transform.position.z);
+    }
 
     private void LookSensitivityChanged(object sender, EventArgs e)
     {

@@ -6,8 +6,6 @@ using UnityEngine.UI;
 
 public class ControllerSettingDataRetriever : MonoBehaviour
 {
-    [SerializeField] private PlayerNetworkLoader playerNetworkLoader;
-    [SerializeField] private bool isNetworked;
     [SerializeField] private UserData userData;
     [SerializeField] private RectTransform uiRT;
     [SerializeField] private CanvasGroup uiImg;
@@ -17,15 +15,8 @@ public class ControllerSettingDataRetriever : MonoBehaviour
     [SerializeField] private Color downPressColor;
     [SerializeField] private Color upPress;
 
-    private async void OnEnable()
+    private void OnEnable()
     {
-        if (isNetworked)
-        {
-            while (!playerNetworkLoader.Runner) await Task.Yield();
-
-            if (!playerNetworkLoader.HasInputAuthority) return;
-        }
-
         SetUILayout();
     }
 
@@ -38,7 +29,7 @@ public class ControllerSettingDataRetriever : MonoBehaviour
         }
 
         uiRT.anchoredPosition = new Vector2(userData.ControlSetting[gameObject.name].localPositionX, userData.ControlSetting[gameObject.name].localPositionY);
-        uiRT.sizeDelta = new Vector2(userData.ControlSetting[gameObject.name].sizeDeltaX, userData.ControlSetting[gameObject.name].sizeDeltaY);
+        uiRT.localScale = new Vector2(userData.ControlSetting[gameObject.name].sizeDeltaX, userData.ControlSetting[gameObject.name].sizeDeltaY);
         uiImg.alpha = userData.ControlSetting[gameObject.name].opacity;
     }
 
@@ -50,8 +41,8 @@ public class ControllerSettingDataRetriever : MonoBehaviour
 
     public float UISizeDelta(bool isY)
     {
-        if (!isY) return uiRT.sizeDelta.x;
-        else return uiRT.sizeDelta.y;
+        if (!isY) return uiRT.localScale.x;
+        else return uiRT.localScale.y;
     }
 
     public float UIOpacity() => uiImg.alpha;

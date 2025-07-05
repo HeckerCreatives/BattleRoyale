@@ -385,8 +385,6 @@ public class ClientMatchmakingController : MonoBehaviour
         timerTMP.text = "Canceling matchmaking...";
 
         ShutdownServer();
-
-        findABattleObj.SetActive(true);
     }
 
     public async Task ShutdownServer()

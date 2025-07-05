@@ -14,6 +14,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     [SerializeField] private PlayerPlayables playerPlayables;
     [SerializeField] private PlayerCameraRotation cameraRotation;
     [SerializeField] private PlayerMovementV2 movementV2;
+    [SerializeField] private GameSettingController gameSettingController;
 
     [Space]
     [SerializeField] private GameObject canvasPlayer;
@@ -42,6 +43,9 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
             GameManager.Instance.SceneController.CurrentScene = "Login";
         }));
         GameManager.Instance.SceneController.AddActionLoadinList(InitializePlayer());
+        GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetVolumeSlidersOnStart());
+        GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetGraphicsOnStart());
+        GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetLookSensitivityOnStart());
         GameManager.Instance.SceneController.ActionPass = true;
 
         canvasPlayer.SetActive(true);
