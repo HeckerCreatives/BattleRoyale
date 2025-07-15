@@ -80,84 +80,17 @@ public class PlayerMovementV2 : NetworkBehaviour
     public void PlayerMovementInitialize()
     {
         characterController.SetGravity(Physics.gravity.y * 3f);
-        //_changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
 
         if (!HasInputAuthority) return;
 
         gameplayController = Runner.GetComponent<GameplayController>();
-
-        //UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerDown += TouchFingerDown;
-        //UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerMove += TouchFingerMove;
-        //UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerUp += TouchFingeUp;
-    }
-
-    private void OnDisable()
-    {
-        //UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerDown -= TouchFingerDown;
-        //UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerMove -= TouchFingerMove;
-        //UnityEngine.InputSystem.EnhancedTouch.Touch.onFingerUp -= TouchFingeUp;
     }
 
     private void LateUpdate()
     {
-        if (!HasInputAuthority) return;
+        if (!HasInputAuthority && !HasStateAuthority) return;
 
-        //foreach (var touch in Touchscreen.current.touches)
-        //{
-        //    int id = touch.touchId.ReadValue();
-        //    Vector2 pos = touch.position.ReadValue();
-        //    var phase = touch.phase.ReadValue();
-
-        //    Debug.Log($"id {id}  phase {phase}");
-
-        //    switch (phase)
-        //    {
-        //        case UnityEngine.InputSystem.TouchPhase.Began:
-        //            TouchFingerDown(id, pos);
-        //            break;
-
-        //        case UnityEngine.InputSystem.TouchPhase.Moved:
-        //            TouchFingerMove(id, pos);
-        //            break;
-
-        //        case UnityEngine.InputSystem.TouchPhase.Ended:
-        //        case UnityEngine.InputSystem.TouchPhase.Canceled:
-        //            TouchFingeUp(id);
-        //            break;
-        //    }
-        //}
-
-
-        //foreach (var touch in Touchscreen.current.touches)
-        //{
-        //    int touchId = touch.touchId.ReadValue();
-        //    Vector2 currentPosition = touch.position.ReadValue();
-
-        //    if (lastTouchPositions.TryGetValue(touchId, out Vector2 lastPosition))
-        //    {
-        //        Vector2 delta = currentPosition - lastPosition;
-
-        //        if (delta.magnitude < StationaryThreshold)
-        //        {
-        //            // Reset camera movement if touch is nearly stationary
-        //            gameplayController.LookDirection = Vector2.zero;
-        //        }
-        //    }
-        //}
-
-        //CameraPan();
-
-        //foreach (var finger in UnityEngine.InputSystem.EnhancedTouch.Touch.activeFingers)
-        //{
-        //    if (lastTouchPositions.TryGetValue(finger.index, out Vector2 lastPosition))
-        //    {
-        //        Vector2 currentPosition = finger.screenPosition;
-        //        Vector2 delta = currentPosition - lastPosition;
-
-        //        if (delta.magnitude < StationaryThreshold)
-        //            gameplayController.LookDirection = Vector2.zero; // Reset camera movement
-        //    }
-        //}
+        TouchMovements();
     }
 
     public override void FixedUpdateNetwork()
@@ -167,124 +100,6 @@ public class PlayerMovementV2 : NetworkBehaviour
     }
 
     #region TOUCH INPUTS
-
-    //private void TouchDown(int touchId, Vector2 pos)
-    //{
-    //    if (AnalogStickDetector(pos))
-    //    {
-    //        touchRoles[touchId] = "joystick";
-    //    }
-    //    else if (IsTouchOverUI(pos))
-    //    {
-    //        return;
-    //    }
-    //    else
-    //    {
-    //        touchRoles[touchId] = "camera";
-    //        lastTouchPositions[touchId] = pos;
-    //        stationaryTimers[touchId] = 0f;
-    //    }
-
-    //    if (touchRoles.TryGetValue(touchId, out var role))
-    //    {
-    //        if (role == "camera")
-    //            gameplayController.LookDirection = Vector2.zero;
-    //        else if (role == "joystick")
-    //            HandleJoystickMovement(touchId, pos);
-    //    }
-    //}
-
-    //private void TouchMove(int touchId, Vector2 pos)
-    //{
-    //    if (!touchRoles.TryGetValue(touchId, out var role)) return;
-
-    //    if (role == "camera")
-    //    {
-    //        if (lastTouchPositions.TryGetValue(touchId, out Vector2 lastPos))
-    //        {
-    //            Vector2 delta = pos - lastPos;
-    //            gameplayController.LookDirection += delta;
-    //            lastTouchPositions[touchId] = pos;
-    //            stationaryTimers[touchId] = 0f;
-    //        }
-    //        else
-    //        {
-    //            lastTouchPositions[touchId] = pos;
-    //        }
-    //    }
-    //    else if (role == "joystick")
-    //    {
-    //        HandleJoystickMovement(touchId, pos);
-    //    }
-    //}
-
-    //private void TouchUp(int touchId)
-    //{
-    //    if (!touchRoles.TryGetValue(touchId, out var role)) return;
-
-    //    if (role == "camera")
-    //    {
-    //        gameplayController.LookDirection = Vector2.zero;
-    //    }
-    //    else if (role == "joystick")
-    //    {
-    //        gameplayController.MovementDirection = Vector2.zero;
-    //        ResetJoystick();
-    //    }
-
-    //    touchRoles.Remove(touchId);
-    //    lastTouchPositions.Remove(touchId);
-    //    stationaryTimers.Remove(touchId);
-    //}
-
-    //private bool IsTouchOverUI(Vector2 touchPosition)
-    //{
-    //    PointerEventData pointerEventData = new(EventSystem.current) { position = touchPosition };
-    //    List<RaycastResult> results = new();
-    //    EventSystem.current.RaycastAll(pointerEventData, results);
-
-    //    foreach (var result in results)
-    //    {
-    //        if (result.gameObject.CompareTag("NonBlockingUI")) continue;
-    //        return true;
-    //    }
-
-    //    return false;
-    //}
-
-    //private bool AnalogStickDetector(Vector2 touchPosition)
-    //{
-    //    PointerEventData pointerEventData = new(EventSystem.current) { position = touchPosition };
-    //    List<RaycastResult> results = new();
-    //    EventSystem.current.RaycastAll(pointerEventData, results);
-
-    //    foreach (var result in results)
-    //    {
-    //        if (result.gameObject.CompareTag("AnalogStick"))
-    //            return true;
-    //    }
-
-    //    return false;
-    //}
-
-    //private void HandleJoystickMovement(int touchId, Vector2 screenPos)
-    //{
-    //    if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-    //        joystickArea,
-    //        screenPos,
-    //        GameManager.Instance.UICamera,
-    //        out Vector2 localTouchPosition))
-    //    {
-    //        Vector2 normalized = new Vector2(
-    //            localTouchPosition.x / (joystickArea.sizeDelta.x * 0.5f),
-    //            localTouchPosition.y / (joystickArea.sizeDelta.y * 0.5f)
-    //        );
-
-    //        inputVector = Vector2.ClampMagnitude(normalized, 1.0f);
-    //        joystickHandle.anchoredPosition = inputVector * (joystickArea.sizeDelta.x * 0.3f);
-    //        gameplayController.MovementDirection = inputVector.normalized;
-    //    }
-    //}
 
     private void TouchMovements()
     {
@@ -312,6 +127,7 @@ public class PlayerMovementV2 : NetworkBehaviour
                     if (lastTouchPositions.TryGetValue(id, out var lastPos))
                     {
                         float delta = Vector2.Distance(pos, lastPos);
+
                         if (delta < StationaryThreshold)
                             gameplayController.LookDirection = Vector2.zero; // Optional: handle stationary
                         else
@@ -370,7 +186,7 @@ public class PlayerMovementV2 : NetworkBehaviour
                 {
                     Vector2 delta = currentTouchPosition - lastPosition;
 
-                    gameplayController.LookDirection += delta;
+                    gameplayController.LookDirection = delta;
 
                     lastTouchPositions[touchId] = currentTouchPosition; // Update the last position
                     stationaryTimers[touchId] = 0f; // Reset timer
@@ -497,7 +313,6 @@ public class PlayerMovementV2 : NetworkBehaviour
 
         controllerInput = input;
 
-        TouchMovements();
         Move();
         Sprint();
         Jump();

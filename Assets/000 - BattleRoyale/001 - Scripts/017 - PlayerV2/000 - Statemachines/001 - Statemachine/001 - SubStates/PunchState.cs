@@ -67,6 +67,25 @@ public class PunchState : PlayerOnGround
         if (playerPlayables.healthV2.IsDead)
             playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
 
+
+        if (playerPlayables.healthV2.IsHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            return;
+        }
+
+        if (playerPlayables.healthV2.IsSecondHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            return;
+        }
+
+        if (playerPlayables.healthV2.IsStagger)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.StaggerHitPlayable);
+            return;
+        }
+
         if (!characterController.IsGrounded)
             playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
 

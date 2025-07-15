@@ -502,9 +502,13 @@ public class LoginManager : MonoBehaviour
                 while (GameManager.Instance.SocketMngr.ConnectionStatus != "Connected") yield return null;
 
                 Debug.Log("Getting available regions");
-                GetAvailableRegions(() =>
+
+                GameManager.Instance.AddJob(() =>
                 {
-                    CheckSelectedServer();
+                    GetAvailableRegions(() =>
+                    {
+                        CheckSelectedServer();
+                    });
                 });
             }
             else
@@ -734,6 +738,8 @@ public class LoginManager : MonoBehaviour
 
         foreach (var region in regions)
         {
+            if (userData.SelectedServer != "asia" && userData.SelectedServer != "za" && userData.SelectedServer != "uae" && userData.SelectedServer != "us" && userData.SelectedServer != "usw") continue;
+
             AvailableServers.Add(region.RegionCode, region.RegionPing);
         }
 

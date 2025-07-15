@@ -58,6 +58,24 @@ public class MiddlePunchState : PlayerOnGround
         if (!characterController.IsGrounded)
             playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
 
+        if (playerPlayables.healthV2.IsHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            return;
+        }
+
+        if (playerPlayables.healthV2.IsSecondHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            return;
+        }
+
+        if (playerPlayables.healthV2.IsStagger)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.StaggerHitPlayable);
+            return;
+        }
+
 
         if (canAction)
         {

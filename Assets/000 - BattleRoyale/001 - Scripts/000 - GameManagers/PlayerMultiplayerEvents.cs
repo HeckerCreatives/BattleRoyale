@@ -19,11 +19,25 @@ public class PlayerMultiplayerEvents : SimulationBehaviour, INetworkRunnerCallba
 
     //  ================
 
+    private void OnDisable()
+    {
+        GameManager.Instance.SocketMngr.Socket.OnDisconnected -= DisconnectPlayer;
+    }
+
+    private void DisconnectPlayer(object sender, string e)
+    {
+        Runner.Shutdown();
+    }
+
     #region NETWORK
 
     public void OnConnectedToServer(NetworkRunner runner)
     {
+        if (GameManager.Instance == null) return;
+
+        GameManager.Instance.SocketMngr.Socket.OnDisconnected += DisconnectPlayer;
     }
+
 
     public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason)
     {
@@ -99,6 +113,7 @@ public class PlayerMultiplayerEvents : SimulationBehaviour, INetworkRunnerCallba
             GameManager.Instance.NotificationController.ShowError($"There's a problem with the game server! Please queue up and try again. Error: {(shutdownReason == ShutdownReason.DisconnectedByPluginLogic ? "Server Shutdown due to unexpected error." : shutdownReason)}");
 
             Runner.Shutdown();
+
             GameManager.Instance.SceneController.CurrentScene = "Lobby";
         }
         else if (shutdownReason == ShutdownReason.MaxCcuReached || shutdownReason == ShutdownReason.GameIsFull || shutdownReason == ShutdownReason.GameClosed)

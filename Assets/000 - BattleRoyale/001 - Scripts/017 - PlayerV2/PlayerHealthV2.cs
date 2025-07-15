@@ -2,11 +2,14 @@ using Fusion;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 public class PlayerHealthV2 : NetworkBehaviour
 {
     [SerializeField] private PlayerGameStats playerGameStats;
+    [SerializeField] private Volume postProcessing;
 
     [Space]
     [SerializeField] private float startingHealth;
@@ -18,6 +21,15 @@ public class PlayerHealthV2 : NetworkBehaviour
     [Space]
     [SerializeField] private PlayerPlayables playerPlayables;
 
+    [Space]
+    [SerializeField] private Image damageIndicator;
+
+    [Space]
+    [SerializeField] private ParticleSystem bloodParticlesA;
+    [SerializeField] private ParticleSystem bloodParticlesB;
+    [SerializeField] private ParticleSystem bloodParticlesC;
+    [SerializeField] private ParticleSystem bloodParticlesD;
+
     [field: Header("DEBUGGER")]
     [Networked][field: SerializeField] public DedicatedServerManager ServerManager { get; set; }
     [Networked][field: SerializeField] public float CurrentHealth { get; set; }
@@ -25,11 +37,16 @@ public class PlayerHealthV2 : NetworkBehaviour
     [Networked][field: SerializeField] public bool IsHit { get; set; }
     [Networked][field: SerializeField] public bool IsSecondHit { get; set; }
     [Networked][field: SerializeField] public bool IsStagger { get; set; }
+    [Networked][field: SerializeField] public bool DamagedSafeZone { get; set; }
     [Networked][field: SerializeField] public bool IsDead { get; set; }
 
     //  ========================
 
     private ChangeDetector _changeDetector;
+
+    int damageIndicatorLT;
+
+    Vignette circleVignette;
 
     //==========================
 
@@ -37,9 +54,9 @@ public class PlayerHealthV2 : NetworkBehaviour
     {
         CurrentHealth = startingHealth;
 
-        if (!HasInputAuthority) return;
-
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+
+        if (!HasInputAuthority) return;
 
         healthSlider.value = CurrentHealth / 100;
         armorSlider.value = CurrentArmor / 100;
@@ -47,18 +64,137 @@ public class PlayerHealthV2 : NetworkBehaviour
 
     public override void Render()
     {
-        if (!HasInputAuthority) return;
 
         foreach (var change in _changeDetector.DetectChanges(this))
         {
             switch (change)
             {
                 case nameof(CurrentHealth):
+                    if (!HasInputAuthority) return;
+
                     healthSlider.value = CurrentHealth / 100;
                     break;
                 case nameof(CurrentArmor):
+                    if (!HasInputAuthority) return;
+
                     armorSlider.value = CurrentArmor / 100;
                     break;
+                case nameof(IsHit):
+
+                    if (!IsHit) return;
+
+                    DamageIndicator();
+
+                    break;
+                case nameof(IsSecondHit):
+
+                    if (!IsSecondHit) return;
+
+                    DamageIndicator();
+
+                    break;
+                case nameof(IsStagger):
+
+                    if (!IsStagger) return;
+
+                    DamageIndicator();
+
+                    break;
+                case nameof(DamagedSafeZone):
+
+                    if (!DamagedSafeZone) return;
+
+                    DamageIndicatorWithoutBlood();
+
+                    break;
+            }
+        }
+
+        if (HasInputAuthority)
+        {
+            if (postProcessing.profile.TryGet<Vignette>(out circleVignette))
+            {
+                if (DamagedSafeZone)
+                {
+                    circleVignette.active = true;
+                    circleVignette.intensity.value = Mathf.MoveTowards(circleVignette.intensity.value, 0.5f, Time.deltaTime * 2f);
+                }
+                else
+                {
+                    circleVignette.intensity.value = Mathf.MoveTowards(circleVignette.intensity.value, 0f, Time.deltaTime * 2f);
+                    if (circleVignette.intensity.value == 0)
+                    {
+                        circleVignette.active = false;
+                    }
+                }
+            }
+        }
+    }
+
+    public override void FixedUpdateNetwork()
+    {
+        base.FixedUpdateNetwork();
+
+        CircleDamage();
+    }
+
+    private void DamageIndicator()
+    {
+        bloodParticlesA.Play();
+        bloodParticlesB.Play();
+        bloodParticlesC.Play();
+        bloodParticlesD.Play();
+
+        if (!HasInputAuthority) return;
+
+        if (damageIndicatorLT != 0) LeanTween.cancel(damageIndicatorLT);
+
+        damageIndicatorLT = LeanTween.color(damageIndicator.rectTransform, new Color(255f, 255f, 255f, 255f), 0.12f).setEase(LeanTweenType.easeInOutSine).setOnComplete(() =>
+        {
+            damageIndicatorLT = LeanTween.color(damageIndicator.rectTransform, new Color(255f, 255f, 255f, 0), 5f).setEase(LeanTweenType.easeInSine).setDelay(2f).id;
+        }).id;
+    }
+
+    private void DamageIndicatorWithoutBlood()
+    {
+        if (!HasInputAuthority) return;
+
+        if (damageIndicatorLT != 0) LeanTween.cancel(damageIndicatorLT);
+
+        damageIndicatorLT = LeanTween.color(damageIndicator.rectTransform, new Color(255f, 255f, 255f, 255f), 0.12f).setEase(LeanTweenType.easeInOutSine).setOnComplete(() =>
+        {
+            damageIndicatorLT = LeanTween.color(damageIndicator.rectTransform, new Color(255f, 255f, 255f, 0), 5f).setEase(LeanTweenType.easeInSine).setDelay(2f).id;
+        }).id;
+    }
+
+    private void CircleDamage()
+    {
+        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+
+        if (!ServerManager.DonePlayerBattlePositions) return;
+
+        if (IsDead) return;
+
+        float distanceFromCenter = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(ServerManager.SafeZone.transform.position.x, 0, ServerManager.SafeZone.transform.position.z));
+        float radius = ServerManager.SafeZone.CurrentShrinkSize.x / 2; // Adjust based on your implementation
+
+        if (distanceFromCenter > radius)
+        {
+            DamagedSafeZone = true;
+            CurrentHealth -= Runner.DeltaTime * ((ServerManager.SafeZone.ShrinkSizeIndex + 1) / 2);
+        }
+        else
+            DamagedSafeZone = false;
+
+        if (CurrentHealth <= 0)
+        {
+            if (HasStateAuthority)
+                IsDead = true;
+
+            if (IsDead)
+            {
+                playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
+                ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
             }
         }
     }
@@ -122,6 +258,27 @@ public class PlayerHealthV2 : NetworkBehaviour
             //    playerInventory.Shield.DropShield();
             //    playerInventory.Shield = null;
             //}
+        }
+    }
+
+    public void FallDamae(float damage)
+    {
+        if (IsDead) return;
+
+        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+
+        CurrentHealth -= damage;
+
+        if (CurrentHealth <= 0)
+        {
+            if (HasStateAuthority)
+                IsDead = true;
+
+            if (IsDead)
+            {
+                playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
+                ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
+            }
         }
     }
 }

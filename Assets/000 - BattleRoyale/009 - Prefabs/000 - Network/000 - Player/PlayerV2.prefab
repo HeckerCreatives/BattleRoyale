@@ -18722,6 +18722,8 @@ MonoBehaviour:
     _value: 0
   _IsBlocking:
     _value: 0
+  _LastTouchPos: {x: 0, y: 0}
+  _IsTouching: 0
 --- !u!114 &8616249203308704524
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18752,16 +18754,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerGameStats: {fileID: 920470140754168319}
+  postProcessing: {fileID: 8443036603811109016}
   startingHealth: 100
   healthSlider: {fileID: 2344162232471040052}
   armorSlider: {fileID: 7109068911225709653}
   playerPlayables: {fileID: 7268080577510237573}
+  damageIndicator: {fileID: 3429395274201746953}
+  bloodParticlesA: {fileID: 3012831068613657807}
+  bloodParticlesB: {fileID: 6219234583620697235}
+  bloodParticlesC: {fileID: 4952033484916187284}
+  bloodParticlesD: {fileID: 272354343535585044}
   _ServerManager: {fileID: 0}
   _CurrentHealth: 0
   _CurrentArmor: 0
   _IsHit: 0
   _IsSecondHit: 0
   _IsStagger: 0
+  _DamagedSafeZone: 0
   _IsDead: 0
 --- !u!114 &7077205552742513072
 MonoBehaviour:
@@ -18928,7 +18937,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1572221092642448185}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
   m_Name: 
