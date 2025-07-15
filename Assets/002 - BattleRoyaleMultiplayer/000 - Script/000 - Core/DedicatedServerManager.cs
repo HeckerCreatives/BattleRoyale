@@ -86,6 +86,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     //  ===================================
 
     [SerializeField] private float waitingAreaStartTimer;
+    [SerializeField] private float readyForBattleStartTimer;
     [SerializeField] private int playerRequired;
     [SerializeField] private int maxPlayers;
     [SerializeField] private string lobby;
@@ -475,7 +476,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         {
             if (WaitingAreaTimer <= 0f)
             {
-                WaitingAreaTimer = 30f;
+                WaitingAreaTimer = readyForBattleStartTimer;
                 CurrentWaitingAreaTimerState = WaitingAreaTimerState.GETREADY;
             }
         }
@@ -534,7 +535,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 // Set player position
 
                 if (Players.ElementAt(a).Value.transform.position.x != spawnBattleAreaPositions[a].position.x && Players.ElementAt(a).Value.transform.position.z != spawnBattleAreaPositions[a].position.z)
-                    Players.ElementAt(a).Value.GetComponent<SimpleKCC>().SetPosition(spawnBattleAreaPositions[a].position);
+                {
+                    Players.ElementAt(a).Value.GetComponent<SimpleKCC>().SetPosition(spawnBattleAreaPositions[a].position, true);
+                }
             }
 
             for (int a = 0; a < Players.Count; a++)
@@ -583,12 +586,14 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             NetworkObject playerCharacter = Runner.Spawn(playerObj, Vector3.up, Quaternion.identity, player, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
             {
                 obj.GetComponent<SimpleKCC>().SetPosition(spawnWaitingAreaPositions[tempspawnpos].position);
+                obj.GetComponent<PlayerOwnObjectEnabler>().ServerManager = this;
                 obj.GetComponent<PlayerHealthV2>().ServerManager = this;
+                obj.GetComponent<PlayerGameStats>().ServerManager = this;
+                obj.GetComponent<MapZoomInOut>().ServerManager = this;
                 //obj.GetComponent<WaitingAreaTimerController>().ServerManager = this;
                 //obj.GetComponent<PlayerHealth>().ServerManager = this;
                 //obj.GetComponent<PlayerSpawnLocationController>().ServerManager = this;
                 //obj.GetComponent<PlayerQuitController>().ServerManager = this;
-                //obj.GetComponent<MapZoomInOut>().ServerManager = this;
                 //obj.GetComponent<PlayerGameOverScreen>().ServerManager = this;
                 //obj.GetComponent<PlayerShrinkZoneTimer>().ServerManager = this;
                 //obj.GetComponent<MainCorePlayable>().ServerManager = this;
@@ -618,16 +623,16 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             RemainingPlayers.Add(player, playerCharacter);
             PlayerCountChange?.Invoke(this, EventArgs.Empty);
 
-            //if (Players.Count >= 1 && !CanCountWaitingAreaTimer)
-            //{
-            //    CanCountWaitingAreaTimer = true;
-            //}
+            if (Players.Count >= 1 && !CanCountWaitingAreaTimer)
+            {
+                CanCountWaitingAreaTimer = true;
+            }
 
-            //if (CanCountWaitingAreaTimer && WaitingAreaTimer > 60 && Players.Count >= Players.Capacity && CurrentWaitingAreaTimerState == WaitingAreaTimerState.WAITING)
-            //{
-            //    CurrentWaitingAreaTimerState = WaitingAreaTimerState.GETREADY;
-            //    WaitingAreaTimer = 30;
-            //}
+            if (CanCountWaitingAreaTimer && WaitingAreaTimer > 60 && Players.Count >= Players.Capacity && CurrentWaitingAreaTimerState == WaitingAreaTimerState.WAITING)
+            {
+                CurrentWaitingAreaTimerState = WaitingAreaTimerState.GETREADY;
+                WaitingAreaTimer = 30;
+            }
         }
     }
 

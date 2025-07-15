@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
+using static UnityEngine.Rendering.PostProcessing.HistogramMonitor;
 
 public class PlayerPlayables : NetworkBehaviour
 {
@@ -18,6 +19,8 @@ public class PlayerPlayables : NetworkBehaviour
 
     [field: Header("NETWORK DEBUGGER")]
     [Networked][field: SerializeField] public float TickRateAnimation { get; set; }
+    [Networked][field: SerializeField] public int PlayableAnimationIndex { get; set; }
+    [Networked][field: SerializeField] public string PlayableState { get; set; }
 
     //  =======================
 
@@ -25,7 +28,14 @@ public class PlayerPlayables : NetworkBehaviour
     public PlayablesChanger changer;
     public AnimationMixerPlayable finalMixer;
 
+    private ChangeDetector _changeDetector;
+
     //  =======================
+
+    public override void Spawned()
+    {
+        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+    }
 
     public void OnEnable()
     {
@@ -39,9 +49,22 @@ public class PlayerPlayables : NetworkBehaviour
 
     public override void Render()
     {
+        if (HasInputAuthority || HasStateAuthority) return;
+
         if (changer.CurrentState == null) return;
 
-        changer.CurrentState.LogicUpdate();
+        foreach (var change in _changeDetector.DetectChanges(this))
+        {
+            switch (change)
+            {
+                case nameof(PlayableAnimationIndex):
+
+                    if (PlayableState == "basic")
+                        changer.ChangeState(basicMovement.GetPlayableAnimation(PlayableAnimationIndex));
+
+                    break;
+            }
+        }
     }
 
     public override void FixedUpdateNetwork()
@@ -56,8 +79,6 @@ public class PlayerPlayables : NetworkBehaviour
     public void InitializePlayables()
     {
         changer = new PlayablesChanger();
-
-        changer.coroutineHost = this;
 
         playableGraph = PlayableGraph.Create();
 

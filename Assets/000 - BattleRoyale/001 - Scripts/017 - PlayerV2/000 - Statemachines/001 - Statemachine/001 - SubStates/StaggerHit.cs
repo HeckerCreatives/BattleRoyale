@@ -10,7 +10,7 @@ public class StaggerHit : PlayerOnGround
     float moveTimer;
     bool canAction;
 
-    public StaggerHit(SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public StaggerHit(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
     }
 
@@ -28,22 +28,15 @@ public class StaggerHit : PlayerOnGround
         base.Exit();
 
         canAction = false;
-        playerPlayables.healthV2.IsStagger = false;
     }
 
-    public override void LogicUpdate()
-    {
-        base.LogicUpdate();
-
-        Animation();
-    }
 
     public override void NetworkUpdate()
     {
         if (canAction)
         {
             if (playerPlayables.TickRateAnimation < moveTimer)
-                characterController.Move(characterController.TransformDirection * -10f, 0f);
+                characterController.Move(characterController.TransformDirection * -5f, 0f);
         }
 
         Animation();
@@ -52,16 +45,19 @@ public class StaggerHit : PlayerOnGround
 
     private void Animation()
     {
-        if (!characterController.IsGrounded)
-        {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
-            return;
-        }
 
         if (canAction)
         {
             if (playerPlayables.TickRateAnimation >= timer)
             {
+                playerPlayables.healthV2.IsStagger = false;
+
+                if (!characterController.IsGrounded)
+                {
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
+                    return;
+                }
+
                 if (playerMovement.IsRoll)
                     playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
                 else

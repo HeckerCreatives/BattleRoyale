@@ -9,7 +9,7 @@ public class GettingUp : PlayerOnGround
     float timer;
     bool canAction;
 
-    public GettingUp(SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public GettingUp(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
     }
 
@@ -28,12 +28,6 @@ public class GettingUp : PlayerOnGround
         canAction = false;
     }
 
-    public override void LogicUpdate()
-    {
-        base.LogicUpdate();
-        Animation();
-    }
-
     public override void NetworkUpdate()
     {
         Animation();
@@ -41,6 +35,9 @@ public class GettingUp : PlayerOnGround
 
     private void Animation()
     {
+        if (playerPlayables.healthV2.IsDead)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+
         if (!characterController.IsGrounded)
         {
             playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);

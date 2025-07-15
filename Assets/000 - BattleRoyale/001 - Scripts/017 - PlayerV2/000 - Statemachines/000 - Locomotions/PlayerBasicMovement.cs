@@ -31,6 +31,7 @@ public class PlayerBasicMovement : NetworkBehaviour
     [SerializeField] private AnimationClip hit;
     [SerializeField] private AnimationClip staggerHit;
     [SerializeField] private AnimationClip gettingUp;
+    [SerializeField] private AnimationClip death;
 
     [Space]
     [SerializeField] private LayerMask enemyLayerMask;
@@ -61,6 +62,7 @@ public class PlayerBasicMovement : NetworkBehaviour
     public HitState HitPlayable { get; private set; }
     public StaggerHit StaggerHitPlayable { get; private set; }
     public GettingUp GettingUpPlayable { get; private set; }
+    public DeathState DeathPlayable { get; private set; }
 
     //  ======================
 
@@ -71,7 +73,7 @@ public class PlayerBasicMovement : NetworkBehaviour
 
     public AnimationMixerPlayable Initialize()
     {
-        mixerPlayable = AnimationMixerPlayable.Create(playerPlayables.playableGraph, 16);
+        mixerPlayable = AnimationMixerPlayable.Create(playerPlayables.playableGraph, 17);
 
         var idleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, idle);
         var runClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, run);
@@ -88,6 +90,7 @@ public class PlayerBasicMovement : NetworkBehaviour
         var hitClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, hit);
         var staggerHitClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, staggerHit);
         var gettingUpClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, gettingUp);
+        var deathClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, death);
 
         playerPlayables.playableGraph.Connect(idleClip, 0, mixerPlayable, 1);
         playerPlayables.playableGraph.Connect(runClip, 0, mixerPlayable, 2);
@@ -104,21 +107,23 @@ public class PlayerBasicMovement : NetworkBehaviour
         playerPlayables.playableGraph.Connect(hitClip, 0, mixerPlayable, 13);
         playerPlayables.playableGraph.Connect(staggerHitClip, 0, mixerPlayable, 14);
         playerPlayables.playableGraph.Connect(gettingUpClip, 0, mixerPlayable, 15);
+        playerPlayables.playableGraph.Connect(deathClip, 0, mixerPlayable, 16);
 
-        IdlePlayable = new IdleState(simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "idle", "basic", idle.length, idleClip, false);
-        RunPlayable = new RunState(simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "run", "basic", run.length, runClip, false);
-        SprintPlayable = new SprintState(simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "sprint", "basic", sprint.length, sprintClip, false);
-        JumpPlayable = new JumpState(simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumpidle", "basic", jumpidle.length, idleJumpClip, false);
-        FallingPlayable = new FallingState(simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "falling", "basic", falling.length, fallingClip, false);
-        RollPlayable = new RollState(simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "roll", "basic", roll.length, rollClip, true);
-        BlockPlayable = new BlockState(simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "block", "basic", block.length, blockClip, true);
-        Punch1Playable = new PunchState(simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch1", "basic", punch1.length, punch1Clip, true);
-        Punch2Playable = new MiddlePunchState(simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch2", "basic", punch2.length, punch2Clip, true);
-        Punch3Playable = new FinalPunchState(simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch3", "basic", punch3.length, punch3Clip, true);
-        JumpPunchPlayable = new JumpPunchState(simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumppunch", "basic", jumpPunch.length, jumpPunchClip, true);
-        HitPlayable = new HitState(simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "hit", "basic", hit.length, hitClip, true);
-        StaggerHitPlayable = new StaggerHit(simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "staggerhit", "basic", staggerHit.length, staggerHitClip, true);
-        GettingUpPlayable = new GettingUp(simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "gettingup", "basic", gettingUp.length, gettingUpClip, true);
+        IdlePlayable = new IdleState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "idle", "basic", idle.length, idleClip, false);
+        RunPlayable = new RunState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "run", "basic", run.length, runClip, false);
+        SprintPlayable = new SprintState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "sprint", "basic", sprint.length, sprintClip, false);
+        JumpPlayable = new JumpState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumpidle", "basic", jumpidle.length, idleJumpClip, false);
+        FallingPlayable = new FallingState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "falling", "basic", falling.length, fallingClip, false);
+        RollPlayable = new RollState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "roll", "basic", roll.length, rollClip, true);
+        BlockPlayable = new BlockState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "block", "basic", block.length, blockClip, true);
+        Punch1Playable = new PunchState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch1", "basic", punch1.length, punch1Clip, true);
+        Punch2Playable = new MiddlePunchState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch2", "basic", punch2.length, punch2Clip, true);
+        Punch3Playable = new FinalPunchState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch3", "basic", punch3.length, punch3Clip, true);
+        JumpPunchPlayable = new JumpPunchState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumppunch", "basic", jumpPunch.length, jumpPunchClip, true);
+        HitPlayable = new HitState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "hit", "basic", hit.length, hitClip, true);
+        StaggerHitPlayable = new StaggerHit(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "staggerhit", "basic", staggerHit.length, staggerHitClip, true);
+        GettingUpPlayable = new GettingUp(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "gettingup", "basic", gettingUp.length, gettingUpClip, true);
+        DeathPlayable = new DeathState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "death", "basic", death.length, deathClip, true);
 
         return mixerPlayable;
     }
@@ -172,7 +177,11 @@ public class PlayerBasicMovement : NetworkBehaviour
 
                 //Debug.Log($"First Fist Damage by {loader.Username} to {hitObject.GetComponent<PlayerNetworkLoader>().Username} on {tag}: {tempdamage}");
 
-                hitObject.GetComponent<PlayerHealthV2>().IsHit = true;
+                PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
+
+                healthV2.IsHit = true;
+
+                healthV2.ApplyDamage(tempdamage, "", Object);
 
                 // Process the hit
                 //HandleHit(hitObject, tempdamage);
@@ -230,7 +239,11 @@ public class PlayerBasicMovement : NetworkBehaviour
                     _ => 0f
                 };
 
-                hitObject.GetComponent<PlayerHealthV2>().IsSecondHit = true;
+                PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
+
+                healthV2.IsHit = true;
+
+                healthV2.ApplyDamage(tempdamage, "", Object);
 
                 // Process the hit
                 //HandleHit(hitObject, tempdamage);
@@ -292,7 +305,11 @@ public class PlayerBasicMovement : NetworkBehaviour
 
                 //Debug.Log($"First Fist Damage by {loader.Username} to {hitObject.GetComponent<PlayerNetworkLoader>().Username} on {tag}: {tempdamage}");
 
-                hitObject.GetComponent<PlayerHealthV2>().IsStagger = true;
+                PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
+
+                healthV2.IsStagger = true;
+
+                healthV2.ApplyDamage(tempdamage, "", Object);
 
                 // Process the hit
                 //HandleHit(hitObject, tempdamage);
@@ -313,6 +330,44 @@ public class PlayerBasicMovement : NetworkBehaviour
     public void ResetSecondAttack()
     {
         hitEnemiesSecondFist.Clear();
+    }
+
+    public AnimationPlayable GetPlayableAnimation(int index)
+    {
+        switch (index)
+        {
+            case 1:
+                return IdlePlayable;
+            case 2:
+                return RunPlayable;
+            case 3:
+                return SprintPlayable;
+            case 4:
+                return RollPlayable;
+            case 5:
+                return Punch1Playable;
+            case 6:
+                return Punch2Playable;
+            case 7:
+                return Punch3Playable;
+            case 9:
+                return JumpPlayable;
+            case 10:
+                return FallingPlayable;
+            case 11:
+                return JumpPunchPlayable;
+            case 12:
+                return BlockPlayable;
+            case 13:
+                return HitPlayable;
+            case 14:
+                return StaggerHitPlayable;
+            case 15:
+                return GettingUpPlayable;
+            case 16:
+                return DeathPlayable;
+            default: return null;
+        }
     }
 
     private void OnDrawGizmos()

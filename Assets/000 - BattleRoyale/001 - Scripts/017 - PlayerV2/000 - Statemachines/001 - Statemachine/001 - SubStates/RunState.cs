@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 
 public class RunState : PlayerOnGround
 {
-    public RunState(SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public RunState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
     }
 
@@ -16,12 +16,6 @@ public class RunState : PlayerOnGround
         base.Enter();
     }
 
-    public override void LogicUpdate()
-    {
-        base.LogicUpdate();
-
-        Animation();
-    }
 
     public override void NetworkUpdate()
     {
@@ -32,6 +26,9 @@ public class RunState : PlayerOnGround
 
     private void Animation()
     {
+        if (playerPlayables.healthV2.IsDead)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+
         if (!characterController.IsGrounded)
             playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
 
@@ -40,6 +37,9 @@ public class RunState : PlayerOnGround
 
         if (playerMovement.IsBlocking)
             playablesChanger.ChangeState(playerPlayables.basicMovement.BlockPlayable);
+
+        if (playerMovement.Attacking)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.Punch1Playable);
 
         if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
             playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);

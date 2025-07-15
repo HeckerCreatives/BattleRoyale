@@ -6,15 +6,10 @@ using UnityEngine.Animations;
 
 public class FallingState : AnimationPlayable
 {
-    public FallingState(SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public FallingState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
     }
 
-    public override void LogicUpdate()
-    {
-        base.LogicUpdate();
-        Animation();
-    }
 
     public override void NetworkUpdate()
     {
@@ -27,6 +22,9 @@ public class FallingState : AnimationPlayable
     {
         if (playerMovement.Attacking)
             playablesChanger.ChangeState(playerPlayables.basicMovement.JumpPunchPlayable);
+
+        if (playerPlayables.healthV2.IsDead)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
 
         if (characterController.IsGrounded)
         {

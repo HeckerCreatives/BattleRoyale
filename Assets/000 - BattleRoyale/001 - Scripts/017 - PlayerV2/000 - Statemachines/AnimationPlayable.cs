@@ -35,15 +35,11 @@ public class AnimationPlayable
 
     private MonoBehaviour coroutineHost; // host to start coroutine
 
-    public void SetCoroutineHost(MonoBehaviour host)
-    {
-        coroutineHost = host;
-    }
-
     //  ======================
 
-    public AnimationPlayable(SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay    )
+    public AnimationPlayable(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay    )
     {
+        coroutineHost = host;
         this.characterController = characterController;
         this.playablesChanger = playablesChanger;
         this.playerMovement = playerMovement;
@@ -75,6 +71,13 @@ public class AnimationPlayable
         int mixerIndex = mixers.IndexOf(mixername);
         int animIndex = animations.IndexOf(animationname);
 
+        if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority)
+        {
+            playerPlayables.PlayableState = mixername;
+            playerPlayables.PlayableAnimationIndex = animIndex;
+        }
+
+
         if (blendCoroutine != null) coroutineHost.StopCoroutine(blendCoroutine);
         blendCoroutine = coroutineHost.StartCoroutine(BlendWeights(mixerPlayable, animIndex, 1f));
         coroutineHost.StartCoroutine(BlendWeights(playerPlayables.finalMixer, mixerIndex, 1f));
@@ -90,10 +93,10 @@ public class AnimationPlayable
         coroutineHost.StartCoroutine(BlendWeights(playerPlayables.finalMixer, mixerIndex, 0f));
     }
 
-    public virtual void LogicUpdate()
-    {
-        if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority) return;
-    }
+    //public virtual void LogicUpdate()
+    //{
+    //    if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority) return;
+    //}
 
     public virtual void NetworkUpdate() { }
 

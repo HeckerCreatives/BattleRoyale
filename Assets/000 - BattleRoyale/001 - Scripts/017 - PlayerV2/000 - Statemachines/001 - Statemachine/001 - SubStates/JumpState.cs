@@ -7,16 +7,10 @@ using UnityEngine.Animations;
 
 public class JumpState : PlayerOnGround
 {
-    public JumpState(SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public JumpState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
     }
 
-    public override void LogicUpdate()
-    {
-        base.LogicUpdate();
-
-        RenderAnimation();
-    }
 
     public override void NetworkUpdate()
     {
@@ -29,6 +23,9 @@ public class JumpState : PlayerOnGround
 
     private void Animation()
     {
+        if (playerPlayables.healthV2.IsDead)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+
         if (!playerMovement.IsJumping)
         {
             if (!characterController.IsGrounded)

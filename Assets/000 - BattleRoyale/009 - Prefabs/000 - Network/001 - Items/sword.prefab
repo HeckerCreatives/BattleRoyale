@@ -40,9 +40,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6175662577263270886}
+  - component: {fileID: 7453557457154416952}
   - component: {fileID: 2511843833045033619}
   - component: {fileID: 1209081772464881890}
-  - component: {fileID: 3200345005151495415}
   - component: {fileID: 3283460978109500959}
   - component: {fileID: -6896107499734453323}
   - component: {fileID: -2041506180087163115}
@@ -72,6 +72,18 @@ Transform:
   - {fileID: 4925880882455974048}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7453557457154416952
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7616198628887366643}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ce36211fb835e04a9875ccf675beb33, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!33 &2511843833045033619
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -122,47 +134,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &3200345005151495415
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7616198628887366643}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 58e432449cdabfd42890861b85aa9062, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  weponsData: {fileID: 11400000, guid: c12335f14c4d0e549986dfe35b8f1a53, type: 2}
-  meleeSoundController: {fileID: 3283460978109500959}
-  dropRotation: {x: 90, y: 0, z: 0}
-  enemyLayerMask:
-    serializedVersion: 2
-    m_Bits: 8192
-  impactSize: {x: 0.25, y: 0.56, z: 0.13}
-  muzzleFlash: {fileID: 0}
-  impactPoint: {fileID: 7638595848337183244}
-  head: 50
-  body: 45
-  thigh: 40
-  shin: 35
-  foot: 30
-  arm: 40
-  forearm: 35
-  _WeaponID: 
-  _WeaponName: 
-  _Ammo: 0
-  _TempPlayer: {fileID: 0}
-  _ItemCheckerController: {fileID: 0}
-  _Back: {fileID: 0}
-  _Hand: {fileID: 0}
-  _IsPickedUp: 0
-  _IsHand: 0
-  _DropPosition: {x: 0, y: 0, z: 0}
-  _Hit: 0
-  _hitEnemiesFirst: []
-  _hitEnemiesSecond: []
 --- !u!114 &3283460978109500959
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -196,7 +167,7 @@ MonoBehaviour:
   Flags: 262145
   NestedObjects: []
   NetworkedBehaviours:
-  - {fileID: 3200345005151495415}
+  - {fileID: 7453557457154416952}
   - {fileID: 3283460978109500959}
   - {fileID: 2161710917413007540}
   ForceRemoteRenderTimeframe: 0

@@ -9,12 +9,13 @@ public class PunchState : PlayerOnGround
     float timer;
     float nextPunchWindow;
     float moveTimer;
+    float stopMoveTimer;
     float damageWindowStart;
     float damageWindowEnd;
     bool canAction;
     bool canMove;
 
-    public PunchState(SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public PunchState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
     }
 
@@ -22,11 +23,12 @@ public class PunchState : PlayerOnGround
     {
         base.Enter();
 
-        timer = playerPlayables.TickRateAnimation + animationLength;
-        nextPunchWindow = playerPlayables.TickRateAnimation + (animationLength - 0.2f);
-        moveTimer = playerPlayables.TickRateAnimation + 0.30f;
-        damageWindowStart = playerPlayables.TickRateAnimation + 0.18f;
-        damageWindowEnd = playerPlayables.TickRateAnimation + 0.23f;
+        timer = playerPlayables.TickRateAnimation + (animationLength * 0.9f);
+        nextPunchWindow = playerPlayables.TickRateAnimation + (animationLength * 0.8f);
+        moveTimer = playerPlayables.TickRateAnimation + (animationLength * 0.3f);
+        stopMoveTimer = playerPlayables.TickRateAnimation + (animationLength * 0.5f);
+        damageWindowStart = playerPlayables.TickRateAnimation + (animationLength * 0.18f);
+        damageWindowEnd = playerPlayables.TickRateAnimation + (animationLength * 0.23f);
         canAction = true;
         canMove = true;
     }
@@ -39,15 +41,11 @@ public class PunchState : PlayerOnGround
         canAction = false;
     }
 
-    public override void LogicUpdate()
-    {
-        base.LogicUpdate();
-
-        Animation();
-    }
 
     public override void NetworkUpdate()
     {
+        playerMovement.RotatePlayer();
+
         if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
         {
             playerPlayables.basicMovement.PerformFirstAttack();
@@ -55,9 +53,9 @@ public class PunchState : PlayerOnGround
 
         Animation();
 
-        if (playerPlayables.TickRateAnimation >= moveTimer && canMove)
+        if (playerPlayables.TickRateAnimation >= moveTimer && playerPlayables.TickRateAnimation <= stopMoveTimer)
         {
-            characterController.Move(characterController.TransformDirection * 25f, 0f);
+            characterController.Move(characterController.TransformDirection * 3.5f, 0f);
             canMove = false;
         }
 
@@ -66,6 +64,9 @@ public class PunchState : PlayerOnGround
 
     private void Animation()
     {
+        if (playerPlayables.healthV2.IsDead)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+
         if (!characterController.IsGrounded)
             playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
 

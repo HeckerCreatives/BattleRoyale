@@ -1,4 +1,4 @@
-using Fusion;
+﻿using Fusion;
 using Fusion.Addons.SimpleKCC;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -54,7 +54,7 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     //  =======================
 
-    ChangeDetector _changeDetector;
+    //ChangeDetector _changeDetector;
 
     private Dictionary<int, string> touchRoles = new Dictionary<int, string>();
     private Dictionary<int, Vector2> lastTouchPositions = new Dictionary<int, Vector2>();
@@ -68,16 +68,15 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     //  =======================
 
-    private void OnEnable()
+    public override void Spawned()
     {
         characterController.SetGravity(Physics.gravity.y * 3f);
-        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
     }
 
     public void PlayerMovementInitialize()
     {
         characterController.SetGravity(Physics.gravity.y * 3f);
-        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+        //_changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
 
         if (!HasInputAuthority) return;
 
@@ -170,27 +169,33 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     private void TouchFingerDown(Finger finger)
     {
-        if (AnalogStickDetector(finger.screenPosition) && !touchRoles.ContainsKey(finger.index))
+        Vector2 pos = finger.screenPosition;
+
+        // 🟢 First: Check if the finger touched the joystick UI
+        if (AnalogStickDetector(pos))
         {
             touchRoles[finger.index] = "joystick";
         }
-        else if (!IsTouchOverUI(finger.screenPosition) && !touchRoles.ContainsKey(finger.index))
+        // 🔒 Then: If it touched any other UI (like attack/jump), block it
+        else if (EventSystem.current.IsPointerOverGameObject(finger.index))
+        {
+            return; // Ignore this touch completely — it's over attack/jump/etc
+        }
+        // ✅ Else: Treat it as a camera drag
+        else
         {
             touchRoles[finger.index] = "camera";
-            lastTouchPositions[finger.index] = finger.currentTouch.screenPosition; // Initialize last position
+            lastTouchPositions[finger.index] = pos;
             stationaryTimers[finger.index] = 0f;
         }
 
+        // Optional: Initialize values immediately
         if (touchRoles.TryGetValue(finger.index, out string role))
         {
             if (role == "camera")
-            {
                 gameplayController.LookDirection = Vector2.zero;
-            }
             else if (role == "joystick")
-            {
                 HandleJoystickMovement(finger);
-            }
         }
     }
 
@@ -302,6 +307,8 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     public void MoveCharacter()
     {
+        MoveDir = PlayerLookDirection();
+
         if (MoveDir.sqrMagnitude > 0.01f && !IsRoll)
         {
             // Normalize to prevent sprinting from affecting rotation
@@ -312,7 +319,6 @@ public class PlayerMovementV2 : NetworkBehaviour
             characterController.SetLookRotation(Quaternion.Slerp(characterController.TransformRotation, targetRotation, Runner.DeltaTime * 10f));
         }
 
-        MoveDir = PlayerLookDirection();
 
         float moveSpeedValue = IsSprint ? SprintSpeed : MoveSpeed;
         MoveDirection = MoveDir * moveSpeedValue * Runner.DeltaTime;
@@ -320,11 +326,27 @@ public class PlayerMovementV2 : NetworkBehaviour
         characterController.Move(MoveDirection, JumpImpulse);
     }
 
+    public void RotatePlayer()
+    {
+        MoveDir = PlayerLookDirection();
+
+        if (MoveDir.sqrMagnitude > 0.01f && !IsRoll)
+        {
+            // Normalize to prevent sprinting from affecting rotation
+            MoveDir.Normalize();
+
+            // Optional: Smooth rotation
+            Quaternion targetRotation = Quaternion.LookRotation(MoveDir);
+            characterController.SetLookRotation(targetRotation);
+        }
+
+    }
+
     public Vector3 PlayerLookDirection()
     {
         float yawRad = cameraRotation._cinemachineTargetYaw * Mathf.Deg2Rad;
         Vector3 camForward = new Vector3(Mathf.Sin(yawRad), 0f, Mathf.Cos(yawRad));
-        Vector3 camRight = new Vector3(camForward.z, 0f, -camForward.x); // rotate forward 90�
+        Vector3 camRight = new Vector3(camForward.z, 0f, -camForward.x); // rotate forward 90°
 
         Vector3 worldDirection = camForward * YMovement + camRight * XMovement;
 

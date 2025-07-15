@@ -8,12 +8,13 @@ public class FinalPunchState : PlayerOnGround
 {
     float timer;
     float moveTimer;
+    float stopMoveTimer;
     float damageWindowStart;
     float damageWindowEnd;
     bool canAction;
     bool canMove;
 
-    public FinalPunchState(SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public FinalPunchState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
     }
 
@@ -23,6 +24,7 @@ public class FinalPunchState : PlayerOnGround
 
         timer = playerPlayables.TickRateAnimation + animationLength;
         moveTimer = playerPlayables.TickRateAnimation + 0.30f;
+        stopMoveTimer = playerPlayables.TickRateAnimation + 0.50f;
         damageWindowStart = playerPlayables.TickRateAnimation + 0.45f;
         damageWindowEnd = playerPlayables.TickRateAnimation + 0.50f;
         canAction = true;
@@ -36,12 +38,6 @@ public class FinalPunchState : PlayerOnGround
         canAction = false;
     }
 
-    public override void LogicUpdate()
-    {
-        base.LogicUpdate();
-
-        Animation();
-    }
 
     public override void NetworkUpdate()
     {
@@ -52,9 +48,9 @@ public class FinalPunchState : PlayerOnGround
 
         Animation();
 
-        if (playerPlayables.TickRateAnimation >= moveTimer && canMove)
+        if (playerPlayables.TickRateAnimation >= moveTimer && playerPlayables.TickRateAnimation <= stopMoveTimer)
         {
-            characterController.Move(characterController.TransformDirection * 50f, 0f);
+            characterController.Move(characterController.TransformDirection * 5f, 0f);
             canMove = false;
         }
 
@@ -63,6 +59,9 @@ public class FinalPunchState : PlayerOnGround
 
     private  void Animation()
     {
+        if (playerPlayables.healthV2.IsDead)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+
         if (playerPlayables.TickRateAnimation >= timer && canAction)
         {
             if (playerMovement.MoveDirection != Vector3.zero)

@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerInventoryV2 : NetworkBehaviour
 {
@@ -21,6 +22,26 @@ public class PlayerInventoryV2 : NetworkBehaviour
     [SerializeField] private List<Color> clothingColor;
     [SerializeField] private List<Color> skinColor;
 
+    [Header("WEAPON EQUIP BUTTONS")]
+    [SerializeField] private WeaponEquipBtnController HandBtn;
+    [SerializeField] private WeaponEquipBtnController PrimaryBtn;
+    [SerializeField] private WeaponEquipBtnController SecondaryBtn;
+
+    [Header("CRATE DETECTOR")]
+    [SerializeField] private LayerMask objecMask;
+    [SerializeField] private Vector3 colliderOffset;
+    [SerializeField] private Vector3 colliderSize;
+    [SerializeField] private GameObject itemListObj;
+    [SerializeField] private GameObject itemButton;
+    [SerializeField] private Transform contentTF;
+    [SerializeField] private WeaponSpawnData itemSpritesData;
+
+    [field: Header("DEBUGGER")]
+    [field: SerializeField] public CrateController CrateObject { get; set; }
+    [field: SerializeField] public GameObject CrateObjectDetector { get; set; }
+    [field: SerializeField] private List<GameObject> localNearbyWeapon = new List<GameObject>();
+    [field: SerializeField] private bool isCacheUpdated = false;
+
     [field: Header("DEBUGGER NETWORK")]
     [field: SerializeField][Networked] public NetworkBool IsSkinInitialized { get; set; }
     [field: SerializeField][Networked] public NetworkBool IsWeaponInitialize { get; set; }
@@ -28,6 +49,16 @@ public class PlayerInventoryV2 : NetworkBehaviour
     [field: SerializeField][Networked] public int HairColorIndex { get; set; }
     [field: SerializeField][Networked] public int ClothingColorIndex { get; set; }
     [field: SerializeField][Networked] public int SkinColorIndex { get; set; }
+    [field: SerializeField][Networked] public int WeaponIndex { get; set; }
+
+    //  ========================
+
+    private List<Collider> currentColliders = new List<Collider>();
+    private List<Collider> previousColliders = new List<Collider>();
+
+    private Dictionary<string, int> _localCache = new Dictionary<string, int>();
+
+    //  =========================
 
     public override void Spawned()
     {
@@ -41,6 +72,24 @@ public class PlayerInventoryV2 : NetworkBehaviour
         else if (!HasInputAuthority && !HasStateAuthority)
             InitializeSkinOnStart();
     }
+
+    public override void Render()
+    {
+        if (HasInputAuthority)
+        {
+            HandBtn.SetIndicator(WeaponIndex == 1 ? true : false);
+            PrimaryBtn.SetIndicator(WeaponIndex == 2 ? true : false);
+            SecondaryBtn.SetIndicator(WeaponIndex == 3 ? true : false);
+            CrateCache();
+        }
+    }
+
+    private void FixedUpdate()
+    {
+        CrateCollisionChecker();
+    }
+
+    #region SKINS
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
     private void RPC_SendPlayerDataToServer(string data)
@@ -70,4 +119,228 @@ public class PlayerInventoryV2 : NetworkBehaviour
         lowerClothingMR.materials[0].SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
         bodyColorMR.material.SetColor("_BaseColor", skinColor[SkinColorIndex]);
     }
+
+    #endregion
+
+    #region CRATE ITEMS DETECTOR
+
+    private void CrateCache()
+    {
+        if (CrateObject == null && localNearbyWeapon.Count <= 0)
+        {
+            itemListObj.SetActive(false); // Hide the UI
+            ClearLocalCacheAndUI();      // Clear cache and UI
+            return;
+        }
+
+        // Check if the crate's contents or nearby weapons have changed
+
+        if (CrateObject != null && !CheckItemCrateDictionary(CrateObject.Weapons, _localCache))
+        {
+            isCacheUpdated = true;
+        }
+
+        if (!CheckWeaponList())
+        {
+            isCacheUpdated = true;
+        }
+
+        // Update the cache and UI if changes are detected
+        if (isCacheUpdated)
+        {
+            UpdateLocalCache();
+        }
+
+        // Show the UI
+        itemListObj.SetActive(true);
+    }
+
+    private void ClearLocalCacheAndUI()
+    {
+        _localCache.Clear();
+        foreach (Transform child in contentTF)
+        {
+            Destroy(child.gameObject);
+        }
+    }
+
+    private bool CheckItemCrateDictionary(NetworkDictionary<NetworkString<_4>, int> dict1, Dictionary<string, int> dict2)
+    {
+        if (dict1.Count != dict2.Count) return false;
+
+        foreach (var pair in dict1)
+        {
+            if (!dict2.TryGetValue(pair.Key.ToString(), out var value) || !value.Equals(pair.Value))
+                return false;
+        }
+
+        return true;
+    }
+
+    private bool CheckWeaponList()
+    {
+        var itemsToRemove = new List<GameObject>();
+
+        foreach (var item in localNearbyWeapon)
+        {
+            var weaponItem = item.GetComponent<WeaponItem>();
+            if (weaponItem != null && weaponItem.IsPickedUp)
+            {
+                itemsToRemove.Add(item);
+            }
+        }
+
+        // Remove items outside the loop
+        foreach (var item in itemsToRemove)
+        {
+            localNearbyWeapon.Remove(item);
+        }
+
+        // Return true if no items were removed, false otherwise
+        return itemsToRemove.Count == 0;
+    }
+
+    private void UpdateLocalCache()
+    {
+        if (!HasInputAuthority) return;
+
+        // Clear current UI only when necessary
+        foreach (Transform child in contentTF)
+        {
+            Destroy(child.gameObject);
+        }
+
+        _localCache.Clear();
+
+        // Update crate items
+        if (CrateObject != null)
+        {
+            foreach (var pair in CrateObject.Weapons)
+            {
+                _localCache[pair.Key.ToString()] = pair.Value;
+                AddItemButton(pair.Key.ToString(), pair.Value, isCrateItem: true);
+            }
+        }
+
+        // Update nearby weapons
+        foreach (var weapon in localNearbyWeapon)
+        {
+            var weaponItem = weapon.GetComponent<WeaponItem>();
+            if (weaponItem == null) continue;
+
+            AddItemButton(weaponItem.WeaponID, weaponItem.Ammo, isCrateItem: false);
+        }
+
+        isCacheUpdated = false;
+    }
+
+    private void AddItemButton(string itemID, int value, bool isCrateItem)
+    {
+        GameObject tempbuttons = Instantiate(itemButton, contentTF);
+
+        tempbuttons.GetComponent<Button>().onClick.AddListener(() =>
+        {
+            
+        });
+
+        tempbuttons.GetComponent<WeaponListUIController>().InitializeData(
+            itemSpritesData.GetItemListSprite(itemID),
+            itemSpritesData.GetItemName(itemID),
+            value.ToString());
+    }
+
+    private void CrateCollisionChecker()
+    {
+        if (Runner == null) return;
+
+        if (!HasInputAuthority) return;
+
+        CollisionEnter();
+        CollisionExit();
+    }
+
+    private void CollisionEnter()
+    {
+        if (!HasInputAuthority) return;
+
+        Collider[] hitColliders = Physics.OverlapBox(transform.position + colliderOffset, colliderSize, Quaternion.identity, objecMask);
+
+        currentColliders.Clear();
+        currentColliders.AddRange(hitColliders);
+
+        foreach (var hit in hitColliders)
+        {
+            if (hit.CompareTag("Crate"))
+            {
+                HandleCrateEnter(hit.gameObject);
+            }
+            else if (hit.CompareTag("Weapon"))
+            {
+                HandleWeaponEnter(hit.gameObject);
+            }
+        }
+    }
+
+    private void CollisionExit()
+    {
+        if (!HasInputAuthority) return;
+
+        foreach (var previousCollider in previousColliders)
+        {
+            if (!currentColliders.Contains(previousCollider))
+            {
+                if (previousCollider.CompareTag("Crate"))
+                {
+                    HandleCrateExit();
+                }
+                else if (previousCollider.CompareTag("Weapon"))
+                {
+                    HandleWeaponExit(previousCollider.gameObject);
+                }
+            }
+        }
+
+        previousColliders.Clear();
+        previousColliders.AddRange(currentColliders);
+    }
+
+    private void HandleWeaponEnter(GameObject weapon)
+    {
+        if (localNearbyWeapon.Contains(weapon)) return;
+
+        if (weapon.GetComponent<WeaponItem>().IsPickedUp) return;
+
+        localNearbyWeapon.Add(weapon);
+        isCacheUpdated = true; // Mark cache updated if a new weapon is detected
+    }
+
+    private void HandleCrateEnter(GameObject other)
+    {
+        if (!HasInputAuthority) return;
+
+        CrateObject = other.GetComponent<CrateController>();
+    }
+
+    private void HandleWeaponExit(GameObject weapon)
+    {
+        localNearbyWeapon.Remove(weapon);
+    }
+
+    private void HandleCrateExit()
+    {
+        if (!HasInputAuthority) return;
+
+        if (CrateObject == null) return;
+
+        CrateObject = null;
+    }
+
+    public void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireCube(transform.position + colliderOffset, colliderSize);
+    }
+
+    #endregion
+
 }

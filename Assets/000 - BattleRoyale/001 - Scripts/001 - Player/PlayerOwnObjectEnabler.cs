@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using static UnityEngine.CullingGroup;
 
 public class PlayerOwnObjectEnabler : NetworkBehaviour
 {
@@ -22,8 +23,12 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     [SerializeField] private GameObject playerAimVCam;
     [SerializeField] private GameObject playerMiniMapIcon;
     [SerializeField] private GameObject playerMapIcon;
+    [SerializeField] private GameObject playerMinimapIcon;
     [SerializeField] private GameObject playerMinimapCam;
     [SerializeField] private GameObject playerSpawnLocCam;
+
+    [field: Header("DEBUGGER")]
+    [Networked][field: SerializeField] public DedicatedServerManager ServerManager { get; set; }
 
     public async override void Spawned()
     {
@@ -52,15 +57,71 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         playerVcam.SetActive(true);
         playerAimVCam.SetActive(true);
         playerMiniMapIcon.SetActive(true);
+        playerMinimapIcon.SetActive(true);
         playerMapIcon.SetActive(true);
         playerMinimapCam.SetActive(true);
         playerSpawnLocCam.SetActive(true);
+
+        while (ServerManager == null) await Task.Yield();
+
+        ServerManager.OnCurrentStateChange += StateChange;
     }
+
+    private void StateChange(object sender, EventArgs e)
+    {
+        if (ServerManager.CurrentGameState == GameState.ARENA)
+        {
+            if (HasInputAuthority)
+            {
+                GameManager.Instance.SceneController.SpawnArenaLoading = true;
+                GameManager.Instance.SceneController.AddActionLoadinList(ReadyForBattle());
+                GameManager.Instance.SceneController.ActionPass = true;
+            }
+        }
+    }
+
+    IEnumerator ReadyForBattle()
+    {
+        while (!ServerManager.DonePlayerBattlePositions) yield return null;
+    }
+
 
     IEnumerator InitializePlayer()
     {
         cameraRotation.InitializeCameraRotationSensitivity();
         movementV2.PlayerMovementInitialize();
         yield return null;
+    }
+
+    public void QuitBtn()
+    {
+        if (!Runner) return;
+
+        if (ServerManager == null) return;
+
+        if (!HasInputAuthority) return;
+
+        if (ServerManager.CurrentGameState == GameState.WAITINGAREA)
+        {
+            GameManager.Instance.NotificationController.ShowConfirmation("Are you sure you want to quit the match?", () =>
+            {
+                Runner.Shutdown();
+                GameManager.Instance.SceneController.CurrentScene = "Lobby";
+            }, null);
+        }
+        else if (ServerManager.CurrentGameState == GameState.ARENA)
+        {
+            GameManager.Instance.NotificationController.ShowConfirmation("Are you sure you want to quit the match? You will not gain any xp and points for this match.", () =>
+            {
+                Runner.Shutdown();
+                GameManager.Instance.SceneController.CurrentScene = "Lobby";
+            }, null);
+        }
+    }
+
+    public void ReturnToMenuBtn()
+    {
+        Runner.Shutdown();
+        GameManager.Instance.SceneController.CurrentScene = "Lobby";
     }
 }

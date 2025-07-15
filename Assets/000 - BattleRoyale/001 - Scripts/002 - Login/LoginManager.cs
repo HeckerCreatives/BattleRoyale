@@ -16,6 +16,7 @@ using Fusion;
 using System.Threading;
 using System.Linq;
 using System.Threading.Tasks;
+using Unity.Services.Analytics.Internal.Platform;
 
 public class LoginManager : MonoBehaviour
 {
@@ -57,6 +58,8 @@ public class LoginManager : MonoBehaviour
     [SerializeField] private Sprite badPing;
     [SerializeField] private Image pingImg;
     [SerializeField] private Button startGameBtn;
+    [SerializeField] private TextMeshProUGUI totalPlayersOnlineTMP;
+    [SerializeField] private TextMeshProUGUI selectedServerPlayersOnlineTMP;
 
     [Header("DEBUGGER")]
     [ReadOnly][SerializeField] public NetworkRunner currentRunnerInstance;
@@ -329,6 +332,56 @@ public class LoginManager : MonoBehaviour
         GameManager.Instance.SceneController.AddActionLoadinList(userData.CheckControlSettingSave());
         GameManager.Instance.SceneController.AddActionLoadinList(FillUpSignUpCountry());
         GameManager.Instance.SceneController.ActionPass = true;
+
+        GameManager.Instance.SocketMngr.OnPlayerCountServerChange += PlayerCountChange;
+
+
+        GameManager.Instance.SocketMngr.OnPlayerCountAsiaServerChange += AsiaChange;
+        GameManager.Instance.SocketMngr.OnPlayerCountAfricaServerChange += AfricaChange;
+        GameManager.Instance.SocketMngr.OnPlayerCounUAEtServerChange += UAEChange;
+        GameManager.Instance.SocketMngr.OnPlayerCountAmericaEastServerChange += USChange;
+        GameManager.Instance.SocketMngr.OnPlayerCountAmericaWestServerChange += USWChange;
+    }
+
+    private void OnDisable()
+    {
+        GameManager.Instance.SocketMngr.OnPlayerCountServerChange -= PlayerCountChange;
+
+        GameManager.Instance.SocketMngr.OnPlayerCountAsiaServerChange -= AsiaChange;
+        GameManager.Instance.SocketMngr.OnPlayerCountAfricaServerChange -= AfricaChange;
+        GameManager.Instance.SocketMngr.OnPlayerCounUAEtServerChange -= UAEChange;
+        GameManager.Instance.SocketMngr.OnPlayerCountAmericaEastServerChange -= USChange;
+        GameManager.Instance.SocketMngr.OnPlayerCountAmericaWestServerChange -= USWChange;
+    }
+
+    private void AsiaChange(object sender, EventArgs e)
+    {
+        CheckServerCount();
+    }
+
+    private void AfricaChange(object sender, EventArgs e)
+    {
+        CheckServerCount();
+    }
+
+    private void UAEChange(object sender, EventArgs e)
+    {
+        CheckServerCount();
+    }
+
+    private void USChange(object sender, EventArgs e)
+    {
+        CheckServerCount();
+    }
+
+    private void USWChange(object sender, EventArgs e)
+    {
+        CheckServerCount();
+    }
+
+    private void PlayerCountChange(object sender, EventArgs e)
+    {
+        totalPlayersOnlineTMP.text = $"Online: <color=green>{GameManager.Instance.SocketMngr.PlayerCountServer:n0}</color>";
     }
 
     private IEnumerator CheckRememberMe()
@@ -443,6 +496,11 @@ public class LoginManager : MonoBehaviour
                     userData.RememberMeDelete();
                 }
 
+                Debug.Log("starting initialize socket");
+                GameManager.Instance.SocketMngr.InitializeSocket();
+
+                while (GameManager.Instance.SocketMngr.ConnectionStatus != "Connected") yield return null;
+
                 Debug.Log("Getting available regions");
                 GetAvailableRegions(() =>
                 {
@@ -475,22 +533,17 @@ public class LoginManager : MonoBehaviour
         }
     }
 
-    public async void StartGame()
+    public void StartGame()
     {
-        GameManager.Instance.NoBGLoading.SetActive(true);
-
-        Debug.Log("starting initialize socket");
-        GameManager.Instance.SocketMngr.InitializeSocket();
-
-        while (GameManager.Instance.SocketMngr.ConnectionStatus != "Connected") await Task.Yield();
-
-        GameManager.Instance.NoBGLoading.SetActive(false);
+        GameManager.Instance.SocketMngr.EmitEvent("selectregion", userData.SelectedServer);
 
         GameManager.Instance.SceneController.CurrentScene = "Lobby";
     }
 
     public void CheckSelectedServer()
     {
+        CheckServerCount();
+
         if (userData.SelectedServer == "")
         {
             var lowest = AvailableServers.Aggregate((x, y) => x.Value < y.Value ? x : y);
@@ -519,6 +572,20 @@ public class LoginManager : MonoBehaviour
 
         if (rememberMe.isOn)
             PlayerPrefs.SetString("server", userData.SelectedServer);
+    }
+
+    private void CheckServerCount()
+    {
+        if (userData.SelectedServer == "asia")
+            selectedServerPlayersOnlineTMP.text = GameManager.Instance.SocketMngr.PlayerAsiaCountServer.ToString("n0");
+        else if (userData.SelectedServer == "za")
+            selectedServerPlayersOnlineTMP.text = GameManager.Instance.SocketMngr.PlayerAfricaCountServer.ToString("n0");
+        else if (userData.SelectedServer == "uae")
+            selectedServerPlayersOnlineTMP.text = GameManager.Instance.SocketMngr.PlayerUAECountServer.ToString("n0");
+        else if (userData.SelectedServer == "us")
+            selectedServerPlayersOnlineTMP.text = GameManager.Instance.SocketMngr.PlayerAmericaEastCountServer.ToString("n0");
+        else if (userData.SelectedServer == "usw")
+            selectedServerPlayersOnlineTMP.text = GameManager.Instance.SocketMngr.PlayerAmericaWestCountServer.ToString("n0");
     }
 
     public void Register()

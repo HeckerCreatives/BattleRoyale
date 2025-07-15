@@ -118,6 +118,11 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         gameplayInputs.Gameplay.Reload.started += _ => ReloadStart();
         gameplayInputs.Gameplay.Reload.canceled += _ => ReloadStop();
 
+#if !UNITY_ANDROID && !UNITY_IOS
+        gameplayInputs.Gameplay.Movement.performed += _ => MovementStart();
+        gameplayInputs.Gameplay.Movement.canceled += _ => MovementStop();
+#endif
+
         Runner.AddCallbacks(this);
 
         doneInitialize = true;
@@ -154,6 +159,11 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.Reload.started -= _ => ReloadStart();
             gameplayInputs.Gameplay.Reload.canceled -= _ => ReloadStop();
 
+#if !UNITY_ANDROID && !UNITY_IOS
+            gameplayInputs.Gameplay.Movement.performed -= _ => MovementStart();
+            gameplayInputs.Gameplay.Movement.canceled -= _ => MovementStop();
+#endif
+
             gameplayInputs.Disable();
             EnhancedTouchSupport.Disable();
             Runner.RemoveCallbacks(this);
@@ -169,6 +179,16 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     }
 
     #region LOCAL INPUTS
+
+    private void MovementStart()
+    {
+        MovementDirection = gameplayInputs.Gameplay.Movement.ReadValue<Vector2>();
+    }
+
+    private void MovementStop()
+    {
+        MovementDirection = Vector2.zero;
+    }
 
     private void JumpStart()
     {

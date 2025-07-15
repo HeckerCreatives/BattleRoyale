@@ -51,6 +51,7 @@ public class ClientMatchmakingController : MonoBehaviour
     //  ========================
 
     [SerializeField] private UserData userData;
+    [SerializeField] private string lobbyName;
     [SerializeField] private bool useMultiplay;
 
     [Space]
@@ -183,7 +184,7 @@ public class ClientMatchmakingController : MonoBehaviour
 
                 Debug.Log("JOINING LOBBY");
 
-                await JoinLobby("AsiaBR");
+                await JoinLobby(lobbyName);
 
                 Debug.Log("DONE JOINING LOBBY, RECEIVING TICKET RESPONSE");
 
@@ -320,7 +321,7 @@ public class ClientMatchmakingController : MonoBehaviour
 
             Debug.Log("REJOINING LOBBY");
 
-            await JoinLobby("AsiaBR");
+            await JoinLobby(lobbyName);
 
             JoinDropballSession();
         }
@@ -384,32 +385,30 @@ public class ClientMatchmakingController : MonoBehaviour
 
         timerTMP.text = "Canceling matchmaking...";
 
+        matchmakingObj.SetActive(false);
+
+        findABattleObj.SetActive(true);
+
         ShutdownServer();
     }
 
     public async Task ShutdownServer()
     {
+        var tempRunner = currentRunnerInstance;
+
         if (ticketResponse != null)
             await MatchmakerService.Instance.DeleteTicketAsync(ticketResponse.Id);
 
-        if (currentRunnerInstance == null)
+        if (tempRunner == null)
         {
             matchmakingObj.SetActive(false);
             return;
         }
 
-        currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = null;
+        tempRunner.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = null;
 
-        await currentRunnerInstance.Shutdown(true);
+        await tempRunner.Shutdown(true);
 
-        Destroy(currentRunnerInstance.gameObject);
-
-        currentRunnerInstance = null;
-
-        currentRunnerInstance = Instantiate(instanceRunner);
-
-        matchmakingObj.SetActive(false);
-
-        findABattleObj.SetActive(true);
+        Destroy(tempRunner.gameObject);
     }
 }

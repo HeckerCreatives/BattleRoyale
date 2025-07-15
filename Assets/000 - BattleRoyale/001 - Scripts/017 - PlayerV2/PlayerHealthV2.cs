@@ -6,6 +6,9 @@ using UnityEngine.UI;
 
 public class PlayerHealthV2 : NetworkBehaviour
 {
+    [SerializeField] private PlayerGameStats playerGameStats;
+
+    [Space]
     [SerializeField] private float startingHealth;
 
     [Space]
@@ -19,9 +22,10 @@ public class PlayerHealthV2 : NetworkBehaviour
     [Networked][field: SerializeField] public DedicatedServerManager ServerManager { get; set; }
     [Networked][field: SerializeField] public float CurrentHealth { get; set; }
     [Networked][field: SerializeField] public float CurrentArmor { get; set; }
-    [Networked][field: SerializeField] public NetworkBool IsHit { get; set; }
-    [Networked][field: SerializeField] public NetworkBool IsSecondHit { get; set; }
-    [Networked][field: SerializeField] public NetworkBool IsStagger { get; set; }
+    [Networked][field: SerializeField] public bool IsHit { get; set; }
+    [Networked][field: SerializeField] public bool IsSecondHit { get; set; }
+    [Networked][field: SerializeField] public bool IsStagger { get; set; }
+    [Networked][field: SerializeField] public bool IsDead { get; set; }
 
     //  ========================
 
@@ -33,9 +37,9 @@ public class PlayerHealthV2 : NetworkBehaviour
     {
         CurrentHealth = startingHealth;
 
-        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
-
         if (!HasInputAuthority) return;
+
+        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
 
         healthSlider.value = CurrentHealth / 100;
         armorSlider.value = CurrentArmor / 100;
@@ -43,6 +47,8 @@ public class PlayerHealthV2 : NetworkBehaviour
 
     public override void Render()
     {
+        if (!HasInputAuthority) return;
+
         foreach (var change in _changeDetector.DetectChanges(this))
         {
             switch (change)
@@ -59,7 +65,7 @@ public class PlayerHealthV2 : NetworkBehaviour
 
     public void ApplyDamage(float damage, string killer, NetworkObject nobject)
     {
-        if (CurrentHealth <= 0) return;
+        if (IsDead) return;
 
         if (ServerManager.CurrentGameState != GameState.ARENA) return;
 
@@ -86,17 +92,21 @@ public class PlayerHealthV2 : NetworkBehaviour
         if (remainingDamage > 0)
         {
             CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - remainingDamage);
-            nobject.GetComponent<PlayerGameOverScreen>().HitPoints += remainingDamage;
+            nobject.GetComponent<PlayerGameStats>().HitPoints += remainingDamage;
         }
 
         // Check if player is dead
         if (CurrentHealth <= 0)
         {
-            //deathMovement.MakePlayerDead();
-            //nobject.GetComponent<KillCountCounterController>().KillCount++;
-            //gameOverScreen.PlayerPlacement = ServerManager.RemainingPlayers.Count;
-            //ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
+            if (HasStateAuthority)
+                IsDead = true;
 
+            if (IsDead)
+            {
+                nobject.GetComponent<PlayerGameStats>().KillCount++;
+                playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
+                ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
+            }
             //string statustext = killer == loader.Username ? $"{loader.Username} Killed themself" : $"{killer} KILLED {loader.Username}";
 
             //RPC_ReceiveKillNotification(statustext);

@@ -10,6 +10,7 @@ using UnityEngine.UI;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Linq;
 
 public class SocketManager : MonoBehaviour
 {
@@ -19,6 +20,128 @@ public class SocketManager : MonoBehaviour
         FAILED,
         SUCCESS
     }
+
+    private event EventHandler PlayerCountServerChange;
+    public event EventHandler OnPlayerCountServerChange
+    {
+        add
+        {
+            if (PlayerCountServerChange == null || !PlayerCountServerChange.GetInvocationList().Contains(value))
+                PlayerCountServerChange += value;
+        }
+        remove { PlayerCountServerChange -= value; }
+    }
+    public int PlayerCountServer
+    {
+        get => playerCountServer;
+        set
+        {
+            playerCountServer = value;
+            PlayerCountServerChange?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private event EventHandler PlayerCountAsiaServerChange;
+    public event EventHandler OnPlayerCountAsiaServerChange
+    {
+        add
+        {
+            if (PlayerCountAsiaServerChange == null || !PlayerCountAsiaServerChange.GetInvocationList().Contains(value))
+                PlayerCountAsiaServerChange += value;
+        }
+        remove { PlayerCountAsiaServerChange -= value; }
+    }
+    public int PlayerAsiaCountServer
+    {
+        get => playerAsiaCountServer;
+        set
+        {
+            playerAsiaCountServer = value;
+            PlayerCountAsiaServerChange?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private event EventHandler PlayerCountUAEServerChange;
+    public event EventHandler OnPlayerCounUAEtServerChange
+    {
+        add
+        {
+            if (PlayerCountUAEServerChange == null || !PlayerCountUAEServerChange.GetInvocationList().Contains(value))
+                PlayerCountUAEServerChange += value;
+        }
+        remove { PlayerCountUAEServerChange -= value; }
+    }
+    public int PlayerUAECountServer
+    {
+        get => playerUAECountServer;
+        set
+        {
+            playerUAECountServer = value;
+            PlayerCountUAEServerChange?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private event EventHandler PlayerCountAfricaServerChange;
+    public event EventHandler OnPlayerCountAfricaServerChange
+    {
+        add
+        {
+            if (PlayerCountAfricaServerChange == null || !PlayerCountAfricaServerChange.GetInvocationList().Contains(value))
+                PlayerCountAfricaServerChange += value;
+        }
+        remove { PlayerCountAfricaServerChange -= value; }
+    }
+    public int PlayerAfricaCountServer
+    {
+        get => playerAfricaCountServer;
+        set
+        {
+            playerAfricaCountServer = value;
+            PlayerCountAfricaServerChange?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private event EventHandler PlayerCountAmericaEastServerChange;
+    public event EventHandler OnPlayerCountAmericaEastServerChange
+    {
+        add
+        {
+            if (PlayerCountAfricaServerChange == null || !PlayerCountAfricaServerChange.GetInvocationList().Contains(value))
+                PlayerCountAfricaServerChange += value;
+        }
+        remove { PlayerCountAfricaServerChange -= value; }
+    }
+    public int PlayerAmericaEastCountServer
+    {
+        get => playerAmericaEastCountServer;
+        set
+        {
+            playerAmericaEastCountServer = value;
+            PlayerCountAmericaEastServerChange?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private event EventHandler PlayerCountAmericaWestServerChange;
+    public event EventHandler OnPlayerCountAmericaWestServerChange
+    {
+        add
+        {
+            if (PlayerCountAmericaWestServerChange == null || !PlayerCountAmericaWestServerChange.GetInvocationList().Contains(value))
+                PlayerCountAmericaWestServerChange += value;
+        }
+        remove { PlayerCountAmericaWestServerChange -= value; }
+    }
+    public int PlayerAmericaWestCountServer
+    {
+        get => playerAmericaWestCountServer;
+        set
+        {
+            playerAmericaWestCountServer = value;
+            PlayerCountAmericaWestServerChange?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    // ============================
 
     [SerializeField] private UserData userData;
 
@@ -34,6 +157,12 @@ public class SocketManager : MonoBehaviour
     [field: SerializeField] public string ConnectionStatus { get; private set; }
     [field: SerializeField] public LoginState LoginStatus { get; private set; }
     [field: SerializeField] public int missedPingCount;
+    [SerializeField] private int playerCountServer;
+    [SerializeField] private int playerAsiaCountServer;
+    [SerializeField] private int playerUAECountServer;
+    [SerializeField] private int playerAfricaCountServer;
+    [SerializeField] private int playerAmericaEastCountServer;
+    [SerializeField] private int playerAmericaWestCountServer;
 
     //  ===========================
 
@@ -100,7 +229,75 @@ public class SocketManager : MonoBehaviour
             RestartPingTimeout();
         });
 
-    EmitEvent("login", userData.Username);
+        Socket.On("playercount", (response) =>
+        {
+            GameManager.Instance.AddJob(() =>
+            {
+                PlayerCountServer = response.GetValue<int>();
+            });
+        });
+
+
+        Socket.On("asiacount", (response) =>
+        {
+            GameManager.Instance.AddJob(() =>
+            {
+                PlayerAsiaCountServer = response.GetValue<int>();
+            });
+        });
+
+        Socket.On("uaecount", (response) =>
+        {
+            GameManager.Instance.AddJob(() =>
+            {
+                PlayerUAECountServer = response.GetValue<int>();
+            });
+        });
+
+        Socket.On("americawestcount", (response) =>
+        {
+            GameManager.Instance.AddJob(() =>
+            {
+                PlayerAmericaWestCountServer = response.GetValue<int>();
+            });
+        });
+
+        Socket.On("americaeastcount", (response) =>
+        {
+            GameManager.Instance.AddJob(() =>
+            {
+                PlayerAmericaEastCountServer = response.GetValue<int>();
+            });
+        });
+
+        Socket.On("africacount", (response) =>
+        {
+            GameManager.Instance.AddJob(() =>
+            {
+                PlayerAfricaCountServer = response.GetValue<int>();
+            });
+        });
+
+        Socket.On("selectedservercount", (response) =>
+        {
+            GameManager.Instance.AddJob(() =>
+            {
+                if (response.GetValue<string>() != "")
+                {
+                    Dictionary<string, int> tempservercount = JsonConvert.DeserializeObject<Dictionary<string, int>>(response.GetValue<string>());
+
+                    PlayerAsiaCountServer = tempservercount["asia"];
+                    PlayerAfricaCountServer = tempservercount["za"];
+                    PlayerUAECountServer = tempservercount["uae"];
+                    PlayerAmericaEastCountServer = tempservercount["us"];
+                    PlayerAmericaWestCountServer = tempservercount["usw"];
+                }
+
+            });
+        });
+
+
+        EmitEvent("login", userData.Username);
     }
 
     private void RestartPingTimeout()
