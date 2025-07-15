@@ -62,6 +62,10 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         playerMinimapCam.SetActive(true);
         playerSpawnLocCam.SetActive(true);
 
+        canvasPlayer.transform.parent = null;
+        playerVcam.transform.parent = null;
+        playerAimVCam.transform.parent = null;
+
         while (ServerManager == null) await Task.Yield();
 
         ServerManager.OnCurrentStateChange += StateChange;

@@ -89,7 +89,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
         gameplayInputs = new GameplayInputs();
         gameplayInputs.Enable();
-        EnhancedTouchSupport.Enable();
+        //EnhancedTouchSupport.Enable();
 
         gameplayInputs.Gameplay.Jump.started += _ => JumpStart();
         gameplayInputs.Gameplay.Jump.canceled += _ => JumpTurnOff();
@@ -117,11 +117,8 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         gameplayInputs.Gameplay.ArmorRepair.canceled += _ => ArmorRepairStop();
         gameplayInputs.Gameplay.Reload.started += _ => ReloadStart();
         gameplayInputs.Gameplay.Reload.canceled += _ => ReloadStop();
-
-#if !UNITY_ANDROID && !UNITY_IOS
         gameplayInputs.Gameplay.Movement.performed += _ => MovementStart();
         gameplayInputs.Gameplay.Movement.canceled += _ => MovementStop();
-#endif
 
         Runner.AddCallbacks(this);
 
@@ -158,14 +155,11 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.ArmorRepair.canceled -= _ => ArmorRepairStop();
             gameplayInputs.Gameplay.Reload.started -= _ => ReloadStart();
             gameplayInputs.Gameplay.Reload.canceled -= _ => ReloadStop();
-
-#if !UNITY_ANDROID && !UNITY_IOS
             gameplayInputs.Gameplay.Movement.performed -= _ => MovementStart();
             gameplayInputs.Gameplay.Movement.canceled -= _ => MovementStop();
-#endif
 
             gameplayInputs.Disable();
-            EnhancedTouchSupport.Disable();
+            //EnhancedTouchSupport.Disable();
             Runner.RemoveCallbacks(this);
         }
     }
