@@ -88,7 +88,7 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     private void LateUpdate()
     {
-        if (!HasInputAuthority && !HasStateAuthority) return;
+        if (!HasInputAuthority) return;
 
         TouchMovements();
     }
@@ -108,13 +108,6 @@ public class PlayerMovementV2 : NetworkBehaviour
             int id = touch.touchId.ReadValue();
             Vector2 pos = touch.position.ReadValue();
             var phase = touch.phase.ReadValue();
-
-            // Fallback if somehow not Began
-            if (!activeTouchIds.Contains(id) && phase != UnityEngine.InputSystem.TouchPhase.Ended)
-            {
-                activeTouchIds.Add(id);
-                TouchFingerDown(id, pos);
-            }
 
             switch (phase)
             {
@@ -398,7 +391,8 @@ public class PlayerMovementV2 : NetworkBehaviour
             return;
         }
 
-        IsSprint = true;
+        if (stamina.Stamina >= 10f)
+            IsSprint = true;
     }
 
     private void Jump()

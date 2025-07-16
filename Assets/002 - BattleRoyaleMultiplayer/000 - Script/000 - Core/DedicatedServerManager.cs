@@ -126,6 +126,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [MyBox.ReadOnly][SerializeField] private bool doneSpawnCrates;
     [MyBox.ReadOnly][SerializeField] private bool doneSetupBattlePos;
     [MyBox.ReadOnly][SerializeField] private bool doneSetupSafeZone;
+    [MyBox.ReadOnly][SerializeField] private bool doneValidatingPlayerCount;
     [MyBox.ReadOnly][SerializeField] private NetworkRunner networkRunner;
     
     [field: Space]
@@ -474,10 +475,21 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         if (CurrentWaitingAreaTimerState == WaitingAreaTimerState.WAITING)
         {
-            if (WaitingAreaTimer <= 0f)
+            if (WaitingAreaTimer <= 0f && !doneValidatingPlayerCount)
             {
+                if (Players.Count < playerRequired)
+                {
+                    Runner.Shutdown();
+
+                    doneValidatingPlayerCount = true;
+
+                    return;
+                }
+
                 WaitingAreaTimer = readyForBattleStartTimer;
                 CurrentWaitingAreaTimerState = WaitingAreaTimerState.GETREADY;
+
+                doneValidatingPlayerCount = true;
             }
         }
         else if (CurrentWaitingAreaTimerState == WaitingAreaTimerState.GETREADY)
@@ -490,6 +502,13 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             if (WaitingAreaTimer <= 0f)
             {
+                if (Players.Count < playerRequired)
+                {
+                    Runner.Shutdown();
+
+                    return;
+                }
+
                 StartBattleRoyale = true;
                 CurrentGameState = GameState.ARENA;
                 CanCountWaitingAreaTimer = false;
@@ -498,8 +517,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 StartCoroutine(BattlePosition());
             }
         }
-
-        
     }
 
     private void CountDownSafeZoneTimer()

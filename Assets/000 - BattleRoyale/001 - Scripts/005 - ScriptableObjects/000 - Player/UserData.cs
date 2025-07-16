@@ -1,12 +1,30 @@
 using MyBox;
 using Newtonsoft.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "UserData", menuName = "Battle Royale/Player/UserData")]
 public class UserData : ScriptableObject
 {
+    private event EventHandler SelectedServerChange;
+    public event EventHandler OnSelectedServerChange
+    {
+        add
+        {
+            if (SelectedServerChange == null || !SelectedServerChange.GetInvocationList().Contains(value))
+                SelectedServerChange += value;
+        }
+        remove
+        {
+            SelectedServerChange -= value;
+        }
+    }
+
+    //  =====================
+
     [field: ReadOnly][field: SerializeField] public string UserToken { get; set; }
     [field: ReadOnly][field: SerializeField] public string Username { get; set; }
     [field: ReadOnly][field: SerializeField] public string Password { get; set; }
@@ -21,6 +39,8 @@ public class UserData : ScriptableObject
 
     [field: Header("MESSAGES")]
     [field: ReadOnly][field: SerializeField] public List<MessageItem> Messages { get; set; }
+
+
 
     //  ===========================
 
@@ -165,6 +185,8 @@ public class UserData : ScriptableObject
         LoadRememberMe();
         ControlSetting = new Dictionary<string, ControllerSettingData>();
     }
+
+    public void ChangeServerEventTrigger() => SelectedServerChange?.Invoke(this, EventArgs.Empty);
 }
 
 [System.Serializable]

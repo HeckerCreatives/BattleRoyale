@@ -503,13 +503,7 @@ public class LoginManager : MonoBehaviour
 
                 Debug.Log("Getting available regions");
 
-                GameManager.Instance.AddJob(() =>
-                {
-                    GetAvailableRegions(() =>
-                    {
-                        CheckSelectedServer();
-                    });
-                });
+                GetAvailableRegions();
             }
             else
             {
@@ -546,7 +540,6 @@ public class LoginManager : MonoBehaviour
 
     public void CheckSelectedServer()
     {
-        CheckServerCount();
 
         if (userData.SelectedServer == "")
         {
@@ -573,6 +566,8 @@ public class LoginManager : MonoBehaviour
                 startGameBtn.interactable = false;
             }
         }
+
+        CheckServerCount();
 
         if (rememberMe.isOn)
             PlayerPrefs.SetString("server", userData.SelectedServer);
@@ -717,7 +712,7 @@ public class LoginManager : MonoBehaviour
     public void ButtonPress() => GameManager.Instance.AudioController.PlaySFX(buttonClip);
 
 
-    public async void GetAvailableRegions(Action action = null)
+    public async void GetAvailableRegions()
     {
         if (currentRunnerInstance != null)
         {
@@ -733,18 +728,17 @@ public class LoginManager : MonoBehaviour
         var _tokenSource = new CancellationTokenSource();
 
         var regions = await NetworkRunner.GetAvailableRegions(cancellationToken: _tokenSource.Token);
-
         AvailableServers.Clear();
 
         foreach (var region in regions)
         {
-            if (userData.SelectedServer != "asia" && userData.SelectedServer != "za" && userData.SelectedServer != "uae" && userData.SelectedServer != "us" && userData.SelectedServer != "usw") continue;
-
-            AvailableServers.Add(region.RegionCode, region.RegionPing);
+            if (region.RegionCode == "asia" || region.RegionCode == "za" || region.RegionCode == "uae" || region.RegionCode == "us" || region.RegionCode == "usw")
+            {
+                AvailableServers.Add(region.RegionCode, region.RegionPing);
+            }
         }
 
-        action?.Invoke();
-
+        CheckSelectedServer();
         Destroy(currentRunnerInstance.gameObject);
 
         currentRunnerInstance = null;
@@ -764,13 +758,19 @@ public class LoginManager : MonoBehaviour
 
         if (currentRunnerInstance != null)
         {
+            Debug.Log("waaat");
+
             Destroy(currentRunnerInstance.gameObject);
+            Debug.Log("waaat 1");
 
             currentRunnerInstance = null;
+            Debug.Log("waaat 2");
         }
         else
         {
+            Debug.Log("waaat 3");
             currentRunnerInstance = Instantiate(instanceRunner);
+            Debug.Log("waaat4");
         }
 
 
@@ -786,7 +786,10 @@ public class LoginManager : MonoBehaviour
 
         foreach (var region in regions)
         {
-            AvailableServers.Add(region.RegionCode, region.RegionPing);
+            if (region.RegionCode == "asia" || region.RegionCode == "za" || region.RegionCode == "uae" || region.RegionCode == "us" || region.RegionCode == "usw")
+            {
+                AvailableServers.Add(region.RegionCode, region.RegionPing);
+            }
         }
 
         Destroy(currentRunnerInstance.gameObject);

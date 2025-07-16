@@ -38,6 +38,7 @@ public class PlayerHealthV2 : NetworkBehaviour
     [Networked][field: SerializeField] public bool IsSecondHit { get; set; }
     [Networked][field: SerializeField] public bool IsStagger { get; set; }
     [Networked][field: SerializeField] public bool DamagedSafeZone { get; set; }
+    [Networked][field: SerializeField] public bool FallDamage { get; set; }
     [Networked][field: SerializeField] public bool IsDead { get; set; }
 
     //  ========================
@@ -103,6 +104,13 @@ public class PlayerHealthV2 : NetworkBehaviour
                 case nameof(DamagedSafeZone):
 
                     if (!DamagedSafeZone) return;
+
+                    DamageIndicatorWithoutBlood();
+
+                    break;
+                case nameof(FallDamage):
+
+                    if (!FallDamage) return;
 
                     DamageIndicatorWithoutBlood();
 

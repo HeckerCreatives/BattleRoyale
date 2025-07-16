@@ -1,8 +1,11 @@
+using Fusion;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
@@ -17,6 +20,9 @@ public class LobbyController : MonoBehaviour
     [SerializeField] private List<LeaderboardItem> leaderboardItems;
     [SerializeField] private AudioClip bgMusicClip;
     [SerializeField] private TextMeshProUGUI serverTMP;
+    [SerializeField] private NetworkRunner instanceRunner;
+    [SerializeField] private GameObject serverList;
+    [SerializeField] private TextMeshProUGUI totalPlayersOnlineTMP;
 
     [Space]
     [SerializeField] private AudioClip buttonClip;
@@ -29,6 +35,14 @@ public class LobbyController : MonoBehaviour
 
     [Header("DEBUGGER")]
     [SerializeField] private bool cancountdowntime;
+    [SerializeField] public NetworkRunner currentRunnerInstance;
+
+
+    //  ==================
+
+    public Dictionary<string, int> AvailableServers = new Dictionary<string, int>();
+
+    //  ==================
 
     private void Awake()
     {
@@ -144,7 +158,19 @@ public class LobbyController : MonoBehaviour
         GameManager.Instance.AudioController.SetBGMusic(bgMusicClip);
         GameManager.Instance.SceneController.ActionPass = true;
 
+
+        GameManager.Instance.SocketMngr.OnPlayerCountServerChange += PlayerCountChange;
+
+        userData.OnSelectedServerChange += ServerChange;
+
         serverTMP.text = $"Server: {GameManager.GetRegionName(userData.SelectedServer)}";
+        totalPlayersOnlineTMP.text = $"Online: <color=green>{GameManager.Instance.SocketMngr.PlayerCountServer:n0}</color>";
+    }
+
+    private void OnDisable()
+    {
+        GameManager.Instance.SocketMngr.OnPlayerCountServerChange -= PlayerCountChange;
+        userData.OnSelectedServerChange -= ServerChange;
     }
 
     private void Update()
@@ -171,6 +197,55 @@ public class LobbyController : MonoBehaviour
                 userData.GameDetails.energyresettime = 86400; // Reset to 24 hours
             }
         }
+    }
+
+    private void ServerChange(object sender, EventArgs e)
+    {
+        serverTMP.text = $"Server: {GameManager.GetRegionName(userData.SelectedServer)}";
+    }
+
+    private void PlayerCountChange(object sender, EventArgs e)
+    {
+        totalPlayersOnlineTMP.text = $"Online: <color=green>{GameManager.Instance.SocketMngr.PlayerCountServer:n0}</color>";
+    }
+
+    public async void GetAvailableRegions()
+    {
+        GameManager.Instance.NoBGLoading.SetActive(true);
+
+        if (currentRunnerInstance != null)
+        {
+            Destroy(currentRunnerInstance.gameObject);
+
+            currentRunnerInstance = null;
+        }
+        else
+        {
+            currentRunnerInstance = Instantiate(instanceRunner);
+        }
+
+        var _tokenSource = new CancellationTokenSource();
+
+        var regions = await NetworkRunner.GetAvailableRegions(cancellationToken: _tokenSource.Token);
+
+        AvailableServers.Clear();
+
+        foreach (var region in regions)
+        {
+            if (userData.SelectedServer != "asia" && userData.SelectedServer != "za" && userData.SelectedServer != "uae" && userData.SelectedServer != "us" && userData.SelectedServer != "usw") continue;
+
+            AvailableServers.Add(region.RegionCode, region.RegionPing);
+
+            await Task.Yield();
+        }
+
+        serverList.SetActive(true);
+
+        Destroy(currentRunnerInstance.gameObject);
+
+        currentRunnerInstance = null;
+
+        GameManager.Instance.NoBGLoading.SetActive(false);
     }
 
     public void ChangeScene()
