@@ -1,10 +1,5 @@
 using Fusion;
 using Fusion.Addons.SimpleKCC;
-using NUnit.Framework.Interfaces;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using TMPro;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -360,7 +355,7 @@ public class PlayerHealth : NetworkBehaviour
 
         if (HasStateAuthority) return;
 
-        KillNotificationController.KillNotifInstance.ShowMessage(killer);
+        //KillNotificationController.KillNotifInstance.ShowMessage(killer);
     }
 
     AudioClip GetClip(AudioClip[] clipArray)

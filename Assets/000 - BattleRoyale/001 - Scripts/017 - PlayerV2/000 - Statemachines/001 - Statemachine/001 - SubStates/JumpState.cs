@@ -11,7 +11,6 @@ public class JumpState : PlayerOnGround
     {
     }
 
-
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();

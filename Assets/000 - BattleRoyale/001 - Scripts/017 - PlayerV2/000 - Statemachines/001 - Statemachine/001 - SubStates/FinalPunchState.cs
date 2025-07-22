@@ -50,7 +50,7 @@ public class FinalPunchState : PlayerOnGround
 
         if (playerPlayables.TickRateAnimation >= moveTimer && playerPlayables.TickRateAnimation <= stopMoveTimer)
         {
-            characterController.Move(characterController.TransformDirection * 5f, 0f);
+            characterController.Move(characterController.TransformDirection * 1.25f, 0f);
             canMove = false;
         }
 
@@ -69,9 +69,10 @@ public class FinalPunchState : PlayerOnGround
             return;
         }
 
+
         if (playerPlayables.healthV2.IsSecondHit)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            playablesChanger.ChangeState(playerPlayables.basicMovement.MiddleHitPlayable);
             return;
         }
 

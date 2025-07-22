@@ -54,6 +54,7 @@ public class ClientMatchmakingController : MonoBehaviour
     [SerializeField] private string lobbyName;
     [SerializeField] private bool useMultiplay;
     [SerializeField] private Button changeServerBtn;
+    [SerializeField] private Button changeServerBtn1;
 
     [Space]
     [SerializeField] private NetworkRunner instanceRunner;
@@ -131,6 +132,7 @@ public class ClientMatchmakingController : MonoBehaviour
         if (findingMatch) return;
 
         changeServerBtn.interactable = false;
+        changeServerBtn1.interactable = false;
 
         if (userData.GameDetails.energy <= 0)
         {
@@ -393,6 +395,8 @@ public class ClientMatchmakingController : MonoBehaviour
         findABattleObj.SetActive(true);
 
         changeServerBtn.interactable = true;
+
+        changeServerBtn1.interactable = true;
 
         ShutdownServer();
     }

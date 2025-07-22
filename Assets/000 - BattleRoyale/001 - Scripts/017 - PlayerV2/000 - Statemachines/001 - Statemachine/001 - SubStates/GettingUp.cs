@@ -79,7 +79,7 @@ public class GettingUp : PlayerOnGround
                     return;
                 }
 
-                if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
+                if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
                 {
                     playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
                     return;

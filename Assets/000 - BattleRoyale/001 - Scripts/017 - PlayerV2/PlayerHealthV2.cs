@@ -1,4 +1,5 @@
 using Fusion;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,8 +9,13 @@ using UnityEngine.UI;
 
 public class PlayerHealthV2 : NetworkBehaviour
 {
+    [SerializeField] private UserData userData;
     [SerializeField] private PlayerGameStats playerGameStats;
     [SerializeField] private Volume postProcessing;
+    [SerializeField] private KillNotificationController killNotif;
+    [SerializeField] private PlayerPlayables playerPlayables;
+    [SerializeField] private PlayerInventoryV2 inventory;
+    [SerializeField] private PlayerOwnObjectEnabler playerOwnObjectEnabler;
 
     [Space]
     [SerializeField] private float startingHealth;
@@ -19,21 +25,19 @@ public class PlayerHealthV2 : NetworkBehaviour
     [SerializeField] private Slider armorSlider;
 
     [Space]
-    [SerializeField] private PlayerPlayables playerPlayables;
-
-    [Space]
     [SerializeField] private Image damageIndicator;
 
     [Space]
-    [SerializeField] private ParticleSystem bloodParticlesA;
-    [SerializeField] private ParticleSystem bloodParticlesB;
-    [SerializeField] private ParticleSystem bloodParticlesC;
-    [SerializeField] private ParticleSystem bloodParticlesD;
+    [SerializeField] private List<ParticleSystem> bloodParticlesA;
+    [SerializeField] private ParticleSystem healParticles;
+    [SerializeField] private ParticleSystem repairParticles;
+
+    [Header("DEBUGGER")]
+    [SerializeField] private int bloodIndex;
 
     [field: Header("DEBUGGER")]
     [Networked][field: SerializeField] public DedicatedServerManager ServerManager { get; set; }
     [Networked][field: SerializeField] public float CurrentHealth { get; set; }
-    [Networked][field: SerializeField] public float CurrentArmor { get; set; }
     [Networked][field: SerializeField] public bool IsHit { get; set; }
     [Networked][field: SerializeField] public bool IsSecondHit { get; set; }
     [Networked][field: SerializeField] public bool IsStagger { get; set; }
@@ -59,8 +63,9 @@ public class PlayerHealthV2 : NetworkBehaviour
 
         if (!HasInputAuthority) return;
 
+
         healthSlider.value = CurrentHealth / 100;
-        armorSlider.value = CurrentArmor / 100;
+        ArmorUI();
     }
 
     public override void Render()
@@ -74,11 +79,6 @@ public class PlayerHealthV2 : NetworkBehaviour
                     if (!HasInputAuthority) return;
 
                     healthSlider.value = CurrentHealth / 100;
-                    break;
-                case nameof(CurrentArmor):
-                    if (!HasInputAuthority) return;
-
-                    armorSlider.value = CurrentArmor / 100;
                     break;
                 case nameof(IsHit):
 
@@ -120,6 +120,8 @@ public class PlayerHealthV2 : NetworkBehaviour
 
         if (HasInputAuthority)
         {
+            ArmorUI();
+
             if (postProcessing.profile.TryGet<Vignette>(out circleVignette))
             {
                 if (DamagedSafeZone)
@@ -146,12 +148,44 @@ public class PlayerHealthV2 : NetworkBehaviour
         CircleDamage();
     }
 
+    private void ArmorUI()
+    {
+        if (inventory.Armor == null)
+            armorSlider.value = 0;
+        else
+            armorSlider.value = inventory.Armor.Supplies / 100f;
+    }
+
+    public void HealHealth()
+    {
+        float temphealth = CurrentHealth + 30f;
+
+        CurrentHealth = Mathf.Clamp(temphealth, 0f, 100f);
+
+        inventory.HealCount -= 1;
+
+        if (HasInputAuthority) healParticles.Play();
+    }
+
+    public void RepairArmor()
+    {
+        float temparmor = inventory.Armor.Supplies + 30f;
+
+        inventory.Armor.Supplies = (int)Mathf.Clamp(temparmor, 0f, 100f);
+
+        inventory.ArmorRepairCount -= 1;
+
+        if (HasInputAuthority) repairParticles.Play();
+    }
+
     private void DamageIndicator()
     {
-        bloodParticlesA.Play();
-        bloodParticlesB.Play();
-        bloodParticlesC.Play();
-        bloodParticlesD.Play();
+        if (bloodIndex >= bloodParticlesA.Count - 1)
+            bloodIndex = 0;
+        else
+            bloodIndex++;
+
+        bloodParticlesA[bloodIndex].Play();
 
         if (!HasInputAuthority) return;
 
@@ -203,6 +237,8 @@ public class PlayerHealthV2 : NetworkBehaviour
             {
                 playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
                 ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
+
+                RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} killed outside safe area");
             }
         }
     }
@@ -217,18 +253,27 @@ public class PlayerHealthV2 : NetworkBehaviour
 
         float remainingDamage = damage;
 
-        // Apply damage to the shield first
-        if (CurrentArmor > 0)
+        //  Block
+        if (playerPlayables.PlayableAnimationIndex == 12)
         {
-            if (CurrentArmor >= remainingDamage)
+            remainingDamage -= (remainingDamage * .15f);
+        }
+
+        // Apply damage to the shield first
+        if (inventory.Armor != null)
+        {
+            if (inventory.Armor.Supplies > 0)
             {
-                CurrentArmor -= remainingDamage;
-                remainingDamage = 0; // Shield absorbed all damage
-            }
-            else
-            {
-                remainingDamage -= CurrentArmor;
-                CurrentArmor = 0; // Shield fully depleted
+                if (inventory.Armor.Supplies >= remainingDamage)
+                {
+                    inventory.Armor.Supplies -= Convert.ToInt32(remainingDamage);
+                    remainingDamage = 0; // Shield absorbed all damage
+                }
+                else
+                {
+                    remainingDamage -= inventory.Armor.Supplies;
+                    inventory.Armor.Supplies = 0; // Shield fully depleted
+                }
             }
         }
 
@@ -250,6 +295,9 @@ public class PlayerHealthV2 : NetworkBehaviour
                 nobject.GetComponent<PlayerGameStats>().KillCount++;
                 playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
                 ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
+
+
+                RPC_ReceiveKillNotification($"{killer} KILLED {playerOwnObjectEnabler.Username}");
             }
             //string statustext = killer == loader.Username ? $"{loader.Username} Killed themself" : $"{killer} KILLED {loader.Username}";
 
@@ -286,7 +334,16 @@ public class PlayerHealthV2 : NetworkBehaviour
             {
                 playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
                 ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
+                RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} killed by fall damage");
             }
         }
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPC_ReceiveKillNotification(string message)
+    {
+        if (HasStateAuthority) return;
+
+        killNotif.ShowMessage(message);
     }
 }

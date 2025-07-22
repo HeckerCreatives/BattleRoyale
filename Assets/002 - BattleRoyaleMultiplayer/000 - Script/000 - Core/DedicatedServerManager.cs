@@ -479,9 +479,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             {
                 if (Players.Count < playerRequired)
                 {
-                    Runner.Shutdown();
-
-                    doneValidatingPlayerCount = true;
+                    ForceQuitPlayers();
 
                     return;
                 }
@@ -504,7 +502,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             {
                 if (Players.Count < playerRequired)
                 {
-                    Runner.Shutdown();
+                    ForceQuitPlayers();
 
                     return;
                 }
@@ -517,6 +515,21 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 StartCoroutine(BattlePosition());
             }
         }
+    }
+
+    private void ForceQuitPlayers()
+    {
+        for (int a = 0; a < Players.Count; a++)
+        {
+            // Set player position
+
+            if (Players.ElementAt(a).Value.transform.position.x != spawnBattleAreaPositions[a].position.x && Players.ElementAt(a).Value.transform.position.z != spawnBattleAreaPositions[a].position.z)
+            {
+                Players.ElementAt(a).Value.GetComponent<PlayerOwnObjectEnabler>().NotEnoughPlayer = true;
+            }
+        }
+
+        doneValidatingPlayerCount = true;
     }
 
     private void CountDownSafeZoneTimer()
@@ -554,6 +567,18 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 if (Players.ElementAt(a).Value.transform.position.x != spawnBattleAreaPositions[a].position.x && Players.ElementAt(a).Value.transform.position.z != spawnBattleAreaPositions[a].position.z)
                 {
                     Players.ElementAt(a).Value.GetComponent<SimpleKCC>().SetPosition(spawnBattleAreaPositions[a].position, true);
+
+                    PlayerInventoryV2 tempinventory = Players.ElementAt(a).Value.GetComponent<PlayerInventoryV2>();
+
+                    tempinventory.HealCount = 0;
+                    tempinventory.TrapCount = 0;
+                    tempinventory.ArmorRepairCount = 0;
+
+                    if (tempinventory.Armor != null)
+                    {
+                        Runner.Despawn(tempinventory.Armor.Object);
+                        tempinventory.Armor = null;
+                    }
                 }
             }
 
@@ -607,12 +632,12 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 obj.GetComponent<PlayerHealthV2>().ServerManager = this;
                 obj.GetComponent<PlayerGameStats>().ServerManager = this;
                 obj.GetComponent<MapZoomInOut>().ServerManager = this;
+                obj.GetComponent<PlayerShrinkZoneTimer>().ServerManager = this;
                 //obj.GetComponent<WaitingAreaTimerController>().ServerManager = this;
                 //obj.GetComponent<PlayerHealth>().ServerManager = this;
                 //obj.GetComponent<PlayerSpawnLocationController>().ServerManager = this;
                 //obj.GetComponent<PlayerQuitController>().ServerManager = this;
                 //obj.GetComponent<PlayerGameOverScreen>().ServerManager = this;
-                //obj.GetComponent<PlayerShrinkZoneTimer>().ServerManager = this;
                 //obj.GetComponent<MainCorePlayable>().ServerManager = this;
             });
 

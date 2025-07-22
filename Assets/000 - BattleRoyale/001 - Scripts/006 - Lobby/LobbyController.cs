@@ -22,7 +22,8 @@ public class LobbyController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI serverTMP;
     [SerializeField] private NetworkRunner instanceRunner;
     [SerializeField] private GameObject serverList;
-    [SerializeField] private TextMeshProUGUI totalPlayersOnlineTMP;
+    [SerializeField] private TextMeshProUGUI totalPlayersOnlineTMP; 
+    [SerializeField] private TextMeshProUGUI seasonTMP;
 
     [Space]
     [SerializeField] private AudioClip buttonClip;
@@ -124,6 +125,26 @@ public class LobbyController : MonoBehaviour
             {
                 GameManager.Instance.SceneController.StopLoading();
                 Debug.Log(ex.ToString());
+                GameManager.Instance.SocketMngr.Socket.Disconnect();
+                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
+                GameManager.Instance.SceneController.CurrentScene = "Login";
+            }
+        }, () =>
+        {
+            GameManager.Instance.SceneController.StopLoading();
+            GameManager.Instance.SocketMngr.Socket.Disconnect();
+            GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
+            GameManager.Instance.SceneController.CurrentScene = "Login";
+        }));
+        GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/season/getcurrentseason", "", false, (response) =>
+        {
+            try
+            {
+                seasonTMP.text = response.ToString();
+            }
+            catch (Exception ex)
+            {
+                GameManager.Instance.SceneController.StopLoading();
                 GameManager.Instance.SocketMngr.Socket.Disconnect();
                 GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
                 GameManager.Instance.SceneController.CurrentScene = "Login";

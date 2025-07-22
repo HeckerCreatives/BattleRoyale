@@ -9,9 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1279481487604002513}
-  - component: {fileID: 3995037516395269256}
   - component: {fileID: 4704355298322194790}
   - component: {fileID: 3151534835451225295}
+  - component: {fileID: 4096039779875312679}
   m_Layer: 12
   m_Name: ShieldObj
   m_TagString: Weapon
@@ -29,53 +29,12 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 48.823, y: 33.075, z: 37592.445}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.5845702, y: 0.5845697, z: 0.5845702}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3159103754912697609}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3995037516395269256
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3038256605868681571}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 58e432449cdabfd42890861b85aa9062, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  weponsData: {fileID: 11400000, guid: c12335f14c4d0e549986dfe35b8f1a53, type: 2}
-  meleeSoundController: {fileID: 0}
-  dropRotation: {x: 0, y: 0, z: -92.173}
-  enemyLayerMask:
-    serializedVersion: 2
-    m_Bits: 0
-  impactSize: {x: 0, y: 0, z: 0}
-  muzzleFlash: {fileID: 0}
-  impactPoint: {fileID: 0}
-  head: 0
-  body: 0
-  thigh: 0
-  shin: 0
-  foot: 0
-  arm: 0
-  forearm: 0
-  _WeaponID: 
-  _WeaponName: 
-  _Ammo: 0
-  _TempPlayer: {fileID: 0}
-  _ItemCheckerController: {fileID: 0}
-  _Back: {fileID: 0}
-  _Hand: {fileID: 0}
-  _IsPickedUp: 0
-  _IsHand: 0
-  _DropPosition: {x: 0, y: 0, z: 0}
-  _Hit: 0
-  _hitEnemiesFirst: []
-  _hitEnemiesSecond: []
 --- !u!114 &4704355298322194790
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -93,7 +52,7 @@ MonoBehaviour:
   Flags: 262145
   NestedObjects: []
   NetworkedBehaviours:
-  - {fileID: 3995037516395269256}
+  - {fileID: 4096039779875312679}
   ForceRemoteRenderTimeframe: 0
 --- !u!65 &3151534835451225295
 BoxCollider:
@@ -116,6 +75,29 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.26604134, y: 0.79820365, z: 0.8316871}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &4096039779875312679
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3038256605868681571}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9caff877166489740a7ec55c313ca890, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weaponID: 007
+  weaponName: Armor
+  pickedUpRotation: {x: 9.162, y: -92.249, z: -17.686}
+  dropRotation: {x: 0, y: 0, z: -90}
+  dropSize: {x: 1, y: 1, z: 1}
+  pickUpSize: {x: 0.5845702, y: 0.5845697, z: 0.5845702}
+  _Supplies: 0
+  _IsPickedUp: 0
+  _CurrentPlayer: {fileID: 0}
+  _Position: {x: 0, y: 0, z: 0}
+  _Parent: {fileID: 0}
 --- !u!1 &3766840556842759672
 GameObject:
   m_ObjectHideFlags: 0

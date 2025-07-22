@@ -29,10 +29,20 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
 
     [field: Header("DEBUGGER")]
     [Networked][field: SerializeField] public DedicatedServerManager ServerManager { get; set; }
+    [Networked][field: SerializeField] public bool NotEnoughPlayer { get; set; }
+    [Networked][field: SerializeField] public string Username { get; set; }
+
+    //  ====================
+
+    private ChangeDetector _changeDetector;
+
+    //  ====================
 
     public async override void Spawned()
     {
         while (!Runner) await Task.Yield();
+
+        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
 
         if (!HasInputAuthority) return;
 
@@ -53,6 +63,8 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetLookSensitivityOnStart());
         GameManager.Instance.SceneController.ActionPass = true;
 
+        RPC_SetUsername(userData.Username);
+
         canvasPlayer.SetActive(true);
         playerVcam.SetActive(true);
         playerAimVCam.SetActive(true);
@@ -71,6 +83,35 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         ServerManager.OnCurrentStateChange += StateChange;
     }
 
+    public override void Render()
+    {
+        if (!HasInputAuthority) return;
+
+        foreach (var change in _changeDetector.DetectChanges(this))
+        {
+            switch (change)
+            {
+                case nameof(NotEnoughPlayer):
+
+                    if (!NotEnoughPlayer) return;
+
+                    GameManager.Instance.NoBGLoading.SetActive(true);
+
+                    StartCoroutine(GameManager.Instance.PostRequest("/usergamedetail/refundenergy", "", new Dictionary<string, object>(), false, (response) =>
+                    {
+                        GameManager.Instance.NotificationController.ShowError("Not enough players to start the game! Please try again later", () =>
+                        {
+                            Runner.Shutdown();
+                            GameManager.Instance.SceneController.CurrentScene = "Lobby";
+                        });
+
+                    }, null));
+
+                    break;
+            }
+        }
+    }
+
     private void StateChange(object sender, EventArgs e)
     {
         if (ServerManager.CurrentGameState == GameState.ARENA)
@@ -82,6 +123,12 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
                 GameManager.Instance.SceneController.ActionPass = true;
             }
         }
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    public void RPC_SetUsername(string uname)
+    {
+        Username = uname;
     }
 
     IEnumerator ReadyForBattle()

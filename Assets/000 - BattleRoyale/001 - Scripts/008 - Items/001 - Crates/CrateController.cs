@@ -24,11 +24,67 @@ public class CrateController : NetworkBehaviour
     }
 
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    public void RPC_RemoveItem(NetworkString<_4> itemkey, string itemname, NetworkObject player, NetworkObject back, NetworkObject hand, NetworkObject ammoContainer = null)
+    public void RPC_RemoveItem(NetworkString<_4> itemkey, PlayerInventoryV2 player)
     {
         if (!HasStateAuthority) return;
 
         if (!Weapons.ContainsKey(itemkey)) return;
+
+        NetworkObject tempweapon = null;
+
+        switch (itemkey.ToString())
+        {
+            case "001":
+                tempweapon = weaponSpawnData.GetItemObject(itemkey.ToString());
+
+                if (player.PrimaryWeapon != null)
+                    player.PrimaryWeapon.DropWeapon();
+
+                Runner.Spawn(tempweapon, Vector3.zero, Quaternion.identity, player.Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                {
+                    obj.GetComponent<PrimaryWeaponItem>().InitializeItem(player.Object, player.SwordBack, player.SwordHand);
+                });
+
+                break;
+            case "002":
+                tempweapon = weaponSpawnData.GetItemObject(itemkey.ToString());
+
+
+                break;
+            case "007":
+
+                tempweapon = weaponSpawnData.GetItemObject(itemkey.ToString());
+
+                if (player.Armor != null)
+                    player.Armor.DropArmor(); 
+
+                Runner.Spawn(tempweapon, Vector3.zero, Quaternion.identity, player.Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                {
+                    obj.GetComponent<ArmorItem>().InitializeItem(player.Object, player.ArmorHand, true);
+                });
+                break;
+            case "008":
+
+                if (player.HealCount >= 4) return;
+
+                player.HealCount++;
+
+                break;
+            case "009":
+
+                if (player.ArmorRepairCount >= 4) return;
+
+                player.ArmorRepairCount++;
+
+                break;
+            case "010":
+
+                if (player.TrapCount >= 4) return;
+
+                player.TrapCount++;
+
+                break;
+        }
 
         Weapons.Remove(itemkey);
     }

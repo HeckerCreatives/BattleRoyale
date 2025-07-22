@@ -45,6 +45,8 @@ public class StaggerHit : PlayerOnGround
 
     private void Animation()
     {
+        if (playerPlayables.healthV2.IsDead)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
 
         if (canAction)
         {

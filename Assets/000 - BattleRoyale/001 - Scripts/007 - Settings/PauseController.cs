@@ -4,5 +4,5 @@ using UnityEngine;
 
 public class PauseController : MonoBehaviour
 {
-    public void KillNotifEnabler(bool active) => KillNotificationController.KillNotifInstance.killNotifTF.gameObject.SetActive(active);
+    //public void KillNotifEnabler(bool active) => KillNotificationController.KillNotifInstance.killNotifTF.gameObject.SetActive(active);
 }

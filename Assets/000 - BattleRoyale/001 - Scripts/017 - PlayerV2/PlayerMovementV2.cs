@@ -27,7 +27,9 @@ public class PlayerMovementV2 : NetworkBehaviour
     [SerializeField] private SimpleKCC characterController;
     [SerializeField] private PlayerCameraRotation cameraRotation;
     [SerializeField] private PlayerStamina stamina;
-    
+    [SerializeField] private PlayerInventoryV2 inventory;
+    [SerializeField] private PlayerHealthV2 heatlh;
+
     [Space]
     [SerializeField] private float moveSpeed;
     [SerializeField] private float sprintSpeed;
@@ -46,12 +48,15 @@ public class PlayerMovementV2 : NetworkBehaviour
     [field: SerializeField][Networked] public Vector3 MoveDir { get; set; }
     [field: SerializeField][Networked] public float XMovement { get; set; }
     [field: SerializeField][Networked] public float YMovement { get; set; }
-    [field: SerializeField][Networked] public NetworkBool IsSprint { get; set; }
-    [field: SerializeField][Networked] public NetworkBool IsRoll { get; set; }
-    [field: SerializeField][Networked] public NetworkBool Attacking { get; set; }
+    [field: SerializeField][Networked] public bool IsSprint { get; set; }
+    [field: SerializeField][Networked] public bool IsRoll { get; set; }
+    [field: SerializeField][Networked] public bool Attacking { get; set; }
     [field: SerializeField][Networked] public float JumpImpulse { get; set; }
-    [field: SerializeField][Networked] public NetworkBool IsJumping { get; set; }
-    [field: SerializeField][Networked] public NetworkBool IsBlocking { get; set; }
+    [field: SerializeField][Networked] public bool IsJumping { get; set; }
+    [field: SerializeField][Networked] public bool IsBlocking { get; set; }
+    [field: SerializeField][Networked] public bool IsHealing { get; set; }
+    [field: SerializeField][Networked] public bool IsRepairing { get; set; }
+    [field: SerializeField][Networked] public bool IsTrapping { get; set; }
     [field: SerializeField][Networked] public Vector2 LastTouchPos { get; set; }
     [field: SerializeField][Networked] public bool IsTouching { get; set; }
 
@@ -63,6 +68,7 @@ public class PlayerMovementV2 : NetworkBehaviour
     private Dictionary<int, Vector2> lastTouchPositions = new Dictionary<int, Vector2>();
     private Dictionary<int, float> stationaryTimers = new Dictionary<int, float>();
     private HashSet<int> activeTouchIds = new();
+    private HashSet<int> ignoredTouchIds = new HashSet<int>();
 
     private const float StationaryThreshold = 2f; // Pixel distance to consider as stationary
     private const float StationaryTimeThreshold = 0.1f; // Time in seconds to detect stationary
@@ -86,7 +92,7 @@ public class PlayerMovementV2 : NetworkBehaviour
         gameplayController = Runner.GetComponent<GameplayController>();
     }
 
-    private void LateUpdate()
+    private void Update()
     {
         if (!HasInputAuthority) return;
 
@@ -108,6 +114,13 @@ public class PlayerMovementV2 : NetworkBehaviour
             int id = touch.touchId.ReadValue();
             Vector2 pos = touch.position.ReadValue();
             var phase = touch.phase.ReadValue();
+
+            // Fallback if somehow not Began
+            if (!activeTouchIds.Contains(id) && phase != UnityEngine.InputSystem.TouchPhase.Ended)
+            {
+                activeTouchIds.Add(id);
+                TouchFingerDown(id, pos);
+            }
 
             switch (phase)
             {
@@ -312,6 +325,11 @@ public class PlayerMovementV2 : NetworkBehaviour
         Roll();
         Block();
         Shoot();
+        Healing();
+        Repairing();
+        Trapping();
+        SwitchToHand();
+        SwitchToPrimary();
         //Crouch();
         //Prone();
         //PlayerRotateAnimation();
@@ -448,6 +466,64 @@ public class PlayerMovementV2 : NetworkBehaviour
 
             Attacking = false;
         }
+    }
+
+    private void Healing()
+    {
+        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Heal))
+        {
+            if (inventory.HealCount <= 0) return;
+
+            if (IsRepairing) return;
+
+            if (heatlh.CurrentHealth >= 100f) return;
+
+            IsHealing = true;
+        }
+        else
+            IsHealing = false;
+    }
+
+    private void Repairing()
+    {
+        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.ArmorRepair))
+        {
+            if (inventory.ArmorRepairCount <= 0) return;
+
+            if (IsHealing) return;
+
+            if (inventory.Armor == null) return;
+
+            if (inventory.Armor.Supplies >= 100f) return;
+
+            IsRepairing = true;
+        }
+        else
+            IsRepairing = false;
+    }
+
+    private void Trapping()
+    {
+        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchTrap))
+        {
+            if (inventory.TrapCount <= 0) return;
+
+            IsTrapping = true;
+        }
+        else
+            IsTrapping = false;
+    }
+
+    private void SwitchToHand()
+    {
+        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchHands))
+            inventory.SwitchToHands();
+    }
+    
+    private void SwitchToPrimary()
+    {
+        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchPrimary))
+            inventory.SwitchToPrimary();
     }
 
     #endregion

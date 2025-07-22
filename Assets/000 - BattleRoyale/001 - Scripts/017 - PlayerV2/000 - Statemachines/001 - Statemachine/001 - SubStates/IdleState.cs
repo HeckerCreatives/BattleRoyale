@@ -1,4 +1,5 @@
 using Fusion.Addons.SimpleKCC;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,9 +28,20 @@ public class IdleState : PlayerOnGround
 
     private void Animation()
     {
+        if (playerPlayables.inventory.WeaponIndex == 2)
+        {
+            if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
+                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
+            else
+                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
+            return;
+        }
 
         if (playerPlayables.healthV2.IsDead)
+        {
             playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+            return;
+        }
 
         if (!characterController.IsGrounded)
         {
@@ -57,13 +69,31 @@ public class IdleState : PlayerOnGround
 
         if (playerPlayables.healthV2.IsSecondHit)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            playablesChanger.ChangeState(playerPlayables.basicMovement.MiddleHitPlayable);
             return;
         }
 
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.basicMovement.StaggerHitPlayable);
+            return;
+        }
+
+        if (playerMovement.IsHealing)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.HealPlayable);
+            return;
+        }
+
+        if (playerMovement.IsRepairing)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.RepairPlayable);
+            return;
+        }
+
+        if (playerMovement.IsTrapping)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.TrappingPlayable);
             return;
         }
 
@@ -84,7 +114,7 @@ public class IdleState : PlayerOnGround
             return;
         }
 
-        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
+        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
         {
             playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
             return;

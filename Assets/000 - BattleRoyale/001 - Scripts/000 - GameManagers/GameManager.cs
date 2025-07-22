@@ -80,7 +80,19 @@ public class GameManager : MonoBehaviour
         UnityWebRequest apiRquest;
         if (env.TryParseEnvironmentVariable("API_URL", out string httpRequest))
         {
-            apiRquest = UnityWebRequest.Get(httpRequest + route + query);
+            string finalQuery;
+
+            // If query is empty or only "?", just use appversion
+            if (string.IsNullOrEmpty(query) || query == "?")
+            {
+                finalQuery = "?appversion=" + Application.version;
+            }
+            else
+            {
+                finalQuery = "?appversion=" + Application.version + "&" + query.TrimStart('?');
+            }
+
+            apiRquest = UnityWebRequest.Get(httpRequest + route + finalQuery);
         }
         else
         {
@@ -203,7 +215,20 @@ public class GameManager : MonoBehaviour
 
         if (env.TryParseEnvironmentVariable("API_URL", out string httpRequest))
         {
-            apiRquest = UnityWebRequest.PostWwwForm(httpRequest + route + query, UnityWebRequest.kHttpVerbPOST);
+
+            string finalQuery;
+
+            // If query is empty or only "?", just use appversion
+            if (string.IsNullOrEmpty(query) || query == "?")
+            {
+                finalQuery = "?appversion=" + Application.version;
+            }
+            else
+            {
+                finalQuery = "?appversion=" + Application.version + "&" + query.TrimStart('?');
+            }
+
+            apiRquest = UnityWebRequest.PostWwwForm(httpRequest + route + finalQuery, UnityWebRequest.kHttpVerbPOST);
         }
         else
         {

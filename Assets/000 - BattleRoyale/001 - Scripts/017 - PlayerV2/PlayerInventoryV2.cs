@@ -2,13 +2,16 @@ using Fusion;
 using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class PlayerInventoryV2 : NetworkBehaviour
 {
     [SerializeField] private UserData userData;
+    [SerializeField] private PlayerOwnObjectEnabler playerOwnObjectEnabler;
 
     [Header("SKINS")]
     [SerializeField] private List<GameObject> hairStyles;
@@ -27,6 +30,14 @@ public class PlayerInventoryV2 : NetworkBehaviour
     [SerializeField] private WeaponEquipBtnController PrimaryBtn;
     [SerializeField] private WeaponEquipBtnController SecondaryBtn;
 
+    [Header("HEAL")]
+    [SerializeField] private Image healCountIndicator;
+    [SerializeField] private Image repairCountIndicator;
+
+    [Header("TRAP")]
+    [SerializeField] private TextMeshProUGUI trapCountTMP;
+    [SerializeField] private NetworkObject trapObj;
+
     [Header("CRATE DETECTOR")]
     [SerializeField] private LayerMask objecMask;
     [SerializeField] private Vector3 colliderOffset;
@@ -35,6 +46,11 @@ public class PlayerInventoryV2 : NetworkBehaviour
     [SerializeField] private GameObject itemButton;
     [SerializeField] private Transform contentTF;
     [SerializeField] private WeaponSpawnData itemSpritesData;
+
+    [field: Header("ITEM HIDE IN PLAYER")]
+    [field: SerializeField][Networked] public NetworkObject ArmorHand { get; set; }
+    [field: SerializeField][Networked] public NetworkObject SwordHand { get; set; }
+    [field: SerializeField][Networked] public NetworkObject SwordBack { get; set; }
 
     [field: Header("DEBUGGER")]
     [field: SerializeField] public CrateController CrateObject { get; set; }
@@ -50,6 +66,12 @@ public class PlayerInventoryV2 : NetworkBehaviour
     [field: SerializeField][Networked] public int ClothingColorIndex { get; set; }
     [field: SerializeField][Networked] public int SkinColorIndex { get; set; }
     [field: SerializeField][Networked] public int WeaponIndex { get; set; }
+    [field: SerializeField][Networked] public int HealCount { get; set; }
+    [field: SerializeField][Networked] public int ArmorRepairCount { get; set; }
+    [field: SerializeField][Networked] public int TrapCount { get; set; }
+    [field: SerializeField][Networked] public PrimaryWeaponItem PrimaryWeapon { get; set; }
+    [field: SerializeField][Networked] public ArmorItem Armor { get; set; }
+
 
     //  ========================
 
@@ -58,11 +80,13 @@ public class PlayerInventoryV2 : NetworkBehaviour
 
     private Dictionary<string, int> _localCache = new Dictionary<string, int>();
 
+    private ChangeDetector _changeDetector;
+
     //  =========================
 
     public override void Spawned()
     {
-        //_changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
 
         if (HasInputAuthority)
         {
@@ -77,10 +101,18 @@ public class PlayerInventoryV2 : NetworkBehaviour
     {
         if (HasInputAuthority)
         {
+            CrateCache();
+
             HandBtn.SetIndicator(WeaponIndex == 1 ? true : false);
             PrimaryBtn.SetIndicator(WeaponIndex == 2 ? true : false);
             SecondaryBtn.SetIndicator(WeaponIndex == 3 ? true : false);
-            CrateCache();
+            healCountIndicator.fillAmount = 1 - (float)HealCount / 4;
+            repairCountIndicator.fillAmount = 1 - (float)ArmorRepairCount / 4;
+            trapCountTMP.text = $"{TrapCount} / 4";
+
+            if (PrimaryWeapon != null)
+                PrimaryBtn.ChangeSpriteButton(PrimaryWeapon.WeaponID, PrimaryWeapon.Supplies.ToString(), false);
+            else PrimaryBtn.ResetUI();
         }
     }
 
@@ -88,6 +120,8 @@ public class PlayerInventoryV2 : NetworkBehaviour
     {
         CrateCollisionChecker();
     }
+
+    
 
     #region SKINS
 
@@ -118,6 +152,39 @@ public class PlayerInventoryV2 : NetworkBehaviour
         upperClothingMR.material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
         lowerClothingMR.materials[0].SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
         bodyColorMR.material.SetColor("_BaseColor", skinColor[SkinColorIndex]);
+    }
+
+    #endregion
+
+    #region INVENTORY
+
+    public void SpawnTrap()
+    {
+        TrapCount -= 1;
+
+        if (!HasStateAuthority) return;
+
+        Runner.Spawn(trapObj, transform.position, Quaternion.identity, Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) => {
+            obj.GetComponent<TrapWeaponController>().Initialize(playerOwnObjectEnabler.Username, Vector3.zero);
+        });
+    }
+
+    public void SwitchToHands()
+    {
+        WeaponIndex = 1;
+
+        if (PrimaryWeapon != null) PrimaryWeapon.IsEquipped = false;
+    }
+
+    public void SwitchToPrimary()
+    {
+        if (PrimaryWeapon == null) return;
+
+        if (PrimaryWeapon.IsEquipped) return;
+
+        WeaponIndex = 2;
+
+        PrimaryWeapon.IsEquipped = true;
     }
 
     #endregion
@@ -183,11 +250,10 @@ public class PlayerInventoryV2 : NetworkBehaviour
 
         foreach (var item in localNearbyWeapon)
         {
-            var weaponItem = item.GetComponent<WeaponItem>();
+            var weaponItem = item.GetComponent<IPickupItem>();
+
             if (weaponItem != null && weaponItem.IsPickedUp)
-            {
                 itemsToRemove.Add(item);
-            }
         }
 
         // Remove items outside the loop
@@ -225,10 +291,10 @@ public class PlayerInventoryV2 : NetworkBehaviour
         // Update nearby weapons
         foreach (var weapon in localNearbyWeapon)
         {
-            var weaponItem = weapon.GetComponent<WeaponItem>();
+            var weaponItem = weapon.GetComponent<IPickupItem>();
             if (weaponItem == null) continue;
 
-            AddItemButton(weaponItem.WeaponID, weaponItem.Ammo, isCrateItem: false);
+            AddItemButton(weaponItem.WeaponID, weaponItem.Supplies, isCrateItem: false);
         }
 
         isCacheUpdated = false;
@@ -240,7 +306,34 @@ public class PlayerInventoryV2 : NetworkBehaviour
 
         tempbuttons.GetComponent<Button>().onClick.AddListener(() =>
         {
-            
+            if (isCrateItem)
+            {
+                CrateObject.RPC_RemoveItem(itemID, this);
+
+                return;
+            }
+
+            var weapon = localNearbyWeapon.FirstOrDefault(w => w.GetComponent<IPickupItem>()?.WeaponID == itemID);
+
+            if (weapon == null) return;
+
+            if (itemID == "001")
+            {
+                PrimaryWeaponItem tempweapon = weapon.GetComponent<PrimaryWeaponItem>();
+
+                if (tempweapon == null) return;
+
+                tempweapon.RPC_PickupPrimaryWeapon(Object, SwordBack, SwordHand);
+            }
+
+            else if (itemID == "007")
+            {
+                ArmorItem temparmor = weapon.GetComponent<ArmorItem>();
+
+                if (temparmor == null) return;
+
+                temparmor.RPC_PickupArmor(Object, ArmorHand);
+            }
         });
 
         tempbuttons.GetComponent<WeaponListUIController>().InitializeData(
@@ -263,7 +356,7 @@ public class PlayerInventoryV2 : NetworkBehaviour
     {
         if (!HasInputAuthority) return;
 
-        Collider[] hitColliders = Physics.OverlapBox(transform.position + colliderOffset, colliderSize, Quaternion.identity, objecMask);
+        Collider[] hitColliders = Physics.OverlapBox(transform.position + colliderOffset, colliderSize, Quaternion.identity, objecMask, QueryTriggerInteraction.Collide);
 
         currentColliders.Clear();
         currentColliders.AddRange(hitColliders);
@@ -308,7 +401,7 @@ public class PlayerInventoryV2 : NetworkBehaviour
     {
         if (localNearbyWeapon.Contains(weapon)) return;
 
-        if (weapon.GetComponent<WeaponItem>().IsPickedUp) return;
+        if (weapon.GetComponent<IPickupItem>().IsPickedUp) return;
 
         localNearbyWeapon.Add(weapon);
         isCacheUpdated = true; // Mark cache updated if a new weapon is detected
@@ -343,4 +436,12 @@ public class PlayerInventoryV2 : NetworkBehaviour
 
     #endregion
 
+}
+
+public interface IPickupItem
+{
+    string WeaponID { get; }
+    string WeaponName { get; }
+    bool IsPickedUp { get; }
+    int Supplies { get; }
 }

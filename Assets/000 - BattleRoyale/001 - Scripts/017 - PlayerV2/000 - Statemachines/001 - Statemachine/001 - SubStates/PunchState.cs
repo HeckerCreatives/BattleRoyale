@@ -55,7 +55,7 @@ public class PunchState : PlayerOnGround
 
         if (playerPlayables.TickRateAnimation >= moveTimer && playerPlayables.TickRateAnimation <= stopMoveTimer)
         {
-            characterController.Move(characterController.TransformDirection * 3.5f, 0f);
+            characterController.Move(characterController.TransformDirection * 0.75f, 0f);
             canMove = false;
         }
 
@@ -76,7 +76,7 @@ public class PunchState : PlayerOnGround
 
         if (playerPlayables.healthV2.IsSecondHit)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            playablesChanger.ChangeState(playerPlayables.basicMovement.MiddleHitPlayable);
             return;
         }
 
@@ -100,7 +100,7 @@ public class PunchState : PlayerOnGround
             if (playerMovement.IsBlocking)
                 playablesChanger.ChangeState(playerPlayables.basicMovement.BlockPlayable);
 
-            if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
+            if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
                 playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
 
             if (playerMovement.MoveDirection != Vector3.zero)

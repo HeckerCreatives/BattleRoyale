@@ -236,7 +236,7 @@ public class PlayerItemCheckerController : NetworkBehaviour
         {
             if (isCrateItem)
             {
-                CrateObject.RPC_RemoveItem(itemID, itemSpritesData.GetItemName(itemID), Object, Back(itemID), Hand(itemID), arrowBackHandle);
+                //CrateObject.RPC_RemoveItem(itemID, playerInventory);
             }
             else
             {

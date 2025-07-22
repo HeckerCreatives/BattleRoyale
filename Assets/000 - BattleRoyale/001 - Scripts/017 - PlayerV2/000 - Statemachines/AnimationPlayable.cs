@@ -32,12 +32,13 @@ public class AnimationPlayable
     public float blendDuration = 0.25f; // Duration of blend in seconds
 
     public Coroutine blendCoroutine;
+    public Coroutine weightCoroutine;
 
     private MonoBehaviour coroutineHost; // host to start coroutine
 
     //  ======================
 
-    public AnimationPlayable(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay    )
+    public AnimationPlayable(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay)
     {
         coroutineHost = host;
         this.characterController = characterController;
@@ -62,6 +63,7 @@ public class AnimationPlayable
 
     public virtual void Enter()
     {
+
         if (oncePlay)
         {
             animationClipPlayable.SetTime(0f);
@@ -71,7 +73,7 @@ public class AnimationPlayable
         int mixerIndex = mixers.IndexOf(mixername);
         int animIndex = animations.IndexOf(animationname);
 
-        if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority)
+        if ((playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority))
         {
             playerPlayables.PlayableState = mixername;
             playerPlayables.PlayableAnimationIndex = animIndex;

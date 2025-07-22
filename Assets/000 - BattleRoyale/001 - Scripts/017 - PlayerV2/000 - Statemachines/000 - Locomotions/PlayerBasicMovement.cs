@@ -32,6 +32,13 @@ public class PlayerBasicMovement : NetworkBehaviour
     [SerializeField] private AnimationClip staggerHit;
     [SerializeField] private AnimationClip gettingUp;
     [SerializeField] private AnimationClip death;
+    [SerializeField] private AnimationClip heal;
+    [SerializeField] private AnimationClip trapping;
+    [SerializeField] private AnimationClip swordIdle;
+    [SerializeField] private AnimationClip swordRun;
+    [SerializeField] private AnimationClip swordFirstAttack;
+    [SerializeField] private AnimationClip swordSecondAttack;
+    [SerializeField] private AnimationClip swordFinalAttack;
 
     [Space]
     [SerializeField] private LayerMask enemyLayerMask;
@@ -63,6 +70,15 @@ public class PlayerBasicMovement : NetworkBehaviour
     public StaggerHit StaggerHitPlayable { get; private set; }
     public GettingUp GettingUpPlayable { get; private set; }
     public DeathState DeathPlayable { get; private set; }
+    public HealState HealPlayable { get; private set; }
+    public RepairState RepairPlayable { get; private set; }
+    public TrappingState TrappingPlayable { get; private set; }
+    public MiddleHitState MiddleHitPlayable { get; private set; }
+    public SwordIdleState SwordIdlePlayable { get; private set; }
+    public SwordRunState SwordRunPlayable { get; private set; }
+    public SwordFirstAttackState SwordAttackFirstPlayable { get; private set; }
+    public SwordSecondAttackState SwordAttackSecondPlayable { get; private set; }
+    public SwordFinalAttackState SwordFinalAttackPlayable { get; private set; }
 
     //  ======================
 
@@ -73,7 +89,7 @@ public class PlayerBasicMovement : NetworkBehaviour
 
     public AnimationMixerPlayable Initialize()
     {
-        mixerPlayable = AnimationMixerPlayable.Create(playerPlayables.playableGraph, 17);
+        mixerPlayable = AnimationMixerPlayable.Create(playerPlayables.playableGraph, 26);
 
         var idleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, idle);
         var runClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, run);
@@ -91,6 +107,15 @@ public class PlayerBasicMovement : NetworkBehaviour
         var staggerHitClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, staggerHit);
         var gettingUpClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, gettingUp);
         var deathClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, death);
+        var healClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, heal);
+        var repairClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, heal);
+        var trappingClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, trapping);
+        var middleHitClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, hit);
+        var swordIdleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordIdle);
+        var swordRunClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordRun);
+        var swordFirstAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordFirstAttack);
+        var swordSecondAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordSecondAttack);
+        var swordFinalAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordFinalAttack);
 
         playerPlayables.playableGraph.Connect(idleClip, 0, mixerPlayable, 1);
         playerPlayables.playableGraph.Connect(runClip, 0, mixerPlayable, 2);
@@ -108,6 +133,16 @@ public class PlayerBasicMovement : NetworkBehaviour
         playerPlayables.playableGraph.Connect(staggerHitClip, 0, mixerPlayable, 14);
         playerPlayables.playableGraph.Connect(gettingUpClip, 0, mixerPlayable, 15);
         playerPlayables.playableGraph.Connect(deathClip, 0, mixerPlayable, 16);
+        playerPlayables.playableGraph.Connect(healClip, 0, mixerPlayable, 17);
+        playerPlayables.playableGraph.Connect(repairClip, 0, mixerPlayable, 18);
+        playerPlayables.playableGraph.Connect(trappingClip, 0, mixerPlayable, 19);
+        playerPlayables.playableGraph.Connect(middleHitClip, 0, mixerPlayable, 20);
+        playerPlayables.playableGraph.Connect(swordIdleClip, 0, mixerPlayable, 21);
+        playerPlayables.playableGraph.Connect(swordRunClip, 0, mixerPlayable, 22);
+        playerPlayables.playableGraph.Connect(swordFirstAttackClip, 0, mixerPlayable, 23);
+        playerPlayables.playableGraph.Connect(swordSecondAttackClip, 0, mixerPlayable, 24);
+        playerPlayables.playableGraph.Connect(swordFinalAttackClip, 0, mixerPlayable, 25);
+
 
         IdlePlayable = new IdleState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "idle", "basic", idle.length, idleClip, false);
         RunPlayable = new RunState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "run", "basic", run.length, runClip, false);
@@ -124,6 +159,16 @@ public class PlayerBasicMovement : NetworkBehaviour
         StaggerHitPlayable = new StaggerHit(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "staggerhit", "basic", staggerHit.length, staggerHitClip, true);
         GettingUpPlayable = new GettingUp(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "gettingup", "basic", gettingUp.length, gettingUpClip, true);
         DeathPlayable = new DeathState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "death", "basic", death.length, deathClip, true);
+        HealPlayable = new HealState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "heal", "basic", heal.length, healClip, true);
+        RepairPlayable = new RepairState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "repair", "basic", heal.length, repairClip, true);
+        TrappingPlayable = new TrappingState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "trapping", "basic", trapping.length, trappingClip, true);
+        MiddleHitPlayable = new MiddleHitState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "middlehit", "basic", hit.length, hitClip, true);
+        SwordIdlePlayable = new SwordIdleState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordidle", "basic", swordIdle.length, swordIdleClip, false);
+        SwordRunPlayable = new SwordRunState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordrun", "basic", swordRun.length, swordRunClip, false);
+        SwordAttackFirstPlayable = new SwordFirstAttackState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfirstattack", "basic", swordFirstAttack.length, swordFirstAttackClip, true);
+        SwordAttackSecondPlayable = new SwordSecondAttackState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsecondattack", "basic", swordSecondAttack.length, swordSecondAttackClip, true);
+        SwordFinalAttackPlayable = new SwordFinalAttackState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfinalattack", "basic", swordFinalAttack.length, swordFinalAttackClip, true);
+
 
         return mixerPlayable;
     }
@@ -366,6 +411,24 @@ public class PlayerBasicMovement : NetworkBehaviour
                 return GettingUpPlayable;
             case 16:
                 return DeathPlayable;
+            case 17:
+                return HealPlayable;
+            case 18:
+                return RepairPlayable;
+            case 19:
+                return TrappingPlayable;
+            case 20:
+                return MiddleHitPlayable;
+            case 21:
+                return SwordIdlePlayable;
+            case 22:
+                return SwordRunPlayable;
+            case 23:
+                return SwordAttackFirstPlayable;
+            case 24:
+                return SwordAttackSecondPlayable;
+            case 25:
+                return SwordFinalAttackPlayable;
             default: return null;
         }
     }

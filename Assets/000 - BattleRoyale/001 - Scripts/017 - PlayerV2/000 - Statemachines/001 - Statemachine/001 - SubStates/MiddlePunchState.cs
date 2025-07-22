@@ -64,9 +64,10 @@ public class MiddlePunchState : PlayerOnGround
             return;
         }
 
+
         if (playerPlayables.healthV2.IsSecondHit)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            playablesChanger.ChangeState(playerPlayables.basicMovement.MiddleHitPlayable);
             return;
         }
 
@@ -87,7 +88,7 @@ public class MiddlePunchState : PlayerOnGround
                 if (playerMovement.IsBlocking)
                     playablesChanger.ChangeState(playerPlayables.basicMovement.BlockPlayable);
 
-                if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
+                if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
                     playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
 
                 if (playerMovement.MoveDirection != Vector3.zero)

@@ -38,32 +38,40 @@ public class HitState : PlayerOnGround
 
     private void Animation()
     {
-        if (playerPlayables.healthV2.IsDead)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
-
-        if (!characterController.IsGrounded)
+        if (playerPlayables.healthV2.IsSecondHit)
         {
             playerPlayables.healthV2.IsHit = false;
-            playerPlayables.healthV2.IsSecondHit = false;
-
-            playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
+            playablesChanger.ChangeState(playerPlayables.basicMovement.MiddleHitPlayable);
+            return;
         }
 
         if (playerPlayables.healthV2.IsStagger)
         {
             playerPlayables.healthV2.IsHit = false;
-            playerPlayables.healthV2.IsSecondHit = false;
-
-
             playablesChanger.ChangeState(playerPlayables.basicMovement.StaggerHitPlayable);
+            return;
         }
+
+        if (playerPlayables.healthV2.IsDead)
+        {
+            playerPlayables.healthV2.IsHit = false;
+            playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+            return;
+        }
+
+        if (!characterController.IsGrounded)
+        {
+            playerPlayables.healthV2.IsHit = false;
+            playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
+            return;
+        }
+
 
         if (playerPlayables.TickRateAnimation >= timer && canAction)
         {
             playerPlayables.healthV2.IsHit = false;
-            playerPlayables.healthV2.IsSecondHit = false;
 
-            if (playerMovement.IsRoll)
+            if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
                 playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
 
             if (playerMovement.Attacking)

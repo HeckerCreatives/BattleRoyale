@@ -11,7 +11,6 @@ public class SprintState : PlayerOnGround
     {
     }
 
-
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
@@ -40,6 +39,36 @@ public class SprintState : PlayerOnGround
 
         if (playerMovement.Attacking)
             playablesChanger.ChangeState(playerPlayables.basicMovement.Punch1Playable);
+
+        if (playerMovement.IsHealing)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.HealPlayable);
+
+        if (playerMovement.IsRepairing)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.RepairPlayable);
+
+        if (playerMovement.IsTrapping)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.TrappingPlayable);
+            return;
+        }
+
+        if (playerPlayables.healthV2.IsHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            return;
+        }
+
+        if (playerPlayables.healthV2.IsSecondHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.MiddleHitPlayable);
+            return;
+        }
+
+        if (playerPlayables.healthV2.IsStagger)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.StaggerHitPlayable);
+            return;
+        }
 
         if (playerPlayables.stamina.Stamina > 0f)
         {

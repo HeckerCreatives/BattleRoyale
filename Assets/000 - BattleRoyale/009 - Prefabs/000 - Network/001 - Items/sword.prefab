@@ -40,7 +40,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6175662577263270886}
-  - component: {fileID: 7453557457154416952}
+  - component: {fileID: 1251601267454481847}
   - component: {fileID: 2511843833045033619}
   - component: {fileID: 1209081772464881890}
   - component: {fileID: 3283460978109500959}
@@ -72,7 +72,7 @@ Transform:
   - {fileID: 4925880882455974048}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7453557457154416952
+--- !u!114 &1251601267454481847
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -81,9 +81,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 7616198628887366643}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7ce36211fb835e04a9875ccf675beb33, type: 3}
+  m_Script: {fileID: 11500000, guid: 292a2a56ecc75594e8b09145de8ab672, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  weaponID: 001
+  weaponName: Sword
+  backRotation: {x: 5.794, y: -2.218, z: 138.13}
+  handRotation: {x: -11.124, y: 168.711, z: 268.109}
+  dropRotation: {x: 90, y: 0, z: 0}
+  _Supplies: 0
+  _IsPickedUp: 0
+  _IsEquipped: 0
+  _CurrentPlayer: {fileID: 0}
+  _Position: {x: 0, y: 0, z: 0}
+  _Back: {fileID: 0}
+  _Hand: {fileID: 0}
 --- !u!33 &2511843833045033619
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -167,7 +179,7 @@ MonoBehaviour:
   Flags: 262145
   NestedObjects: []
   NetworkedBehaviours:
-  - {fileID: 7453557457154416952}
+  - {fileID: 1251601267454481847}
   - {fileID: 3283460978109500959}
   - {fileID: 2161710917413007540}
   ForceRemoteRenderTimeframe: 0

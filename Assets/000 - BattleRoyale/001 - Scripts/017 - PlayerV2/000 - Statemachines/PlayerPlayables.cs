@@ -9,6 +9,7 @@ using static UnityEngine.Rendering.PostProcessing.HistogramMonitor;
 public class PlayerPlayables : NetworkBehaviour
 {
     public PlayerStamina stamina;
+    public PlayerInventoryV2 inventory;
 
     [Space]
     [SerializeField] private Animator playerAnimator;
@@ -16,6 +17,7 @@ public class PlayerPlayables : NetworkBehaviour
     [Space]
     public PlayerHealthV2 healthV2;
     public PlayerBasicMovement basicMovement;
+    public HealMovement healMovements;
 
     [field: Header("NETWORK DEBUGGER")]
     [Networked][field: SerializeField] public float TickRateAnimation { get; set; }
@@ -49,7 +51,7 @@ public class PlayerPlayables : NetworkBehaviour
 
     public override void Render()
     {
-        if (HasInputAuthority || HasStateAuthority) return;
+        if (HasStateAuthority) return;
 
         if (changer.CurrentState == null) return;
 
