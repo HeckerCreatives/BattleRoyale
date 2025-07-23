@@ -44,7 +44,12 @@ public class FallingState : AnimationPlayable
     private void Animation()
     {
         if (playerMovement.Attacking)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.JumpPunchPlayable);
+        {
+            if (playerPlayables.inventory.WeaponIndex == 1)
+                playablesChanger.ChangeState(playerPlayables.basicMovement.JumpPunchPlayable);
+            else if (playerPlayables.inventory.WeaponIndex == 2)
+                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordJumpAttackPlayable);
+        }
 
         if (playerPlayables.healthV2.IsDead)
             playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
@@ -56,15 +61,30 @@ public class FallingState : AnimationPlayable
             if (fallDamage > 0)
                 playerPlayables.healthV2.FallDamae(fallDamage);
 
-            if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
-                playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
-            else if (playerMovement.IsSprint)
+            if (playerPlayables.inventory.WeaponIndex == 1)
             {
-                if (playerPlayables.stamina.Stamina >= 10f)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
+                if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
+                else if (playerMovement.IsSprint)
+                {
+                    if (playerPlayables.stamina.Stamina >= 10f)
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
+                }
+                else
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
             }
-            else
-                playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+            else if (playerPlayables.inventory.WeaponIndex == 2)
+            {
+                if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
+                else if (playerMovement.IsSprint)
+                {
+                    if (playerPlayables.stamina.Stamina >= 10f)
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
+                }
+                else
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
+            }
         }
     }
 }

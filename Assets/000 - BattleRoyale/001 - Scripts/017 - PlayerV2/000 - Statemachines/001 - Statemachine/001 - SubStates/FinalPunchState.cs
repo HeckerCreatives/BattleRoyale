@@ -13,6 +13,7 @@ public class FinalPunchState : PlayerOnGround
     float damageWindowEnd;
     bool canAction;
     bool canMove;
+    bool doneResetHit;
 
     public FinalPunchState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
@@ -22,6 +23,7 @@ public class FinalPunchState : PlayerOnGround
     {
         base.Enter();
 
+        doneResetHit = false;
         timer = playerPlayables.TickRateAnimation + animationLength;
         moveTimer = playerPlayables.TickRateAnimation + 0.30f;
         stopMoveTimer = playerPlayables.TickRateAnimation + 0.50f;
@@ -34,7 +36,6 @@ public class FinalPunchState : PlayerOnGround
     public override void Exit()
     {
         base.Exit();
-        playerPlayables.basicMovement.ResetFirstAttack();
         canAction = false;
     }
 
@@ -43,7 +44,13 @@ public class FinalPunchState : PlayerOnGround
     {
         if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
         {
-            playerPlayables.basicMovement.PerformFinalAttack();
+            if (!doneResetHit)
+            {
+                playerPlayables.basicMovement.ResetFirstAttack();
+                doneResetHit = true;
+            }
+
+            playerPlayables.basicMovement.PerformFirstAttack(true);
         }
 
         Animation();

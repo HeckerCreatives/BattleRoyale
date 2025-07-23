@@ -32,23 +32,44 @@ public class JumpState : PlayerOnGround
         }
 
         if (playerMovement.Attacking)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.JumpPunchPlayable);
+        {
+            if (playerPlayables.inventory.WeaponIndex == 1)
+                playablesChanger.ChangeState(playerPlayables.basicMovement.JumpPunchPlayable);
+            else if (playerPlayables.inventory.WeaponIndex == 2)
+                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordJumpAttackPlayable);
+        }
 
         if (characterController.IsGrounded)
         {
             playerMovement.IsJumping = false;
             playerMovement.JumpImpulse = 0;
 
-            if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
+            if (playerPlayables.inventory.WeaponIndex == 1)
             {
-                if (playerMovement.IsSprint)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
+                if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
+                {
+                    if (playerMovement.IsSprint)
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
 
+                    else
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+                }
                 else
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
             }
-            else
-                playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
+            else if (playerPlayables.inventory.WeaponIndex == 2)
+            {
+                if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
+                {
+                    if (playerMovement.IsSprint)
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
+
+                    else
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
+                }
+                else
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
+            }
         }
     }
 

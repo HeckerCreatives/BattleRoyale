@@ -33,6 +33,10 @@ public class BlockState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
+        playerPlayables.healthV2.IsHit = false;
+        playerPlayables.healthV2.IsSecondHit = false;
+        playerPlayables.healthV2.IsStagger = false;
+
         Animation();
         playerPlayables.stamina.RecoverStamina(5f);
     }
@@ -43,14 +47,30 @@ public class BlockState : PlayerOnGround
         {
             if (playerMovement.MoveDirection != Vector3.zero)
             {
-                if (playerMovement.IsSprint)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
+                if (playerPlayables.inventory.WeaponIndex == 1)
+                {
+                    if (playerMovement.IsSprint)
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
 
-                else
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+                    else
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+                }
+                else if (playerPlayables.inventory.WeaponIndex == 2)
+                {
+                    if (playerMovement.IsSprint)
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
+
+                    else
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
+                }
             }
             else
-                playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
+            {
+                if (playerPlayables.inventory.WeaponIndex == 1)
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
+                else if (playerPlayables.inventory.WeaponIndex == 2)
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
+            }
         }
     }
 }

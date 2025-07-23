@@ -17,6 +17,7 @@ public class HitState : PlayerOnGround
     {
         base.Enter();
 
+        playerPlayables.healthV2.IsHit = false;
         timer = playerPlayables.TickRateAnimation + animationLength;
         canAction = true;
     }
@@ -38,39 +39,39 @@ public class HitState : PlayerOnGround
 
     private void Animation()
     {
+
         if (playerPlayables.healthV2.IsSecondHit)
         {
-            playerPlayables.healthV2.IsHit = false;
             playablesChanger.ChangeState(playerPlayables.basicMovement.MiddleHitPlayable);
             return;
         }
 
         if (playerPlayables.healthV2.IsStagger)
         {
-            playerPlayables.healthV2.IsHit = false;
             playablesChanger.ChangeState(playerPlayables.basicMovement.StaggerHitPlayable);
             return;
         }
 
         if (playerPlayables.healthV2.IsDead)
         {
-            playerPlayables.healthV2.IsHit = false;
             playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
             return;
         }
 
         if (!characterController.IsGrounded)
         {
-            playerPlayables.healthV2.IsHit = false;
             playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
             return;
         }
 
+        if (playerPlayables.healthV2.IsHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            return;
+        }
 
         if (playerPlayables.TickRateAnimation >= timer && canAction)
         {
-            playerPlayables.healthV2.IsHit = false;
-
             if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
                 playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
 
@@ -89,6 +90,8 @@ public class HitState : PlayerOnGround
             }
             else
                 playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
+
+            return;
         }
     }
 }

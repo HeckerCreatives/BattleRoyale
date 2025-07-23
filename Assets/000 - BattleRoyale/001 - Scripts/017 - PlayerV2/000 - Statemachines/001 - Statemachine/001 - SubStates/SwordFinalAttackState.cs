@@ -13,6 +13,7 @@ public class SwordFinalAttackState : PlayerOnGround
     float damageWindowEnd;
     bool canAction;
     bool canMove;
+    bool hasResetHitEnemies;
 
     public SwordFinalAttackState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
@@ -22,6 +23,7 @@ public class SwordFinalAttackState : PlayerOnGround
     {
         base.Enter();
 
+        hasResetHitEnemies = false;
         timer = playerPlayables.TickRateAnimation + animationLength;
         moveTimer = playerPlayables.TickRateAnimation + 0.30f;
         stopMoveTimer = playerPlayables.TickRateAnimation + 0.60f;
@@ -34,7 +36,7 @@ public class SwordFinalAttackState : PlayerOnGround
     public override void Exit()
     {
         base.Exit();
-        playerPlayables.basicMovement.ResetFirstAttack();
+
         canAction = false;
     }
 
@@ -43,14 +45,20 @@ public class SwordFinalAttackState : PlayerOnGround
     {
         if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
         {
-            playerPlayables.basicMovement.PerformFinalAttack();
+            if (!hasResetHitEnemies)
+            {
+                playerPlayables.inventory.PrimaryWeapon.ClearHitEnemies(); // Clear BEFORE performing attack
+                hasResetHitEnemies = true;
+            }
+
+            playerPlayables.inventory.PrimaryWeapon.DamagePlayer(true);
         }
 
         Animation();
 
         if (playerPlayables.TickRateAnimation >= moveTimer && playerPlayables.TickRateAnimation <= stopMoveTimer)
         {
-            characterController.Move(characterController.TransformDirection * 1.25f, 0f);
+            characterController.Move(characterController.TransformDirection * 3.5f, 0f);
             canMove = false;
         }
 
@@ -60,7 +68,10 @@ public class SwordFinalAttackState : PlayerOnGround
     private void Animation()
     {
         if (playerPlayables.healthV2.IsDead)
+        {
             playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+            return;
+        }
 
 
         if (playerPlayables.healthV2.IsHit)
@@ -85,10 +96,16 @@ public class SwordFinalAttackState : PlayerOnGround
         if (playerPlayables.TickRateAnimation >= timer && canAction)
         {
             if (playerMovement.IsBlocking)
-                playablesChanger.ChangeState(playerPlayables.basicMovement.BlockPlayable);
+            {
+                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordBlockPlayable);
+                return;
+            }
 
             if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
+            {
                 playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
+                return;
+            }
 
             if (playerPlayables.inventory.WeaponIndex == 1)
             {
@@ -107,11 +124,11 @@ public class SwordFinalAttackState : PlayerOnGround
             {
                 if (playerMovement.MoveDirection != Vector3.zero)
                 {
-                    //if (playerMovement.IsSprint)
-                    //    playablesChanger.ChangeState(playerPlayables.basicMovement.r);
+                    if (playerMovement.IsSprint)
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
 
-                    //else
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
+                    else
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
                 }
                 else
                     playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);

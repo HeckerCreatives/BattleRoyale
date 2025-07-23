@@ -42,7 +42,7 @@ public class SwordIdleState : PlayerOnGround
 
         if (playerMovement.IsBlocking)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.BlockPlayable);
+            playablesChanger.ChangeState(playerPlayables.basicMovement.SwordBlockPlayable);
             return;
         }
 
@@ -64,14 +64,31 @@ public class SwordIdleState : PlayerOnGround
             return;
         }
 
+        if (playerMovement.IsTrapping)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.TrappingPlayable);
+            return;
+        }
+
+        if (playerMovement.IsHealing)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.HealPlayable);
+            return;
+        }
+
+        if (playerMovement.IsRepairing)
+        {
+            playablesChanger.ChangeState(playerPlayables.basicMovement.RepairPlayable);
+            return;
+        }
+
         if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
         {
-            //if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-            //    playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
+            if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
+                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
 
-            //else
-
-            playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
+            else
+                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
 
             return;
         }

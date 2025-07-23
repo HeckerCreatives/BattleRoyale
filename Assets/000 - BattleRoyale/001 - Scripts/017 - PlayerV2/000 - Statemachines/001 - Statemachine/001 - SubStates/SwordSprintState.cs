@@ -34,7 +34,7 @@ public class SwordSprintState : PlayerOnGround
             playablesChanger.ChangeState(playerPlayables.basicMovement.JumpPlayable);
 
         if (playerMovement.IsBlocking)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.BlockPlayable);
+            playablesChanger.ChangeState(playerPlayables.basicMovement.SwordBlockPlayable);
 
         if (playerMovement.Attacking)
             playablesChanger.ChangeState(playerPlayables.basicMovement.SwordAttackFirstPlayable);

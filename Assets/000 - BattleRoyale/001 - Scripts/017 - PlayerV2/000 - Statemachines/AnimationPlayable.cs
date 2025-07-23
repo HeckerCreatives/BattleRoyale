@@ -63,22 +63,22 @@ public class AnimationPlayable
 
     public virtual void Enter()
     {
+        animationClipPlayable.SetTime(0f);
 
         if (oncePlay)
-        {
-            animationClipPlayable.SetTime(0f);
             animationClipPlayable.Play();
-        }
 
         int mixerIndex = mixers.IndexOf(mixername);
         int animIndex = animations.IndexOf(animationname);
 
-        if ((playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority))
+        if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority)
         {
             playerPlayables.PlayableState = mixername;
             playerPlayables.PlayableAnimationIndex = animIndex;
         }
 
+        if (playerPlayables.HasStateAuthority)
+            playerPlayables.SetAnimationTick();
 
         if (blendCoroutine != null) coroutineHost.StopCoroutine(blendCoroutine);
         blendCoroutine = coroutineHost.StartCoroutine(BlendWeights(mixerPlayable, animIndex, 1f));

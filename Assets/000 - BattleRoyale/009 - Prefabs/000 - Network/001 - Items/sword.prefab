@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 789551355360307124}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.091, y: 0.431, z: 0}
+  m_LocalPosition: {x: -0.091, y: 0.318, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -86,9 +86,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponID: 001
   weaponName: Sword
+  impactPoint: {fileID: 7638595848337183244}
+  impactSize: {x: 0.51, y: 1.24, z: 0.15}
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 8192
   backRotation: {x: 5.794, y: -2.218, z: 138.13}
   handRotation: {x: -11.124, y: 168.711, z: 268.109}
   dropRotation: {x: 90, y: 0, z: 0}
+  _Head: 55
+  _Body: 50
+  _Thigh: 45
+  _Shin: 40
+  _Foot: 35
+  _Arm: 45
+  _Forearm: 40
   _Supplies: 0
   _IsPickedUp: 0
   _IsEquipped: 0
@@ -96,6 +108,7 @@ MonoBehaviour:
   _Position: {x: 0, y: 0, z: 0}
   _Back: {fileID: 0}
   _Hand: {fileID: 0}
+  _hitEnemies: []
 --- !u!33 &2511843833045033619
 MeshFilter:
   m_ObjectHideFlags: 0

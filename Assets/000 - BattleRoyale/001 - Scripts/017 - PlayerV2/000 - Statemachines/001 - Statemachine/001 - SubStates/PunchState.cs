@@ -14,6 +14,7 @@ public class PunchState : PlayerOnGround
     float damageWindowEnd;
     bool canAction;
     bool canMove;
+    bool hasResetHitEnemies;
 
     public PunchState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
@@ -23,6 +24,7 @@ public class PunchState : PlayerOnGround
     {
         base.Enter();
 
+        hasResetHitEnemies = false;
         timer = playerPlayables.TickRateAnimation + (animationLength * 0.9f);
         nextPunchWindow = playerPlayables.TickRateAnimation + (animationLength * 0.8f);
         moveTimer = playerPlayables.TickRateAnimation + (animationLength * 0.3f);
@@ -37,7 +39,6 @@ public class PunchState : PlayerOnGround
     {
         base.Exit();
 
-        playerPlayables.basicMovement.ResetFirstAttack();
         canAction = false;
     }
 
@@ -48,6 +49,12 @@ public class PunchState : PlayerOnGround
 
         if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
         {
+            if (!hasResetHitEnemies)
+            {
+                playerPlayables.basicMovement.ResetFirstAttack(); // Clear BEFORE performing attack
+                hasResetHitEnemies = true;
+            }
+
             playerPlayables.basicMovement.PerformFirstAttack();
         }
 
@@ -65,7 +72,10 @@ public class PunchState : PlayerOnGround
     private void Animation()
     {
         if (playerPlayables.healthV2.IsDead)
+        {
             playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+            return;
+        }
 
 
         if (playerPlayables.healthV2.IsHit)
@@ -87,21 +97,34 @@ public class PunchState : PlayerOnGround
         }
 
         if (!characterController.IsGrounded)
+        {
             playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
+            return;
+        }
 
         if (playerPlayables.TickRateAnimation >= nextPunchWindow && canAction)
         {
             if (playerMovement.Attacking)
+            {
                 playablesChanger.ChangeState(playerPlayables.basicMovement.Punch2Playable);
+                return;
+            }
         }
 
         if (playerPlayables.TickRateAnimation >= timer && canAction)
         {
+
             if (playerMovement.IsBlocking)
+            {
                 playablesChanger.ChangeState(playerPlayables.basicMovement.BlockPlayable);
+                return;
+            }
 
             if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
+            {
                 playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
+                return;
+            }
 
             if (playerMovement.MoveDirection != Vector3.zero)
             {

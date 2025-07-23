@@ -8,6 +8,7 @@ public class JumpPunchState : PlayerOnGround
 {
     float timer;
     bool canAction;
+    bool hasResetHitEnemies;
 
     public JumpPunchState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
@@ -17,6 +18,7 @@ public class JumpPunchState : PlayerOnGround
     {
         base.Enter();
 
+        hasResetHitEnemies = false;
         timer = playerPlayables.TickRateAnimation + animationLength;
         canAction = true;
     }
@@ -32,6 +34,14 @@ public class JumpPunchState : PlayerOnGround
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
+
+        if (!hasResetHitEnemies)
+        {
+            playerPlayables.basicMovement.ResetSecondAttack();
+            hasResetHitEnemies = true;
+        }
+
+        playerPlayables.basicMovement.PerformSecondAttack();
 
         if (characterController.IsGrounded && canAction && playerPlayables.TickRateAnimation >= timer)
         {

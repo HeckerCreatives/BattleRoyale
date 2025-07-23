@@ -1,5 +1,6 @@
 using Fusion;
 using Fusion.Addons.SimpleKCC;
+using NUnit.Framework.Constraints;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -39,6 +40,9 @@ public class PlayerBasicMovement : NetworkBehaviour
     [SerializeField] private AnimationClip swordFirstAttack;
     [SerializeField] private AnimationClip swordSecondAttack;
     [SerializeField] private AnimationClip swordFinalAttack;
+    [SerializeField] private AnimationClip swordSprint;
+    [SerializeField] private AnimationClip swordBlock;
+    [SerializeField] private AnimationClip swordJumpSlash;
 
     [Space]
     [SerializeField] private LayerMask enemyLayerMask;
@@ -46,9 +50,8 @@ public class PlayerBasicMovement : NetworkBehaviour
     [SerializeField] private Transform impactFirstFistPoint;
     [SerializeField] private Transform impactSecondFistPoint;
 
-    [field: Header("DEBUGGER")]
-    [Networked, Capacity(10)] public NetworkLinkedList<NetworkObject> hitEnemiesFirstFist { get; } = new NetworkLinkedList<NetworkObject>();
-    [Networked, Capacity(10)] public NetworkLinkedList<NetworkObject> hitEnemiesSecondFist { get; } = new NetworkLinkedList<NetworkObject>();
+    private readonly HashSet<NetworkObject> hitEnemiesFirstFist = new();
+    private readonly HashSet<NetworkObject> hitEnemiesSecondFist = new();
 
     //  ======================
 
@@ -79,6 +82,9 @@ public class PlayerBasicMovement : NetworkBehaviour
     public SwordFirstAttackState SwordAttackFirstPlayable { get; private set; }
     public SwordSecondAttackState SwordAttackSecondPlayable { get; private set; }
     public SwordFinalAttackState SwordFinalAttackPlayable { get; private set; }
+    public SwordSprintState SwordSprintPlayable { get; private set; }
+    public BlockState SwordBlockPlayable { get; private set; }
+    public SwordJumpAttack SwordJumpAttackPlayable { get; private set; }
 
     //  ======================
 
@@ -89,7 +95,7 @@ public class PlayerBasicMovement : NetworkBehaviour
 
     public AnimationMixerPlayable Initialize()
     {
-        mixerPlayable = AnimationMixerPlayable.Create(playerPlayables.playableGraph, 26);
+        mixerPlayable = AnimationMixerPlayable.Create(playerPlayables.playableGraph, 29);
 
         var idleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, idle);
         var runClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, run);
@@ -116,6 +122,9 @@ public class PlayerBasicMovement : NetworkBehaviour
         var swordFirstAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordFirstAttack);
         var swordSecondAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordSecondAttack);
         var swordFinalAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordFinalAttack);
+        var swordSprintClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordSprint);
+        var swordBlockClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordBlock);
+        var swordJumpAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordJumpSlash);
 
         playerPlayables.playableGraph.Connect(idleClip, 0, mixerPlayable, 1);
         playerPlayables.playableGraph.Connect(runClip, 0, mixerPlayable, 2);
@@ -142,6 +151,9 @@ public class PlayerBasicMovement : NetworkBehaviour
         playerPlayables.playableGraph.Connect(swordFirstAttackClip, 0, mixerPlayable, 23);
         playerPlayables.playableGraph.Connect(swordSecondAttackClip, 0, mixerPlayable, 24);
         playerPlayables.playableGraph.Connect(swordFinalAttackClip, 0, mixerPlayable, 25);
+        playerPlayables.playableGraph.Connect(swordSprintClip, 0, mixerPlayable, 26);
+        playerPlayables.playableGraph.Connect(swordBlockClip, 0, mixerPlayable, 27);
+        playerPlayables.playableGraph.Connect(swordJumpAttackClip, 0, mixerPlayable, 28);
 
 
         IdlePlayable = new IdleState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "idle", "basic", idle.length, idleClip, false);
@@ -168,12 +180,15 @@ public class PlayerBasicMovement : NetworkBehaviour
         SwordAttackFirstPlayable = new SwordFirstAttackState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfirstattack", "basic", swordFirstAttack.length, swordFirstAttackClip, true);
         SwordAttackSecondPlayable = new SwordSecondAttackState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsecondattack", "basic", swordSecondAttack.length, swordSecondAttackClip, true);
         SwordFinalAttackPlayable = new SwordFinalAttackState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfinalattack", "basic", swordFinalAttack.length, swordFinalAttackClip, true);
+        SwordSprintPlayable = new SwordSprintState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsprint", "basic", swordSprint.length, swordSprintClip, false);
+        SwordBlockPlayable = new BlockState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordblock", "basic", swordBlock.length, swordBlockClip, true);
+        SwordJumpAttackPlayable = new SwordJumpAttack(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordjumpattack", "basic", swordJumpSlash.length, swordJumpAttackClip, true);
 
 
         return mixerPlayable;
     }
 
-    public void PerformFirstAttack()
+    public void PerformFirstAttack(bool isFinal = false)
     {
         int hitCount = Runner.LagCompensation.OverlapSphere(
             impactFirstFistPoint.position,
@@ -199,7 +214,7 @@ public class PlayerBasicMovement : NetworkBehaviour
                 continue;
             }
 
-            if (hitObject.GetComponent<PlayerPlayables>().healthV2.IsHit || hitObject.GetComponent<PlayerPlayables>().healthV2.IsStagger) return;
+            if (hitObject.GetComponent<PlayerPlayables>().healthV2.IsStagger) return;
 
             // Avoid duplicate hits
             if (!hitEnemiesFirstFist.Contains(hitObject))
@@ -224,7 +239,8 @@ public class PlayerBasicMovement : NetworkBehaviour
 
                 PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
 
-                healthV2.IsHit = true;
+                if (isFinal) healthV2.IsStagger = true;
+                else  healthV2.IsHit = true;
 
                 healthV2.ApplyDamage(tempdamage, "", Object);
 
@@ -265,6 +281,8 @@ public class PlayerBasicMovement : NetworkBehaviour
                 continue;
             }
 
+            if (hitObject.GetComponent<PlayerPlayables>().healthV2.IsStagger) return;
+
             // Avoid duplicate hits
             if (!hitEnemiesSecondFist.Contains(hitObject))
             {
@@ -295,72 +313,6 @@ public class PlayerBasicMovement : NetworkBehaviour
 
                 // Mark as hit
                 hitEnemiesSecondFist.Add(hitObject);
-
-                //Hit++;
-            }
-        }
-    }
-
-    public void PerformFinalAttack()
-    {
-        int hitCount = Runner.LagCompensation.OverlapSphere(
-            impactFirstFistPoint.position,
-            attackRadius,
-            Object.InputAuthority,
-            hitsFirstFist,
-            enemyLayerMask,
-            HitOptions.IgnoreInputAuthority
-        );
-
-        for (int i = 0; i < hitCount; i++)
-        {
-            var hitbox = hitsFirstFist[i].Hitbox;
-            if (hitbox == null)
-            {
-                continue;
-            }
-
-            NetworkObject hitObject = hitbox.transform.root.GetComponent<NetworkObject>();
-
-            if (hitObject == null)
-            {
-                continue;
-            }
-
-            if (hitObject.GetComponent<PlayerPlayables>().healthV2.IsHit || hitObject.GetComponent<PlayerPlayables>().healthV2.IsStagger) return;
-
-            // Avoid duplicate hits
-            if (!hitEnemiesFirstFist.Contains(hitObject))
-            {
-                //bareHandsMovement.CanDamage = false;
-
-                string tag = hitbox.tag;
-
-                float tempdamage = tag switch
-                {
-                    "Head" => 40f,
-                    "Body" => 35f,
-                    "Thigh" => 30f,
-                    "Shin" => 25f,
-                    "Foot" => 20f,
-                    "Arm" => 30f,
-                    "Forearm" => 25f,
-                    _ => 0f
-                };
-
-                //Debug.Log($"First Fist Damage by {loader.Username} to {hitObject.GetComponent<PlayerNetworkLoader>().Username} on {tag}: {tempdamage}");
-
-                PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
-
-                healthV2.IsStagger = true;
-
-                healthV2.ApplyDamage(tempdamage, "", Object);
-
-                // Process the hit
-                //HandleHit(hitObject, tempdamage);
-
-                // Mark as hit
-                hitEnemiesFirstFist.Add(hitObject);
 
                 //Hit++;
             }
@@ -429,6 +381,12 @@ public class PlayerBasicMovement : NetworkBehaviour
                 return SwordAttackSecondPlayable;
             case 25:
                 return SwordFinalAttackPlayable;
+            case 26:
+                return SwordSprintPlayable;
+            case 27:
+                return SwordBlockPlayable;
+            case 28:
+                return SwordJumpAttackPlayable;
             default: return null;
         }
     }

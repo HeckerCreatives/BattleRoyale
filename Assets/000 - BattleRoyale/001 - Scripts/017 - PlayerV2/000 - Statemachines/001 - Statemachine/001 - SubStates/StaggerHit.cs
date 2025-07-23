@@ -53,7 +53,6 @@ public class StaggerHit : PlayerOnGround
             if (playerPlayables.TickRateAnimation >= timer)
             {
                 playerPlayables.healthV2.IsStagger = false;
-
                 if (!characterController.IsGrounded)
                 {
                     playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);

@@ -141,6 +141,8 @@ public class PlayerInventoryV2 : NetworkBehaviour
         upperClothingMR.material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
         lowerClothingMR.materials[0].SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
         bodyColorMR.material.SetColor("_BaseColor", skinColor[SkinColorIndex]);
+
+        WeaponIndex = 1;
     }
 
     private async void InitializeSkinOnStart()
@@ -317,22 +319,20 @@ public class PlayerInventoryV2 : NetworkBehaviour
 
             if (weapon == null) return;
 
+            NetworkObject tempobject = Object;
+
             if (itemID == "001")
             {
                 PrimaryWeaponItem tempweapon = weapon.GetComponent<PrimaryWeaponItem>();
 
-                if (tempweapon == null) return;
-
-                tempweapon.RPC_PickupPrimaryWeapon(Object, SwordBack, SwordHand);
+                tempweapon.RPC_PickupPrimaryWeapon(tempobject, SwordBack, SwordHand);
             }
 
             else if (itemID == "007")
             {
                 ArmorItem temparmor = weapon.GetComponent<ArmorItem>();
 
-                if (temparmor == null) return;
-
-                temparmor.RPC_PickupArmor(Object, ArmorHand);
+                temparmor.RPC_PickupArmor(tempobject, ArmorHand);
             }
         });
 
@@ -382,6 +382,8 @@ public class PlayerInventoryV2 : NetworkBehaviour
         {
             if (!currentColliders.Contains(previousCollider))
             {
+                if (previousCollider == null) continue;
+
                 if (previousCollider.CompareTag("Crate"))
                 {
                     HandleCrateExit();

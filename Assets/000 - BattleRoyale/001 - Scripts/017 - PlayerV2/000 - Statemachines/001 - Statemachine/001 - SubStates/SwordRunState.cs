@@ -37,20 +37,20 @@ public class SwordRunState : PlayerOnGround
         if (playerMovement.IsJumping)
             playablesChanger.ChangeState(playerPlayables.basicMovement.JumpPlayable);
 
-        //if (playerMovement.IsBlocking)
-        //    playablesChanger.ChangeState(playerPlayables.basicMovement.BlockPlayable);
+        if (playerMovement.IsBlocking)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.SwordBlockPlayable);
 
-        //if (playerMovement.Attacking)
-        //    playablesChanger.ChangeState(playerPlayables.basicMovement.Punch1Playable);
+        if (playerMovement.Attacking)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.SwordAttackFirstPlayable);
 
         if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
             playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
 
-        //else if (playerMovement.IsSprint)
-        //{
-        //    if (playerPlayables.stamina.Stamina >= 10f)
-        //        playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
-        //}
+        else if (playerMovement.IsSprint)
+        {
+            if (playerPlayables.stamina.Stamina >= 10f)
+                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
+        }
 
         if (playerPlayables.healthV2.IsHit)
         {

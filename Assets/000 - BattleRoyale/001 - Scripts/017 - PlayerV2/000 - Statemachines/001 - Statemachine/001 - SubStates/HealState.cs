@@ -21,6 +21,9 @@ public class HealState : AnimationPlayable
 
         healtimer = playerPlayables.TickRateAnimation + (animationLength * 0.5f);
         timer = playerPlayables.TickRateAnimation + animationLength;
+
+        if (playerPlayables.inventory.PrimaryWeapon != null && playerPlayables.inventory.WeaponIndex == 2) playerPlayables.inventory.PrimaryWeapon.IsEquipped = false;
+
         doneHeal = false;
         canAction = true;
     }
@@ -28,6 +31,8 @@ public class HealState : AnimationPlayable
     public override void Exit()
     {
         base.Exit();
+
+        if (playerPlayables.inventory.PrimaryWeapon != null && playerPlayables.inventory.WeaponIndex == 2) playerPlayables.inventory.PrimaryWeapon.IsEquipped = true;
 
         doneHeal = false;
         canAction = false;

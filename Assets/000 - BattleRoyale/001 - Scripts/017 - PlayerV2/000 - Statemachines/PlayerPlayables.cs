@@ -19,9 +19,13 @@ public class PlayerPlayables : NetworkBehaviour
     public PlayerBasicMovement basicMovement;
     public HealMovement healMovements;
 
+    [Header("DEBUGGER")]
+    [SerializeField] private int _lastProcessedTick = -1;
+
     [field: Header("NETWORK DEBUGGER")]
     [Networked][field: SerializeField] public float TickRateAnimation { get; set; }
     [Networked][field: SerializeField] public int PlayableAnimationIndex { get; set; }
+    [Networked][field: SerializeField] public int PlayableAnimationTick { get; set; }
     [Networked][field: SerializeField] public string PlayableState { get; set; }
 
     //  =======================
@@ -60,9 +64,13 @@ public class PlayerPlayables : NetworkBehaviour
             switch (change)
             {
                 case nameof(PlayableAnimationIndex):
+                case nameof(PlayableAnimationTick):
 
-                    if (PlayableState == "basic")
+                    if (PlayableState == "basic" && PlayableAnimationTick != _lastProcessedTick)
+                    {
                         changer.ChangeState(basicMovement.GetPlayableAnimation(PlayableAnimationIndex));
+                        _lastProcessedTick = PlayableAnimationTick;
+                    }
 
                     break;
             }
@@ -105,4 +113,6 @@ public class PlayerPlayables : NetworkBehaviour
 
         GraphVisualizerClient.Show(playableGraph);
     }
+
+    public void SetAnimationTick() => PlayableAnimationTick = Runner.Tick;
 }

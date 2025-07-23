@@ -1,6 +1,7 @@
 using Fusion.Addons.SimpleKCC;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Animations;
 
@@ -11,6 +12,10 @@ public class SwordSecondAttackState : PlayerOnGround
     float damageWindowStart;
     float damageWindowEnd;
     bool canAction;
+    float moveTimer;
+    float stopMoveTimer;
+    bool canMove;
+    bool hasResetHitEnemies;
 
     public SwordSecondAttackState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
@@ -20,19 +25,23 @@ public class SwordSecondAttackState : PlayerOnGround
     {
         base.Enter();
 
+        hasResetHitEnemies = false;
         timer = playerPlayables.TickRateAnimation + (animationLength * 0.9f);
         nextPunchWindow = playerPlayables.TickRateAnimation + (animationLength - 0.2f);
         damageWindowStart = playerPlayables.TickRateAnimation + 0.22f;
         damageWindowEnd = playerPlayables.TickRateAnimation + 0.27f;
+        moveTimer = playerPlayables.TickRateAnimation + (animationLength * 0.3f);
+        stopMoveTimer = playerPlayables.TickRateAnimation + (animationLength * 0.5f);
         canAction = true;
+        canMove = true;
     }
 
     public override void Exit()
     {
         base.Exit();
 
-        playerPlayables.basicMovement.ResetSecondAttack();
         canAction = false;
+        canMove = false;
     }
 
 
@@ -42,10 +51,23 @@ public class SwordSecondAttackState : PlayerOnGround
 
         if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
         {
-            playerPlayables.basicMovement.PerformSecondAttack();
+            if (!hasResetHitEnemies)
+            {
+                playerPlayables.inventory.PrimaryWeapon.ClearHitEnemies(); // Clear BEFORE performing attack
+                hasResetHitEnemies = true;
+            }
+
+            playerPlayables.inventory.PrimaryWeapon.DamagePlayer();
         }
 
         Animation();
+
+
+        if (playerPlayables.TickRateAnimation >= moveTimer && playerPlayables.TickRateAnimation <= stopMoveTimer)
+        {
+            characterController.Move(characterController.TransformDirection * 1f, 0f);
+            canMove = false;
+        }
 
         playerPlayables.stamina.RecoverStamina(5f);
     }
@@ -53,10 +75,16 @@ public class SwordSecondAttackState : PlayerOnGround
     private void Animation()
     {
         if (playerPlayables.healthV2.IsDead)
+        {
             playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+            return;
+        }
 
         if (!characterController.IsGrounded)
+        {
             playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
+            return;
+        }
 
         if (playerPlayables.healthV2.IsHit)
         {
@@ -81,18 +109,28 @@ public class SwordSecondAttackState : PlayerOnGround
         if (canAction)
         {
             if (playerPlayables.TickRateAnimation >= nextPunchWindow && playerMovement.Attacking)
+            {
                 playablesChanger.ChangeState(playerPlayables.basicMovement.SwordFinalAttackPlayable);
+                return;
+            }
 
             if (playerPlayables.TickRateAnimation >= timer && canAction)
             {
                 if (playerMovement.IsBlocking)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.BlockPlayable);
+                {
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordBlockPlayable);
+                    return;
+                }
 
                 if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
+                {
                     playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
+                    return;
+                }
 
                 if (playerPlayables.inventory.WeaponIndex == 1)
                 {
+
                     if (playerMovement.MoveDirection != Vector3.zero)
                     {
                         if (playerMovement.IsSprint)
@@ -106,13 +144,14 @@ public class SwordSecondAttackState : PlayerOnGround
                 }
                 else if (playerPlayables.inventory.WeaponIndex == 2)
                 {
+
                     if (playerMovement.MoveDirection != Vector3.zero)
                     {
-                        //if (playerMovement.IsSprint)
-                        //    playablesChanger.ChangeState(playerPlayables.basicMovement.r);
+                        if (playerMovement.IsSprint)
+                            playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
 
-                        //else
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
+                        else
+                            playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
                     }
                     else
                         playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);

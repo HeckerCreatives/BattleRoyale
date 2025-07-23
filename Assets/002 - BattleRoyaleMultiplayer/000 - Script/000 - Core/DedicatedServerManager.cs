@@ -566,8 +566,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
                 if (Players.ElementAt(a).Value.transform.position.x != spawnBattleAreaPositions[a].position.x && Players.ElementAt(a).Value.transform.position.z != spawnBattleAreaPositions[a].position.z)
                 {
-                    Players.ElementAt(a).Value.GetComponent<SimpleKCC>().SetPosition(spawnBattleAreaPositions[a].position, true);
-
                     PlayerInventoryV2 tempinventory = Players.ElementAt(a).Value.GetComponent<PlayerInventoryV2>();
 
                     tempinventory.HealCount = 0;
@@ -579,6 +577,16 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                         Runner.Despawn(tempinventory.Armor.Object);
                         tempinventory.Armor = null;
                     }
+
+                    if (tempinventory.PrimaryWeapon != null)
+                    {
+                        Runner.Despawn(tempinventory.PrimaryWeapon.Object);
+                        tempinventory.PrimaryWeapon = null;
+                    }
+
+                    tempinventory.WeaponIndex = 1;
+
+                    Players.ElementAt(a).Value.GetComponent<SimpleKCC>().SetPosition(spawnBattleAreaPositions[a].position, true);
                 }
             }
 
@@ -689,9 +697,11 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         if (Players.TryGet(player, out NetworkObject clientPlayer))
         {
-            //var playerinventory = clientPlayer.GetComponent<PlayerInventory>();
+            var playerinventory = clientPlayer.GetComponent<PlayerInventoryV2>();
 
-            //if (playerinventory.PrimaryWeapon != null) playerinventory.PrimaryWeapon.DropPrimaryWeapon();
+            if (playerinventory.PrimaryWeapon != null) playerinventory.PrimaryWeapon.DropWeapon();
+
+            if (playerinventory.Armor != null) playerinventory.Armor.DropArmor();
 
             //if (playerinventory.SecondaryWeapon != null)
             //{
@@ -699,7 +709,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             //    else if (playerinventory.SecondaryWeapon.WeaponID == "004") playerinventory.SecondaryWeapon.DropSecondaryWithAmmoCaseWeapon();
             //}
 
-            //if (playerinventory.Shield != null) playerinventory.Shield.DropShield();
 
             //var bulletPooler = clientPlayer.GetComponent<BulletObjectPool>();
 

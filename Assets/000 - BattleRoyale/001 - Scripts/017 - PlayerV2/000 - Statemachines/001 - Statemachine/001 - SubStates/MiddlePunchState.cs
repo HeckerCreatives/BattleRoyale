@@ -11,6 +11,7 @@ public class MiddlePunchState : PlayerOnGround
     float damageWindowStart;
     float damageWindowEnd;
     bool canAction;
+    bool hasResetHitEnemies;
 
     public MiddlePunchState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
@@ -20,6 +21,7 @@ public class MiddlePunchState : PlayerOnGround
     {
         base.Enter();
 
+        hasResetHitEnemies = false;
         timer = playerPlayables.TickRateAnimation + (animationLength * 0.9f);
         nextPunchWindow = playerPlayables.TickRateAnimation + (animationLength - 0.2f);
         damageWindowStart = playerPlayables.TickRateAnimation + 0.22f;
@@ -42,6 +44,11 @@ public class MiddlePunchState : PlayerOnGround
 
         if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
         {
+            if (!hasResetHitEnemies)
+            {
+                playerPlayables.basicMovement.ResetSecondAttack(); // Clear BEFORE performing attack
+                hasResetHitEnemies = true;
+            }
             playerPlayables.basicMovement.PerformSecondAttack();
         }
 
