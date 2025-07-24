@@ -133,7 +133,7 @@ public class UserData : ScriptableObject
                 { "Minimap", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -16f, localPositionY = -15.00006f, opacity = 1f} },
                 { "PickupItemList", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -424f, localPositionY = -232f, opacity = 1f} },
                 { "Settings", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -319.6002f, localPositionY = -15.69989f, opacity = 1f} },
-                { "KillNotification", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -944.5391f, localPositionY = 341.4225f, opacity = 1f} },
+                { "KillNotification", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 0f, localPositionY = -250f, opacity = 1f} },
                 { "Reload", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 380f, localPositionY = -361.682f, opacity = 1f} },
                 { "SafeZoneTimer", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -16f, localPositionY = -313f, opacity = 1f} },
                 { "GameStatus", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 0f, localPositionY = -23f, opacity = 1f} },

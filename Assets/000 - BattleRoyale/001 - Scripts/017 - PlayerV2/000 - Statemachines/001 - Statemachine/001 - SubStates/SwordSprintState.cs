@@ -14,6 +14,8 @@ public class SwordSprintState : PlayerOnGround
     {
         playerMovement.MoveCharacter();
 
+        playerMovement.WeaponSwitcher();
+        WeaponsChecker();
         Animation();
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
@@ -68,24 +70,44 @@ public class SwordSprintState : PlayerOnGround
             playablesChanger.ChangeState(playerPlayables.basicMovement.StaggerHitPlayable);
             return;
         }
+    }
 
+    private void WeaponsChecker()
+    {
         if (playerPlayables.stamina.Stamina > 0f)
         {
+            if (playerPlayables.inventory.WeaponIndex == 1)
+            {
+                if (playerMovement.MoveDirection != Vector3.zero)
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
+
+                return;
+            }
+
+            if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "002")
+            {
+                if (playerMovement.MoveDirection != Vector3.zero)
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SpearSprintPlayable);
+
+                return;
+            }
+
             if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
             {
                 playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
             }
             else if (!playerMovement.IsSprint)
             {
-                if (playerMovement.MoveDirection == Vector3.zero)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
-                else
+                if (playerMovement.MoveDirection != Vector3.zero)
                     playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
             }
         }
         else
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
+            if (playerMovement.MoveDirection == Vector3.zero)
+                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
+            else
+                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
         }
     }
 }

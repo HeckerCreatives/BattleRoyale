@@ -12,7 +12,6 @@ public class PlayerHealthV2 : NetworkBehaviour
     [SerializeField] private UserData userData;
     [SerializeField] private PlayerGameStats playerGameStats;
     [SerializeField] private Volume postProcessing;
-    [SerializeField] private KillNotificationController killNotif;
     [SerializeField] private PlayerPlayables playerPlayables;
     [SerializeField] private PlayerInventoryV2 inventory;
     [SerializeField] private PlayerOwnObjectEnabler playerOwnObjectEnabler;
@@ -237,7 +236,7 @@ public class PlayerHealthV2 : NetworkBehaviour
                 playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
                 ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
 
-                RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} killed outside safe area");
+                RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} was killed outside safe area");
             }
         }
     }
@@ -297,7 +296,6 @@ public class PlayerHealthV2 : NetworkBehaviour
                 playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
                 ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
 
-
                 RPC_ReceiveKillNotification($"{killer} KILLED {playerOwnObjectEnabler.Username}");
             }
             //string statustext = killer == loader.Username ? $"{loader.Username} Killed themself" : $"{killer} KILLED {loader.Username}";
@@ -343,8 +341,6 @@ public class PlayerHealthV2 : NetworkBehaviour
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
     public void RPC_ReceiveKillNotification(string message)
     {
-        if (HasStateAuthority) return;
-
-        killNotif.ShowMessage(message);
+        ServerManager.KillNotifController.ShowIndicator(message);
     }
 }

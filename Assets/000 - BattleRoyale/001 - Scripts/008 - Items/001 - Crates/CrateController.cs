@@ -37,9 +37,6 @@ public class CrateController : NetworkBehaviour
             case "001":
                 tempweapon = weaponSpawnData.GetItemObject(itemkey.ToString());
 
-                if (player.PrimaryWeapon != null)
-                    player.PrimaryWeapon.DropWeapon();
-
                 Runner.Spawn(tempweapon, Vector3.zero, Quaternion.identity, player.Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
                 {
                     obj.GetComponent<PrimaryWeaponItem>().InitializeItem(player.Object, player.SwordBack, player.SwordHand);
@@ -49,14 +46,15 @@ public class CrateController : NetworkBehaviour
             case "002":
                 tempweapon = weaponSpawnData.GetItemObject(itemkey.ToString());
 
+                Runner.Spawn(tempweapon, Vector3.zero, Quaternion.identity, player.Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                {
+                    obj.GetComponent<PrimaryWeaponItem>().InitializeItem(player.Object, player.SpearBack, player.SpearHand);
+                });
 
                 break;
             case "007":
 
                 tempweapon = weaponSpawnData.GetItemObject(itemkey.ToString());
-
-                if (player.Armor != null)
-                    player.Armor.DropArmor(); 
 
                 Runner.Spawn(tempweapon, Vector3.zero, Quaternion.identity, player.Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
                 {

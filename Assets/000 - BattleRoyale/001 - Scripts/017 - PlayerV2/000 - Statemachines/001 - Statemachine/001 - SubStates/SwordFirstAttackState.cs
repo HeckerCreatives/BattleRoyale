@@ -120,32 +120,17 @@ public class SwordFirstAttackState : PlayerOnGround
                 return;
             }
 
-            if (playerPlayables.inventory.WeaponIndex == 1)
-            {
-                if (playerMovement.MoveDirection != Vector3.zero)
-                {
-                    if (playerMovement.IsSprint)
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
 
-                    else
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
-                }
-                else
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
-            }
-            else if (playerPlayables.inventory.WeaponIndex == 2)
+            if (playerMovement.MoveDirection != Vector3.zero)
             {
-                if (playerMovement.MoveDirection != Vector3.zero)
-                {
-                    if (playerMovement.IsSprint)
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
+                if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
 
-                    else
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
-                }
                 else
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
             }
+            else
+                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
         }
     }
 }

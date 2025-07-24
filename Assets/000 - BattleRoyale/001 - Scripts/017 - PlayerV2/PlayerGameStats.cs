@@ -116,7 +116,7 @@ public class PlayerGameStats : NetworkBehaviour
     {
         int tempCapacity = ServerManager.RemainingPlayers.Capacity;
 
-        PlayerCount.text = $"{ServerManager.RemainingPlayers.Count:n0} / {(tempCapacity - 2):n0}";
+        PlayerCount.text = $"{(ServerManager.RemainingPlayers.Count + ServerManager.Bots.Count):n0} / {(tempCapacity - 2):n0}";
         killCountTMP.text = $"{KillCount:n0}";
     }
 

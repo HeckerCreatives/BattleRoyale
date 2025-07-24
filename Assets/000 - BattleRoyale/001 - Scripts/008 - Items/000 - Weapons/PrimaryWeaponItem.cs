@@ -183,6 +183,8 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
             // Avoid duplicate hits
             if (!hitEnemies.Contains(hitObject))
             {
+                hitEnemies.Add(hitObject);
+
                 string tag = hitbox.tag;
 
                 float tempdamage = tag switch
@@ -205,8 +207,6 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                     healthV2.IsHit = true;
 
                 healthV2.ApplyDamage(tempdamage, "", Object);
-
-                hitEnemies.Add(hitObject);
             }
         }
     }

@@ -1,10 +1,7 @@
 using Fusion;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
-using static UnityEngine.Rendering.PostProcessing.HistogramMonitor;
 
 public class PlayerPlayables : NetworkBehaviour
 {

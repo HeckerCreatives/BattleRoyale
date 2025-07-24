@@ -15,6 +15,8 @@ public class SprintState : PlayerOnGround
     {
         playerMovement.MoveCharacter();
 
+        playerMovement.WeaponSwitcher();
+        WeaponsChecker();
         Animation();
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
@@ -69,24 +71,49 @@ public class SprintState : PlayerOnGround
             playablesChanger.ChangeState(playerPlayables.basicMovement.StaggerHitPlayable);
             return;
         }
+    }
 
+    private void WeaponsChecker()
+    {
         if (playerPlayables.stamina.Stamina > 0f)
         {
-            if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
+            if (playerPlayables.inventory.WeaponIndex == 1)
             {
-                playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
+                if (!playerMovement.IsSprint)
+                {
+                    if (playerMovement.MoveDirection != Vector3.zero)
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+                    else
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
+                }
+
+                return;
             }
-            else if (!playerMovement.IsSprint)
+            else if (playerPlayables.inventory.WeaponIndex == 2)
             {
-                if (playerMovement.MoveDirection == Vector3.zero)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
-                else
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+                if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "001")
+                {
+                    if (playerMovement.MoveDirection != Vector3.zero)
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
+
+                    return;
+                }
+
+                if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "002")
+                {
+                    if (playerMovement.MoveDirection != Vector3.zero)
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SpearSprintPlayable);
+
+                    return;
+                }
             }
         }
         else
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+            if (playerMovement.MoveDirection == Vector3.zero)
+                playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
+            else
+                playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
         }
     }
 }

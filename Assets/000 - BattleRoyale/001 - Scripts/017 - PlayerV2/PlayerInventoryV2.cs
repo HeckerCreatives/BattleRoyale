@@ -47,10 +47,12 @@ public class PlayerInventoryV2 : NetworkBehaviour
     [SerializeField] private Transform contentTF;
     [SerializeField] private WeaponSpawnData itemSpritesData;
 
-    [field: Header("ITEM HIDE IN PLAYER")]
+    [field: Header("ITEM BODY SLOTS IN PLAYER")]
     [field: SerializeField][Networked] public NetworkObject ArmorHand { get; set; }
     [field: SerializeField][Networked] public NetworkObject SwordHand { get; set; }
     [field: SerializeField][Networked] public NetworkObject SwordBack { get; set; }
+    [field: SerializeField][Networked] public NetworkObject SpearHand { get; set; }
+    [field: SerializeField][Networked] public NetworkObject SpearBack { get; set; }
 
     [field: Header("DEBUGGER")]
     [field: SerializeField] public CrateController CrateObject { get; set; }
@@ -187,6 +189,13 @@ public class PlayerInventoryV2 : NetworkBehaviour
         WeaponIndex = 2;
 
         PrimaryWeapon.IsEquipped = true;
+    }
+
+    public string PrimaryWeaponID()
+    {
+        if (PrimaryWeapon == null) return "000";
+
+        return PrimaryWeapon.WeaponID;
     }
 
     #endregion
@@ -326,6 +335,13 @@ public class PlayerInventoryV2 : NetworkBehaviour
                 PrimaryWeaponItem tempweapon = weapon.GetComponent<PrimaryWeaponItem>();
 
                 tempweapon.RPC_PickupPrimaryWeapon(tempobject, SwordBack, SwordHand);
+            }
+
+            else if (itemID == "002")
+            {
+                PrimaryWeaponItem tempweapon = weapon.GetComponent<PrimaryWeaponItem>();
+
+                tempweapon.RPC_PickupPrimaryWeapon(tempobject, SpearBack, SpearHand);
             }
 
             else if (itemID == "007")

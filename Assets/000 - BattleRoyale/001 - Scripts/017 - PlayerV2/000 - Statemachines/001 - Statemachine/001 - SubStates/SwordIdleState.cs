@@ -12,16 +12,38 @@ public class SwordIdleState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
+        playerMovement.WeaponSwitcher();
+        WeaponsChecker();
+        Animations();
+    }
 
+    private void WeaponsChecker()
+    {
         if (playerPlayables.inventory.WeaponIndex == 1)
         {
-            if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
                 playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
-            else
-                playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
-            return;
         }
+        else if (playerPlayables.inventory.WeaponIndex == 2)
+        {
+            if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "002")
+            {
+                playablesChanger.ChangeState(playerPlayables.basicMovement.SpearIdlePlayable);
+                return;
+            }
 
+            if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
+            {
+                if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SpearSprintPlayable);
+
+                else
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SpearRunPlayable);
+            }
+        }
+    }
+
+    private void Animations()
+    {
         if (playerPlayables.healthV2.IsDead)
         {
             playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
@@ -79,17 +101,6 @@ public class SwordIdleState : PlayerOnGround
         if (playerMovement.IsRepairing)
         {
             playablesChanger.ChangeState(playerPlayables.basicMovement.RepairPlayable);
-            return;
-        }
-
-        if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
-        {
-            if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
-
-            else
-                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
-
             return;
         }
 

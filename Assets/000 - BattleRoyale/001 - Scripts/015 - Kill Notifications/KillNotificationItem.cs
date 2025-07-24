@@ -5,20 +5,27 @@ using UnityEngine;
 
 public class KillNotificationItem : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI killNotifTMP;
+    public TextMeshProUGUI damageText;
+    public float lifetime = 5f;
 
-    [Header("DEBUGGER")]
-    [SerializeField] private float startTime;
+    private float timer;
+
+    public KillNotificationController pool;
+
+    public void Setup(string message)
+    {
+        damageText.text = message;
+
+        timer = lifetime;
+    }
 
     private void Update()
     {
-        if (Time.time >= startTime + 8f)
-            Destroy(gameObject);
-    }
+        timer -= Time.deltaTime;
 
-    public void SetData(string killer)
-    {
-        startTime = Time.time;
-        killNotifTMP.text = killer;
+        if (timer <= 0f)
+        {
+            pool.ReturnIndicator(this);
+        }
     }
 }

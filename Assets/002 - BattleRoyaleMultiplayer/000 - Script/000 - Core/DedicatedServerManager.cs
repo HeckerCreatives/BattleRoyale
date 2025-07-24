@@ -83,6 +83,11 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         remove { SafeZoneStateChange -= value; }
     }
 
+    public KillNotificationController KillNotifController
+    {
+        get => killNotificationController;
+    }
+
     //  ===================================
 
     [SerializeField] private float waitingAreaStartTimer;
@@ -92,6 +97,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [SerializeField] private string lobby;
     [SerializeField] private bool useMultiplay;
     [SerializeField] private MultiplayController multiplayController;
+    [SerializeField] private KillNotificationController killNotificationController;
 
     [Header("SERVER")]
     [SerializeField] private NetworkRunner serverNetworkRunnerPrefab;
@@ -122,28 +128,206 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [SerializeField] private List<Vector3> safeZonePosition;
     [SerializeField] private List<ShrinkSizeList> safeZoneShrink;
 
+    [Header("BOTS")]
+    [SerializeField] private int maxBot;
+    [SerializeField] private NetworkObject botPrefab;
+    [SerializeField] private List<Transform> botSpawnPoints;
+
     [Header("DEBUGGER")]
-    [MyBox.ReadOnly][SerializeField] private bool doneSpawnCrates;
-    [MyBox.ReadOnly][SerializeField] private bool doneSetupBattlePos;
-    [MyBox.ReadOnly][SerializeField] private bool doneSetupSafeZone;
-    [MyBox.ReadOnly][SerializeField] private bool doneValidatingPlayerCount;
-    [MyBox.ReadOnly][SerializeField] private NetworkRunner networkRunner;
-    
+    [SerializeField] private bool doneSpawnCrates;
+    [SerializeField] private bool doneSetupBattlePos;
+    [SerializeField] private bool doneSetupSafeZone;
+    [SerializeField] private bool doneValidatingPlayerCount;
+    [SerializeField] private int battleSpawnPosIndex;
+    [SerializeField] private NetworkRunner networkRunner;
+    [SerializeField] private float spawnBotTimer;
+    [SerializeField] private int spawnBotIndex;
+    [SerializeField] private int botNameIndex;
+    [SerializeField] private bool doneCBSBotNames;
+    [SerializeField] private List<string> cbsbotnames = new List<string>
+    {
+        "kelboogle",
+        "Boomboomyehey",
+        "Joe Mama",
+        "The Real",
+        "Alex",
+        "Darilyo",
+        "Alexanderrr",
+        "ganielleDOTexe",
+        "Hebe Handsome",
+        "crazychixx",
+        "bellemona"
+    };
+    [SerializeField] private List<string> botnames = new List<string>
+    {
+        "BitBuddie",
+        "SirTalksALot",
+        "BlipBlop",
+        "MissExecute",
+        "CaptainQuirk",
+        "BotlyMcBotface",
+        "ChatChum",
+        "NannyByte",
+        "GlitchyWitch",
+        "TaskToto",
+        "MechaMilo",
+        "ProntoPal",
+        "WobbleBot",
+        "Zapsterino",
+        "ByteyBoi",
+        "ClippyBot3000",
+        "CircuitSis",
+        "Dude.exe",
+        "DottieBot",
+        "CodeSnacc",
+        "FunkyFirmware",
+        "BuddyBoot",
+        "ChatNugget",
+        "Quirk.exe",
+        "SnarkBot",
+        "AutoBoi",
+        "RoboChatter",
+        "CaffeinateMe",
+        "Pesto.exe",
+        "HiccupBot",
+        "Dorkatron",
+        "SassCircuit",
+        "GiggleLoop",
+        "Spamuel",
+        "BanterBot",
+        "CaptainClick",
+        "BinaryBabe",
+        "BotOnTheRocks",
+        "FrydayBot",
+        "NibletBot",
+        "Sassynator",
+        "MechMimi",
+        "Peppy.exe",
+        "BoopBeep",
+        "ByteSnax",
+        "LazyLoop",
+        "MuffinBot",
+        "Yawn.exe",
+        "CheekyBits",
+        "RoboNoob",
+        "BugsyBot",
+        "LiloBot",
+        "ToastyCore",
+        "NekoNode",
+        "GooberBot",
+        "CrashPal",
+        "SillyChip",
+        "DonutBot",
+        "Drifty.exe",
+        "Perky.exe",
+        "CuddleBit",
+        "NapsterBot",
+        "HappySudo",
+        "MechaMocha",
+        "QuirkyByte",
+        "SnipSnip.exe",
+        "DotDotBot",
+        "RoboTeehee",
+        "CodeSprout",
+        "PeekoBot",
+        "Wink.exe",
+        "BashBuddy",
+        "TinkerTock",
+        "Botwink",
+        "Purrtocol",
+        "FrankieFirmware",
+        "LolaLogic",
+        "ElBotto",
+        "QuinnBot",
+        "JazzyBytes",
+        "Tobi.exe",
+        "Buglet",
+        "RebootRicky",
+        "MechaMittens",
+        "GrinBot",
+        "MoeBot",
+        "PixelPunk",
+        "TaterBot",
+        "TwinkleChip",
+        "ChuckleUnit",
+        "FuzzyLogic",
+        "ByteBella",
+        "AutoAmy",
+        "NannyNode",
+        "FlipScript",
+        "PingPongBot",
+        "LolliBot",
+        "Bloopette",
+        "RikkaBot",
+        "DitzBot",
+        "ZappyZoe",
+        "KikiKernel",
+        "HappyCrank",
+        "BlinkieBot",
+        "ToastBot",
+        "Nibble.exe",
+        "RollyBot",
+        "Chill.exe",
+        "MintyBot",
+        "SassyBoot",
+        "HonkBot",
+        "CooCoo.exe",
+        "Chipette",
+        "NuggieBot",
+        "FroyoBot",
+        "BeepBae",
+        "Clunkie",
+        "PikaBot",
+        "PopPopBot",
+        "BananaBot",
+        "SudoSis",
+        "Gloop.exe",
+        "OllieBot",
+        "WidgetWoo",
+        "DotFace",
+        "MechaWink",
+        "SparkNeko",
+        "CrankyBot",
+        "SprinkleBit",
+        "ByteBopper",
+        "Cookie.exe",
+        "FluffyBot",
+        "RoboSniff",
+        "ScootBot",
+        "BlinkyBelle",
+        "MrScrambles",
+        "PoppyProtocol",
+        "JellyBot",
+        "ZuzuBot",
+        "Fizz.exe",
+        "GiddyCore",
+        "BunnyBytes",
+        "MechaToast",
+        "DashieBot",
+        "QuokkaBot",
+        "HappyPatch",
+        "Cheek.exe",
+        "CuppyBot",
+        "FloofCircuit",
+        "Meowdule"
+    };
+
     [field: Space]
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public GameState CurrentGameState { get; set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public SafeZoneState CurrentSafeZoneState { get; set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public WaitingAreaTimerState CurrentWaitingAreaTimerState { get; set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public float WaitingAreaTimer { get; set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public float SafeZoneTimer { get; set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool CanCountWaitingAreaTimer { get; set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool DonePlayerBattlePositions { get; set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public bool StartBattleRoyale { get; set; }
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public SafeZoneController SafeZone { get; set; }
+    [field: SerializeField][Networked] public GameState CurrentGameState { get; set; }
+    [field: SerializeField][Networked] public SafeZoneState CurrentSafeZoneState { get; set; }
+    [field: SerializeField][Networked] public WaitingAreaTimerState CurrentWaitingAreaTimerState { get; set; }
+    [field: SerializeField][Networked] public float WaitingAreaTimer { get; set; }
+    [field: SerializeField][Networked] public float SafeZoneTimer { get; set; }
+    [field: SerializeField][Networked] public bool CanCountWaitingAreaTimer { get; set; }
+    [field: SerializeField][Networked] public bool DonePlayerBattlePositions { get; set; }
+    [field: SerializeField][Networked] public bool StartBattleRoyale { get; set; }
+    [field: SerializeField][Networked] public SafeZoneController SafeZone { get; set; }
 
 
     private ChangeDetector _changeDetector;
     [Networked, Capacity(50)] public NetworkDictionary<PlayerRef, NetworkObject> Players => default;
     [Networked, Capacity(50)] public NetworkDictionary<PlayerRef, NetworkObject> RemainingPlayers => default;
+    [Networked, Capacity(50)] public NetworkDictionary<int, NetworkObject> Bots => default;
 
     //  =================
 
@@ -151,6 +335,12 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     {
         if (GameManager.Instance == null)
         {
+            cbsbotnames.Shuffle();
+            botnames.Shuffle();
+            botSpawnPoints.Shuffle();
+
+            spawnBotTimer = UnityEngine.Random.Range(5f, 15f);
+
             StartGame();
         }
         else
@@ -459,6 +649,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     {
         CountDownWaitingAreaTimer();
         CountDownSafeZoneTimer();
+        SpawnBot();
     }
 
     #region GAME LOGIC
@@ -477,7 +668,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         {
             if (WaitingAreaTimer <= 0f && !doneValidatingPlayerCount)
             {
-                if (Players.Count < playerRequired)
+                if (maxBot <= 0 && Players.Count < playerRequired)
                 {
                     ForceQuitPlayers();
 
@@ -500,7 +691,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             if (WaitingAreaTimer <= 0f)
             {
-                if (Players.Count < playerRequired)
+                if (maxBot <= 0 && Players.Count < playerRequired)
                 {
                     ForceQuitPlayers();
 
@@ -564,7 +755,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             {
                 // Set player position
 
-                if (Players.ElementAt(a).Value.transform.position.x != spawnBattleAreaPositions[a].position.x && Players.ElementAt(a).Value.transform.position.z != spawnBattleAreaPositions[a].position.z)
+                if (Players.ElementAt(a).Value.transform.position.x != spawnBattleAreaPositions[battleSpawnPosIndex].position.x && Players.ElementAt(a).Value.transform.position.z != spawnBattleAreaPositions[battleSpawnPosIndex].position.z)
                 {
                     PlayerInventoryV2 tempinventory = Players.ElementAt(a).Value.GetComponent<PlayerInventoryV2>();
 
@@ -586,19 +777,20 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
                     tempinventory.WeaponIndex = 1;
 
-                    Players.ElementAt(a).Value.GetComponent<SimpleKCC>().SetPosition(spawnBattleAreaPositions[a].position, true);
+                    Players.ElementAt(a).Value.GetComponent<SimpleKCC>().SetPosition(spawnBattleAreaPositions[battleSpawnPosIndex].position, true);
+
+                    battleSpawnPosIndex++;
                 }
             }
 
-            for (int a = 0; a < Players.Count; a++)
+            for (int a = 0; a < Bots.Count; a++)
             {
-                // Set player position
+                Bots.ElementAt(a).Value.GetComponent<SimpleKCC>().SetPosition(spawnBattleAreaPositions[battleSpawnPosIndex].position, true);
 
-                if (Players.ElementAt(a).Value.transform.position.x != spawnBattleAreaPositions[a].position.x && Players.ElementAt(a).Value.transform.position.z != spawnBattleAreaPositions[a].position.z)
-                    break;
-
-                if (a == Players.Count - 1) isDone = true;
+                battleSpawnPosIndex++;
             }
+
+            if (battleSpawnPosIndex >= (Bots.Count + Players.Count)) isDone = true;
         }
 
         yield return new WaitForSeconds(5f);
@@ -615,6 +807,63 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     {
         waitingAreaArenaObjects.SetActive(waitingArea);
         battleFieldArenaObjects.SetActive(battleField);
+    }
+
+    private void SpawnBot()
+    {
+        if (CurrentGameState != GameState.WAITINGAREA) return;
+        if (Players.Count <= 0) return;
+        if (spawnBotIndex >= maxBot) return;
+        if (CurrentWaitingAreaTimerState != WaitingAreaTimerState.WAITING) return;
+
+        spawnBotTimer -= Runner.DeltaTime;
+
+        if (spawnBotTimer <= 0f)
+        {
+            Vector3 spawnPosition = botSpawnPoints[spawnBotIndex].position;
+
+            Runner.Spawn(botPrefab, spawnPosition, Quaternion.identity, Object.InputAuthority, onBeforeSpawned: (runner, obj) =>
+            {
+                string tempbotname = GetBotName();
+
+                Botdata tempbotdata = obj.GetComponent<Botdata>();
+
+                tempbotdata.ServerManager = this;
+                tempbotdata.BotName = tempbotname;
+                tempbotdata.BotIndex = spawnBotIndex;
+
+                Bots.Add(spawnBotIndex, obj);
+
+                spawnBotIndex++;
+            });
+
+            spawnBotTimer = UnityEngine.Random.Range(5f, 15f); // Reset timer
+        }
+    }
+
+    private string GetBotName()
+    {
+        string name;
+
+        if (!doneCBSBotNames && botNameIndex < cbsbotnames.Count)
+        {
+            name = cbsbotnames[botNameIndex];
+            botNameIndex++;
+
+            if (botNameIndex >= cbsbotnames.Count)
+            {
+                doneCBSBotNames = true;
+                botNameIndex = 0;
+            }
+        }
+        else
+        {
+            // Fallback to default botnames list
+            name = botnames[botNameIndex % botnames.Count];
+            botNameIndex++;
+        }
+
+        return name;
     }
 
     #endregion

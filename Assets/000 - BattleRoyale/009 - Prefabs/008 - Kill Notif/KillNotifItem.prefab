@@ -36,7 +36,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -17.838589}
+  m_AnchoredPosition: {x: 0, y: -17.838562}
   m_SizeDelta: {x: 0, y: 35.6772}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5530938727350653676
@@ -59,8 +59,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ea7f5d610f0aa04983f9beac6c29e3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  killNotifTMP: {fileID: 5572966067788343726}
-  startTime: 0
+  damageText: {fileID: 5572966067788343726}
+  lifetime: 5
+  pool: {fileID: 0}
 --- !u!114 &2521994948687594158
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -125,7 +126,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -0.0008239746, y: -0.0000038146973}
+  m_AnchoredPosition: {x: -0.0008544922, y: -0.0000038146973}
   m_SizeDelta: {x: -13.005798, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8922960652780942222
@@ -183,7 +184,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 21.65
+  m_fontSize: 31.02
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1

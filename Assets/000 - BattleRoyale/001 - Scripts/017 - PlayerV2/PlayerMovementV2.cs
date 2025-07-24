@@ -59,6 +59,8 @@ public class PlayerMovementV2 : NetworkBehaviour
     [field: SerializeField][Networked] public bool IsTrapping { get; set; }
     [field: SerializeField][Networked] public Vector2 LastTouchPos { get; set; }
     [field: SerializeField][Networked] public bool IsTouching { get; set; }
+    [field: SerializeField][Networked] public bool SwitchingHands { get; set; }
+    [field: SerializeField][Networked] public bool SwitchingPrimary { get; set; }
 
     //  =======================
 
@@ -517,12 +519,24 @@ public class PlayerMovementV2 : NetworkBehaviour
     private void SwitchToHand()
     {
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchHands))
-            inventory.SwitchToHands();
+            SwitchingHands = true;
+        else
+            SwitchingHands = false;
     }
     
     private void SwitchToPrimary()
     {
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchPrimary))
+            SwitchingPrimary = true;
+        else
+            SwitchingPrimary = false;
+    }
+
+    public void WeaponSwitcher()
+    {
+        if (SwitchingHands)
+            inventory.SwitchToHands();
+        else if (SwitchingPrimary)
             inventory.SwitchToPrimary();
     }
 

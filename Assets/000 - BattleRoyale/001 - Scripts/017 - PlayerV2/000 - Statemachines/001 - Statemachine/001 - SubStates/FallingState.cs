@@ -28,8 +28,12 @@ public class FallingState : AnimationPlayable
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
+
+        playerMovement.WeaponSwitcher();
+
         FallDamage();
         Animation();
+        WeaponsChecker(); //    NEXT FUNCTION AFTER DAMAGE IS APPLIED
         playerPlayables.stamina.RecoverStamina(5f);
     }
 
@@ -43,14 +47,6 @@ public class FallingState : AnimationPlayable
 
     private void Animation()
     {
-        if (playerMovement.Attacking)
-        {
-            if (playerPlayables.inventory.WeaponIndex == 1)
-                playablesChanger.ChangeState(playerPlayables.basicMovement.JumpPunchPlayable);
-            else if (playerPlayables.inventory.WeaponIndex == 2)
-                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordJumpAttackPlayable);
-        }
-
         if (playerPlayables.healthV2.IsDead)
             playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
 
@@ -60,7 +56,26 @@ public class FallingState : AnimationPlayable
 
             if (fallDamage > 0)
                 playerPlayables.healthV2.FallDamae(fallDamage);
+        }
+    }
 
+    private void WeaponsChecker()
+    {
+        if (playerMovement.Attacking)
+        {
+            if (playerPlayables.inventory.WeaponIndex == 1)
+                playablesChanger.ChangeState(playerPlayables.basicMovement.JumpPunchPlayable);
+            else if (playerPlayables.inventory.WeaponIndex == 2)
+            {
+                if (playerPlayables.inventory.PrimaryWeaponID() == "001")
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordJumpAttackPlayable);
+                else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SpearJumpAttackPlayable);
+            }
+        }
+
+        if (characterController.IsGrounded)
+        {
             if (playerPlayables.inventory.WeaponIndex == 1)
             {
                 if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
@@ -75,15 +90,30 @@ public class FallingState : AnimationPlayable
             }
             else if (playerPlayables.inventory.WeaponIndex == 2)
             {
-                if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
-                else if (playerMovement.IsSprint)
+                if (playerPlayables.inventory.PrimaryWeaponID() == "001")
                 {
-                    if (playerPlayables.stamina.Stamina >= 10f)
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
+                    if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
+                    else if (playerMovement.IsSprint)
+                    {
+                        if (playerPlayables.stamina.Stamina >= 10f)
+                            playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
+                    }
+                    else
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
                 }
-                else
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
+                else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
+                {
+                    if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SpearIdlePlayable);
+                    else if (playerMovement.IsSprint)
+                    {
+                        if (playerPlayables.stamina.Stamina >= 10f)
+                            playablesChanger.ChangeState(playerPlayables.basicMovement.SpearSprintPlayable);
+                    }
+                    else
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SpearRunPlayable);
+                }
             }
         }
     }
