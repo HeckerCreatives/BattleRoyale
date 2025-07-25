@@ -53,6 +53,14 @@ public class RollState : PlayerOnGround
             if (!characterController.IsGrounded)
                 playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
 
+            WeaponsChecker();
+        }
+    }
+
+    private void WeaponsChecker()
+    {
+        if (playerPlayables.inventory.WeaponIndex == 1)
+        {
             if (playerMovement.MoveDirection != Vector3.zero)
             {
                 if (playerMovement.IsSprint)
@@ -63,6 +71,35 @@ public class RollState : PlayerOnGround
             }
             else
                 playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
+        }
+        else if (playerPlayables.inventory.WeaponIndex == 2)
+        {
+            if (playerPlayables.inventory.PrimaryWeaponID() == "001")
+            {
+                if (playerMovement.MoveDirection != Vector3.zero)
+                {
+                    if (playerMovement.IsSprint)
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
+
+                    else
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
+                }
+                else
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
+            }
+            else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
+            {
+                if (playerMovement.MoveDirection != Vector3.zero)
+                {
+                    if (playerMovement.IsSprint)
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SpearSprintPlayable);
+
+                    else
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SpearRunPlayable);
+                }
+                else
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SpearIdlePlayable);
+            }
         }
     }
 }

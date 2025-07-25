@@ -180,33 +180,73 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                 continue;
             }
 
-            // Avoid duplicate hits
-            if (!hitEnemies.Contains(hitObject))
+            if (hitObject.tag == "Bot")
             {
-                hitEnemies.Add(hitObject);
+                Botdata tempdata = hitObject.GetComponent<Botdata>();
 
-                string tag = hitbox.tag;
+                if (tempdata.IsStagger) return;
+                if (tempdata.IsGettingUp) return;
+                if (tempdata.IsDead) return;
 
-                float tempdamage = tag switch
+                if (!hitEnemies.Contains(hitObject))
                 {
-                    "Head" => Head,
-                    "Body" => Body,
-                    "Thigh" => Thigh,
-                    "Shin" => Shin,
-                    "Foot" => Foot,
-                    "Arm" => Arm,
-                    "Forearm" => Forearm,
-                    _ => 0f
-                };
+                    hitEnemies.Add(hitObject);
 
-                PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
+                    string tag = hitbox.tag;
 
-                if (isFinalHit)
-                    healthV2.IsStagger = true;
-                else
-                    healthV2.IsHit = true;
+                    float tempdamage = tag switch
+                    {
+                        "Head" => Head,
+                        "Body" => Body,
+                        "Thigh" => Thigh,
+                        "Shin" => Shin,
+                        "Foot" => Foot,
+                        "Arm" => Arm,
+                        "Forearm" => Forearm,
+                        _ => 0f
+                    };
 
-                healthV2.ApplyDamage(tempdamage, "", Object);
+                    if (isFinalHit) tempdata.IsStagger = true;
+                    else tempdata.IsHit = true;
+
+                    tempdata.ApplyDamage(tempdamage, "", CurrentPlayer);
+                }
+            }
+            else
+            {
+                PlayerPlayables tempplayables = hitObject.GetComponent<PlayerPlayables>();
+
+                if (tempplayables.healthV2.IsStagger) return;
+                if (tempplayables.healthV2.IsGettingUp) return;
+
+                // Avoid duplicate hits
+                if (!hitEnemies.Contains(hitObject))
+                {
+                    hitEnemies.Add(hitObject);
+
+                    string tag = hitbox.tag;
+
+                    float tempdamage = tag switch
+                    {
+                        "Head" => Head,
+                        "Body" => Body,
+                        "Thigh" => Thigh,
+                        "Shin" => Shin,
+                        "Foot" => Foot,
+                        "Arm" => Arm,
+                        "Forearm" => Forearm,
+                        _ => 0f
+                    };
+
+                    PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
+
+                    if (isFinalHit)
+                        healthV2.IsStagger = true;
+                    else
+                        healthV2.IsHit = true;
+
+                    healthV2.ApplyDamage(tempdamage, "", CurrentPlayer);
+                }
             }
         }
     }

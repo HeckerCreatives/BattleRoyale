@@ -1,10 +1,7 @@
 using Fusion;
-using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
+using System.Drawing;
 using UnityEngine;
-using UnityEngine.Animations;
-using UnityEngine.Playables;
 
 public class TrapWeaponController : NetworkBehaviour
 {
@@ -111,18 +108,45 @@ public class TrapWeaponController : NetworkBehaviour
 
             if (!HasStateAuthority) return;
 
-            CanDamage = false;
+            if (hitObject.tag == "Bot")
+            {
+                Botdata tempdata = hitObject.GetComponent<Botdata>();
 
-            PlayerHealthV2 health = hitObject.GetComponent<PlayerHealthV2>();
+                if (tempdata.IsStagger) return;
+                if (tempdata.IsGettingUp) return;
+                if (tempdata.IsDead) return;
 
-            health.IsHit = true;
-            health.ApplyDamage(30f, SpawnedBy, hitObject.GetComponent<NetworkObject>());
+                CanDamage = false;
 
-            Invoke(nameof(DespawnObject), 2f);
+                tempdata.IsHit = true;
 
-            CloseTrap = true;
+                tempdata.ApplyDamage(30f, SpawnedBy, hitObject.GetComponent<NetworkObject>());
 
-            break;
+                Invoke(nameof(DespawnObject), 2f);
+
+                CloseTrap = true;
+
+                break;
+            }
+            else
+            {
+                PlayerHealthV2 health = hitObject.GetComponent<PlayerHealthV2>();
+
+                if (health.IsStagger) return;
+                if (health.IsGettingUp) return;
+                if (health.IsDead) return;
+
+                CanDamage = false;
+
+                health.IsHit = true;
+                health.ApplyDamage(30f, SpawnedBy, hitObject.GetComponent<NetworkObject>());
+
+                Invoke(nameof(DespawnObject), 2f);
+
+                CloseTrap = true;
+
+                break;
+            }
         }
     }
 
@@ -136,7 +160,7 @@ public class TrapWeaponController : NetworkBehaviour
 
     public void OnDrawGizmos()
     {
-        Gizmos.color = Color.yellow;
+        Gizmos.color = UnityEngine.Color.yellow;
         Gizmos.DrawWireSphere(transform.position, detectRadius);
     }
 }

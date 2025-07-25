@@ -7,9 +7,23 @@ using UnityEngine.Playables;
 
 public class BotPlayables : NetworkBehaviour
 {
-    [SerializeField] private Animator botAnimator;
-    [SerializeField] private BotBasicMovement basicMovement;
+    public Botdata GetBotData
+    {
+        get => botData;
+    }
 
+    public BotBasicMovement BasicMovement
+    {
+        get => basicMovement;
+    }
+
+    //  ==================
+
+    [SerializeField] private BotBasicMovement basicMovement;
+    [SerializeField] private Botdata botData;
+
+    [Space]
+    [SerializeField] private Animator botAnimator;
 
     [Header("DEBUGGER")]
     [SerializeField] private int _lastProcessedTick = -1;
@@ -34,6 +48,7 @@ public class BotPlayables : NetworkBehaviour
     public override void Spawned()
     {
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+        InitializePlayables();
     }
 
     private void OnDisable()
@@ -94,7 +109,7 @@ public class BotPlayables : NetworkBehaviour
 
         playableOutput.SetSourcePlayable(finalMixer);
 
-        //changer.Initialize(basicMovement.IdlePlayable);
+        changer.Initialize(basicMovement.IdlePlayable);
 
         finalMixer.SetInputWeight(0, 1f);
 

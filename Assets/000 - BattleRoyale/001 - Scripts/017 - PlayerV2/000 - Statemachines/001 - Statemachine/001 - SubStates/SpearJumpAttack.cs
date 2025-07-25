@@ -55,7 +55,7 @@ public class SpearJumpAttack : AnimationPlayable
         playerPlayables.stamina.RecoverStamina(5f);
     }
 
-    private void Animation()
+    private void Animation(
     {
         if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
         {

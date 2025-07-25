@@ -17,6 +17,8 @@ public class GettingUp : PlayerOnGround
     {
         base.Enter();
 
+        playerPlayables.healthV2.IsGettingUp = true;
+
         timer = playerPlayables.TickRateAnimation + animationLength;
         canAction = true;
     }
@@ -36,10 +38,16 @@ public class GettingUp : PlayerOnGround
     private void Animation()
     {
         if (playerPlayables.healthV2.IsDead)
+        {
+            playerPlayables.healthV2.IsGettingUp = false;
             playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+
+            return;
+        }
 
         if (!characterController.IsGrounded)
         {
+            playerPlayables.healthV2.IsGettingUp = false;
             playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
             return;
         }
@@ -48,6 +56,8 @@ public class GettingUp : PlayerOnGround
         {
             if (playerPlayables.TickRateAnimation >= timer)
             {
+                playerPlayables.healthV2.IsGettingUp = false;
+
                 WeaponsChecker();
 
                 if (playerMovement.IsJumping)

@@ -627,10 +627,13 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                     break;
 
                 case nameof(RemainingPlayers):
+                case nameof(Bots):
 
                     if (HasStateAuthority)
                     {
-                        if (RemainingPlayers.Count <= 1 && CurrentGameState == GameState.ARENA)
+                        Debug.Log($"Player count less than equal to one? {RemainingPlayers.Count <= 1}    Bot Count less than zero {Bots.Count <= 0}    Game State {CurrentGameState}");
+
+                        if (RemainingPlayers.Count <= 1 && Bots.Count <= 0 && CurrentGameState == GameState.ARENA)
                             CurrentGameState = GameState.DONE;
                     }
 
@@ -641,8 +644,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                     break;
             }
         }
-
-
     }
 
     public override void FixedUpdateNetwork()
@@ -814,7 +815,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         if (CurrentGameState != GameState.WAITINGAREA) return;
         if (Players.Count <= 0) return;
         if (spawnBotIndex >= maxBot) return;
-        if (CurrentWaitingAreaTimerState != WaitingAreaTimerState.WAITING) return;
 
         spawnBotTimer -= Runner.DeltaTime;
 
@@ -837,7 +837,11 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 spawnBotIndex++;
             });
 
-            spawnBotTimer = UnityEngine.Random.Range(5f, 15f); // Reset timer
+
+            if (CurrentWaitingAreaTimerState == WaitingAreaTimerState.WAITING)
+                spawnBotTimer = UnityEngine.Random.Range(5f, 15f); // Reset timer
+            else if (CurrentWaitingAreaTimerState == WaitingAreaTimerState.GETREADY)
+                spawnBotTimer = UnityEngine.Random.Range(1f, 3f);
         }
     }
 

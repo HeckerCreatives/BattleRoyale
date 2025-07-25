@@ -6496,7 +6496,7 @@ Transform:
   m_GameObject: {fileID: 1215740564578381670}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.08715578, z: -0, w: 0.9961947}
-  m_LocalPosition: {x: -0.17264557, y: 1.9680046, z: -4.03125}
+  m_LocalPosition: {x: -0.012637436, y: 1.9680046, z: -1.7747682}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -8758,7 +8758,7 @@ GameObject:
   - component: {fileID: 697121353735635553}
   m_Layer: 0
   m_Name: PlayerV2
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -9169,6 +9169,7 @@ MonoBehaviour:
   _Hitted: 0
   _IsSecondHit: 0
   _IsStagger: 0
+  _IsGettingUp: 0
   _DamagedSafeZone: 0
   _FallDamage: 0
   _IsDead: 0
@@ -13751,6 +13752,7 @@ MonoBehaviour:
   simpleKCC: {fileID: 7325305681741820489}
   playerPlayables: {fileID: 7268080577510237573}
   playerMovementV2: {fileID: 3997184430777469837}
+  playerOwnObjectEnabler: {fileID: 5338607522235249809}
   animationnames:
   - 
   - idle
@@ -13822,7 +13824,7 @@ MonoBehaviour:
   spearJumpAttack: {fileID: 7400000, guid: 617c67a35d84bc448871e441f80d4b47, type: 2}
   enemyLayerMask:
     serializedVersion: 2
-    m_Bits: 8192
+    m_Bits: 139264
   attackRadius: 0.3
   impactFirstFistPoint: {fileID: 7676875061744211559}
   impactSecondFistPoint: {fileID: 6022364666796658043}

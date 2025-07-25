@@ -41,7 +41,9 @@ public class PlayerHealthV2 : NetworkBehaviour
     [Networked][field: SerializeField] public int Hitted { get; set; }
     [Networked][field: SerializeField] public bool IsSecondHit { get; set; }
     [Networked][field: SerializeField] public bool IsStagger { get; set; }
+    [Networked][field: SerializeField] public bool IsGettingUp { get; set; }
     [Networked][field: SerializeField] public bool DamagedSafeZone { get; set; }
+    [Networked][field: SerializeField] public float FallDamageValue { get; set; }
     [Networked][field: SerializeField] public bool FallDamage { get; set; }
     [Networked][field: SerializeField] public bool IsDead { get; set; }
 
@@ -316,13 +318,15 @@ public class PlayerHealthV2 : NetworkBehaviour
         }
     }
 
-    public void FallDamae(float damage)
+    public void FallDamae()
     {
         if (IsDead) return;
 
         if (ServerManager.CurrentGameState != GameState.ARENA) return;
 
-        CurrentHealth -= damage;
+        CurrentHealth -= FallDamageValue;
+
+        FallDamageValue = 0f;
 
         if (CurrentHealth <= 0)
         {

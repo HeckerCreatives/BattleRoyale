@@ -16,21 +16,51 @@ public class BotBasicMovement : NetworkBehaviour
     [SerializeField] private List<string> animationnames;
     [SerializeField] private List<string> mixernames;
 
+    [Space]
+    [SerializeField] private AnimationClip idle;
+    [SerializeField] private AnimationClip hit;
+    [SerializeField] private AnimationClip stagger;
+    [SerializeField] private AnimationClip gettingup;
+    [SerializeField] private AnimationClip falling;
+    [SerializeField] private AnimationClip death;
+
     //  ================
 
     public AnimationMixerPlayable mixerPlayable;
+
+    public BotIdlePlayable IdlePlayable;
+    public BotHitPlayable HitPlayable;
+    public BotStaggerPlayable StaggerPlayable;
+    public BotGettingUpPlayable GettingUpPlayable;
+    public BotFallingPlayable FallingPlayable;
+    public BotDeathPlayable DeathPlayable;
 
     //  =================
 
     public AnimationMixerPlayable Initialize()
     {
-        mixerPlayable = AnimationMixerPlayable.Create(botPlayables.playableGraph, 2);
+        mixerPlayable = AnimationMixerPlayable.Create(botPlayables.playableGraph, 7);
 
-        //var idleClip = AnimationClipPlayable.Create(botPlayables.playableGraph, idle);
+        var idleClip = AnimationClipPlayable.Create(botPlayables.playableGraph, idle);
+        var hitClip = AnimationClipPlayable.Create(botPlayables.playableGraph, hit);
+        var staggerClip = AnimationClipPlayable.Create(botPlayables.playableGraph, stagger);
+        var gettingUpClip = AnimationClipPlayable.Create(botPlayables.playableGraph, gettingup);
+        var fallingClip = AnimationClipPlayable.Create(botPlayables.playableGraph, falling);
+        var deathClip = AnimationClipPlayable.Create(botPlayables.playableGraph, death);
 
-        //botPlayables.playableGraph.Connect(idleClip, 0, mixerPlayable, 1);
+        botPlayables.playableGraph.Connect(idleClip, 0, mixerPlayable, 1);
+        botPlayables.playableGraph.Connect(hitClip, 0, mixerPlayable, 2);
+        botPlayables.playableGraph.Connect(staggerClip, 0, mixerPlayable, 3);
+        botPlayables.playableGraph.Connect(gettingUpClip, 0, mixerPlayable, 4);
+        botPlayables.playableGraph.Connect(fallingClip, 0, mixerPlayable, 5);
+        botPlayables.playableGraph.Connect(deathClip, 0, mixerPlayable, 6);
 
-        //IdlePlayable = new IdleState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "idle", "basic", idle.length, idleClip, false);
+        IdlePlayable = new BotIdlePlayable(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "idle", "basic", idle.length, idleClip, false);
+        HitPlayable = new BotHitPlayable(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "hit", "basic", hit.length, hitClip, true);
+        StaggerPlayable = new BotStaggerPlayable(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "stagger", "basic", stagger.length, staggerClip, true);
+        GettingUpPlayable = new BotGettingUpPlayable(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "gettingup", "basic", gettingup.length, gettingUpClip, true);
+        FallingPlayable = new BotFallingPlayable(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "falling", "basic", falling.length, fallingClip, true);
+        DeathPlayable = new BotDeathPlayable(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "death", "basic", death.length, deathClip, true);
 
         return mixerPlayable;
     }
@@ -40,8 +70,18 @@ public class BotBasicMovement : NetworkBehaviour
     {
         switch (index)
         {
-            //case 1:
-            //    return IdlePlayable;
+            case 1:
+                return IdlePlayable;
+            case 2:
+                return HitPlayable;
+            case 3:
+                return StaggerPlayable;
+            case 4:
+                return GettingUpPlayable;
+            case 5:
+                return FallingPlayable;
+            case 6:
+                return DeathPlayable;
             default: return null;
         }
     }

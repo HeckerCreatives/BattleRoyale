@@ -13,6 +13,7 @@ public enum Mood
 
 public class Botdata : NetworkBehaviour
 {
+    [Space]
     [SerializeField] private List<ParticleSystem> bloodParticles;
 
     [Header("DEBUGGER")]
@@ -25,6 +26,9 @@ public class Botdata : NetworkBehaviour
     [field: SerializeField][Networked] public float CurrentHealth { get; set; }
     [field: SerializeField][Networked] public bool IsDead { get; set; }
     [field: SerializeField][Networked] public int Hitted { get; set; }
+    [field: SerializeField][Networked] public bool IsHit { get; set; }
+    [field: SerializeField][Networked] public bool IsStagger { get; set; }
+    [field: SerializeField][Networked] public bool IsGettingUp { get; set; }
 
     //  ======================
 
@@ -100,6 +104,30 @@ public class Botdata : NetworkBehaviour
         }
     }
 
+    public void FallDamage(float damage)
+    {
+        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+
+        if (!ServerManager.DonePlayerBattlePositions) return;
+
+        if (IsDead) return;
+
+        CurrentHealth -= damage;
+
+        if (CurrentHealth <= 0)
+        {
+            if (HasStateAuthority)
+                IsDead = true;
+
+            if (IsDead)
+            {
+                ServerManager.Bots.Remove(BotIndex);
+
+                RPC_ReceiveKillNotification($"{BotName} killed themselves");
+            }
+        }
+    }
+
     public void ApplyDamage(float damage, string killer, NetworkObject nobject)
     {
         if (IsDead) return;
@@ -134,7 +162,7 @@ public class Botdata : NetworkBehaviour
         if (remainingDamage > 0)
         {
             CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - remainingDamage);
-            nobject.GetComponent<PlayerGameStats>().HitPoints += remainingDamage;
+            //nobject.GetComponent<PlayerGameStats>().HitPoints += remainingDamage;
         }
 
         // Check if player is dead
@@ -150,6 +178,8 @@ public class Botdata : NetworkBehaviour
                 ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
 
                 RPC_ReceiveKillNotification($"{killer} KILLED {BotName}");
+
+                Invoke(nameof(DespawnBot), 5f);
             }
             //string statustext = killer == loader.Username ? $"{loader.Username} Killed themself" : $"{killer} KILLED {loader.Username}";
 
@@ -168,6 +198,8 @@ public class Botdata : NetworkBehaviour
             //}
         }
     }
+
+    private void DespawnBot() => Runner.Despawn(Object);
 
 
     [Rpc(RpcSources.StateAuthority, RpcTargets.All)]

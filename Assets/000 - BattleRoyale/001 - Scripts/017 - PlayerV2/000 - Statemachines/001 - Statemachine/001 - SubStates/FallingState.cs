@@ -41,7 +41,7 @@ public class FallingState : AnimationPlayable
     {
         if (characterController.RealVelocity.y <= -20f)
         {
-            fallDamage = Mathf.Abs(characterController.RealVelocity.y) - 5f;
+            playerPlayables.healthV2.FallDamageValue = Mathf.Abs(characterController.RealVelocity.y) - 5f;
         }
     }
 
@@ -54,8 +54,8 @@ public class FallingState : AnimationPlayable
         {
             playerMovement.JumpImpulse = 0;
 
-            if (fallDamage > 0)
-                playerPlayables.healthV2.FallDamae(fallDamage);
+            if (playerPlayables.healthV2.FallDamageValue > 0)
+                playerPlayables.healthV2.FallDamae();
         }
     }
 

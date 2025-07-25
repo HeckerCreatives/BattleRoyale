@@ -111,23 +111,42 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     private void TouchMovements()
     {
+        if (Touchscreen.current == null)
+            return;
+
         foreach (var touch in Touchscreen.current.touches)
         {
+            // Filter out inactive touches (no press info and no position changes)
+            if (!touch.press.wasPressedThisFrame && !touch.press.isPressed && !touch.press.wasReleasedThisFrame)
+                continue;
+
             int id = touch.touchId.ReadValue();
             Vector2 pos = touch.position.ReadValue();
             var phase = touch.phase.ReadValue();
 
-            // Fallback if somehow not Began
-            if (!activeTouchIds.Contains(id) && phase != UnityEngine.InputSystem.TouchPhase.Ended)
+            // --- Handle Ended/Canceled early and skip any further handling ---
+            if (phase == UnityEngine.InputSystem.TouchPhase.Ended || phase == UnityEngine.InputSystem.TouchPhase.Canceled)
+            {
+                if (activeTouchIds.Contains(id))
+                    TouchFingeUp(id);
+
+                activeTouchIds.Remove(id);
+                lastTouchPositions.Remove(id);
+                continue; // Skip rest of the loop
+            }
+
+            // --- Handle new touches ---
+            if (!activeTouchIds.Contains(id))
             {
                 activeTouchIds.Add(id);
                 TouchFingerDown(id, pos);
             }
 
+            // --- Handle touch phase states ---
             switch (phase)
             {
                 case UnityEngine.InputSystem.TouchPhase.Began:
-                    activeTouchIds.Add(id);
+                    // Already handled in the block above, but safe to re-call
                     TouchFingerDown(id, pos);
                     break;
 
@@ -137,23 +156,27 @@ public class PlayerMovementV2 : NetworkBehaviour
                         float delta = Vector2.Distance(pos, lastPos);
 
                         if (delta < StationaryThreshold)
-                            gameplayController.LookDirection = Vector2.zero; // Optional: handle stationary
+                        {
+                            gameplayController.LookDirection = Vector2.zero;
+                        }
                         else
+                        {
                             TouchFingerMove(id, pos);
+                        }
                     }
                     else
+                    {
                         TouchFingerMove(id, pos);
+                    }
                     break;
 
-                case UnityEngine.InputSystem.TouchPhase.Ended:
-                case UnityEngine.InputSystem.TouchPhase.Canceled:
-                    TouchFingeUp(id);
-                    activeTouchIds.Remove(id);
-                    lastTouchPositions.Remove(id);
-                    break;
+                //case UnityEngine.InputSystem.TouchPhase.Stationary:
+                //    // Optional: handle this if needed
+                //    gameplayController.LookDirection = Vector2.zero;
+                //    break;
             }
 
-            // Update last known position
+            // --- Store last position ---
             lastTouchPositions[id] = pos;
         }
     }

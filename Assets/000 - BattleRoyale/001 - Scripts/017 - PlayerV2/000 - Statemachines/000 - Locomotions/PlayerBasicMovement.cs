@@ -11,6 +11,7 @@ public class PlayerBasicMovement : NetworkBehaviour
     [SerializeField] private SimpleKCC simpleKCC;
     [SerializeField] private PlayerPlayables playerPlayables;
     [SerializeField] private PlayerMovementV2 playerMovementV2;
+    [SerializeField] private PlayerOwnObjectEnabler playerOwnObjectEnabler;
 
     [Space]
     [SerializeField] private List<string> animationnames;
@@ -263,44 +264,72 @@ public class PlayerBasicMovement : NetworkBehaviour
                 continue;
             }
 
-            if (hitObject.GetComponent<PlayerPlayables>().healthV2.IsStagger) return;
-
-            // Avoid duplicate hits
-            if (!hitEnemiesFirstFist.Contains(hitObject))
+            if (hitObject.tag == "Bot")
             {
-                //bareHandsMovement.CanDamage = false;
+                Botdata tempdata = hitObject.GetComponent<Botdata>();
 
-                // Mark as hit
-                hitEnemiesFirstFist.Add(hitObject);
+                if (tempdata.IsStagger) return;
+                if (tempdata.IsGettingUp) return;
+                if (tempdata.IsDead) return;
 
-                string tag = hitbox.tag;
-
-                float tempdamage = tag switch
+                if (!hitEnemiesFirstFist.Contains(hitObject))
                 {
-                    "Head" => 30f,
-                    "Body" => 25f,
-                    "Thigh" => 20f,
-                    "Shin" => 15f,
-                    "Foot" => 10f,
-                    "Arm" => 20f,
-                    "Forearm" => 15f,
-                    _ => 0f
-                };
+                    hitEnemiesFirstFist.Add(hitObject);
 
-                //Debug.Log($"First Fist Damage by {loader.Username} to {hitObject.GetComponent<PlayerNetworkLoader>().Username} on {tag}: {tempdamage}");
+                    string tag = hitbox.tag;
 
-                PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
+                    float tempdamage = tag switch
+                    {
+                        "Head" => 30f,
+                        "Body" => 25f,
+                        "Thigh" => 20f,
+                        "Shin" => 15f,
+                        "Foot" => 10f,
+                        "Arm" => 20f,
+                        "Forearm" => 15f,
+                        _ => 0f
+                    };
 
-                if (isFinal) healthV2.IsStagger = true;
-                else  healthV2.IsHit = true;
+                    if (isFinal) tempdata.IsStagger = true;
+                    else tempdata.IsHit = true;
 
-                healthV2.ApplyDamage(tempdamage, "", Object);
+                    tempdata.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
+                }
+            }
+            else
+            {
+                PlayerPlayables tempplayables = hitObject.GetComponent<PlayerPlayables>();
 
-                // Process the hit
-                //HandleHit(hitObject, tempdamage);
+                if (tempplayables.healthV2.IsStagger) return;
+                if (tempplayables.healthV2.IsGettingUp) return;
 
+                // Avoid duplicate hits
+                if (!hitEnemiesFirstFist.Contains(hitObject))
+                {
+                    // Mark as hit
+                    hitEnemiesFirstFist.Add(hitObject);
 
-                //Hit++;
+                    string tag = hitbox.tag;
+
+                    float tempdamage = tag switch
+                    {
+                        "Head" => 30f,
+                        "Body" => 25f,
+                        "Thigh" => 20f,
+                        "Shin" => 15f,
+                        "Foot" => 10f,
+                        "Arm" => 20f,
+                        "Forearm" => 15f,
+                        _ => 0f
+                    };
+
+                    PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
+
+                    if (isFinal) healthV2.IsStagger = true;
+                    else healthV2.IsHit = true;
+
+                    healthV2.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
+                }
             }
         }
     }
@@ -331,41 +360,72 @@ public class PlayerBasicMovement : NetworkBehaviour
                 continue;
             }
 
-            if (hitObject.GetComponent<PlayerPlayables>().healthV2.IsStagger) return;
-
-            // Avoid duplicate hits
-            if (!hitEnemiesSecondFist.Contains(hitObject))
+            if (hitObject.tag == "Bot")
             {
-                // Mark as hit
-                hitEnemiesSecondFist.Add(hitObject);
+                Botdata tempdata = hitObject.GetComponent<Botdata>();
 
-                //bareHandsMovement.CanDamage = false;
+                if (tempdata.IsStagger) return;
+                if (tempdata.IsGettingUp) return;
+                if (tempdata.IsDead) return;
 
-                string tag = hitbox.tag;
-
-                float tempdamage = tag switch
+                if (!hitEnemiesSecondFist.Contains(hitObject))
                 {
-                    "Head" => 30f,
-                    "Body" => 25f,
-                    "Thigh" => 20f,
-                    "Shin" => 15f,
-                    "Foot" => 10f,
-                    "Arm" => 20f,
-                    "Forearm" => 15f,
-                    _ => 0f
-                };
+                    hitEnemiesSecondFist.Add(hitObject);
 
-                PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
+                    string tag = hitbox.tag;
 
-                healthV2.IsHit = true;
+                    float tempdamage = tag switch
+                    {
+                        "Head" => 30f,
+                        "Body" => 25f,
+                        "Thigh" => 20f,
+                        "Shin" => 15f,
+                        "Foot" => 10f,
+                        "Arm" => 20f,
+                        "Forearm" => 15f,
+                        _ => 0f
+                    };
 
-                healthV2.ApplyDamage(tempdamage, "", Object);
+                    tempdata.IsHit = true;
 
-                // Process the hit
-                //HandleHit(hitObject, tempdamage);
+                    tempdata.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
+                }
+            }
+            else
+            {
+                PlayerPlayables tempplayables = hitObject.GetComponent<PlayerPlayables>();
 
+                if (tempplayables.healthV2.IsStagger) return;
+                if (tempplayables.healthV2.IsGettingUp) return;
 
-                //Hit++;
+                // Avoid duplicate hits
+                if (!hitEnemiesSecondFist.Contains(hitObject))
+                {
+                    // Mark as hit
+                    hitEnemiesSecondFist.Add(hitObject);
+
+                    //bareHandsMovement.CanDamage = false;
+
+                    string tag = hitbox.tag;
+
+                    float tempdamage = tag switch
+                    {
+                        "Head" => 30f,
+                        "Body" => 25f,
+                        "Thigh" => 20f,
+                        "Shin" => 15f,
+                        "Foot" => 10f,
+                        "Arm" => 20f,
+                        "Forearm" => 15f,
+                        _ => 0f
+                    };
+
+                    PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
+
+                    healthV2.IsHit = true;
+
+                    healthV2.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
+                }
             }
         }
     }

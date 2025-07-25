@@ -160,13 +160,13 @@ public class PlayerGameStats : NetworkBehaviour
                     IsDoneShowingGameOver = true;
 
                     usernameResultTMP.text = userData.Username;
-                    playerCountResultTMP.text = $"<color=yellow><size=\"55\">#{PlayerPlacement}</size></color> <size=\"50\"> / {ServerManager.RemainingPlayers.Capacity - 2}</size>";
+                    playerCountResultTMP.text = $"<color=yellow><size=\"55\">#{(PlayerPlacement + ServerManager.Bots.Count)}</size></color> <size=\"50\"> / {ServerManager.RemainingPlayers.Capacity - 2}</size>";
                     rankResultTMP.text = PlayerPlacement.ToString();
                     killCountResultTMP.text = KillCount.ToString();
 
                     //  Leaderboard
 
-                    float rankpointLB = ((100 - PlayerPlacement + 1) / 100f) * 20;
+                    float rankpointLB = ((100 - (PlayerPlacement + ServerManager.Bots.Count) + 1) / 100f) * 20;
                     rankpointLB = (float)Math.Truncate(rankpointLB);
                     float killpointLB = KillCount * 100f;
                     killpointLB = (float)Math.Truncate(killpointLB);
@@ -252,7 +252,7 @@ public class PlayerGameStats : NetworkBehaviour
 
             //  Leaderboard
 
-            float rankpointLB = ((100 - PlayerPlacement + 1) / 100) * 20;
+            float rankpointLB = ((100 - (PlayerPlacement + ServerManager.Bots.Count) + 1) / 100) * 20;
             float killpointLB = KillCount * 100;
             float finalresultpointLB = rankpointLB + killpointLB + HitPoints;
             finalresultpointLB = (float)Math.Truncate(finalresultpointLB);
@@ -310,7 +310,7 @@ public class PlayerGameStats : NetworkBehaviour
 
         if (ServerManager.CurrentGameState != GameState.ARENA) return;
 
-        if (ServerManager.RemainingPlayers.Count > 1) return;
+        if (ServerManager.RemainingPlayers.Count > 1 || ServerManager.Bots.Count > 0) return;
 
         if (winMessageObj.activeInHierarchy) return;
 
@@ -325,7 +325,7 @@ public class PlayerGameStats : NetworkBehaviour
 
         //  Leaderboard
 
-        float rankpointLB = ((100 - PlayerPlacement + 1) / 100) * 20;
+        float rankpointLB = ((100 - (PlayerPlacement + ServerManager.Bots.Count) + 1) / 100) * 20;
         float killpointLB = KillCount * 100;
         float finalresultpointLB = rankpointLB + killpointLB + HitPoints;
         finalresultpointLB = (float)Math.Truncate(finalresultpointLB);
