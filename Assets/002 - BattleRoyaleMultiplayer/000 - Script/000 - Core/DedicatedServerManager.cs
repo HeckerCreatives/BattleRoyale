@@ -3,10 +3,14 @@ using Fusion.Addons.SimpleKCC;
 using Fusion.Photon.Realtime;
 using Fusion.Sockets;
 using MyBox;
+using Newtonsoft.Json;
+using SocketIOClient;
+using SocketIOClient.Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -134,6 +138,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [SerializeField] private List<Transform> botSpawnPoints;
 
     [Header("DEBUGGER")]
+    [SerializeField] private string sessionname;
     [SerializeField] private bool doneSpawnCrates;
     [SerializeField] private bool doneSetupBattlePos;
     [SerializeField] private bool doneSetupSafeZone;
@@ -335,6 +340,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     {
         if (GameManager.Instance == null)
         {
+            InitializeSocket();
+
             cbsbotnames.Shuffle();
             botnames.Shuffle();
             botSpawnPoints.Shuffle();
@@ -348,6 +355,90 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             GameManager.Instance.AudioController.StopBGMusic();
         }
     }
+
+    #region SOCKET
+
+    public SocketIOUnity Socket { get; private set; }
+
+    private CancellationTokenSource pingTimeoutCts;
+
+    private const int MaxMissedPings = 3;
+
+    public void InitializeSocket()
+    {
+        Debug.Log("starting initialize socket");
+        var uri = new Uri("http://localhost:5007");
+
+        Debug.Log($"Initializing URI.... http://localhost:5007");
+
+        try
+        {
+
+            Socket = new SocketIOUnity(uri, new SocketIOOptions
+            {
+                Query = new Dictionary<string, string>
+            {
+                { "token", "UNITY" }
+            },
+                EIO = EngineIO.V4,
+                Transport = SocketIOClient.Transport.TransportProtocol.WebSocket
+            });
+
+            Socket.JsonSerializer = new NewtonsoftJsonSerializer();
+
+            Socket.OnConnected += SocketConnected;
+
+            Debug.Log("Socket connecting to server ....");
+
+            Socket.Connect();
+        }
+        catch (Exception ex)
+        {
+            Debug.Log($"Error: {ex}");
+        }
+    }
+
+    private void SocketConnected(object sender, EventArgs e)
+    {
+        ChangeServerStatus();
+    }
+
+    private void ChangeServerStatus()
+    {
+        if ((!doneSetupBattlePos || !doneSpawnCrates || !doneSetupSafeZone)) return;
+
+
+        switch (CurrentGameState)
+        {
+            case GameState.WAITINGAREA:
+
+                if (CurrentWaitingAreaTimerState == WaitingAreaTimerState.WAITING)
+                    Socket.Emit("changematchstate", JsonConvert.SerializeObject(new Dictionary<string, string>
+                    {
+                        { "sessioname", sessionname },
+                        { "status", "WAITING" }
+                    }));
+                else
+                    Socket.Emit("changematchstate", JsonConvert.SerializeObject(new Dictionary<string, string>
+                    {
+                        { "sessioname", sessionname },
+                        { "status", "GETTINGREADY" }
+                    }));
+
+                break;
+            case GameState.ARENA:
+
+                Socket.Emit("changematchstate", JsonConvert.SerializeObject(new Dictionary<string, string>
+                {
+                    { "sessioname", sessionname },
+                    { "status", "BATTLE" }
+                }));
+
+                break;
+        }
+    }
+
+    #endregion
 
     #region GAME INITIALIZE
 
@@ -539,6 +630,10 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         //FusionAppSettings appSettings;
 
+
+        if (args.TryGetValue("roomname", out string roomname))
+            sessionname = roomname;
+
         //if (args.TryGetValue("region", out string region))
         //    appSettings = BuildCustomAppSetting(region);
         //else
@@ -548,7 +643,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         await networkRunner.StartGame(new StartGameArgs()
         {
-            SessionName = Guid.NewGuid().ToString(),
+            SessionName = sessionname,
             GameMode = GameMode.Server,
             IsVisible = false,
             IsOpen = false,
@@ -598,6 +693,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             networkRunner.SessionInfo.IsOpen = true;
             networkRunner.SessionInfo.IsVisible = true;
+
+            ChangeServerStatus();
 
             Debug.Log("ALL PLAYERS CAN NOW JOIN");
         }
@@ -679,6 +776,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 WaitingAreaTimer = readyForBattleStartTimer;
                 CurrentWaitingAreaTimerState = WaitingAreaTimerState.GETREADY;
 
+                ChangeServerStatus();
+
                 doneValidatingPlayerCount = true;
             }
         }
@@ -703,6 +802,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 CurrentGameState = GameState.ARENA;
                 CanCountWaitingAreaTimer = false;
                 CurrentStateChange?.Invoke(this, EventArgs.Empty);
+
+                ChangeServerStatus();
 
                 StartCoroutine(BattlePosition());
             }

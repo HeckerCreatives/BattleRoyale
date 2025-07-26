@@ -18,6 +18,7 @@ using System.Threading;
 using Unity.VisualScripting.Antlr3.Runtime;
 using System.Drawing;
 using Fusion.Photon.Realtime;
+using Newtonsoft.Json;
 
 public class ClientMatchmakingController : MonoBehaviour
 {
@@ -75,12 +76,42 @@ public class ClientMatchmakingController : MonoBehaviour
     [ReadOnly][SerializeField] int minutesFindMatch;
     [ReadOnly][SerializeField] int secondsFindMatch;
     [SerializeField] private List<string> serverSelected;
+    [SerializeField] private string roomname;
 
     //  =====================
 
     CreateTicketResponse ticketResponse;
 
     //  =====================
+
+    private void OnEnable()
+    {
+        GameManager.Instance.SocketMngr.Socket.On("matchfound", (response) =>
+        {
+            Debug.Log(response.ToString());
+            GameManager.Instance.AddJob(() => roomname = response.GetValue<string>());
+            GameManager.Instance.AddJob(StartMatchFinding);
+        });
+
+        GameManager.Instance.SocketMngr.Socket.On("matchstatuschanged", (response) =>
+        {
+            string tempresponse = response.ToString();
+
+            GameManager.Instance.AddJob(() =>
+            {
+                if (matchFound) return;
+
+                List<Dictionary<string, string>> tempdata = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(tempresponse);
+
+                if (tempdata.Count <= 0) return;
+
+                if (tempdata[0]["status"] != "WAITING") return;
+
+                GameManager.Instance.AddJob(() => roomname = tempdata[0]["roomName"]);
+                GameManager.Instance.AddJob(StartMatchFinding);
+            });
+        });
+    }
 
     private void Update()
     {
@@ -277,9 +308,14 @@ public class ClientMatchmakingController : MonoBehaviour
 
                 currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
 
-                JoinDropballSession();
+                GameManager.Instance.SocketMngr.EmitEvent("findmatch", "");
             }
         }, null));
+    }
+
+    private void StartMatchFinding()
+    {
+        JoinDropballSession();
     }
 
     private async void JoinDropballSession()
@@ -371,6 +407,7 @@ public class ClientMatchmakingController : MonoBehaviour
                     GameMode = gameMode,
                     SceneManager = runner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
                     Scene = sceneRef,
+                    SessionName = roomname
                     //CustomPhotonAppSettings = appSettings
                 });
             }
@@ -381,6 +418,8 @@ public class ClientMatchmakingController : MonoBehaviour
 
     public void CancelMatch()
     {
+        GameManager.Instance.SocketMngr.EmitEvent("quitonmatch", "");
+
         currentTime = 0f;
 
         findingMatch = false;

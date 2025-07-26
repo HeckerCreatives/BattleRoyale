@@ -42,6 +42,7 @@ public class PlayerMovementV2 : NetworkBehaviour
     [Header("DEBUGGER")]
     [SerializeField] private GameplayController gameplayController;
     [SerializeField] private Vector3 inputVector;
+    [SerializeField] private float sprintCooldown;
 
     [field: Header("DEBUGGER NETWORK")]
     [field: SerializeField][Networked] public Vector3 MoveDirection { get; set; }
@@ -425,17 +426,27 @@ public class PlayerMovementV2 : NetworkBehaviour
         if (stamina.Stamina <= 0f)
         {
             IsSprint = false;
+            sprintCooldown = 0f;
             return;
         }
 
         if (!controllerInput.HoldInputButtons.WasPressed(PreviousButtons, HoldInputButtons.Sprint))
         {
             IsSprint = false;
+            sprintCooldown = 0f;
             return;
         }
 
         if (stamina.Stamina >= 10f)
-            IsSprint = true;
+        {
+            if (sprintCooldown >= 0.1f)
+                IsSprint = true;
+            else
+            {
+                sprintCooldown += Time.deltaTime;
+                IsSprint = false;
+            }
+        }
     }
 
     private void Jump()
