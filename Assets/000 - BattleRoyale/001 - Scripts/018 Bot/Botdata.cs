@@ -16,6 +16,12 @@ public class Botdata : NetworkBehaviour
     [Space]
     [SerializeField] private List<ParticleSystem> bloodParticles;
 
+    [Space]
+    [SerializeField] private LayerMask enemyLayerMask;
+    [SerializeField] private float attackRadius;
+    [SerializeField] private Transform impactFirstFistPoint;
+    [SerializeField] private Transform impactSecondFistPoint;
+
     [Header("DEBUGGER")]
     [SerializeField] private int bloodIndex;
 
@@ -33,6 +39,12 @@ public class Botdata : NetworkBehaviour
     //  ======================
 
     private ChangeDetector _changeDetector;
+
+    private readonly List<LagCompensatedHit> hitsFirstFist = new List<LagCompensatedHit>();
+    private readonly List<LagCompensatedHit> hitsSecondFist = new List<LagCompensatedHit>();
+
+    private readonly HashSet<NetworkObject> hitEnemiesFirstFist = new();
+    private readonly HashSet<NetworkObject> hitEnemiesSecondFist = new();
 
     //  ======================
 
@@ -65,6 +77,8 @@ public class Botdata : NetworkBehaviour
             }
         }
     }
+
+    #region DAMAGE RECEIVED
 
     private void DamageIndicator()
     {
@@ -173,9 +187,10 @@ public class Botdata : NetworkBehaviour
 
             if (IsDead)
             {
-                nobject.GetComponent<PlayerGameStats>().KillCount++;
-                ServerManager.Bots.Remove(BotIndex);
-                ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
+                if (nobject.tag == "Player")
+                    nobject.GetComponent<PlayerGameStats>().KillCount++;
+                else
+                    ServerManager.Bots.Remove(BotIndex);
 
                 RPC_ReceiveKillNotification($"{killer} KILLED {BotName}");
 
@@ -206,5 +221,227 @@ public class Botdata : NetworkBehaviour
     public void RPC_ReceiveKillNotification(string message)
     {
         ServerManager.KillNotifController.ShowIndicator(message);
+    }
+
+    #endregion
+
+    #region DAMAGE GIVEN
+
+    public void PerformFirstAttack(bool isFinal = false)
+    {
+        int hitCount = Runner.LagCompensation.OverlapSphere(
+            impactFirstFistPoint.position,
+            attackRadius,
+            Object.InputAuthority,
+            hitsFirstFist,
+            enemyLayerMask,
+            HitOptions.IgnoreInputAuthority
+        );
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            var hitbox = hitsFirstFist[i].Hitbox;
+            if (hitbox == null)
+            {
+                continue;
+            }
+
+            NetworkObject hitObject = hitbox.transform.root.GetComponent<NetworkObject>();
+
+            if (hitObject == null)
+            {
+                continue;
+            }
+
+            if (hitObject == Object) continue;
+
+            if (hitObject.tag == "Bot")
+            {
+                Botdata tempdata = hitObject.GetComponent<Botdata>();
+
+                if (tempdata.IsStagger) return;
+                if (tempdata.IsGettingUp) return;
+                if (tempdata.IsDead) return;
+
+                if (!hitEnemiesFirstFist.Contains(hitObject))
+                {
+                    hitEnemiesFirstFist.Add(hitObject);
+
+                    string tag = hitbox.tag;
+
+                    float tempdamage = tag switch
+                    {
+                        "Head" => 30f,
+                        "Body" => 25f,
+                        "Thigh" => 20f,
+                        "Shin" => 15f,
+                        "Foot" => 10f,
+                        "Arm" => 20f,
+                        "Forearm" => 15f,
+                        _ => 0f
+                    };
+
+                    if (isFinal) tempdata.IsStagger = true;
+                    else tempdata.IsHit = true;
+
+                    tempdata.ApplyDamage(tempdamage, BotName, Object);
+                }
+            }
+            else
+            {
+                PlayerPlayables tempplayables = hitObject.GetComponent<PlayerPlayables>();
+
+                if (tempplayables.healthV2.IsStagger) return;
+                if (tempplayables.healthV2.IsGettingUp) return;
+
+                // Avoid duplicate hits
+                if (!hitEnemiesFirstFist.Contains(hitObject))
+                {
+                    // Mark as hit
+                    hitEnemiesFirstFist.Add(hitObject);
+
+                    string tag = hitbox.tag;
+
+                    float tempdamage = tag switch
+                    {
+                        "Head" => 30f,
+                        "Body" => 25f,
+                        "Thigh" => 20f,
+                        "Shin" => 15f,
+                        "Foot" => 10f,
+                        "Arm" => 20f,
+                        "Forearm" => 15f,
+                        _ => 0f
+                    };
+
+                    PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
+
+                    if (isFinal) healthV2.IsStagger = true;
+                    else healthV2.IsHit = true;
+
+                    healthV2.ApplyDamage(tempdamage, BotName, Object);
+                }
+            }
+        }
+    }
+
+    public void PerformSecondAttack()
+    {
+        int hitCount = Runner.LagCompensation.OverlapSphere(
+            impactSecondFistPoint.position,
+            attackRadius,
+            Object.InputAuthority,
+            hitsSecondFist,
+            enemyLayerMask,
+            HitOptions.IgnoreInputAuthority
+        );
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            var hitbox = hitsSecondFist[i].Hitbox;
+            if (hitbox == null)
+            {
+                continue;
+            }
+
+            NetworkObject hitObject = hitbox.transform.root.GetComponent<NetworkObject>();
+
+            if (hitObject == Object) continue;
+
+            if (hitObject == null)
+            {
+                continue;
+            }
+
+            if (hitObject.tag == "Bot")
+            {
+                Botdata tempdata = hitObject.GetComponent<Botdata>();
+
+                if (tempdata.IsStagger) return;
+                if (tempdata.IsGettingUp) return;
+                if (tempdata.IsDead) return;
+
+                if (!hitEnemiesSecondFist.Contains(hitObject))
+                {
+                    hitEnemiesSecondFist.Add(hitObject);
+
+                    string tag = hitbox.tag;
+
+                    float tempdamage = tag switch
+                    {
+                        "Head" => 30f,
+                        "Body" => 25f,
+                        "Thigh" => 20f,
+                        "Shin" => 15f,
+                        "Foot" => 10f,
+                        "Arm" => 20f,
+                        "Forearm" => 15f,
+                        _ => 0f
+                    };
+
+                    tempdata.IsHit = true;
+
+                    tempdata.ApplyDamage(tempdamage, BotName, Object);
+                }
+            }
+            else
+            {
+                PlayerPlayables tempplayables = hitObject.GetComponent<PlayerPlayables>();
+
+                if (tempplayables.healthV2.IsStagger) return;
+                if (tempplayables.healthV2.IsGettingUp) return;
+
+                // Avoid duplicate hits
+                if (!hitEnemiesSecondFist.Contains(hitObject))
+                {
+                    // Mark as hit
+                    hitEnemiesSecondFist.Add(hitObject);
+
+                    //bareHandsMovement.CanDamage = false;
+
+                    string tag = hitbox.tag;
+
+                    float tempdamage = tag switch
+                    {
+                        "Head" => 30f,
+                        "Body" => 25f,
+                        "Thigh" => 20f,
+                        "Shin" => 15f,
+                        "Foot" => 10f,
+                        "Arm" => 20f,
+                        "Forearm" => 15f,
+                        _ => 0f
+                    };
+
+                    PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
+
+                    healthV2.IsHit = true;
+
+                    healthV2.ApplyDamage(tempdamage, BotName, Object);
+                }
+            }
+        }
+    }
+
+    public void ResetFirstAttack()
+    {
+        hitEnemiesFirstFist.Clear();
+    }
+
+    public void ResetSecondAttack()
+    {
+        hitEnemiesSecondFist.Clear();
+    }
+
+    #endregion
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(impactFirstFistPoint.position, attackRadius);
+
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(impactSecondFistPoint.position, attackRadius);
     }
 }

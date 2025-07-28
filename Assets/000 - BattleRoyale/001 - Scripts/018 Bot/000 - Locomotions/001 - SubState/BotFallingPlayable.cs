@@ -1,3 +1,4 @@
+using Fusion;
 using Fusion.Addons.SimpleKCC;
 using System.Collections;
 using System.Collections.Generic;
@@ -41,6 +42,8 @@ public class BotFallingPlayable : BotAnimationPlayable
 
     private void Animation()
     {
+        MoveBot();
+
         if (botPlayables.GetBotData.IsDead)
         {
             botPlayablesChanger.ChangeState(botPlayables.BasicMovement.DeathPlayable);
@@ -60,6 +63,17 @@ public class BotFallingPlayable : BotAnimationPlayable
                 return;
             }
 
+            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.IdlePlayable);
+        }
+    }
+
+    private void MoveBot()
+    {
+        botMovement.MoveInDirection();
+
+        if (botMovement.WanderTimer.Expired(botMovement.Runner))
+        {
+            botMovement.IdleBeforeWanderTimer = TickTimer.CreateFromSeconds(botMovement.Runner, Random.Range(botMovement.MinWanderDelay, botMovement.MaxWanderDelay));
             botPlayablesChanger.ChangeState(botPlayables.BasicMovement.IdlePlayable);
         }
     }

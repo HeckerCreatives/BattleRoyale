@@ -18,6 +18,7 @@ public class SwordJumpAttack : AnimationPlayable
     {
         base.Enter();
 
+        playerPlayables.healthV2.FallDamageValue = 0;
         hasResetHitEnemies = false;
         playerPlayables.inventory.PrimaryWeapon.ClearHitEnemies();
         timer = playerPlayables.TickRateAnimation + animationLength;
@@ -49,10 +50,23 @@ public class SwordJumpAttack : AnimationPlayable
         {
             playerMovement.IsJumping = false;
             playerMovement.JumpImpulse = 0;
+
+            if (playerPlayables.healthV2.FallDamageValue > 0)
+                playerPlayables.healthV2.FallDamae();
+
             Animation();
         }
 
+        FallDamage();
         playerPlayables.stamina.RecoverStamina(5f);
+    }
+
+    private void FallDamage()
+    {
+        if (characterController.RealVelocity.y <= -20f)
+        {
+            playerPlayables.healthV2.FallDamageValue = Mathf.Abs(characterController.RealVelocity.y) - 5f;
+        }
     }
 
     private void Animation()

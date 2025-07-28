@@ -44,8 +44,8 @@ public class BotStaggerPlayable : BotAnimationPlayable
 
     private void Animation()
     {
-        //if (playerPlayables.healthV2.IsDead)
-        //    playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+        if (botPlayables.GetBotData.IsDead)
+            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.DeathPlayable);
 
         if (canAction)
         {

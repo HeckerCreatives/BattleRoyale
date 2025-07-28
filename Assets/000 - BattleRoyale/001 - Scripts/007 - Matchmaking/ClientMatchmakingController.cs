@@ -54,6 +54,7 @@ public class ClientMatchmakingController : MonoBehaviour
     [SerializeField] private UserData userData;
     [SerializeField] private string lobbyName;
     [SerializeField] private bool useMultiplay;
+    [SerializeField] private bool usePrivateServer;
     [SerializeField] private Button changeServerBtn;
     [SerializeField] private Button changeServerBtn1;
 
@@ -86,31 +87,34 @@ public class ClientMatchmakingController : MonoBehaviour
 
     private void OnEnable()
     {
-        GameManager.Instance.SocketMngr.Socket.On("matchfound", (response) =>
+        if (usePrivateServer)
         {
-            Debug.Log(response.ToString());
-            GameManager.Instance.AddJob(() => roomname = response.GetValue<string>());
-            GameManager.Instance.AddJob(StartMatchFinding);
-        });
-
-        GameManager.Instance.SocketMngr.Socket.On("matchstatuschanged", (response) =>
-        {
-            string tempresponse = response.ToString();
-
-            GameManager.Instance.AddJob(() =>
+            GameManager.Instance.SocketMngr.Socket.On("matchfound", (response) =>
             {
-                if (matchFound) return;
-
-                List<Dictionary<string, string>> tempdata = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(tempresponse);
-
-                if (tempdata.Count <= 0) return;
-
-                if (tempdata[0]["status"] != "WAITING") return;
-
-                GameManager.Instance.AddJob(() => roomname = tempdata[0]["roomName"]);
+                Debug.Log(response.ToString());
+                GameManager.Instance.AddJob(() => roomname = response.GetValue<string>());
                 GameManager.Instance.AddJob(StartMatchFinding);
             });
-        });
+
+            GameManager.Instance.SocketMngr.Socket.On("matchstatuschanged", (response) =>
+            {
+                string tempresponse = response.ToString();
+
+                GameManager.Instance.AddJob(() =>
+                {
+                    if (matchFound) return;
+
+                    List<Dictionary<string, string>> tempdata = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(tempresponse);
+
+                    if (tempdata.Count <= 0) return;
+
+                    if (tempdata[0]["status"] != "WAITING") return;
+
+                    GameManager.Instance.AddJob(() => roomname = tempdata[0]["roomName"]);
+                    GameManager.Instance.AddJob(StartMatchFinding);
+                });
+            });
+        }
     }
 
     private void Update()
@@ -308,7 +312,10 @@ public class ClientMatchmakingController : MonoBehaviour
 
                 currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
 
-                GameManager.Instance.SocketMngr.EmitEvent("findmatch", "");
+                if (usePrivateServer)
+                    GameManager.Instance.SocketMngr.EmitEvent("findmatch", "");
+                else
+                    StartMatchFinding();
             }
         }, null));
     }

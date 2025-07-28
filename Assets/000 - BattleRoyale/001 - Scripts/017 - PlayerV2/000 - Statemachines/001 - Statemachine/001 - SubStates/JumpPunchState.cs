@@ -18,6 +18,7 @@ public class JumpPunchState : PlayerOnGround
     {
         base.Enter();
 
+        playerPlayables.healthV2.FallDamageValue = 0;
         hasResetHitEnemies = false;
         timer = playerPlayables.TickRateAnimation + animationLength;
         canAction = true;
@@ -43,14 +44,28 @@ public class JumpPunchState : PlayerOnGround
 
         playerPlayables.basicMovement.PerformSecondAttack();
 
+        FallDamage();
+
         if (characterController.IsGrounded && canAction && playerPlayables.TickRateAnimation >= timer)
         {
             playerMovement.IsJumping = false;
             playerMovement.JumpImpulse = 0;
+
+            if (playerPlayables.healthV2.FallDamageValue > 0)
+                playerPlayables.healthV2.FallDamae();
+
             Animation();
         }
 
         playerPlayables.stamina.RecoverStamina(5f);
+    }
+
+    private void FallDamage()
+    {
+        if (characterController.RealVelocity.y <= -20f)
+        {
+            playerPlayables.healthV2.FallDamageValue = Mathf.Abs(characterController.RealVelocity.y) - 5f;
+        }
     }
 
     private void Animation()

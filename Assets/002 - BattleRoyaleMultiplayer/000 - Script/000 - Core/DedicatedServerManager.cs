@@ -100,8 +100,11 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [SerializeField] private int maxPlayers;
     [SerializeField] private string lobby;
     [SerializeField] private bool useMultiplay;
+    [SerializeField] private bool usePrivateServer;
     [SerializeField] private MultiplayController multiplayController;
     [SerializeField] private KillNotificationController killNotificationController;
+    [SerializeField] private GridManager waitingAreaGridManager;
+    [SerializeField] private GridManager battleAreaGridManager;
 
     [Header("SERVER")]
     [SerializeField] private NetworkRunner serverNetworkRunnerPrefab;
@@ -336,11 +339,16 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
     //  =================
 
+    Coroutine despawnBotsCoroutine;
+
+    //  =================
+
     private void Awake()
     {
         if (GameManager.Instance == null)
         {
-            InitializeSocket();
+            if (usePrivateServer)
+                InitializeSocket();
 
             cbsbotnames.Shuffle();
             botnames.Shuffle();
@@ -630,30 +638,31 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         //FusionAppSettings appSettings;
 
-
-        if (args.TryGetValue("roomname", out string roomname))
+        if (usePrivateServer && args.TryGetValue("roomname", out string roomname))
             sessionname = roomname;
+        else
+            sessionname = new Guid().ToString();
 
-        //if (args.TryGetValue("region", out string region))
-        //    appSettings = BuildCustomAppSetting(region);
-        //else
-        //    appSettings = BuildCustomAppSetting("asia");
+            //if (args.TryGetValue("region", out string region))
+            //    appSettings = BuildCustomAppSetting(region);
+            //else
+            //    appSettings = BuildCustomAppSetting("asia");
 
-        //Debug.Log($"STARTING REGION: {appSettings.FixedRegion}");
+            //Debug.Log($"STARTING REGION: {appSettings.FixedRegion}");
 
-        await networkRunner.StartGame(new StartGameArgs()
-        {
-            SessionName = sessionname,
-            GameMode = GameMode.Server,
-            IsVisible = false,
-            IsOpen = false,
-            SceneManager = networkRunner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
-            Scene = networkSceneInfo,
-            PlayerCount = maxPlayers,
-            Address = NetAddress.Any(),
-            CustomLobbyName = lobby,
-            //CustomPhotonAppSettings = appSettings
-        });
+            await networkRunner.StartGame(new StartGameArgs()
+            {
+                SessionName = sessionname,
+                GameMode = GameMode.Server,
+                IsVisible = false,
+                IsOpen = false,
+                SceneManager = networkRunner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
+                Scene = networkSceneInfo,
+                PlayerCount = maxPlayers,
+                Address = NetAddress.Any(),
+                CustomLobbyName = lobby,
+                //CustomPhotonAppSettings = appSettings
+            });
 
 
         if (networkRunner.IsRunning)
@@ -694,7 +703,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             networkRunner.SessionInfo.IsOpen = true;
             networkRunner.SessionInfo.IsVisible = true;
 
-            ChangeServerStatus();
+            if (usePrivateServer)
+                ChangeServerStatus();
 
             Debug.Log("ALL PLAYERS CAN NOW JOIN");
         }
@@ -776,7 +786,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 WaitingAreaTimer = readyForBattleStartTimer;
                 CurrentWaitingAreaTimerState = WaitingAreaTimerState.GETREADY;
 
-                ChangeServerStatus();
+                if (usePrivateServer)
+                    ChangeServerStatus();
 
                 doneValidatingPlayerCount = true;
             }
@@ -803,7 +814,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 CanCountWaitingAreaTimer = false;
                 CurrentStateChange?.Invoke(this, EventArgs.Empty);
 
-                ChangeServerStatus();
+                if (usePrivateServer)
+                    ChangeServerStatus();
 
                 StartCoroutine(BattlePosition());
             }
@@ -946,6 +958,17 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         }
     }
 
+    IEnumerator UnspawnedBots()
+    {
+        for (int a = 0; a <  Bots.Count; a++)
+        {
+            Runner.Despawn(Bots.ElementAt(a).Value);
+            yield return null;
+        }
+
+        Bots.Clear();
+    }
+
     private string GetBotName()
     {
         string name;
@@ -969,6 +992,16 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         }
 
         return name;
+    }
+
+    public GridManager CurrentGridManager()
+    {
+        if (CurrentGameState == GameState.WAITINGAREA)
+            return waitingAreaGridManager;
+        else if (CurrentGameState == GameState.ARENA)
+            return battleAreaGridManager;
+
+        return null;
     }
 
     #endregion
@@ -1084,9 +1117,13 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 WaitingAreaTimer = waitingAreaStartTimer;
                 CanCountWaitingAreaTimer = false;
                 CurrentWaitingAreaTimerState = WaitingAreaTimerState.WAITING;
+
+                if (despawnBotsCoroutine != null) StopCoroutine(despawnBotsCoroutine);
+
+                despawnBotsCoroutine = StartCoroutine(UnspawnedBots());
             }
 
-            if (CurrentGameState == GameState.DONE && Players.Count <= 0)
+            if ((CurrentGameState == GameState.DONE || CurrentGameState == GameState.ARENA) && Players.Count <= 0)
                 Application.Quit();
         }
 

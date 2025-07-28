@@ -439,7 +439,7 @@ public class PlayerMovementV2 : NetworkBehaviour
 
         if (stamina.Stamina >= 10f)
         {
-            if (sprintCooldown >= 0.1f)
+            if (sprintCooldown >= 0.3f)
                 IsSprint = true;
             else
             {

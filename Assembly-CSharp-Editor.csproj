@@ -72,11 +72,15 @@
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Editor\Utils\YuME_freezeMap.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Editor\Utils\YuME_sceneGizmoFunctions.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Editor\Utils\YuME_MapManagerUI.cs" />
+    <Compile Include="Assets\Editor\NavigationStaticFinder.cs" />
+    <Compile Include="Assets\Editor\NavigationStaticDetector.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Editor\Utils\YuME_mouseShorcuts.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Editor\Utils\YuME_editorConfig.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Editor\Utils\YuME_customBrushFunctions.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Editor\Utils\YuME_brushFunctions.cs" />
     <Compile Include="Assets\UnityTechnologies\ParticlePack\Shared\Ramps\Editor\RampAssetEditor.cs" />
+    <Compile Include="Assets\Editor\NavigationStaticTester.cs" />
+    <Compile Include="Assets\Editor\DebugRawStaticFlags.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Editor\Utils\YuME_tileFunctions.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Editor\Utils\YuME_swapTilesets.cs" />
   </ItemGroup>
@@ -1077,6 +1081,10 @@
       <HintPath>Library\ScriptAssemblies\Unity.Burst.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.AI.Navigation">
+      <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.Animation.Rigging.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.Animation.Rigging.Editor.dll</HintPath>
       <Private>False</Private>
@@ -1131,6 +1139,10 @@
     </Reference>
     <Reference Include="Unity.Services.Core.Analytics">
       <HintPath>Library\ScriptAssemblies\Unity.Services.Core.Analytics.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.AI.Navigation.Editor.ConversionSystem">
+      <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.Editor.ConversionSystem.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Animation.Rigging">
@@ -1237,6 +1249,10 @@
       <HintPath>Library\ScriptAssemblies\Unity.SysrootPackage.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.AI.Navigation.Updater">
+      <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.Updater.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.Postprocessing.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.Postprocessing.Editor.dll</HintPath>
       <Private>False</Private>
@@ -1267,6 +1283,10 @@
     </Reference>
     <Reference Include="Unity.Searcher.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.Searcher.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.AI.Navigation.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.VisualScripting.State">

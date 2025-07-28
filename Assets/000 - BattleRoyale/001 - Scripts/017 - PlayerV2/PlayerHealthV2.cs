@@ -158,7 +158,7 @@ public class PlayerHealthV2 : NetworkBehaviour
 
     public void HealHealth()
     {
-        float temphealth = CurrentHealth + 30f;
+        float temphealth = CurrentHealth + 35f;
 
         CurrentHealth = Mathf.Clamp(temphealth, 0f, 100f);
 
@@ -169,7 +169,7 @@ public class PlayerHealthV2 : NetworkBehaviour
 
     public void RepairArmor()
     {
-        float temparmor = inventory.Armor.Supplies + 30f;
+        float temparmor = inventory.Armor.Supplies + 40f;
 
         inventory.Armor.Supplies = (int)Mathf.Clamp(temparmor, 0f, 100f);
 

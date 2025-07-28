@@ -64,8 +64,14 @@ public class BotGettingUpPlayable : BotAnimationPlayable
                     return;
                 }
 
-                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.IdlePlayable);
+                ChangeDirection();
             }
         }
+    }
+
+    private void ChangeDirection()
+    {
+        botMovement.PickNewWanderDirection();
+        botPlayablesChanger.ChangeState(botPlayables.BasicMovement.RunPlayable);
     }
 }

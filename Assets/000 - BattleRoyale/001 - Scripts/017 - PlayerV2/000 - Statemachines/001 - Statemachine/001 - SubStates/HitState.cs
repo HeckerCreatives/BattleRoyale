@@ -72,8 +72,17 @@ public class HitState : PlayerOnGround
 
         if (playerPlayables.TickRateAnimation >= timer && canAction)
         {
-            if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
-                playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
+            CheckWeapon();
+        }
+    }
+
+    private void CheckWeapon()
+    {
+        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
+            playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
+
+        if (playerPlayables.inventory.WeaponIndex == 1)
+        {
 
             if (playerMovement.Attacking)
                 playablesChanger.ChangeState(playerPlayables.basicMovement.Punch1Playable);
@@ -90,8 +99,45 @@ public class HitState : PlayerOnGround
             }
             else
                 playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
+        }
+        else if (playerPlayables.inventory.WeaponIndex == 2)
+        {
+            if (playerPlayables.inventory.PrimaryWeaponID() == "001")
+            {
+                if (playerMovement.Attacking)
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordAttackFirstPlayable);
 
-            return;
+                if (playerMovement.IsBlocking)
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordBlockPlayable);
+
+                if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
+                {
+                    if (playerMovement.IsSprint)
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
+                    else
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
+                }
+                else
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
+            }
+            else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
+            {
+                if (playerMovement.Attacking)
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SpearFirstAttackPlayable);
+
+                if (playerMovement.IsBlocking)
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SpearBlockPlayable);
+
+                if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
+                {
+                    if (playerMovement.IsSprint)
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SpearSprintPlayable);
+                    else
+                        playablesChanger.ChangeState(playerPlayables.basicMovement.SpearRunPlayable);
+                }
+                else
+                    playablesChanger.ChangeState(playerPlayables.basicMovement.SpearIdlePlayable);
+            }
         }
     }
 }

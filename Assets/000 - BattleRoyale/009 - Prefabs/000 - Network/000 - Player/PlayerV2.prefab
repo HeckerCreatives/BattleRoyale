@@ -8739,6 +8739,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7990691455501455482}
+  - component: {fileID: 3088588190403998856}
   - component: {fileID: 5338607522235249809}
   - component: {fileID: 6177931713424530660}
   - component: {fileID: 2433030652533454342}
@@ -8805,6 +8806,18 @@ Transform:
   - {fileID: 1281531726070366577}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3088588190403998856
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1572221092642448185}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e75b2898fa505864581747f1544ac0b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &5338607522235249809
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9093,6 +9106,7 @@ MonoBehaviour:
   joystickHandle: {fileID: 8614222631547327889}
   gameplayController: {fileID: 0}
   inputVector: {x: 0, y: 0, z: 0}
+  sprintCooldown: 0
   _MoveDirection: {x: 0, y: 0, z: 0}
   _MoveDir: {x: 0, y: 0, z: 0}
   _XMovement: 0
@@ -9171,6 +9185,7 @@ MonoBehaviour:
   _IsStagger: 0
   _IsGettingUp: 0
   _DamagedSafeZone: 0
+  _FallDamageValue: 0
   _FallDamage: 0
   _IsDead: 0
 --- !u!114 &7077205552742513072
@@ -9319,7 +9334,7 @@ MonoBehaviour:
     ColliderLayer: 9
     CollisionLayerMask:
       serializedVersion: 2
-      m_Bits: 35393
+      m_Bits: 297537
     ProxyInterpolationMode: 0
     MaxPenetrationSteps: 8
     CCDRadiusMultiplier: 0.75
@@ -9400,6 +9415,7 @@ MonoBehaviour:
   - {fileID: 2339921567610803067}
   - {fileID: 5945355345366088957}
   NetworkedBehaviours:
+  - {fileID: 3088588190403998856}
   - {fileID: 5338607522235249809}
   - {fileID: 7268080577510237573}
   - {fileID: 878466383140911213}

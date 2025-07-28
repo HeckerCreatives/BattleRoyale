@@ -1,3 +1,4 @@
+using Fusion;
 using Fusion.Addons.SimpleKCC;
 using System.Collections;
 using System.Collections.Generic;
@@ -57,7 +58,14 @@ public class BotHitPlayable : BotAnimationPlayable
                 return;
             }
 
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.IdlePlayable);
+            ChangeDirection();
         }
+    }
+
+    private void ChangeDirection()
+    {
+        botMovement.PickNewWanderDirection();
+        botMovement.WanderTimer = TickTimer.CreateFromSeconds(botMovement.Runner, Random.Range(botMovement.MinWanderDelay, botMovement.MaxWanderDelay));
+        botPlayablesChanger.ChangeState(botPlayables.BasicMovement.RunPlayable);
     }
 }
