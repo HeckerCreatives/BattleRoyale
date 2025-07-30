@@ -19,7 +19,7 @@ public class IdleState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
-        characterController.Move(playerMovement.MoveDirection, playerMovement.JumpImpulse);
+        characterController.Move(Vector3.zero, 0f);
 
         playerMovement.WeaponSwitcher();
         WeaponsChecker();

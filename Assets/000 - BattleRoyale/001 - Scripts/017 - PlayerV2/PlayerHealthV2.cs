@@ -238,7 +238,7 @@ public class PlayerHealthV2 : NetworkBehaviour
                 playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
                 ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
 
-                RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} was killed outside safe area");
+                ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} was killed outside safe area");
             }
         }
     }
@@ -283,7 +283,9 @@ public class PlayerHealthV2 : NetworkBehaviour
         if (remainingDamage > 0)
         {
             CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - remainingDamage);
-            nobject.GetComponent<PlayerGameStats>().HitPoints += remainingDamage;
+
+            if (nobject.tag == "Player")
+                nobject.GetComponent<PlayerGameStats>().HitPoints += remainingDamage;
         }
 
         // Check if player is dead
@@ -294,11 +296,13 @@ public class PlayerHealthV2 : NetworkBehaviour
 
             if (IsDead)
             {
-                nobject.GetComponent<PlayerGameStats>().KillCount++;
+                if (nobject.tag == "Player")
+                    nobject.GetComponent<PlayerGameStats>().KillCount++;
+
                 playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
                 ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
 
-                RPC_ReceiveKillNotification($"{killer} KILLED {playerOwnObjectEnabler.Username}");
+                ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{killer} KILLED {playerOwnObjectEnabler.Username}");
             }
             //string statustext = killer == loader.Username ? $"{loader.Username} Killed themself" : $"{killer} KILLED {loader.Username}";
 
@@ -337,14 +341,8 @@ public class PlayerHealthV2 : NetworkBehaviour
             {
                 playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
                 ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
-                RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} killed by fall damage");
+                ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} killed by fall damage");
             }
         }
-    }
-
-    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    public void RPC_ReceiveKillNotification(string message)
-    {
-        ServerManager.KillNotifController.ShowIndicator(message);
     }
 }

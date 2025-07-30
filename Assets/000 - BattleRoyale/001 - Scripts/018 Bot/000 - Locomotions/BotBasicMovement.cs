@@ -27,6 +27,11 @@ public class BotBasicMovement : NetworkBehaviour
     [SerializeField] private AnimationClip firstPunch;
     [SerializeField] private AnimationClip secondPunch;
     [SerializeField] private AnimationClip lastPunch;
+    [SerializeField] private AnimationClip swordIdle;
+    [SerializeField] private AnimationClip swordRun;
+    [SerializeField] private AnimationClip swordAttackOne;
+    [SerializeField] private AnimationClip swordAttackTwo;
+    [SerializeField] private AnimationClip swordAttackThree;
 
     //  ================
 
@@ -42,12 +47,14 @@ public class BotBasicMovement : NetworkBehaviour
     public BotFistFirstPunch FistFirstPunch;
     public BotFistMiddlePunch FistMiddlePunch;
     public BotFistLastPunch FistLastPunch;
+    public BotSwordIdle SwordIdlePlayable;
+    public BotSwordRunPlayable SwordRunPlayable;
 
     //  =================
 
     public AnimationMixerPlayable Initialize()
     {
-        mixerPlayable = AnimationMixerPlayable.Create(botPlayables.playableGraph, 11);
+        mixerPlayable = AnimationMixerPlayable.Create(botPlayables.playableGraph, 13);
 
         var idleClip = AnimationClipPlayable.Create(botPlayables.playableGraph, idle);
         var hitClip = AnimationClipPlayable.Create(botPlayables.playableGraph, hit);
@@ -59,6 +66,8 @@ public class BotBasicMovement : NetworkBehaviour
         var firstPunchClip = AnimationClipPlayable.Create(botPlayables.playableGraph, firstPunch);
         var secondPunchClip = AnimationClipPlayable.Create(botPlayables.playableGraph, secondPunch);
         var lastPunchClip = AnimationClipPlayable.Create(botPlayables.playableGraph, lastPunch);
+        var swordIdleClip = AnimationClipPlayable.Create(botPlayables.playableGraph, swordIdle);
+        var swordRunClip = AnimationClipPlayable.Create(botPlayables.playableGraph, swordRun);
 
         botPlayables.playableGraph.Connect(idleClip, 0, mixerPlayable, 1);
         botPlayables.playableGraph.Connect(hitClip, 0, mixerPlayable, 2);
@@ -70,6 +79,8 @@ public class BotBasicMovement : NetworkBehaviour
         botPlayables.playableGraph.Connect(firstPunchClip, 0, mixerPlayable, 8);
         botPlayables.playableGraph.Connect(secondPunchClip, 0, mixerPlayable, 9);
         botPlayables.playableGraph.Connect(lastPunchClip, 0, mixerPlayable, 10);
+        botPlayables.playableGraph.Connect(swordIdleClip, 0, mixerPlayable, 11);
+        botPlayables.playableGraph.Connect(swordRunClip, 0, mixerPlayable, 12);
 
         IdlePlayable = new BotIdlePlayable(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "idle", "basic", idle.length, idleClip, false);
         HitPlayable = new BotHitPlayable(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "hit", "basic", hit.length, hitClip, true);
@@ -81,6 +92,8 @@ public class BotBasicMovement : NetworkBehaviour
         FistFirstPunch = new BotFistFirstPunch(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "firstpunch", "basic", firstPunch.length, firstPunchClip, true);
         FistMiddlePunch = new BotFistMiddlePunch(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "middlepunch", "basic", secondPunch.length, secondPunchClip, true);
         FistLastPunch = new BotFistLastPunch(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "lastpunch", "basic", lastPunch.length, lastPunchClip, true);
+        SwordIdlePlayable = new BotSwordIdle(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "swordidle", "basic", swordIdle.length, swordIdleClip, false);
+        SwordRunPlayable = new BotSwordRunPlayable(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "swordrun", "basic", swordRun.length, swordRunClip, false);
 
         return mixerPlayable;
     }
@@ -110,6 +123,10 @@ public class BotBasicMovement : NetworkBehaviour
                 return FistMiddlePunch;
             case 10:
                 return FistLastPunch;
+            case 11:
+                return SwordIdlePlayable;
+            case 12:
+                return SwordRunPlayable;
             default: return null;
         }
     }

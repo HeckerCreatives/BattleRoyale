@@ -4,30 +4,34 @@ using System.Collections.Generic;
 using UnityEngine;
 using Fusion.Sockets;
 
-public class AOIManager : NetworkBehaviour
+public class AOIManager : NetworkBehaviour, IInterestEnter, IInterestExit
 {
-    //[SerializeField] private float visibilityRadius = 30f;
+    [SerializeField]
+    private float aoiRadius = 60f; // match this with AddPlayerAreaOfInterest
 
-    //public bool IsVisibleTo(NetworkRunner runner, PlayerRef player)
-    //{
-    //    // Get the player's NetworkObject
-    //    NetworkObject playerObject = runner.GetPlayerObject(player);
-    //    if (playerObject == null)
-    //        return false;
+    [Space]
+    [SerializeField] private GameObject playerVisualObjects;
 
-    //    // Don't hide from yourself
-    //    if (playerObject == Object)
-    //        return true;
 
-    //    float distance = Vector3.Distance(transform.position, playerObject.transform.position);
-    //    return distance <= visibilityRadius;
-    //}
+    private void OnDrawGizmosSelected()
+    {
+        // Green transparent wire sphere
+        Gizmos.color = new Color(0f, 1f, 0f, 0.4f);
+        Gizmos.DrawWireSphere(transform.position, aoiRadius);
+    }
 
-    //public override void Spawned()
-    //{
-    //    if (HasStateAuthority)
-    //    {
-    //        Runner.AddVisibilityCallback(this);
-    //    }
-    //}
+    public override void FixedUpdateNetwork()
+    {
+        Runner.AddPlayerAreaOfInterest(Object.InputAuthority, transform.position, aoiRadius);
+    }
+
+    public void InterestEnter(PlayerRef player)
+    {
+        if (player == Runner.LocalPlayer) playerVisualObjects.SetActive(true);
+    }
+
+    public void InterestExit(PlayerRef player)
+    {
+        if (player == Runner.LocalPlayer) playerVisualObjects.SetActive(false);
+    }
 }

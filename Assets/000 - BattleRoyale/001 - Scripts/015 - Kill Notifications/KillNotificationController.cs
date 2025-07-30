@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class KillNotificationController : MonoBehaviour
+public class KillNotificationController : NetworkBehaviour
 {
     //  ===================
 
@@ -78,5 +78,11 @@ public class KillNotificationController : MonoBehaviour
     {
         indicator.gameObject.SetActive(false);
         pool.Enqueue(indicator);
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPC_ReceiveKillNotification(string message)
+    {
+        ShowIndicator(message);
     }
 }

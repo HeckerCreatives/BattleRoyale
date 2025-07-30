@@ -112,6 +112,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [SerializeField] private List<Transform> spawnBattleAreaPositions;
 
     [Header("PLAYER")]
+    [SerializeField] private NetworkObject killNotifObj;
     [SerializeField] private NetworkObject playerObj;
     [SerializeField] private NetworkObject bulletNO;
     [SerializeField] private NetworkObject arrowNO;
@@ -139,6 +140,11 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [SerializeField] private int maxBot;
     [SerializeField] private NetworkObject botPrefab;
     [SerializeField] private List<Transform> botSpawnPoints;
+
+    [Header("BOT WEAPONS")]
+    [SerializeField] private PrimaryWeaponItem swordItem;
+    [SerializeField] private PrimaryWeaponItem spearItem;
+    [SerializeField] private ArmorItem armorItem;
 
     [Header("DEBUGGER")]
     [SerializeField] private string sessionname;
@@ -528,6 +534,18 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         return selectedItems;
     }
 
+    private async void SpawnNotifUI()
+    {
+        while (!Runner)
+            await Task.Yield();
+
+        Debug.Log($"Spawning Kill Notification UI");
+        Runner.Spawn(killNotifObj, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+        {
+            killNotificationController = obj.GetComponent<KillNotificationController>();
+        });
+    }
+
     private async void SpawnCrates()
     {
         Debug.Log("start spawning crates");
@@ -668,6 +686,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         if (networkRunner.IsRunning)
         {
             Debug.Log($"Done Setting up photon server");
+
+            SpawnNotifUI();
 
             Debug.Log($"Spawning Crates");
             SpawnCrates();
@@ -926,7 +946,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     private void SpawnBot()
     {
         if (CurrentGameState != GameState.WAITINGAREA) return;
-        if (Players.Count <= 0) return;
+        //if (Players.Count <= 0) return;
         if (spawnBotIndex >= maxBot) return;
 
         spawnBotTimer -= Runner.DeltaTime;
@@ -946,6 +966,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 tempbotdata.BotIndex = spawnBotIndex;
 
                 Bots.Add(spawnBotIndex, obj);
+
+                SpawnItems(obj);
 
                 spawnBotIndex++;
             });
@@ -992,6 +1014,53 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         }
 
         return name;
+    }
+
+    private void SpawnItems(NetworkObject obj)
+    {
+        BotInventory inventory = obj.GetComponent<BotInventory>();
+
+        int randomWeapon = UnityEngine.Random.Range(0, 2);
+
+        if (randomWeapon == 1)
+        {
+            int primaryWeaponRand = UnityEngine.Random.Range(0, 2);
+
+            Runner.Spawn(primaryWeaponRand == 0 ? swordItem : spearItem, Vector3.zero, Quaternion.identity, obj.InputAuthority, onBeforeSpawned: (runner, weaponObj) =>
+            {
+                PrimaryWeaponItem tempWeapon = weaponObj.GetComponent<PrimaryWeaponItem>();
+
+                weaponObj.GetComponent<PrimaryWeaponItem>().InitializeItem(obj, primaryWeaponRand == 0 ? inventory.SwordBack : inventory.SpearBack, primaryWeaponRand == 0 ? inventory.SwordHand : inventory.SpearHand, true);
+
+                inventory.PrimaryWeapon = tempWeapon;
+                inventory.WeaponIndex = 2;
+            });
+        }
+        else
+        {
+            inventory.WeaponIndex = 1;
+        }
+
+        int randHeal = UnityEngine.Random.Range(0, 6);
+
+        inventory.HealCount = randHeal;
+
+        int randArmor = UnityEngine.Random.Range(0, 3);
+
+        if (randArmor == 0)
+        {
+            Runner.Spawn(armorItem, Vector3.zero, Quaternion.identity, obj.InputAuthority, onBeforeSpawned: (runner, armorObj) =>
+            {
+                ArmorItem tempArmor = armorObj.GetComponent<ArmorItem>();
+
+                armorObj.GetComponent<ArmorItem>().InitializeItem(obj, inventory.ArmorBack, true, true);
+
+                inventory.Armor = tempArmor;
+            });
+
+            int randRepair = UnityEngine.Random.Range(0, 6);
+            inventory.RepairCount = randRepair;
+        }
     }
 
     public GridManager CurrentGridManager()

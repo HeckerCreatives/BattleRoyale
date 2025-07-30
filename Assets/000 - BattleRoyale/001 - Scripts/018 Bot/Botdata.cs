@@ -35,6 +35,7 @@ public class Botdata : NetworkBehaviour
     [field: SerializeField][Networked] public bool IsHit { get; set; }
     [field: SerializeField][Networked] public bool IsStagger { get; set; }
     [field: SerializeField][Networked] public bool IsGettingUp { get; set; }
+    [field: SerializeField][Networked] public TickTimer DeadTimer { get; set; }
 
     //  ======================
 
@@ -59,6 +60,9 @@ public class Botdata : NetworkBehaviour
     public override void FixedUpdateNetwork()
     {
         CircleDamage();
+
+        if (IsDead && DeadTimer.Expired(Runner))
+            Runner.Despawn(Object);
     }
 
     public override void Render()
@@ -113,7 +117,9 @@ public class Botdata : NetworkBehaviour
             {
                 ServerManager.Bots.Remove(BotIndex);
 
-                RPC_ReceiveKillNotification($"{BotName} was killed outside safe area");
+                ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{BotName} was killed outside safe area");
+
+                DeadTimer = TickTimer.CreateFromSeconds(Runner, 5f);
             }
         }
     }
@@ -137,7 +143,9 @@ public class Botdata : NetworkBehaviour
             {
                 ServerManager.Bots.Remove(BotIndex);
 
-                RPC_ReceiveKillNotification($"{BotName} killed themselves");
+                ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{BotName} killed themselves");
+
+                DeadTimer = TickTimer.CreateFromSeconds(Runner, 5f);
             }
         }
     }
@@ -189,12 +197,11 @@ public class Botdata : NetworkBehaviour
             {
                 if (nobject.tag == "Player")
                     nobject.GetComponent<PlayerGameStats>().KillCount++;
-                else
-                    ServerManager.Bots.Remove(BotIndex);
 
-                RPC_ReceiveKillNotification($"{killer} KILLED {BotName}");
+                ServerManager.Bots.Remove(BotIndex);
 
-                Invoke(nameof(DespawnBot), 5f);
+                ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{killer} KILLED {BotName}");
+                DeadTimer = TickTimer.CreateFromSeconds(Runner, 5f);
             }
             //string statustext = killer == loader.Username ? $"{loader.Username} Killed themself" : $"{killer} KILLED {loader.Username}";
 
@@ -215,13 +222,6 @@ public class Botdata : NetworkBehaviour
     }
 
     private void DespawnBot() => Runner.Despawn(Object);
-
-
-    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    public void RPC_ReceiveKillNotification(string message)
-    {
-        ServerManager.KillNotifController.ShowIndicator(message);
-    }
 
     #endregion
 

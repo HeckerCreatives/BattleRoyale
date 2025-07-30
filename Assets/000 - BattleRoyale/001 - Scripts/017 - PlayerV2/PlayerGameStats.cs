@@ -160,13 +160,15 @@ public class PlayerGameStats : NetworkBehaviour
                     IsDoneShowingGameOver = true;
 
                     usernameResultTMP.text = userData.Username;
-                    playerCountResultTMP.text = $"<color=yellow><size=\"55\">#{(PlayerPlacement + ServerManager.Bots.Count)}</size></color> <size=\"50\"> / {ServerManager.RemainingPlayers.Capacity - 2}</size>";
-                    rankResultTMP.text = PlayerPlacement.ToString();
+                    int botsCount = ServerManager.Bots.Count;
+                    Debug.Log(botsCount);
+                    playerCountResultTMP.text = $"<color=yellow><size=\"55\">#{(PlayerPlacement + botsCount)}</size></color> <size=\"50\"> / {ServerManager.RemainingPlayers.Capacity - 2}</size>";
+                    rankResultTMP.text = (PlayerPlacement + botsCount).ToString();
                     killCountResultTMP.text = KillCount.ToString();
 
                     //  Leaderboard
 
-                    float rankpointLB = ((100 - (PlayerPlacement + ServerManager.Bots.Count) + 1) / 100f) * 20;
+                    float rankpointLB = ((100 - (PlayerPlacement + botsCount) + 1) / 100f) * 20;
                     rankpointLB = (float)Math.Truncate(rankpointLB);
                     float killpointLB = KillCount * 100f;
                     killpointLB = (float)Math.Truncate(killpointLB);

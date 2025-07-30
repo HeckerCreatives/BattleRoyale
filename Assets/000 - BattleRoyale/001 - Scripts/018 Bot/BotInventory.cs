@@ -3,11 +3,39 @@ using Newtonsoft.Json;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 using static Fusion.NetworkBehaviour;
 
 public class BotInventory : NetworkBehaviour
 {
+    public NetworkObject ArmorBack
+    {
+        get => armorBack;
+    }
+
+    public NetworkObject SwordHand
+    {
+        get => swordHand;
+    }
+
+    public NetworkObject SwordBack
+    {
+        get => swordBack;
+    }
+
+    public NetworkObject SpearHand
+    {
+        get => spearHand;
+    }
+
+    public NetworkObject SpearBack
+    {
+        get => spearBack;
+    }
+
+    //  ================
+
     [Header("COLORS")]
     [SerializeField] private List<Color> hairColorList;
     [SerializeField] private List<Color> clothingColorList;
@@ -20,12 +48,24 @@ public class BotInventory : NetworkBehaviour
     [SerializeField] private SkinnedMeshRenderer upperClothingMR;
     [SerializeField] private SkinnedMeshRenderer lowerClothingMR;
 
+    [Space]
+    [SerializeField] private NetworkObject armorBack;
+    [SerializeField] private NetworkObject swordHand;
+    [SerializeField] private NetworkObject swordBack;
+    [SerializeField] private NetworkObject spearHand;
+    [SerializeField] private NetworkObject spearBack;
+
     [field: Header("DEBUGGER NETWORK")]
     [field: SerializeField][Networked] public NetworkBool IsSkinInitialized { get; set; }
     [field: SerializeField][Networked] public int HairStyle { get; set; }
     [field: SerializeField][Networked] public int HairColorIndex { get; set; }
     [field: SerializeField][Networked] public int ClothingColorIndex { get; set; }
     [field: SerializeField][Networked] public int SkinColorIndex { get; set; }
+    [field: SerializeField][Networked] public int WeaponIndex { get; set; }
+    [field: SerializeField][Networked] public PrimaryWeaponItem PrimaryWeapon { get; set; }
+    [field: SerializeField][Networked] public ArmorItem Armor { get; set; }
+    [field: SerializeField][Networked] public int HealCount { get; set; }
+    [field: SerializeField][Networked] public int RepairCount { get; set; }
 
     public override void Spawned()
     {
@@ -56,5 +96,12 @@ public class BotInventory : NetworkBehaviour
         upperClothingMR.material.SetColor("_BaseColor", clothingColorList[ClothingColorIndex]);
         lowerClothingMR.materials[0].SetColor("_BaseColor", clothingColorList[ClothingColorIndex]);
         bodyColorMR.material.SetColor("_BaseColor", skinColorList[SkinColorIndex]);
+    }
+
+    public string GetPrimaryWeaponID()
+    {
+        if (PrimaryWeapon == null) return "";
+
+        return PrimaryWeapon.WeaponID;
     }
 }

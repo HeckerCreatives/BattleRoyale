@@ -44,6 +44,12 @@ public class BotHitPlayable : BotAnimationPlayable
             return;
         }
 
+        if (botPlayables.GetBotData.IsHit)
+        {
+            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.HitPlayable);
+            return;
+        }
+
         if (botPlayables.TickRateAnimation >= timer)
         {
             if (botPlayables.GetBotData.IsHit)

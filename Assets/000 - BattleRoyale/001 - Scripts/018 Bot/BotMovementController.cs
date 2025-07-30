@@ -88,12 +88,14 @@ public class BotMovementController : NetworkBehaviour
         if (Vector3.Distance(botKCC.Position, detectedTarget.transform.position) > 1f)
         {
             botKCC.Move(moveDir.normalized * speed * Runner.DeltaTime);
-            transform.forward = moveDir.normalized;
+            botKCC.SetLookRotation(Quaternion.Slerp(botKCC.TransformRotation, Quaternion.LookRotation(moveDir), Runner.DeltaTime * 10f));
         }
     }
 
     public bool CanPunch()
     {
+        if (detectedTarget == null) return false;
+
         if (Vector3.Distance(botKCC.Position, detectedTarget.transform.position) <= 1f) return true;
 
         return false;

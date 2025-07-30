@@ -15,6 +15,9 @@ public class BotAnimationPlayable
     List<string> animations;
     List<string> mixers;
 
+    int ltEnter;
+    int ltExit;
+
     //  ======================
 
     public BotMovementController botMovement;
@@ -69,6 +72,13 @@ public class BotAnimationPlayable
         int mixerIndex = mixers.IndexOf(mixername);
         int animIndex = animations.IndexOf(animationname);
 
+        if (ltExit != 0) LeanTween.cancel(ltExit);
+
+        ltEnter = LeanTween.value(botPlayables.gameObject, mixerPlayable.GetInputWeight(animIndex), 1f, botPlayables.enterSpeed)
+        .setOnUpdate((float weight) => {
+            mixerPlayable.SetInputWeight(animIndex, weight);
+        }).setOnComplete(() => mixerPlayable.SetInputWeight(animIndex, 1f)).setEase(LeanTweenType.linear).id;
+
         if (botPlayables.HasInputAuthority || botPlayables.HasStateAuthority)
         {
             botPlayables.PlayableState = mixername;
@@ -77,10 +87,6 @@ public class BotAnimationPlayable
 
         if (botPlayables.HasStateAuthority)
             botPlayables.SetAnimationTick();
-
-        if (blendCoroutine != null) coroutineHost.StopCoroutine(blendCoroutine);
-        blendCoroutine = coroutineHost.StartCoroutine(BlendWeights(mixerPlayable, animIndex, 1f));
-        coroutineHost.StartCoroutine(BlendWeights(botPlayables.finalMixer, mixerIndex, 1f));
     }
 
     public virtual void Exit()
@@ -88,9 +94,12 @@ public class BotAnimationPlayable
         int mixerIndex = mixers.IndexOf(mixername);
         int animIndex = animations.IndexOf(animationname);
 
-        if (blendCoroutine != null) coroutineHost.StopCoroutine(blendCoroutine);
-        blendCoroutine = coroutineHost.StartCoroutine(BlendWeights(mixerPlayable, animIndex, 0f));
-        coroutineHost.StartCoroutine(BlendWeights(botPlayables.finalMixer, mixerIndex, 0f));
+        if (ltEnter != 0) LeanTween.cancel(ltEnter);
+
+        ltExit = LeanTween.value(botPlayables.gameObject, mixerPlayable.GetInputWeight(animIndex), 0f, botPlayables.exitSpeed)
+        .setOnUpdate((float weight) => {
+            mixerPlayable.SetInputWeight(animIndex, weight);
+        }).setOnComplete(() => mixerPlayable.SetInputWeight(animIndex, 0f)).setEase(LeanTweenType.linear).id;
     }
 
     ////public virtual void LogicUpdate()

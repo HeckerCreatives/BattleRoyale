@@ -17,10 +17,20 @@ public class BotPlayables : NetworkBehaviour
         get => basicMovement;
     }
 
+    public BotInventory Inventroy
+    {
+        get => inventory;
+    }
+
     //  ==================
 
     [SerializeField] private BotBasicMovement basicMovement;
     [SerializeField] private Botdata botData;
+    [SerializeField] private BotInventory inventory;
+
+    [Space]
+    public float enterSpeed;
+    public float exitSpeed;
 
     [Space]
     [SerializeField] private Animator botAnimator;

@@ -70,16 +70,32 @@ public class ArmorItem : NetworkBehaviour, IPickupItem
         }
     }
 
-    public void InitializeItem(NetworkObject player, NetworkObject armorParent, bool isSpawn = false)
+    public void InitializeItem(NetworkObject player, NetworkObject armorParent, bool isSpawn = false, bool isBot = false)
     {
-        PlayerInventoryV2 tempinventory = player.GetComponent<PlayerInventoryV2>();
+        PlayerInventoryV2 tempPlayerinventory = null;
+        BotInventory tempBotInventory = null;
 
-        if (tempinventory.Armor != null) tempinventory.Armor.DropArmor();
+        if (isBot)
+        {
+            tempBotInventory = player.GetComponent<BotInventory>();
+
+            if (tempBotInventory.Armor != null) tempBotInventory.Armor.DropArmor();
+        }
+        else
+        {
+            tempPlayerinventory = player.GetComponent<PlayerInventoryV2>();
+
+            if (tempPlayerinventory.Armor != null) tempPlayerinventory.Armor.DropArmor();
+        }
 
         Object.AssignInputAuthority(player.InputAuthority);
 
         CurrentPlayer = player;
-        tempinventory.Armor = this;
+
+        if (isBot)
+            tempBotInventory.Armor = this;
+        else
+            tempPlayerinventory.Armor = this;
 
         Position = armorParent.transform.position;
         Parent = armorParent;

@@ -47,6 +47,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
     [Networked][field: SerializeField] public bool IsPickedUp { get; set; }
     [Networked][field: SerializeField] public bool IsEquipped { get; set; }
     [Networked][field: SerializeField] public NetworkObject CurrentPlayer { get; set; }
+    [Networked][field: SerializeField] public PlayerOwnObjectEnabler PlayerCore { get; set; }
     [Networked][field: SerializeField] public Vector3 Position { get; set; }
     [Networked][field: SerializeField] public NetworkObject Back { get; set; }
     [Networked][field: SerializeField] public NetworkObject Hand { get; set; }
@@ -104,16 +105,32 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
         }
     }
 
-    public void InitializeItem(NetworkObject player, NetworkObject backParent, NetworkObject handParent)
+    public void InitializeItem(NetworkObject player, NetworkObject backParent, NetworkObject handParent, bool isBot = false)
     {
-        PlayerInventoryV2 tempinventory = player.GetComponent<PlayerInventoryV2>();
+        BotInventory tempBotinventory = null;
+        PlayerInventoryV2 tempPlayerinventory = null;
 
-        if (tempinventory.PrimaryWeapon != null) tempinventory.PrimaryWeapon.DropWeapon();
+        if (isBot)
+        {
+            tempBotinventory = player.GetComponent<BotInventory>();
+
+            if (tempBotinventory.PrimaryWeapon != null) tempBotinventory.PrimaryWeapon.DropWeapon();
+        }
+        else
+        {
+            tempPlayerinventory = player.GetComponent<PlayerInventoryV2>();
+
+            if (tempPlayerinventory.PrimaryWeapon != null) tempPlayerinventory.PrimaryWeapon.DropWeapon();
+        }
 
         Object.AssignInputAuthority(player.InputAuthority);
 
         CurrentPlayer = player;
-        tempinventory.PrimaryWeapon = this;
+
+        if (isBot)
+            tempBotinventory.PrimaryWeapon = this;
+        else
+            tempPlayerinventory.PrimaryWeapon = this;
 
         Position = backParent.transform.position;
         Back = backParent;
@@ -123,10 +140,17 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
 
         IsPickedUp = true;
 
-        if (tempinventory.WeaponIndex == 2) IsEquipped = true;
-        else IsEquipped = false;
+        if (isBot) IsEquipped = true;
+        else
+        {
+            if (tempPlayerinventory.WeaponIndex == 2) IsEquipped = true;
+            else IsEquipped = false;
+        }
 
         Supplies = 1;
+
+        PlayerOwnObjectEnabler tempcore = player.GetComponent<PlayerOwnObjectEnabler>();
+        PlayerCore = tempcore;
     }
 
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
@@ -148,6 +172,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
         CurrentPlayer = null;
         Back = null;
         Hand = null;
+        PlayerCore = null;
         Object.RemoveInputAuthority();
     }
 
@@ -209,7 +234,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                     if (isFinalHit) tempdata.IsStagger = true;
                     else tempdata.IsHit = true;
 
-                    tempdata.ApplyDamage(tempdamage, "", CurrentPlayer);
+                    tempdata.ApplyDamage(tempdamage, PlayerCore.Username, CurrentPlayer);
                 }
             }
             else
@@ -245,7 +270,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                     else
                         healthV2.IsHit = true;
 
-                    healthV2.ApplyDamage(tempdamage, "", CurrentPlayer);
+                    healthV2.ApplyDamage(tempdamage, PlayerCore.Username, CurrentPlayer);
                 }
             }
         }

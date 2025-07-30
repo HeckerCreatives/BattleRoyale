@@ -7,6 +7,7 @@ public class PlayerPlayables : NetworkBehaviour
 {
     public PlayerStamina stamina;
     public PlayerInventoryV2 inventory;
+    public PlayerOwnObjectEnabler ownObjectEnabler;
 
     [Space]
     [SerializeField] private Animator playerAnimator;
@@ -15,6 +16,10 @@ public class PlayerPlayables : NetworkBehaviour
     public PlayerHealthV2 healthV2;
     public PlayerBasicMovement basicMovement;
     public HealMovement healMovements;
+
+    [Space]
+    public float enterSpeed;
+    public float exitSpeed;
 
     [Header("DEBUGGER")]
     [SerializeField] private int _lastProcessedTick = -1;
@@ -52,7 +57,7 @@ public class PlayerPlayables : NetworkBehaviour
 
     public override void Render()
     {
-        if (HasStateAuthority) return;
+        if (HasStateAuthority || HasInputAuthority) return;
 
         if (changer.CurrentState == null) return;
 
@@ -85,7 +90,7 @@ public class PlayerPlayables : NetworkBehaviour
 
     public void InitializePlayables()
     {
-        changer = new PlayablesChanger();
+        changer = new PlayablesChanger(this);
 
         playableGraph = PlayableGraph.Create();
 
