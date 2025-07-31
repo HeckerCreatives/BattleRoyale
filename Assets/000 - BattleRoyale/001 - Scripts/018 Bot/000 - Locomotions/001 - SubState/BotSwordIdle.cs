@@ -46,13 +46,7 @@ public class BotSwordIdle : BotAnimationPlayable
 
         if (botMovement.detectedTarget != null)
         {
-            if (botPlayables.Inventroy.WeaponIndex == 1)
-                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.RunPlayable);
-            else if (botPlayables.Inventroy.WeaponIndex == 2)
-            {
-                if (botPlayables.Inventroy.GetPrimaryWeaponID() == "001")
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordRunPlayable);
-            }
+            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordRunPlayable);
         }
         else
         {
@@ -62,13 +56,7 @@ public class BotSwordIdle : BotAnimationPlayable
             {
                 botMovement.WanderTimer = TickTimer.CreateFromSeconds(botMovement.Runner, Random.Range(botMovement.MinWanderDelay, botMovement.MaxWanderDelay));
 
-                if (botPlayables.Inventroy.WeaponIndex == 1)
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.RunPlayable);
-                else if (botPlayables.Inventroy.WeaponIndex == 2)
-                {
-                    if (botPlayables.Inventroy.GetPrimaryWeaponID() == "001")
-                        botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordRunPlayable);
-                }
+                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordRunPlayable);
             }
         }
     }

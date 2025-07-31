@@ -31,7 +31,7 @@ public class BotSwordAttackOne : BotAnimationPlayable
         moveTimer = botPlayables.TickRateAnimation + (animationLength * 0.3f);
         stopMoveTimer = botPlayables.TickRateAnimation + (animationLength * 0.18f);
         damageWindowEnd = botPlayables.TickRateAnimation + (animationLength * 0.23f);
-        nextPuncDelay = timer + 1.4f;
+        nextPuncDelay = timer + 0.3f;
         canAction = true;
     }
 
@@ -48,11 +48,11 @@ public class BotSwordAttackOne : BotAnimationPlayable
         {
             if (!hasResetHitEnemies)
             {
-                botPlayables.GetBotData.ResetFirstAttack(); // Clear BEFORE performing attack
+                botPlayables.Inventroy.PrimaryWeapon.ClearHitEnemies(); // Clear BEFORE performing attack
                 hasResetHitEnemies = true;
             }
 
-            botPlayables.GetBotData.PerformFirstAttack();
+            botPlayables.Inventroy.PrimaryWeapon.DamagePlayer(false, true);
         }
 
         if (botPlayables.TickRateAnimation >= moveTimer && botPlayables.TickRateAnimation <= stopMoveTimer)
@@ -91,17 +91,17 @@ public class BotSwordAttackOne : BotAnimationPlayable
 
         if (botPlayables.TickRateAnimation >= timer && canAction)
         {
-            if (botMovement.CanPunch())
+            if (botMovement.CanSwordAttack())
             {
                 if (botPlayables.TickRateAnimation >= nextPuncDelay)
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.FistMiddlePunch);
+                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordAttackTwoPlayable);
 
                 return;
             }
 
             botMovement.PickNewWanderDirection();
             botMovement.WanderTimer = TickTimer.CreateFromSeconds(botMovement.Runner, Random.Range(botMovement.MinWanderDelay, botMovement.MaxWanderDelay));
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.RunPlayable);
+            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordRunPlayable);
         }
     }
 }

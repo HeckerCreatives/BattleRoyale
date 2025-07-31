@@ -48,6 +48,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
     [Networked][field: SerializeField] public bool IsEquipped { get; set; }
     [Networked][field: SerializeField] public NetworkObject CurrentPlayer { get; set; }
     [Networked][field: SerializeField] public PlayerOwnObjectEnabler PlayerCore { get; set; }
+    [Networked][field: SerializeField] public Botdata BotData { get; set; }
     [Networked][field: SerializeField] public Vector3 Position { get; set; }
     [Networked][field: SerializeField] public NetworkObject Back { get; set; }
     [Networked][field: SerializeField] public NetworkObject Hand { get; set; }
@@ -149,8 +150,16 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
 
         Supplies = 1;
 
-        PlayerOwnObjectEnabler tempcore = player.GetComponent<PlayerOwnObjectEnabler>();
-        PlayerCore = tempcore;
+        if (isBot)
+        {
+            Botdata tempbotdata = player.GetComponent<Botdata>();
+            BotData = tempbotdata;
+        }
+        else
+        {
+            PlayerOwnObjectEnabler tempcore = player.GetComponent<PlayerOwnObjectEnabler>();
+            PlayerCore = tempcore;
+        }
     }
 
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
@@ -165,7 +174,11 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
         transform.parent = null;
 
         Position = CurrentPlayer.transform.position + new Vector3(0f, 0.1f, 0f);
-        CurrentPlayer.GetComponent<PlayerInventoryV2>().PrimaryWeapon = null;
+
+        if (BotData != null)
+            CurrentPlayer.GetComponent<BotInventory>().PrimaryWeapon = null;
+        else
+            CurrentPlayer.GetComponent<PlayerInventoryV2>().PrimaryWeapon = null;
 
         IsEquipped = false;
 
@@ -173,10 +186,11 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
         Back = null;
         Hand = null;
         PlayerCore = null;
+        BotData = null;
         Object.RemoveInputAuthority();
     }
 
-    public void DamagePlayer(bool isFinalHit = false)
+    public void DamagePlayer(bool isFinalHit = false, bool isBot = false)
     {
         if (!IsEquipped) return;
 
@@ -200,10 +214,9 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
 
             NetworkObject hitObject = hitbox.transform.root.GetComponent<NetworkObject>();
 
-            if (hitObject == null)
-            {
-                continue;
-            }
+            if (hitObject == null) continue;
+
+            if (hitObject == CurrentPlayer) continue;
 
             if (hitObject.tag == "Bot")
             {
@@ -234,7 +247,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                     if (isFinalHit) tempdata.IsStagger = true;
                     else tempdata.IsHit = true;
 
-                    tempdata.ApplyDamage(tempdamage, PlayerCore.Username, CurrentPlayer);
+                    tempdata.ApplyDamage(tempdamage, isBot? BotData.BotName : PlayerCore.Username, CurrentPlayer);
                 }
             }
             else
@@ -270,7 +283,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                     else
                         healthV2.IsHit = true;
 
-                    healthV2.ApplyDamage(tempdamage, PlayerCore.Username, CurrentPlayer);
+                    healthV2.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username, CurrentPlayer);
                 }
             }
         }
@@ -285,7 +298,16 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
     {
         if (impactPoint == null) return;
 
+        // Save the current matrix
+        Matrix4x4 originalMatrix = Gizmos.matrix;
+
+        // Apply the transformation matrix using position and rotation
+        Gizmos.matrix = Matrix4x4.TRS(impactPoint.position, impactPoint.rotation, Vector3.one);
+
         Gizmos.color = UnityEngine.Color.red;
-        Gizmos.DrawWireCube(impactPoint.position, impactSize);
+        Gizmos.DrawWireCube(Vector3.zero, impactSize);
+
+        // Restore the original matrix
+        Gizmos.matrix = originalMatrix;
     }
 }

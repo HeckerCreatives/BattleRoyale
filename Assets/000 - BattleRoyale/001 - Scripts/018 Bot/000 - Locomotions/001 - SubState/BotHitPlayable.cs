@@ -72,6 +72,15 @@ public class BotHitPlayable : BotAnimationPlayable
     {
         botMovement.PickNewWanderDirection();
         botMovement.WanderTimer = TickTimer.CreateFromSeconds(botMovement.Runner, Random.Range(botMovement.MinWanderDelay, botMovement.MaxWanderDelay));
-        botPlayablesChanger.ChangeState(botPlayables.BasicMovement.RunPlayable);
+
+        if (botPlayables.Inventroy.WeaponIndex == 1)
+            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.RunPlayable);
+        else if (botPlayables.Inventroy.WeaponIndex == 2)
+        {
+            if (botPlayables.Inventroy.GetPrimaryWeaponID() == "001")
+                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordRunPlayable);
+            else if (botPlayables.Inventroy.GetPrimaryWeaponID() == "002")
+                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearRun);
+        }
     }
 }

@@ -31,7 +31,7 @@ public class BotSwordAttackTwo : BotAnimationPlayable
         moveTimer = botPlayables.TickRateAnimation + (animationLength * 0.3f);
         stopMoveTimer = botPlayables.TickRateAnimation + (animationLength * 0.18f);
         damageWindowEnd = botPlayables.TickRateAnimation + (animationLength * 0.23f);
-        nextPuncDelay = timer + 1.4f;
+        nextPuncDelay = timer + 0.3f;
         canAction = true;
     }
 
@@ -48,11 +48,11 @@ public class BotSwordAttackTwo : BotAnimationPlayable
         {
             if (!hasResetHitEnemies)
             {
-                botPlayables.GetBotData.ResetSecondAttack(); // Clear BEFORE performing attack
+                botPlayables.Inventroy.PrimaryWeapon.ClearHitEnemies();  // Clear BEFORE performing attack
                 hasResetHitEnemies = true;
             }
 
-            botPlayables.GetBotData.PerformSecondAttack();
+            botPlayables.Inventroy.PrimaryWeapon.DamagePlayer(false, true);
         }
 
         CheckAnimations();
@@ -86,17 +86,17 @@ public class BotSwordAttackTwo : BotAnimationPlayable
 
         if (botPlayables.TickRateAnimation >= timer && canAction)
         {
-            if (botMovement.CanPunch())
+            if (botMovement.CanSwordAttack())
             {
                 if (botPlayables.TickRateAnimation >= nextPuncDelay)
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.FistLastPunch);
+                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordAttackThreePlayable);
 
                 return;
             }
 
             botMovement.PickNewWanderDirection();
             botMovement.IdleBeforeWanderTimer = TickTimer.CreateFromSeconds(botMovement.Runner, Random.Range(botMovement.MinWanderDelay, botMovement.MaxWanderDelay));
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.IdlePlayable);
+            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordIdlePlayable);
         }
     }
 }

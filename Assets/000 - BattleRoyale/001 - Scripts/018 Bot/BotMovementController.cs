@@ -101,6 +101,15 @@ public class BotMovementController : NetworkBehaviour
         return false;
     }
 
+    public bool CanSwordAttack()
+    {
+        if (detectedTarget == null) return false;
+
+        if (Vector3.Distance(botKCC.Position, detectedTarget.transform.position) <= 1.5f) return true;
+
+        return false;
+    }
+
     public void PickNewWanderDirection()
     {
         direction = new Vector3(Random.Range(-500f, 500f), 0f, Random.Range(-500f, 500f)).normalized;

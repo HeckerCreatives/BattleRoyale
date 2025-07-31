@@ -118,9 +118,13 @@ public class ArmorItem : NetworkBehaviour, IPickupItem
         transform.parent = null;
 
         Position = CurrentPlayer.transform.position + new Vector3(0f, 0.1f, 0f);
-        CurrentPlayer.GetComponent<PlayerInventoryV2>().Armor = null;
-        CurrentPlayer = null;
 
+        if (CurrentPlayer.tag == "Bot")
+            CurrentPlayer.GetComponent<BotInventory>().Armor = null;
+        else
+            CurrentPlayer.GetComponent<PlayerInventoryV2>().Armor = null;
+
+        CurrentPlayer = null;
         IsPickedUp = false;
         Object.RemoveInputAuthority();
     }

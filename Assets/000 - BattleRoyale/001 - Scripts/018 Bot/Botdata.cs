@@ -36,6 +36,8 @@ public class Botdata : NetworkBehaviour
     [field: SerializeField][Networked] public bool IsStagger { get; set; }
     [field: SerializeField][Networked] public bool IsGettingUp { get; set; }
     [field: SerializeField][Networked] public TickTimer DeadTimer { get; set; }
+    [field: SerializeField][Networked] public TickTimer HealTimer { get; set; }
+    [field: SerializeField][Networked] public TickTimer ArmorTimer { get; set; }
 
     //  ======================
 
@@ -156,7 +158,7 @@ public class Botdata : NetworkBehaviour
 
         Hitted++;
 
-        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+        //if (ServerManager.CurrentGameState != GameState.ARENA) return;
 
         //DamagedHit++;
 

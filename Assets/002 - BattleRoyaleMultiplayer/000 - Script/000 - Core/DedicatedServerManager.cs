@@ -1020,11 +1020,13 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     {
         BotInventory inventory = obj.GetComponent<BotInventory>();
 
-        int randomWeapon = UnityEngine.Random.Range(0, 2);
+        //int randomWeapon = UnityEngine.Random.Range(0, 2);
+        int randomWeapon = 1;
 
         if (randomWeapon == 1)
         {
-            int primaryWeaponRand = UnityEngine.Random.Range(0, 2);
+            //int primaryWeaponRand = UnityEngine.Random.Range(0, 2);
+            int primaryWeaponRand = 1;
 
             Runner.Spawn(primaryWeaponRand == 0 ? swordItem : spearItem, Vector3.zero, Quaternion.identity, obj.InputAuthority, onBeforeSpawned: (runner, weaponObj) =>
             {
@@ -1061,6 +1063,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             int randRepair = UnityEngine.Random.Range(0, 6);
             inventory.RepairCount = randRepair;
         }
+
+        //int rand
     }
 
     public GridManager CurrentGridManager()

@@ -60,9 +60,6 @@ MonoBehaviour:
   enemyLayerMask:
     serializedVersion: 2
     m_Bits: 139264
-  botLayerMask:
-    serializedVersion: 2
-    m_Bits: 131072
   backRotation: {x: -27.332, y: -122.101, z: 16.759}
   handRotation: {x: 11.598, y: -33.984, z: 96.5}
   dropRotation: {x: 0, y: 0, z: 90}
@@ -77,6 +74,8 @@ MonoBehaviour:
   _IsPickedUp: 0
   _IsEquipped: 0
   _CurrentPlayer: {fileID: 0}
+  _PlayerCore: {fileID: 0}
+  _BotData: {fileID: 0}
   _Position: {x: 0, y: 0, z: 0}
   _Back: {fileID: 0}
   _Hand: {fileID: 0}

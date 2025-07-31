@@ -32,6 +32,11 @@ public class BotBasicMovement : NetworkBehaviour
     [SerializeField] private AnimationClip swordAttackOne;
     [SerializeField] private AnimationClip swordAttackTwo;
     [SerializeField] private AnimationClip swordAttackThree;
+    [SerializeField] private AnimationClip spearIdle;
+    [SerializeField] private AnimationClip spearRun;
+    [SerializeField] private AnimationClip spearAttackOne;
+    [SerializeField] private AnimationClip spearAttackTwo;
+    [SerializeField] private AnimationClip spearAttackThree;
 
     //  ================
 
@@ -49,12 +54,20 @@ public class BotBasicMovement : NetworkBehaviour
     public BotFistLastPunch FistLastPunch;
     public BotSwordIdle SwordIdlePlayable;
     public BotSwordRunPlayable SwordRunPlayable;
+    public BotSwordAttackOne SwordAttackOnePlayable;
+    public BotSwordAttackTwo SwordAttackTwoPlayable;
+    public BotSwordAttackThree SwordAttackThreePlayable;
+    public BotSpearIdle SpearIdle;
+    public BotSpearRun SpearRun;
+    public BotSpearAttackOne SpearAttackOne;
+    public BotSpearAttackTwo SpearAttackTwo;
+    public BotSpearAttackThree SpearAttackThree;
 
     //  =================
 
     public AnimationMixerPlayable Initialize()
     {
-        mixerPlayable = AnimationMixerPlayable.Create(botPlayables.playableGraph, 13);
+        mixerPlayable = AnimationMixerPlayable.Create(botPlayables.playableGraph, 21);
 
         var idleClip = AnimationClipPlayable.Create(botPlayables.playableGraph, idle);
         var hitClip = AnimationClipPlayable.Create(botPlayables.playableGraph, hit);
@@ -68,6 +81,14 @@ public class BotBasicMovement : NetworkBehaviour
         var lastPunchClip = AnimationClipPlayable.Create(botPlayables.playableGraph, lastPunch);
         var swordIdleClip = AnimationClipPlayable.Create(botPlayables.playableGraph, swordIdle);
         var swordRunClip = AnimationClipPlayable.Create(botPlayables.playableGraph, swordRun);
+        var swordAttackOneClip = AnimationClipPlayable.Create(botPlayables.playableGraph, swordAttackOne);
+        var swordAttackTwoClip = AnimationClipPlayable.Create(botPlayables.playableGraph, swordAttackTwo);
+        var swordAttackThreeClip = AnimationClipPlayable.Create(botPlayables.playableGraph, swordAttackThree);
+        var spearIdleClip = AnimationClipPlayable.Create(botPlayables.playableGraph, spearIdle);
+        var spearRunClip = AnimationClipPlayable.Create(botPlayables.playableGraph, spearRun);
+        var spearAttackOneClip = AnimationClipPlayable.Create(botPlayables.playableGraph, spearAttackOne);
+        var spearAttackTwoClip = AnimationClipPlayable.Create(botPlayables.playableGraph, spearAttackTwo);
+        var spearAttackThreeClip = AnimationClipPlayable.Create(botPlayables.playableGraph, spearAttackThree);
 
         botPlayables.playableGraph.Connect(idleClip, 0, mixerPlayable, 1);
         botPlayables.playableGraph.Connect(hitClip, 0, mixerPlayable, 2);
@@ -81,6 +102,14 @@ public class BotBasicMovement : NetworkBehaviour
         botPlayables.playableGraph.Connect(lastPunchClip, 0, mixerPlayable, 10);
         botPlayables.playableGraph.Connect(swordIdleClip, 0, mixerPlayable, 11);
         botPlayables.playableGraph.Connect(swordRunClip, 0, mixerPlayable, 12);
+        botPlayables.playableGraph.Connect(swordAttackOneClip, 0, mixerPlayable, 13);
+        botPlayables.playableGraph.Connect(swordAttackTwoClip, 0, mixerPlayable, 14);
+        botPlayables.playableGraph.Connect(swordAttackThreeClip, 0, mixerPlayable, 15);
+        botPlayables.playableGraph.Connect(spearIdleClip, 0, mixerPlayable, 16);
+        botPlayables.playableGraph.Connect(spearRunClip, 0, mixerPlayable, 17);
+        botPlayables.playableGraph.Connect(spearAttackOneClip, 0, mixerPlayable, 18);
+        botPlayables.playableGraph.Connect(spearAttackTwoClip, 0, mixerPlayable, 19);
+        botPlayables.playableGraph.Connect(spearAttackThreeClip, 0, mixerPlayable, 20);
 
         IdlePlayable = new BotIdlePlayable(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "idle", "basic", idle.length, idleClip, false);
         HitPlayable = new BotHitPlayable(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "hit", "basic", hit.length, hitClip, true);
@@ -94,6 +123,14 @@ public class BotBasicMovement : NetworkBehaviour
         FistLastPunch = new BotFistLastPunch(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "lastpunch", "basic", lastPunch.length, lastPunchClip, true);
         SwordIdlePlayable = new BotSwordIdle(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "swordidle", "basic", swordIdle.length, swordIdleClip, false);
         SwordRunPlayable = new BotSwordRunPlayable(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "swordrun", "basic", swordRun.length, swordRunClip, false);
+        SwordAttackOnePlayable = new BotSwordAttackOne(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "swordAttackOne", "basic", swordAttackOne.length, swordAttackOneClip, true);
+        SwordAttackTwoPlayable = new BotSwordAttackTwo(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "swordAttackTwo", "basic", swordAttackTwo.length, swordAttackTwoClip, true);
+        SwordAttackThreePlayable = new BotSwordAttackThree(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "swordAttackThree", "basic", swordAttackThree.length, swordAttackThreeClip, true);
+        SpearIdle = new BotSpearIdle(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "spearidle", "basic", spearIdle.length, spearIdleClip, false);
+        SpearRun = new BotSpearRun(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "spearrun", "basic", spearRun.length, spearRunClip, false);
+        SpearAttackOne = new BotSpearAttackOne(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "spearAttackOne", "basic", spearAttackOne.length, spearAttackOneClip, true);
+        SpearAttackTwo = new BotSpearAttackTwo(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "spearAttackTwo", "basic", spearAttackTwo.length, spearAttackTwoClip, true);
+        SpearAttackThree = new BotSpearAttackThree(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "spearAttackThree", "basic", spearAttackThree.length, spearAttackThreeClip, true);
 
         return mixerPlayable;
     }
@@ -127,6 +164,22 @@ public class BotBasicMovement : NetworkBehaviour
                 return SwordIdlePlayable;
             case 12:
                 return SwordRunPlayable;
+            case 13:
+                return SwordAttackOnePlayable;
+            case 14:
+                return SwordAttackTwoPlayable;
+            case 15:
+                return SwordAttackThreePlayable;
+            case 16:
+                return SpearIdle;
+            case 17:
+                return SpearRun;
+            case 18:
+                return SpearAttackOne;
+            case 19:
+                return SpearAttackTwo;
+            case 20: 
+                return SpearAttackThree;
             default: return null;
         }
     }
