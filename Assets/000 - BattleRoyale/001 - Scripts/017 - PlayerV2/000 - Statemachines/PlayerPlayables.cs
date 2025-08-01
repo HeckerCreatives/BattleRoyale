@@ -102,8 +102,9 @@ public class PlayerPlayables : NetworkBehaviour
     {
         TickRateAnimation = Runner.Tick * Runner.DeltaTime;
 
-        if (lowerBodyChanger.CurrentState == null) return;
+        if (lowerBodyChanger.CurrentState == null && upperBodyChanger.CurrentState == null) return;
 
+        upperBodyChanger.CurrentState.NetworkUpdate();
         lowerBodyChanger.CurrentState.NetworkUpdate();
     }
 

@@ -23,12 +23,14 @@ public class RunState : PlayerOnGround
 
         playerMovement.WeaponSwitcher();
         WeaponsChecker();
-        Animation();
+        UpperBodyAnimation();
         playerPlayables.stamina.RecoverStamina(5f);
     }
 
-    private void Animation()
+    private void UpperBodyAnimation()
     {
+        if (playerPlayables.upperBodyMovement.isLowerBody) return;
+
         if (playerPlayables.healthV2.IsDead)
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
 
