@@ -13,8 +13,20 @@ public enum Mood
 
 public class Botdata : NetworkBehaviour
 {
+    public BotInventory Inventory
+    {
+        get => inventory;
+    }
+
+    //  ===================
+
+    [SerializeField] private BotInventory inventory;
+    [SerializeField] private NetworkObject trapObj;
+
     [Space]
     [SerializeField] private List<ParticleSystem> bloodParticles;
+    [SerializeField] private ParticleSystem healParticles;
+    [SerializeField] private ParticleSystem repairParticles;
 
     [Space]
     [SerializeField] private LayerMask enemyLayerMask;
@@ -35,6 +47,8 @@ public class Botdata : NetworkBehaviour
     [field: SerializeField][Networked] public bool IsHit { get; set; }
     [field: SerializeField][Networked] public bool IsStagger { get; set; }
     [field: SerializeField][Networked] public bool IsGettingUp { get; set; }
+    [field: SerializeField][Networked] public int Healed { get; set; }
+    [field: SerializeField][Networked] public int Repaired { get; set; }
     [field: SerializeField][Networked] public TickTimer DeadTimer { get; set; }
     [field: SerializeField][Networked] public TickTimer HealTimer { get; set; }
     [field: SerializeField][Networked] public TickTimer ArmorTimer { get; set; }
@@ -80,6 +94,20 @@ public class Botdata : NetworkBehaviour
                     DamageIndicator();
 
                     break;
+                case nameof(Healed):
+
+                    if (HasStateAuthority) return;
+
+                    healParticles.Play();
+
+                    break;
+                case nameof(Repaired):
+
+                    if (HasStateAuthority) return;
+
+                    repairParticles.Play();
+
+                    break;
             }
         }
     }
@@ -121,6 +149,10 @@ public class Botdata : NetworkBehaviour
 
                 ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{BotName} was killed outside safe area");
 
+                if (Inventory.PrimaryWeapon != null) Inventory.PrimaryWeapon.DropWeapon();
+
+                if (Inventory.Armor != null) Inventory.Armor.DropArmor();
+
                 DeadTimer = TickTimer.CreateFromSeconds(Runner, 5f);
             }
         }
@@ -147,6 +179,10 @@ public class Botdata : NetworkBehaviour
 
                 ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{BotName} killed themselves");
 
+                if (Inventory.PrimaryWeapon != null) Inventory.PrimaryWeapon.DropWeapon();
+
+                if (Inventory.Armor != null) Inventory.Armor.DropArmor();
+
                 DeadTimer = TickTimer.CreateFromSeconds(Runner, 5f);
             }
         }
@@ -158,29 +194,29 @@ public class Botdata : NetworkBehaviour
 
         Hitted++;
 
-        //if (ServerManager.CurrentGameState != GameState.ARENA) return;
+        if (ServerManager.CurrentGameState != GameState.ARENA) return;
 
         //DamagedHit++;
 
         float remainingDamage = damage;
 
         // Apply damage to the shield first
-        //if (inventory.Armor != null)
-        //{
-        //    if (inventory.Armor.Supplies > 0)
-        //    {
-        //        if (inventory.Armor.Supplies >= remainingDamage)
-        //        {
-        //            inventory.Armor.Supplies -= Convert.ToInt32(remainingDamage);
-        //            remainingDamage = 0; // Shield absorbed all damage
-        //        }
-        //        else
-        //        {
-        //            remainingDamage -= inventory.Armor.Supplies;
-        //            inventory.Armor.Supplies = 0; // Shield fully depleted
-        //        }
-        //    }
-        //}
+        if (inventory.Armor != null)
+        {
+            if (inventory.Armor.Supplies > 0)
+            {
+                if (inventory.Armor.Supplies >= remainingDamage)
+                {
+                    inventory.Armor.Supplies -= Convert.ToInt32(remainingDamage);
+                    remainingDamage = 0; // Shield absorbed all damage
+                }
+                else
+                {
+                    remainingDamage -= inventory.Armor.Supplies;
+                    inventory.Armor.Supplies = 0; // Shield fully depleted
+                }
+            }
+        }
 
         // Apply remaining damage to health
         if (remainingDamage > 0)
@@ -203,6 +239,11 @@ public class Botdata : NetworkBehaviour
                 ServerManager.Bots.Remove(BotIndex);
 
                 ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{killer} KILLED {BotName}");
+
+                if (Inventory.PrimaryWeapon != null) Inventory.PrimaryWeapon.DropWeapon();
+
+                if (Inventory.Armor != null) Inventory.Armor.DropArmor();
+
                 DeadTimer = TickTimer.CreateFromSeconds(Runner, 5f);
             }
             //string statustext = killer == loader.Username ? $"{loader.Username} Killed themself" : $"{killer} KILLED {loader.Username}";
@@ -223,7 +264,44 @@ public class Botdata : NetworkBehaviour
         }
     }
 
+    public void HealHealth()
+    {
+        float temphealth = CurrentHealth + 35f;
+
+        CurrentHealth = Mathf.Clamp(temphealth, 0f, 100f);
+
+        inventory.HealCount -= 1;
+
+        Healed++;
+    }
+
+    public void RepairArmor()
+    {
+        float temparmor = inventory.Armor.Supplies + 40f;
+
+        inventory.Armor.Supplies = (int)Mathf.Clamp(temparmor, 0f, 100f);
+
+        inventory.RepairCount -= 1;
+
+        Repaired++;
+    }
+
     private void DespawnBot() => Runner.Despawn(Object);
+
+    #endregion
+
+    #region SPAWN OBJECTS
+
+    public void SpawnTrap()
+    {
+        Inventory.TrapCount -= 1;
+
+        if (!HasStateAuthority) return;
+
+        Runner.Spawn(trapObj, transform.position, Quaternion.identity, Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) => {
+            obj.GetComponent<TrapWeaponController>().Initialize(BotName, Vector3.zero);
+        });
+    }
 
     #endregion
 

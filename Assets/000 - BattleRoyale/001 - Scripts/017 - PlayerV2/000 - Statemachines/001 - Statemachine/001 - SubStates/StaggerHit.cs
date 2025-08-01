@@ -46,7 +46,7 @@ public class StaggerHit : PlayerOnGround
     private void Animation()
     {
         if (playerPlayables.healthV2.IsDead)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
 
         if (canAction)
         {
@@ -55,14 +55,14 @@ public class StaggerHit : PlayerOnGround
                 playerPlayables.healthV2.IsStagger = false;
                 if (!characterController.IsGrounded)
                 {
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
                     return;
                 }
 
                 if (playerMovement.IsRoll)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RollPlayable);
                 else
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.GettingUpPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.GettingUpPlayable);
             }
         }
     }

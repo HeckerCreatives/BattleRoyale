@@ -6,7 +6,7 @@ using UnityEngine.Animations;
 
 public class SpearRunState : PlayerOnGround
 {
-    public SpearRunState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public SpearRunState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
     }
 
@@ -33,76 +33,76 @@ public class SpearRunState : PlayerOnGround
     private void Animation()
     {
         if (playerPlayables.healthV2.IsDead)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
 
         if (!characterController.IsGrounded)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
 
         if (playerMovement.IsJumping)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.JumpPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.JumpPlayable);
 
         if (playerMovement.IsBlocking)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.SpearBlockPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearBlockPlayable);
 
         if (playerMovement.Attacking)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.SpearFirstAttackPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearFirstAttackPlayable);
 
         if (playerPlayables.healthV2.IsHit)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
             return;
         }
 
         if (playerPlayables.healthV2.IsSecondHit)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.MiddleHitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
             return;
         }
 
         if (playerPlayables.healthV2.IsStagger)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.StaggerHitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
             return;
         }
 
         if (playerMovement.IsHealing)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.HealPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HealPlayable);
 
         if (playerMovement.IsRepairing)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.RepairPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RepairPlayable);
 
         if (playerMovement.IsTrapping)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.TrappingPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.TrappingPlayable);
             return;
         }
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RollPlayable);
     }
 
     private void WeaponsChecker()
     {
         if (playerPlayables.inventory.WeaponIndex == 1)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RunPlayable);
 
         }
         else if (playerPlayables.inventory.WeaponIndex == 2)
         {
             if (playerPlayables.inventory.PrimaryWeaponID() == "001")
             {
-                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordRunPlayable);
             }
             else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
             {
                 if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SpearIdlePlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearIdlePlayable);
 
                 if (playerMovement.IsSprint)
                 {
                     if (playerPlayables.stamina.Stamina >= 10f)
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordSprintPlayable);
                 }
             }
         }

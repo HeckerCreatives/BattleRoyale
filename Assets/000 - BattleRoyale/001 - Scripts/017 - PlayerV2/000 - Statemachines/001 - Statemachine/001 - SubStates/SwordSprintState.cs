@@ -19,7 +19,7 @@ public class SwordSprintState : PlayerOnGround
         Animation();
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RollPlayable);
 
         playerPlayables.stamina.DecreaseStamina(20f);
     }
@@ -27,47 +27,47 @@ public class SwordSprintState : PlayerOnGround
     private void Animation()
     {
         if (playerPlayables.healthV2.IsDead)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
 
         if (!characterController.IsGrounded)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
 
         if (playerMovement.IsJumping)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.JumpPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.JumpPlayable);
 
         if (playerMovement.IsBlocking)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.SwordBlockPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordBlockPlayable);
 
         if (playerMovement.Attacking)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.SwordAttackFirstPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordAttackFirstPlayable);
 
         if (playerMovement.IsHealing)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.HealPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HealPlayable);
 
         if (playerMovement.IsRepairing)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.RepairPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RepairPlayable);
 
         if (playerMovement.IsTrapping)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.TrappingPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.TrappingPlayable);
             return;
         }
 
         if (playerPlayables.healthV2.IsHit)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
             return;
         }
 
         if (playerPlayables.healthV2.IsSecondHit)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.MiddleHitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
             return;
         }
 
         if (playerPlayables.healthV2.IsStagger)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.StaggerHitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
             return;
         }
     }
@@ -79,7 +79,7 @@ public class SwordSprintState : PlayerOnGround
             if (playerPlayables.inventory.WeaponIndex == 1)
             {
                 if (playerMovement.MoveDirection != Vector3.zero)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SprintPlayable);
 
                 return;
             }
@@ -87,27 +87,27 @@ public class SwordSprintState : PlayerOnGround
             if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "002")
             {
                 if (playerMovement.MoveDirection != Vector3.zero)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SpearSprintPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearSprintPlayable);
 
                 return;
             }
 
             if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
             {
-                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordIdlePlayable);
             }
             else if (!playerMovement.IsSprint)
             {
                 if (playerMovement.MoveDirection != Vector3.zero)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordRunPlayable);
             }
         }
         else
         {
             if (playerMovement.MoveDirection == Vector3.zero)
-                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordIdlePlayable);
             else
-                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordRunPlayable);
         }
     }
 }

@@ -758,8 +758,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
                     if (HasStateAuthority)
                     {
-                        Debug.Log($"Player count less than equal to one? {RemainingPlayers.Count <= 1}    Bot Count less than zero {Bots.Count <= 0}    Game State {CurrentGameState}");
-
                         if (RemainingPlayers.Count <= 1 && Bots.Count <= 0 && CurrentGameState == GameState.ARENA)
                             CurrentGameState = GameState.DONE;
                     }
@@ -921,6 +919,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             {
                 Bots.ElementAt(a).Value.GetComponent<SimpleKCC>().SetPosition(spawnBattleAreaPositions[battleSpawnPosIndex].position, true);
 
+                SpawnItems(Bots.ElementAt(a).Value);
+
                 battleSpawnPosIndex++;
             }
 
@@ -946,7 +946,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     private void SpawnBot()
     {
         if (CurrentGameState != GameState.WAITINGAREA) return;
-        //if (Players.Count <= 0) return;
+        if (Players.Count <= 0) return;
         if (spawnBotIndex >= maxBot) return;
 
         spawnBotTimer -= Runner.DeltaTime;
@@ -964,10 +964,11 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 tempbotdata.ServerManager = this;
                 tempbotdata.BotName = tempbotname;
                 tempbotdata.BotIndex = spawnBotIndex;
+                tempbotdata.Inventory.WeaponIndex = 1;
 
                 Bots.Add(spawnBotIndex, obj);
 
-                SpawnItems(obj);
+                //SpawnItems(obj);
 
                 spawnBotIndex++;
             });
@@ -1020,13 +1021,13 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     {
         BotInventory inventory = obj.GetComponent<BotInventory>();
 
-        //int randomWeapon = UnityEngine.Random.Range(0, 2);
-        int randomWeapon = 1;
+        int randomWeapon = UnityEngine.Random.Range(0, 2);
+        //int randomWeapon = 1;
 
         if (randomWeapon == 1)
         {
-            //int primaryWeaponRand = UnityEngine.Random.Range(0, 2);
-            int primaryWeaponRand = 1;
+            int primaryWeaponRand = UnityEngine.Random.Range(0, 2);
+            //int primaryWeaponRand = 1;
 
             Runner.Spawn(primaryWeaponRand == 0 ? swordItem : spearItem, Vector3.zero, Quaternion.identity, obj.InputAuthority, onBeforeSpawned: (runner, weaponObj) =>
             {
@@ -1064,7 +1065,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             inventory.RepairCount = randRepair;
         }
 
-        //int rand
+        int randTrap = UnityEngine.Random.Range(0, 5);
+
+        inventory.TrapCount = randTrap;
     }
 
     public GridManager CurrentGridManager()

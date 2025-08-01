@@ -7,7 +7,7 @@ using UnityEngine.Animations;
 
 public class JumpState : PlayerOnGround
 {
-    public JumpState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public JumpState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
     }
 
@@ -25,20 +25,20 @@ public class JumpState : PlayerOnGround
     private void Animation()
     {
         if (playerPlayables.healthV2.IsDead)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
 
         if (!playerMovement.IsJumping)
         {
             if (!characterController.IsGrounded)
-                playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
         }
 
         if (playerMovement.Attacking)
         {
             if (playerPlayables.inventory.WeaponIndex == 1)
-                playablesChanger.ChangeState(playerPlayables.basicMovement.JumpPunchPlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.JumpPunchPlayable);
             else if (playerPlayables.inventory.WeaponIndex == 2)
-                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordJumpAttackPlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordJumpAttackPlayable);
         }
 
         if (characterController.IsGrounded)
@@ -54,13 +54,13 @@ public class JumpState : PlayerOnGround
         if (playerMovement.Attacking)
         {
             if (playerPlayables.inventory.WeaponIndex == 1)
-                playablesChanger.ChangeState(playerPlayables.basicMovement.JumpPunchPlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.JumpPunchPlayable);
             else if (playerPlayables.inventory.WeaponIndex == 2)
             {
                 if (playerPlayables.inventory.PrimaryWeaponID() == "001")
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SwordJumpAttackPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordJumpAttackPlayable);
                 else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SpearJumpAttackPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearJumpAttackPlayable);
             }
         }
 
@@ -71,13 +71,13 @@ public class JumpState : PlayerOnGround
                 if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
                 {
                     if (playerMovement.IsSprint)
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SprintPlayable);
 
                     else
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RunPlayable);
                 }
                 else
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.IdlePlayable);
             }
             else if (playerPlayables.inventory.WeaponIndex == 2)
             {
@@ -86,26 +86,26 @@ public class JumpState : PlayerOnGround
                     if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
                     {
                         if (playerMovement.IsSprint)
-                            playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
+                            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordSprintPlayable);
 
                         else
-                            playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
+                            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordRunPlayable);
                     }
                     else
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordIdlePlayable);
                 }
                 else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
                 {
                     if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
                     {
                         if (playerMovement.IsSprint)
-                            playablesChanger.ChangeState(playerPlayables.basicMovement.SpearSprintPlayable);
+                            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearSprintPlayable);
 
                         else
-                            playablesChanger.ChangeState(playerPlayables.basicMovement.SpearRunPlayable);
+                            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearRunPlayable);
                     }
                     else
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.SpearIdlePlayable);
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearIdlePlayable);
                 }
             }
         }

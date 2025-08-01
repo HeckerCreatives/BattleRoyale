@@ -10,7 +10,7 @@ public class BlockState : PlayerOnGround
     float timer;
     bool canAction;
 
-    public BlockState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public BlockState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
     }
 
@@ -50,41 +50,41 @@ public class BlockState : PlayerOnGround
                 if (playerPlayables.inventory.WeaponIndex == 1)
                 {
                     if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SprintPlayable);
 
                     else
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RunPlayable);
                 }
                 else if (playerPlayables.inventory.WeaponIndex == 2)
                 {
                     if (playerPlayables.inventory.PrimaryWeaponID() == "001")
                     {
                         if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                            playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
+                            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordSprintPlayable);
 
                         else
-                            playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
+                            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordRunPlayable);
                     }
                     else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
                     {
                         if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                            playablesChanger.ChangeState(playerPlayables.basicMovement.SpearSprintPlayable);
+                            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearSprintPlayable);
 
                         else
-                            playablesChanger.ChangeState(playerPlayables.basicMovement.SpearRunPlayable);
+                            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearRunPlayable);
                     }
                 }
             }
             else
             {
                 if (playerPlayables.inventory.WeaponIndex == 1)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.IdlePlayable);
                 else if (playerPlayables.inventory.WeaponIndex == 2)
                 {
                     if (playerPlayables.inventory.PrimaryWeaponID() == "001")
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordIdlePlayable);
                     else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.SpearIdlePlayable);
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearIdlePlayable);
                 }
             }
         }

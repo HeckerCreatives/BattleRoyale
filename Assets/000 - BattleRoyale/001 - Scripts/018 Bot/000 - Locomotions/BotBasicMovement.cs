@@ -37,6 +37,9 @@ public class BotBasicMovement : NetworkBehaviour
     [SerializeField] private AnimationClip spearAttackOne;
     [SerializeField] private AnimationClip spearAttackTwo;
     [SerializeField] private AnimationClip spearAttackThree;
+    [SerializeField] private AnimationClip healing;
+    [SerializeField] private AnimationClip repairing;
+    [SerializeField] private AnimationClip trap;
 
     //  ================
 
@@ -62,12 +65,15 @@ public class BotBasicMovement : NetworkBehaviour
     public BotSpearAttackOne SpearAttackOne;
     public BotSpearAttackTwo SpearAttackTwo;
     public BotSpearAttackThree SpearAttackThree;
+    public BotHealingPlayable HealingPlayable;
+    public BotRepairArmorPlayable RepairArmorPlayable;
+    public BotTrapPlayable TrapPlayable;
 
     //  =================
 
     public AnimationMixerPlayable Initialize()
     {
-        mixerPlayable = AnimationMixerPlayable.Create(botPlayables.playableGraph, 21);
+        mixerPlayable = AnimationMixerPlayable.Create(botPlayables.playableGraph, 24);
 
         var idleClip = AnimationClipPlayable.Create(botPlayables.playableGraph, idle);
         var hitClip = AnimationClipPlayable.Create(botPlayables.playableGraph, hit);
@@ -89,6 +95,9 @@ public class BotBasicMovement : NetworkBehaviour
         var spearAttackOneClip = AnimationClipPlayable.Create(botPlayables.playableGraph, spearAttackOne);
         var spearAttackTwoClip = AnimationClipPlayable.Create(botPlayables.playableGraph, spearAttackTwo);
         var spearAttackThreeClip = AnimationClipPlayable.Create(botPlayables.playableGraph, spearAttackThree);
+        var healClip = AnimationClipPlayable.Create(botPlayables.playableGraph, healing);
+        var repairClip = AnimationClipPlayable.Create(botPlayables.playableGraph, repairing);
+        var trapClip = AnimationClipPlayable.Create(botPlayables.playableGraph, trap);
 
         botPlayables.playableGraph.Connect(idleClip, 0, mixerPlayable, 1);
         botPlayables.playableGraph.Connect(hitClip, 0, mixerPlayable, 2);
@@ -110,6 +119,9 @@ public class BotBasicMovement : NetworkBehaviour
         botPlayables.playableGraph.Connect(spearAttackOneClip, 0, mixerPlayable, 18);
         botPlayables.playableGraph.Connect(spearAttackTwoClip, 0, mixerPlayable, 19);
         botPlayables.playableGraph.Connect(spearAttackThreeClip, 0, mixerPlayable, 20);
+        botPlayables.playableGraph.Connect(healClip, 0, mixerPlayable, 21);
+        botPlayables.playableGraph.Connect(repairClip, 0, mixerPlayable, 22);
+        botPlayables.playableGraph.Connect(trapClip, 0, mixerPlayable, 23);
 
         IdlePlayable = new BotIdlePlayable(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "idle", "basic", idle.length, idleClip, false);
         HitPlayable = new BotHitPlayable(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "hit", "basic", hit.length, hitClip, true);
@@ -131,6 +143,9 @@ public class BotBasicMovement : NetworkBehaviour
         SpearAttackOne = new BotSpearAttackOne(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "spearAttackOne", "basic", spearAttackOne.length, spearAttackOneClip, true);
         SpearAttackTwo = new BotSpearAttackTwo(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "spearAttackTwo", "basic", spearAttackTwo.length, spearAttackTwoClip, true);
         SpearAttackThree = new BotSpearAttackThree(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "spearAttackThree", "basic", spearAttackThree.length, spearAttackThreeClip, true);
+        HealingPlayable = new BotHealingPlayable(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "healing", "basic", healing.length, healClip, true);
+        RepairArmorPlayable = new BotRepairArmorPlayable(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "repairing", "basic", repairing.length, repairClip, true);
+        TrapPlayable = new BotTrapPlayable(this, simpleKCC, botPlayables.changer, botMovement, botPlayables, mixerPlayable, animationnames, mixernames, "trap", "basic", trap.length, trapClip, true);
 
         return mixerPlayable;
     }
@@ -180,6 +195,12 @@ public class BotBasicMovement : NetworkBehaviour
                 return SpearAttackTwo;
             case 20: 
                 return SpearAttackThree;
+            case 21:
+                return HealingPlayable;
+            case 22:
+                return RepairArmorPlayable;
+            case 23:
+                return TrapPlayable;
             default: return null;
         }
     }

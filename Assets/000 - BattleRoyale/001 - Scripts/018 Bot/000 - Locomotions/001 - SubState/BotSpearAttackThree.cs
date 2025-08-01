@@ -49,6 +49,7 @@ public class BotSpearAttackThree : BotAnimationPlayable
                 botPlayables.Inventroy.PrimaryWeapon.ClearHitEnemies(); // Clear BEFORE performing attack
                 hasResetHitEnemies = true;
             }
+            if (botPlayables.Inventroy.PrimaryWeapon == null) return;
             botPlayables.Inventroy.PrimaryWeapon.DamagePlayer(true, true);
         }
 

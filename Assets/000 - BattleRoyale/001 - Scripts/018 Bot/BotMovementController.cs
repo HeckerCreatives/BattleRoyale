@@ -34,6 +34,8 @@ public class BotMovementController : NetworkBehaviour
     [Header("DEBUGGER")]
     [SerializeField] private Vector3 direction;
     public GameObject detectedTarget;
+    public Botdata cacheDetectedTargetBotdata;
+    public PlayerHealthV2 cacheDetectedTargetPlayerdata;
 
     //  Bot States
     //  1 = Idle
@@ -53,31 +55,87 @@ public class BotMovementController : NetworkBehaviour
 
     public void DetectTarget()
     {
+        // Check if current target is still valid
+        if (detectedTarget != null && (cacheDetectedTargetBotdata != null || cacheDetectedTargetPlayerdata != null))
+        {
+            Vector3 dirToTarget = (detectedTarget.transform.position - transform.position).normalized;
+            float distance = Vector3.Distance(transform.position, detectedTarget.transform.position);
+            float angle = Vector3.Angle(transform.forward, dirToTarget);
+
+            bool inRadius = distance <= detectionRadius;
+            bool inAngle = angle < detectionAngle / 2f;
+            bool hasLineOfSight = !Physics.Raycast(transform.position + Vector3.up * 0.5f, dirToTarget, distance, obstructionLayer);
+
+            bool isInvalid = false;
+            bool isDead = false;
+
+            // ❗ Add your custom Botdata status check here
+
+            if (detectedTarget.tag == "Bot")
+            {
+                isInvalid = cacheDetectedTargetBotdata.Object.IsValid && (cacheDetectedTargetBotdata.IsStagger || cacheDetectedTargetBotdata.IsGettingUp || cacheDetectedTargetBotdata.IsDead);
+
+                isDead = cacheDetectedTargetBotdata.IsDead;
+            }
+            else
+            {
+                isInvalid = cacheDetectedTargetPlayerdata.Object.IsValid && (cacheDetectedTargetPlayerdata.IsStagger || cacheDetectedTargetPlayerdata.IsGettingUp || cacheDetectedTargetPlayerdata.IsDead);
+
+                isDead = cacheDetectedTargetPlayerdata.IsDead;
+            }
+
+            if (inRadius && inAngle && hasLineOfSight && !isInvalid)
+                return; // Target still valid
+            else
+            {
+                if (isDead)
+                    botKCC.SetLookRotation(botKCC.TransformRotation * Quaternion.Euler(0f, 180f, 0f));
+
+                SetTarget(null); // Lost target or no longer valid
+            }
+        }
+
+        // Search for a new target
         Collider[] hits = Physics.OverlapSphere(transform.position, detectionRadius, playerLayer);
 
         foreach (var hit in hits)
         {
-            // 🔒 Skip self
             if (hit.transform.root == transform.root)
                 continue;
 
             Vector3 dirToTarget = (hit.transform.position - transform.position).normalized;
             float angle = Vector3.Angle(transform.forward, dirToTarget);
+            float distance = Vector3.Distance(transform.position, hit.transform.position);
 
             if (angle < detectionAngle / 2f)
             {
-                float distance = Vector3.Distance(transform.position, hit.transform.position);
-
-                // 🔍 Check if there's a clear line of sight
                 if (!Physics.Raycast(transform.position + Vector3.up * 0.5f, dirToTarget, distance, obstructionLayer))
                 {
-                    detectedTarget = hit.gameObject;
+                    SetTarget(hit.transform.root.gameObject);
                     return;
                 }
             }
         }
 
-        detectedTarget = null; // No valid target found
+        // No valid targets found
+        SetTarget(null);
+    }
+
+    private void SetTarget(GameObject target)
+    {
+        detectedTarget = target;
+
+        // Clear old cached references
+        cacheDetectedTargetBotdata = null;
+        cacheDetectedTargetPlayerdata = null;
+
+        if (target == null)
+            return;
+
+        if (target.CompareTag("Bot"))
+            cacheDetectedTargetBotdata = target.GetComponent<Botdata>();
+        else
+            cacheDetectedTargetPlayerdata = target.GetComponent<PlayerHealthV2>();
     }
 
     public void MoveToTarget()
@@ -96,6 +154,15 @@ public class BotMovementController : NetworkBehaviour
     {
         if (detectedTarget == null) return false;
 
+        if (detectedTarget.CompareTag("Bot"))
+        {
+            if (cacheDetectedTargetBotdata.IsStagger || cacheDetectedTargetBotdata.IsGettingUp || cacheDetectedTargetBotdata.IsDead) return false;
+        }
+        else
+        {
+            if (cacheDetectedTargetPlayerdata.IsStagger || cacheDetectedTargetPlayerdata.IsGettingUp || cacheDetectedTargetPlayerdata.IsDead) return false;
+        }
+
         if (Vector3.Distance(botKCC.Position, detectedTarget.transform.position) <= 1f) return true;
 
         return false;
@@ -104,6 +171,15 @@ public class BotMovementController : NetworkBehaviour
     public bool CanSwordAttack()
     {
         if (detectedTarget == null) return false;
+
+        if (detectedTarget.CompareTag("Bot"))
+        {
+            if (cacheDetectedTargetBotdata.IsStagger || cacheDetectedTargetBotdata.IsGettingUp || cacheDetectedTargetBotdata.IsDead) return false;
+        }
+        else
+        {
+            if (cacheDetectedTargetPlayerdata.IsStagger || cacheDetectedTargetPlayerdata.IsGettingUp || cacheDetectedTargetPlayerdata.IsDead) return false;
+        }
 
         if (Vector3.Distance(botKCC.Position, detectedTarget.transform.position) <= 1.5f) return true;
 

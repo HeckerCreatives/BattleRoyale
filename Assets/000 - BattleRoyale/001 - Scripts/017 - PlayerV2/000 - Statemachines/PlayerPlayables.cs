@@ -14,27 +14,36 @@ public class PlayerPlayables : NetworkBehaviour
 
     [Space]
     public PlayerHealthV2 healthV2;
-    public PlayerBasicMovement basicMovement;
+    public PlayerBasicMovement upperBodyMovement;
+    public PlayerBasicMovement lowerBodyMovement;
     public HealMovement healMovements;
+
+    [Space]
+    [SerializeField] private AvatarMask upperBodyMask;
+    [SerializeField] private AvatarMask lowerBodyMask;
 
     [Space]
     public float enterSpeed;
     public float exitSpeed;
 
     [Header("DEBUGGER")]
-    [SerializeField] private int _lastProcessedTick = -1;
+    [SerializeField] private int _lastProcessedTickUpper = -1;
+    [SerializeField] private int _lastProcessedTickLower = -1;
 
     [field: Header("NETWORK DEBUGGER")]
     [Networked][field: SerializeField] public float TickRateAnimation { get; set; }
-    [Networked][field: SerializeField] public int PlayableAnimationIndex { get; set; }
-    [Networked][field: SerializeField] public int PlayableAnimationTick { get; set; }
+    [Networked][field: SerializeField] public int PlayableUpperBoddyAnimationIndex { get; set; }
+    [Networked][field: SerializeField] public int PlayableLowerBoddyAnimationIndex { get; set; }
+    [Networked][field: SerializeField] public int PlayableUpperBodyAnimationTick { get; set; }
+    [Networked][field: SerializeField] public int PlayableLowerBodyAnimationTick { get; set; }
     [Networked][field: SerializeField] public string PlayableState { get; set; }
 
     //  =======================
 
     public PlayableGraph playableGraph;
-    public PlayablesChanger changer;
-    public AnimationMixerPlayable finalMixer;
+    public PlayablesChanger lowerBodyChanger;
+    public PlayablesChanger upperBodyChanger;
+    public AnimationLayerMixerPlayable finalMixer;
 
     private ChangeDetector _changeDetector;
 
@@ -59,19 +68,29 @@ public class PlayerPlayables : NetworkBehaviour
     {
         if (HasStateAuthority || HasInputAuthority) return;
 
-        if (changer.CurrentState == null) return;
+        if (lowerBodyChanger.CurrentState == null) return;
 
         foreach (var change in _changeDetector.DetectChanges(this))
         {
             switch (change)
             {
-                case nameof(PlayableAnimationIndex):
-                case nameof(PlayableAnimationTick):
+                case nameof(PlayableUpperBoddyAnimationIndex):
+                case nameof(PlayableUpperBodyAnimationTick):
 
-                    if (PlayableState == "basic" && PlayableAnimationTick != _lastProcessedTick)
+                    if (PlayableState == "basic" && PlayableUpperBodyAnimationTick != _lastProcessedTickUpper)
                     {
-                        changer.ChangeState(basicMovement.GetPlayableAnimation(PlayableAnimationIndex));
-                        _lastProcessedTick = PlayableAnimationTick;
+                        upperBodyChanger.ChangeState(upperBodyMovement.GetPlayableAnimation(PlayableUpperBoddyAnimationIndex));
+                        _lastProcessedTickUpper = PlayableUpperBodyAnimationTick;
+                    }
+
+                    break;
+                case nameof(PlayableLowerBoddyAnimationIndex):
+                case nameof(PlayableLowerBodyAnimationTick):
+
+                    if (PlayableState == "basic" && PlayableLowerBodyAnimationTick != _lastProcessedTickUpper)
+                    {
+                        lowerBodyChanger.ChangeState(lowerBodyMovement.GetPlayableAnimation(PlayableUpperBoddyAnimationIndex));
+                        _lastProcessedTickLower = PlayableLowerBodyAnimationTick;
                     }
 
                     break;
@@ -83,38 +102,41 @@ public class PlayerPlayables : NetworkBehaviour
     {
         TickRateAnimation = Runner.Tick * Runner.DeltaTime;
 
-        if (changer.CurrentState == null) return;
+        if (lowerBodyChanger.CurrentState == null) return;
 
-        changer.CurrentState.NetworkUpdate();
+        lowerBodyChanger.CurrentState.NetworkUpdate();
     }
 
     public void InitializePlayables()
     {
-        changer = new PlayablesChanger(this);
+        lowerBodyChanger = new PlayablesChanger(this);
+        upperBodyChanger = new PlayablesChanger(this);
 
-        playableGraph = PlayableGraph.Create();
+        playableGraph = PlayableGraph.Create("Player Animation");
 
-        var playableOutput = AnimationPlayableOutput.Create(playableGraph, "PlayerAnimation", playerAnimator);
+        var playableOutput = AnimationPlayableOutput.Create(playableGraph, "Animation Output", playerAnimator);
 
-        var splitter = AnimationMixerPlayable.Create(playableGraph, 1);
+        finalMixer = AnimationLayerMixerPlayable.Create(playableGraph, 2);
 
-        playableGraph.Connect(splitter, 0, basicMovement.Initialize(), 0);
-
-        finalMixer = AnimationMixerPlayable.Create(playableGraph, 1);
-
-        playableGraph.Connect(basicMovement.mixerPlayable, 0, finalMixer, 0);   //  BASIC MOVEMENT
-        //playableGraph.Connect(mixerPlayable2, 0, splitter2, 1);
-
-        playableOutput.SetSourcePlayable(finalMixer);
-
-        changer.Initialize(basicMovement.IdlePlayable);
+        //  INITIALIZE ANIMATIONS
+        playableGraph.Connect(lowerBodyMovement.Initialize(), 0, finalMixer, 0);   //  BASIC MOVEMENT
+        lowerBodyChanger.Initialize(lowerBodyMovement.IdlePlayable);
+        playableGraph.Connect(upperBodyMovement.Initialize(), 0, finalMixer, 1);
+        upperBodyChanger.Initialize(upperBodyMovement.IdlePlayable);
 
         finalMixer.SetInputWeight(0, 1f);
+        finalMixer.SetLayerMaskFromAvatarMask(0, lowerBodyMask);
+        finalMixer.SetInputWeight(1, 1f);
+        finalMixer.SetLayerMaskFromAvatarMask(1, upperBodyMask);
+
+        playableOutput.SetSourcePlayable(finalMixer);
 
         playableGraph.Play();
 
         GraphVisualizerClient.Show(playableGraph);
     }
 
-    public void SetAnimationTick() => PlayableAnimationTick = Runner.Tick;
+    public void SetAnimationTick() => PlayableUpperBodyAnimationTick = Runner.Tick;
+
+    public void SetAnimationLowerTick() => PlayableLowerBodyAnimationTick = Runner.Tick;
 }

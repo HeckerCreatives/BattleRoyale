@@ -31,6 +31,7 @@ public class AnimationPlayable
     public SimpleKCC characterController;
     AnimationClipPlayable animationClipPlayable;
     bool oncePlay;
+    bool lower;
 
     //  ======================
 
@@ -43,7 +44,7 @@ public class AnimationPlayable
 
     //  ======================
 
-    public AnimationPlayable(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay)
+    public AnimationPlayable(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower)
     {
         coroutineHost = host;
         this.characterController = characterController;
@@ -58,6 +59,7 @@ public class AnimationPlayable
         this.animationLength = animationLength;
         this.animationClipPlayable = animationClipPlayable;
         this.oncePlay = oncePlay;
+        lower = isLower;
 
         if (oncePlay)
         {
@@ -86,11 +88,20 @@ public class AnimationPlayable
         if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority)
         {
             playerPlayables.PlayableState = mixername;
-            playerPlayables.PlayableAnimationIndex = animIndex;
+
+            if (lower)
+                playerPlayables.PlayableLowerBoddyAnimationIndex = animIndex;
+            else
+                playerPlayables.PlayableUpperBoddyAnimationIndex = animIndex;
         }
 
         if (playerPlayables.HasStateAuthority)
-            playerPlayables.SetAnimationTick();
+        {
+            if (lower)
+                playerPlayables.SetAnimationLowerTick();
+            else
+                playerPlayables.SetAnimationTick();
+        }
     }
 
     public virtual void Exit()

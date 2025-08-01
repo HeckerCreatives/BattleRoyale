@@ -52,6 +52,8 @@ public class BotSpearAttackOne : BotAnimationPlayable
                 hasResetHitEnemies = true;
             }
 
+            if (botPlayables.Inventroy.PrimaryWeapon == null) return;
+
             botPlayables.Inventroy.PrimaryWeapon.DamagePlayer(false, true);
         }
 

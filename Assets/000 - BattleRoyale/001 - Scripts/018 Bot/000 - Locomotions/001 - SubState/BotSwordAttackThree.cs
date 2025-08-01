@@ -50,6 +50,7 @@ public class BotSwordAttackThree : BotAnimationPlayable
                 hasResetHitEnemies = true;
             }
 
+            if (botPlayables.Inventroy.PrimaryWeapon == null) return;
             botPlayables.Inventroy.PrimaryWeapon.DamagePlayer(true, true);
             
         }

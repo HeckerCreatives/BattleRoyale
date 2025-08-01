@@ -74,12 +74,12 @@ public class SwordJumpAttack : AnimationPlayable
         if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
         {
             if (playerMovement.IsSprint)
-                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordSprintPlayable);
 
             else
-                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordRunPlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordRunPlayable);
         }
         else
-            playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordIdlePlayable);
     }
 }

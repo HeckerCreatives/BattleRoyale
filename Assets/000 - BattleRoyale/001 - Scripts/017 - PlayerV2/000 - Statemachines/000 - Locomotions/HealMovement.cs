@@ -39,8 +39,6 @@ public class HealMovement : NetworkBehaviour
 
         playerPlayables.playableGraph.Connect(healClip, 0, mixerPlayable, 1);
 
-        HealPlayable = new HealState(this, simpleKCC, playerPlayables.changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "heal", "healandrepair", heal.length, healClip, false);
-
         return mixerPlayable;
     }
 }

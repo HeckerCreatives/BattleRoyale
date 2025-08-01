@@ -10,7 +10,7 @@ public class JumpPunchState : PlayerOnGround
     bool canAction;
     bool hasResetHitEnemies;
 
-    public JumpPunchState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public JumpPunchState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
     }
 
@@ -38,11 +38,11 @@ public class JumpPunchState : PlayerOnGround
 
         if (!hasResetHitEnemies)
         {
-            playerPlayables.basicMovement.ResetSecondAttack();
+            playerPlayables.lowerBodyMovement.ResetSecondAttack();
             hasResetHitEnemies = true;
         }
 
-        playerPlayables.basicMovement.PerformSecondAttack();
+        playerPlayables.lowerBodyMovement.PerformSecondAttack();
 
         FallDamage();
 
@@ -73,12 +73,12 @@ public class JumpPunchState : PlayerOnGround
         if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
         {
             if (playerMovement.IsSprint)
-                playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SprintPlayable);
 
             else
-                playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RunPlayable);
         }
         else
-            playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.IdlePlayable);
     }
 }

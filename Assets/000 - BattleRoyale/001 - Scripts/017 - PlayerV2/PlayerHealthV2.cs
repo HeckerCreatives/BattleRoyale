@@ -46,6 +46,8 @@ public class PlayerHealthV2 : NetworkBehaviour
     [Networked][field: SerializeField] public float FallDamageValue { get; set; }
     [Networked][field: SerializeField] public bool FallDamage { get; set; }
     [Networked][field: SerializeField] public bool IsDead { get; set; }
+    [Networked][field: SerializeField] public int Healed { get; set; }
+    [Networked][field: SerializeField] public int Repaired { get; set; }
 
     //  ========================
 
@@ -115,6 +117,20 @@ public class PlayerHealthV2 : NetworkBehaviour
                     DamageIndicatorWithoutBlood();
 
                     break;
+                case nameof(Healed):
+
+                    if (HasStateAuthority || HasInputAuthority) return;
+
+                    healParticles.Play();
+
+                    break;
+                case nameof(Repaired):
+
+                    if (HasStateAuthority || HasInputAuthority) return;
+
+                    repairParticles.Play();
+
+                    break;
             }
         }
 
@@ -164,6 +180,8 @@ public class PlayerHealthV2 : NetworkBehaviour
 
         inventory.HealCount -= 1;
 
+        Healed++;
+
         if (HasInputAuthority) healParticles.Play();
     }
 
@@ -174,6 +192,8 @@ public class PlayerHealthV2 : NetworkBehaviour
         inventory.Armor.Supplies = (int)Mathf.Clamp(temparmor, 0f, 100f);
 
         inventory.ArmorRepairCount -= 1;
+
+        Repaired++;
 
         if (HasInputAuthority) repairParticles.Play();
     }
@@ -256,7 +276,7 @@ public class PlayerHealthV2 : NetworkBehaviour
         float remainingDamage = damage;
 
         //  Block
-        if (playerPlayables.PlayableAnimationIndex == 12)
+        if (playerPlayables.PlayableUpperBoddyAnimationIndex == 12)
         {
             remainingDamage -= (remainingDamage * .15f);
         }

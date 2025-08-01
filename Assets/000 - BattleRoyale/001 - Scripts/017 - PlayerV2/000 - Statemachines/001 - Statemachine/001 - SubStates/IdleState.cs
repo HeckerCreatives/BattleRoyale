@@ -8,7 +8,7 @@ using UnityEngine.EventSystems;
 
 public class IdleState : PlayerOnGround
 {
-    public IdleState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public IdleState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
     }
 
@@ -32,73 +32,73 @@ public class IdleState : PlayerOnGround
     {
         if (playerPlayables.healthV2.IsDead)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
             return;
         }
 
         if (!characterController.IsGrounded)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
             return;
         }
 
         if (playerMovement.IsJumping)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.JumpPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.JumpPlayable);
             return;
         }
 
         if (playerMovement.IsBlocking)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.BlockPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BlockPlayable);
             return;
         }
 
         if (playerPlayables.healthV2.IsHit)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
             return;
         }
 
         if (playerPlayables.healthV2.IsSecondHit)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.MiddleHitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
             return;
         }
 
         if (playerPlayables.healthV2.IsStagger)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.StaggerHitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
             return;
         }
 
         if (playerMovement.IsHealing)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.HealPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HealPlayable);
             return;
         }
 
         if (playerMovement.IsRepairing)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.RepairPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RepairPlayable);
             return;
         }
 
         if (playerMovement.IsTrapping)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.TrappingPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.TrappingPlayable);
             return;
         }
 
         if (playerMovement.Attacking)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.Punch1Playable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.Punch1Playable);
             return;
         }
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RollPlayable);
             return;
         }
     }
@@ -111,21 +111,21 @@ public class IdleState : PlayerOnGround
             if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
             {
                 if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SprintPlayable);
 
                 else
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RunPlayable);
             }
         }
         else if (playerPlayables.inventory.WeaponIndex == 2)
         {
             if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "001")
             {
-                playablesChanger.ChangeState(playerPlayables.basicMovement.SwordIdlePlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordIdlePlayable);
             }
             else if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "002")
             {
-                playablesChanger.ChangeState(playerPlayables.basicMovement.SpearIdlePlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearIdlePlayable);
             }
         }
     }

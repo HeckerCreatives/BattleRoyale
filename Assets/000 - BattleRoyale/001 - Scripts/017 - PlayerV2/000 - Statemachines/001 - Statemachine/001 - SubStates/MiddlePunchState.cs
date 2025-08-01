@@ -13,7 +13,7 @@ public class MiddlePunchState : PlayerOnGround
     bool canAction;
     bool hasResetHitEnemies;
 
-    public MiddlePunchState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public MiddlePunchState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
     }
 
@@ -33,7 +33,7 @@ public class MiddlePunchState : PlayerOnGround
     {
         base.Exit();
 
-        playerPlayables.basicMovement.ResetSecondAttack();
+        playerPlayables.lowerBodyMovement.ResetSecondAttack();
         canAction = false;
     }
 
@@ -46,10 +46,10 @@ public class MiddlePunchState : PlayerOnGround
         {
             if (!hasResetHitEnemies)
             {
-                playerPlayables.basicMovement.ResetSecondAttack(); // Clear BEFORE performing attack
+                playerPlayables.lowerBodyMovement.ResetSecondAttack(); // Clear BEFORE performing attack
                 hasResetHitEnemies = true;
             }
-            playerPlayables.basicMovement.PerformSecondAttack();
+            playerPlayables.lowerBodyMovement.PerformSecondAttack();
         }
 
         Animation();
@@ -60,27 +60,27 @@ public class MiddlePunchState : PlayerOnGround
     private void Animation()
     {
         if (playerPlayables.healthV2.IsDead)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
 
         if (!characterController.IsGrounded)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
 
         if (playerPlayables.healthV2.IsHit)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
             return;
         }
 
 
         if (playerPlayables.healthV2.IsSecondHit)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.MiddleHitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
             return;
         }
 
         if (playerPlayables.healthV2.IsStagger)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.StaggerHitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
             return;
         }
 
@@ -88,26 +88,26 @@ public class MiddlePunchState : PlayerOnGround
         if (canAction)
         {
             if (playerPlayables.TickRateAnimation >= nextPunchWindow && playerMovement.Attacking)
-                playablesChanger.ChangeState(playerPlayables.basicMovement.Punch3Playable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.Punch3Playable);
 
             if (playerPlayables.TickRateAnimation >= timer)
             {
                 if (playerMovement.IsBlocking)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.BlockPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BlockPlayable);
 
                 if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RollPlayable);
 
                 if (playerMovement.MoveDirection != Vector3.zero)
                 {
                     if (playerMovement.IsSprint)
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SprintPlayable);
 
                     else
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RunPlayable);
                 }
                 else
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.IdlePlayable);
             }
         }
     }

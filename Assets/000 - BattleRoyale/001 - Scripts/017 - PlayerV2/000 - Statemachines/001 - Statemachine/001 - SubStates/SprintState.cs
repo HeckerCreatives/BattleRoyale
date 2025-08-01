@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 
 public class SprintState : PlayerOnGround
 {
-    public SprintState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public SprintState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
     }
 
@@ -20,7 +20,7 @@ public class SprintState : PlayerOnGround
         Animation();
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RollPlayable);
 
         playerPlayables.stamina.DecreaseStamina(20f);
     }
@@ -28,47 +28,47 @@ public class SprintState : PlayerOnGround
     private void Animation()
     {
         if (playerPlayables.healthV2.IsDead)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
 
         if (!characterController.IsGrounded)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
 
         if (playerMovement.IsJumping)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.JumpPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.JumpPlayable);
 
         if (playerMovement.IsBlocking)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.BlockPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BlockPlayable);
 
         if (playerMovement.Attacking)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.Punch1Playable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.Punch1Playable);
 
         if (playerMovement.IsHealing)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.HealPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HealPlayable);
 
         if (playerMovement.IsRepairing)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.RepairPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RepairPlayable);
 
         if (playerMovement.IsTrapping)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.TrappingPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.TrappingPlayable);
             return;
         }
 
         if (playerPlayables.healthV2.IsHit)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
             return;
         }
 
         if (playerPlayables.healthV2.IsSecondHit)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.MiddleHitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
             return;
         }
 
         if (playerPlayables.healthV2.IsStagger)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.StaggerHitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
             return;
         }
     }
@@ -82,9 +82,9 @@ public class SprintState : PlayerOnGround
                 if (!playerMovement.IsSprint)
                 {
                     if (playerMovement.MoveDirection != Vector3.zero)
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RunPlayable);
                     else
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.IdlePlayable);
                 }
 
                 return;
@@ -94,7 +94,7 @@ public class SprintState : PlayerOnGround
                 if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "001")
                 {
                     if (playerMovement.MoveDirection != Vector3.zero)
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.SwordSprintPlayable);
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordSprintPlayable);
 
                     return;
                 }
@@ -102,7 +102,7 @@ public class SprintState : PlayerOnGround
                 if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "002")
                 {
                     if (playerMovement.MoveDirection != Vector3.zero)
-                        playablesChanger.ChangeState(playerPlayables.basicMovement.SpearSprintPlayable);
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearSprintPlayable);
 
                     return;
                 }
@@ -111,9 +111,9 @@ public class SprintState : PlayerOnGround
         else
         {
             if (playerMovement.MoveDirection == Vector3.zero)
-                playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.IdlePlayable);
             else
-                playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RunPlayable);
         }
     }
 }

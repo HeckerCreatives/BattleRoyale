@@ -66,6 +66,7 @@ public class BotInventory : NetworkBehaviour
     [field: SerializeField][Networked] public ArmorItem Armor { get; set; }
     [field: SerializeField][Networked] public int HealCount { get; set; }
     [field: SerializeField][Networked] public int RepairCount { get; set; }
+    [field: SerializeField][Networked] public int TrapCount { get; set; }
 
     public override void Spawned()
     {

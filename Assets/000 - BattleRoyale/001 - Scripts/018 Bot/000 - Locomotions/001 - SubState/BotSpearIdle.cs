@@ -37,6 +37,22 @@ public class BotSpearIdle : BotAnimationPlayable
             return;
         }
 
+
+        if (botPlayables.GetBotData.Inventory.HealCount > 0 && botPlayables.GetBotData.CurrentHealth < 100)
+        {
+            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.HealingPlayable);
+            return;
+        }
+
+        if (botPlayables.GetBotData.Inventory.RepairCount > 0 && botPlayables.GetBotData.Inventory.Armor != null)
+        {
+            if (botPlayables.GetBotData.Inventory.Armor.Supplies < 100)
+            {
+                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.RepairArmorPlayable);
+                return;
+            }
+        }
+
         MovePlayer();
     }
 

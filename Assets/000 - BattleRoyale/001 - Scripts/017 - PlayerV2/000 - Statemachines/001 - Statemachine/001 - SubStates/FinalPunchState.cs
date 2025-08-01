@@ -15,7 +15,7 @@ public class FinalPunchState : PlayerOnGround
     bool canMove;
     bool doneResetHit;
 
-    public FinalPunchState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public FinalPunchState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
     }
 
@@ -46,11 +46,11 @@ public class FinalPunchState : PlayerOnGround
         {
             if (!doneResetHit)
             {
-                playerPlayables.basicMovement.ResetFirstAttack();
+                playerPlayables.lowerBodyMovement.ResetFirstAttack();
                 doneResetHit = true;
             }
 
-            playerPlayables.basicMovement.PerformFirstAttack(true);
+            playerPlayables.lowerBodyMovement.PerformFirstAttack(true);
         }
 
         Animation();
@@ -67,25 +67,25 @@ public class FinalPunchState : PlayerOnGround
     private  void Animation()
     {
         if (playerPlayables.healthV2.IsDead)
-            playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
 
 
         if (playerPlayables.healthV2.IsHit)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
             return;
         }
 
 
         if (playerPlayables.healthV2.IsSecondHit)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.MiddleHitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
             return;
         }
 
         if (playerPlayables.healthV2.IsStagger)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.StaggerHitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
             return;
         }
 
@@ -94,13 +94,13 @@ public class FinalPunchState : PlayerOnGround
             if (playerMovement.MoveDirection != Vector3.zero)
             {
                 if (playerMovement.IsSprint)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SprintPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SprintPlayable);
 
                 else
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.RunPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RunPlayable);
             }
             else
-                playablesChanger.ChangeState(playerPlayables.basicMovement.IdlePlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.IdlePlayable);
 
         }
     }

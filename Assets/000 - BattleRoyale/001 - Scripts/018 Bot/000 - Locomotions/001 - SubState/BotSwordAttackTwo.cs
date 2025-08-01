@@ -52,6 +52,7 @@ public class BotSwordAttackTwo : BotAnimationPlayable
                 hasResetHitEnemies = true;
             }
 
+            if (botPlayables.Inventroy.PrimaryWeapon == null) return;
             botPlayables.Inventroy.PrimaryWeapon.DamagePlayer(false, true);
         }
 

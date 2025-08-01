@@ -16,7 +16,7 @@ public class SpearFirstAttackState : PlayerOnGround
     bool canMove;
     bool hasResetHitEnemies;
 
-    public SpearFirstAttackState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public SpearFirstAttackState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
     }
 
@@ -67,32 +67,32 @@ public class SpearFirstAttackState : PlayerOnGround
     {
         if (playerPlayables.healthV2.IsDead)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
             return;
         }
 
 
         if (playerPlayables.healthV2.IsHit)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.HitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
             return;
         }
 
         if (playerPlayables.healthV2.IsSecondHit)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.MiddleHitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
             return;
         }
 
         if (playerPlayables.healthV2.IsStagger)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.StaggerHitPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
             return;
         }
 
         if (!characterController.IsGrounded)
         {
-            playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
 
             return;
         }
@@ -101,7 +101,7 @@ public class SpearFirstAttackState : PlayerOnGround
         {
             if (playerMovement.Attacking)
             {
-                playablesChanger.ChangeState(playerPlayables.basicMovement.SpearFinalAttackPlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearFinalAttackPlayable);
                 return;
             }
         }
@@ -110,26 +110,26 @@ public class SpearFirstAttackState : PlayerOnGround
         {
             if (playerMovement.IsBlocking)
             {
-                playablesChanger.ChangeState(playerPlayables.basicMovement.SpearBlockPlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearBlockPlayable);
                 return;
             }
 
             if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             {
-                playablesChanger.ChangeState(playerPlayables.basicMovement.RollPlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RollPlayable);
                 return;
             }
 
             if (playerMovement.MoveDirection != Vector3.zero)
             {
                 if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SpearSprintPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearSprintPlayable);
 
                 else
-                    playablesChanger.ChangeState(playerPlayables.basicMovement.SpearRunPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearRunPlayable);
             }
             else
-                playablesChanger.ChangeState(playerPlayables.basicMovement.SpearIdlePlayable);
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearIdlePlayable);
         }
     }
 }
