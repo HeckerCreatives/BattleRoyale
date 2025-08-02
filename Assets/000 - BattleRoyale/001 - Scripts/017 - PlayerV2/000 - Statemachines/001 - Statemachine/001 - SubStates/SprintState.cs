@@ -15,7 +15,6 @@ public class SprintState : PlayerOnGround
     {
         playerMovement.MoveCharacter();
 
-        playerMovement.WeaponSwitcher();
         WeaponsChecker();
         Animation();
 

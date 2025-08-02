@@ -36,13 +36,13 @@ public class JumpPunchState : PlayerOnGround
     {
         playerMovement.MoveCharacter();
 
-        if (!hasResetHitEnemies)
-        {
-            playerPlayables.lowerBodyMovement.ResetSecondAttack();
-            hasResetHitEnemies = true;
-        }
+        //if (!hasResetHitEnemies)
+        //{
+        //    playerPlayables.lowerBodyMovement.ResetSecondAttack();
+        //    hasResetHitEnemies = true;
+        //}
 
-        playerPlayables.lowerBodyMovement.PerformSecondAttack();
+        //playerPlayables.lowerBodyMovement.PerformSecondAttack();
 
         FallDamage();
 

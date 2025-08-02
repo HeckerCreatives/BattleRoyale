@@ -1,0 +1,505 @@
+using Fusion;
+using Fusion.Addons.SimpleKCC;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Animations;
+using UnityEngine.Playables;
+
+public class PlayerUpperMovement : NetworkBehaviour
+{
+    [SerializeField] private SimpleKCC simpleKCC;
+    [SerializeField] private PlayerPlayables playerPlayables;
+    [SerializeField] private PlayerMovementV2 playerMovementV2;
+    [SerializeField] private PlayerOwnObjectEnabler playerOwnObjectEnabler;
+
+    [Space]
+    public bool isLowerBody;
+
+    [Space]
+    [SerializeField] private List<string> animationnames;
+    [SerializeField] private List<string> mixernames;
+
+    [Space]
+    [SerializeField] private AnimationClip idle;
+    [SerializeField] private AnimationClip run;
+    [SerializeField] private AnimationClip sprint;
+    [SerializeField] private AnimationClip roll;
+    [SerializeField] private AnimationClip punch1;
+    [SerializeField] private AnimationClip punch2;
+    [SerializeField] private AnimationClip punch3;
+    [SerializeField] private AnimationClip startJump;
+    [SerializeField] private AnimationClip jumpidle;
+    [SerializeField] private AnimationClip falling;
+    [SerializeField] private AnimationClip jumpPunch;
+    [SerializeField] private AnimationClip block;
+    [SerializeField] private AnimationClip hit;
+    [SerializeField] private AnimationClip staggerHit;
+    [SerializeField] private AnimationClip gettingUp;
+    [SerializeField] private AnimationClip death;
+    [SerializeField] private AnimationClip heal;
+    [SerializeField] private AnimationClip trapping;
+    [SerializeField] private AnimationClip swordIdle;
+    [SerializeField] private AnimationClip swordRun;
+    [SerializeField] private AnimationClip swordFirstAttack;
+    [SerializeField] private AnimationClip swordSecondAttack;
+    [SerializeField] private AnimationClip swordFinalAttack;
+    [SerializeField] private AnimationClip swordSprint;
+    [SerializeField] private AnimationClip swordBlock;
+    [SerializeField] private AnimationClip swordJumpSlash;
+    [SerializeField] private AnimationClip spearIdle;
+    [SerializeField] private AnimationClip spearFirstAttack;
+    [SerializeField] private AnimationClip spearFinalAttack;
+    [SerializeField] private AnimationClip spearJumpAttack;
+
+    [Space]
+    [SerializeField] private LayerMask enemyLayerMask;
+    [SerializeField] private float attackRadius;
+    [SerializeField] private Transform impactFirstFistPoint;
+    [SerializeField] private Transform impactSecondFistPoint;
+
+    //  =====================
+
+    private readonly HashSet<NetworkObject> hitEnemiesFirstFist = new();
+    private readonly HashSet<NetworkObject> hitEnemiesSecondFist = new();
+
+    private readonly List<LagCompensatedHit> hitsFirstFist = new List<LagCompensatedHit>();
+    private readonly List<LagCompensatedHit> hitsSecondFist = new List<LagCompensatedHit>();
+
+    //  ======================
+
+    public AnimationMixerPlayable mixerPlayable;
+
+    public PlayerUpperIdle IdlePlayables;
+    public PlayerUpperRun RunPlayables;
+    public PlayerFistFirstPunch FirstPunch;
+    public PlayerFistSecondPunch SecondPunch;
+    public PlayerFistFinalPunch FinalPunch;
+    public PlayerUpperSprint SprintPlayables;
+    public PlayerUpperRoll RollPlayables;
+    public PlayerUpperFalling FallingPlayables;
+
+    //  ======================
+
+    public AnimationMixerPlayable Initialize()
+    {
+        mixerPlayable = AnimationMixerPlayable.Create(playerPlayables.playableGraph, 9);
+
+        var idleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, idle);
+        var runClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, run);
+        var punch1Clip = AnimationClipPlayable.Create(playerPlayables.playableGraph, punch1);
+        var punch2Clip = AnimationClipPlayable.Create(playerPlayables.playableGraph, punch2);
+        var punch3Clip = AnimationClipPlayable.Create(playerPlayables.playableGraph, punch3);
+        var sprintClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, sprint);
+        var rollClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, roll);
+        var fallingClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, falling);
+        //var fallingClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, falling);
+        //var rollClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, roll);
+        //var punch2Clip = AnimationClipPlayable.Create(playerPlayables.playableGraph, punch2);
+        //var punch3Clip = AnimationClipPlayable.Create(playerPlayables.playableGraph, punch3);
+        //var jumpPunchClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, jumpPunch);
+        //var blockClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, block);
+        //var hitClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, hit);
+        //var staggerHitClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, staggerHit);
+        //var gettingUpClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, gettingUp);
+        //var deathClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, death);
+        //var healClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, heal);
+        //var repairClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, heal);
+        //var trappingClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, trapping);
+        //var middleHitClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, hit);
+        //var swordIdleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordIdle);
+        //var swordRunClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordRun);
+        //var swordFirstAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordFirstAttack);
+        //var swordSecondAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordSecondAttack);
+        //var swordFinalAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordFinalAttack);
+        //var swordSprintClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordSprint);
+        //var swordBlockClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordBlock);
+        //var swordJumpAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordJumpSlash);
+        //var spearIdleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, spearIdle);
+        //var spearRunClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordRun);
+        //var spearSprintClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordSprint);
+        //var spearFirstAattackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, spearFirstAttack);
+        //var spearFinalAattackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, spearFinalAttack);
+        //var spearBlockClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordBlock);
+        //var spearJumpAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, spearJumpAttack);
+
+        playerPlayables.playableGraph.Connect(idleClip, 0, mixerPlayable, 1);
+        playerPlayables.playableGraph.Connect(runClip, 0, mixerPlayable, 2);
+        playerPlayables.playableGraph.Connect(punch1Clip, 0, mixerPlayable, 3);
+        playerPlayables.playableGraph.Connect(punch2Clip, 0, mixerPlayable, 4);
+        playerPlayables.playableGraph.Connect(punch3Clip, 0, mixerPlayable, 5);
+        playerPlayables.playableGraph.Connect(sprintClip, 0, mixerPlayable, 6);
+        playerPlayables.playableGraph.Connect(rollClip, 0, mixerPlayable, 7);
+        playerPlayables.playableGraph.Connect(fallingClip, 0, mixerPlayable, 8);
+        //playerPlayables.playableGraph.Connect(punch2Clip, 0, mixerPlayable, 6);
+        //playerPlayables.playableGraph.Connect(punch3Clip, 0, mixerPlayable, 7);
+        //playerPlayables.playableGraph.Connect(startJumpClip, 0, mixerPlayable, 8);
+        //playerPlayables.playableGraph.Connect(idleJumpClip, 0, mixerPlayable, 9);
+        //playerPlayables.playableGraph.Connect(fallingClip, 0, mixerPlayable, 10);
+        //playerPlayables.playableGraph.Connect(jumpPunchClip, 0, mixerPlayable, 11);
+        //playerPlayables.playableGraph.Connect(blockClip, 0, mixerPlayable, 12);
+        //playerPlayables.playableGraph.Connect(hitClip, 0, mixerPlayable, 13);
+        //playerPlayables.playableGraph.Connect(staggerHitClip, 0, mixerPlayable, 14);
+        //playerPlayables.playableGraph.Connect(gettingUpClip, 0, mixerPlayable, 15);
+        //playerPlayables.playableGraph.Connect(deathClip, 0, mixerPlayable, 16);
+        //playerPlayables.playableGraph.Connect(healClip, 0, mixerPlayable, 17);
+        //playerPlayables.playableGraph.Connect(repairClip, 0, mixerPlayable, 18);
+        //playerPlayables.playableGraph.Connect(trappingClip, 0, mixerPlayable, 19);
+        //playerPlayables.playableGraph.Connect(middleHitClip, 0, mixerPlayable, 20);
+        //playerPlayables.playableGraph.Connect(swordIdleClip, 0, mixerPlayable, 21);
+        //playerPlayables.playableGraph.Connect(swordRunClip, 0, mixerPlayable, 22);
+        //playerPlayables.playableGraph.Connect(swordFirstAttackClip, 0, mixerPlayable, 23);
+        //playerPlayables.playableGraph.Connect(swordSecondAttackClip, 0, mixerPlayable, 24);
+        //playerPlayables.playableGraph.Connect(swordFinalAttackClip, 0, mixerPlayable, 25);
+        //playerPlayables.playableGraph.Connect(swordSprintClip, 0, mixerPlayable, 26);
+        //playerPlayables.playableGraph.Connect(swordBlockClip, 0, mixerPlayable, 27);
+        //playerPlayables.playableGraph.Connect(swordJumpAttackClip, 0, mixerPlayable, 28);
+        //playerPlayables.playableGraph.Connect(spearIdleClip, 0, mixerPlayable, 29);
+        //playerPlayables.playableGraph.Connect(spearRunClip, 0, mixerPlayable, 30);
+        //playerPlayables.playableGraph.Connect(spearSprintClip, 0, mixerPlayable, 31);
+        //playerPlayables.playableGraph.Connect(spearFirstAattackClip, 0, mixerPlayable, 32);
+        //playerPlayables.playableGraph.Connect(spearFinalAattackClip, 0, mixerPlayable, 33);
+        //playerPlayables.playableGraph.Connect(spearBlockClip, 0, mixerPlayable, 34);
+        //playerPlayables.playableGraph.Connect(spearJumpAttackClip, 0, mixerPlayable, 35);
+
+        #region GLOBAL
+
+        FallingPlayables = new PlayerUpperFalling(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "falling", "basic", falling.length, fallingClip, false);
+        RollPlayables = new PlayerUpperRoll(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "roll", "basic", roll.length, rollClip, true);
+        //HitPlayable = new HitState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "hit", "basic", hit.length, hitClip, true, isLowerBody);
+        //StaggerHitPlayable = new StaggerHit(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "staggerhit", "basic", staggerHit.length, staggerHitClip, true, isLowerBody);
+        //GettingUpPlayable = new GettingUp(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "gettingup", "basic", gettingUp.length, gettingUpClip, true, isLowerBody);
+        //DeathPlayable = new DeathState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "death", "basic", death.length, deathClip, true, isLowerBody);
+        //HealPlayable = new HealState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "heal", "basic", heal.length, healClip, true, isLowerBody);
+        //RepairPlayable = new RepairState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "repair", "basic", heal.length, repairClip, true, isLowerBody);
+        //TrappingPlayable = new TrappingState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "trapping", "basic", trapping.length, trappingClip, true, isLowerBody);
+        //MiddleHitPlayable = new MiddleHitState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "middlehit", "basic", hit.length, hitClip, true, isLowerBody);
+
+        #endregion
+
+        #region BASIC
+
+        IdlePlayables = new PlayerUpperIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "idle", "basic", idle.length, idleClip, false);
+        RunPlayables = new PlayerUpperRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "run", "basic", run.length, runClip, false);
+        FirstPunch = new PlayerFistFirstPunch(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch1", "basic", punch1.length, punch1Clip, true);
+        SecondPunch = new PlayerFistSecondPunch(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch2", "basic", punch2.length, punch2Clip, true);
+        FinalPunch = new PlayerFistFinalPunch(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch3", "basic", punch3.length, punch3Clip, true);
+        SprintPlayables = new PlayerUpperSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "sprint", "basic", sprint.length, sprintClip, false);
+        //JumpPlayable = new JumpState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumpidle", "basic", jumpidle.length, idleJumpClip, false, isLowerBody);
+        //BlockPlayable = new BlockState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "block", "basic", block.length, blockClip, true, isLowerBody);
+        //Punch3Playable = new FinalPunchState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch3", "basic", punch3.length, punch3Clip, true, isLowerBody);
+        //JumpPunchPlayable = new JumpPunchState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumppunch", "basic", jumpPunch.length, jumpPunchClip, true, isLowerBody);
+
+        #endregion
+
+        #region SWORD
+
+        //SwordIdlePlayable = new SwordIdleState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordidle", "basic", swordIdle.length, swordIdleClip, false, isLowerBody);
+        //SwordRunPlayable = new SwordRunState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordrun", "basic", swordRun.length, swordRunClip, false, isLowerBody);
+        //SwordAttackFirstPlayable = new SwordFirstAttackState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfirstattack", "basic", swordFirstAttack.length, swordFirstAttackClip, true, isLowerBody);
+        //SwordAttackSecondPlayable = new SwordSecondAttackState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsecondattack", "basic", swordSecondAttack.length, swordSecondAttackClip, true, isLowerBody);
+        //SwordFinalAttackPlayable = new SwordFinalAttackState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfinalattack", "basic", swordFinalAttack.length, swordFinalAttackClip, true, isLowerBody);
+        //SwordSprintPlayable = new SwordSprintState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsprint", "basic", swordSprint.length, swordSprintClip, false, isLowerBody);
+        //SwordBlockPlayable = new BlockState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordblock", "basic", swordBlock.length, swordBlockClip, true, isLowerBody);
+        //SwordJumpAttackPlayable = new SwordJumpAttack(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordjumpattack", "basic", swordJumpSlash.length, swordJumpAttackClip, true, isLowerBody);
+
+        #endregion
+
+        #region SPEAR
+
+        //SpearIdlePlayable = new SpearIdleState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearidle", "basic", spearIdle.length, spearIdleClip, false, isLowerBody);
+        //SpearRunPlayable = new SpearRunState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearrun", "basic", swordRun.length, spearRunClip, false, isLowerBody);
+        //SpearSprintPlayable = new SpearSprintState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearsprint", "basic", swordSprint.length, spearSprintClip, false, isLowerBody);
+        //SpearFirstAttackPlayable = new SpearFirstAttackState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfirstattack", "basic", spearFirstAttack.length, spearFirstAattackClip, true, isLowerBody);
+        //SpearFinalAttackPlayable = new SpearFinalAttackState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfinalattack", "basic", spearFinalAttack.length, spearFinalAattackClip, true, isLowerBody);
+        //SpearBlockPlayable = new BlockState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearblock", "basic", swordBlock.length, spearBlockClip, true, isLowerBody);
+        //SpearJumpAttackPlayable = new SpearJumpAttack(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearjumpattack", "basic", spearJumpAttack.length, spearJumpAttackClip, true, isLowerBody);
+
+        #endregion
+
+        return mixerPlayable;
+    }
+
+    public void PerformFirstAttack(bool isFinal = false)
+    {
+        int hitCount = Runner.LagCompensation.OverlapSphere(
+            impactFirstFistPoint.position,
+            attackRadius,
+            Object.InputAuthority,
+            hitsFirstFist,
+            enemyLayerMask,
+            HitOptions.IgnoreInputAuthority
+        );
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            var hitbox = hitsFirstFist[i].Hitbox;
+            if (hitbox == null)
+            {
+                continue;
+            }
+
+            NetworkObject hitObject = hitbox.transform.root.GetComponent<NetworkObject>();
+
+            if (hitObject == null)
+            {
+                continue;
+            }
+
+            if (hitObject.tag == "Bot")
+            {
+                Botdata tempdata = hitObject.GetComponent<Botdata>();
+
+                if (tempdata.IsStagger) return;
+                if (tempdata.IsGettingUp) return;
+                if (tempdata.IsDead) return;
+
+                if (!hitEnemiesFirstFist.Contains(hitObject))
+                {
+                    hitEnemiesFirstFist.Add(hitObject);
+
+                    string tag = hitbox.tag;
+
+                    float tempdamage = tag switch
+                    {
+                        "Head" => 30f,
+                        "Body" => 25f,
+                        "Thigh" => 20f,
+                        "Shin" => 15f,
+                        "Foot" => 10f,
+                        "Arm" => 20f,
+                        "Forearm" => 15f,
+                        _ => 0f
+                    };
+
+                    if (isFinal) tempdata.IsStagger = true;
+                    else tempdata.IsHit = true;
+
+                    tempdata.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
+                }
+            }
+            else
+            {
+                PlayerPlayables tempplayables = hitObject.GetComponent<PlayerPlayables>();
+
+                if (tempplayables.healthV2.IsStagger) return;
+                if (tempplayables.healthV2.IsGettingUp) return;
+
+                // Avoid duplicate hits
+                if (!hitEnemiesFirstFist.Contains(hitObject))
+                {
+                    // Mark as hit
+                    hitEnemiesFirstFist.Add(hitObject);
+
+                    string tag = hitbox.tag;
+
+                    float tempdamage = tag switch
+                    {
+                        "Head" => 30f,
+                        "Body" => 25f,
+                        "Thigh" => 20f,
+                        "Shin" => 15f,
+                        "Foot" => 10f,
+                        "Arm" => 20f,
+                        "Forearm" => 15f,
+                        _ => 0f
+                    };
+
+                    PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
+
+                    if (isFinal) healthV2.IsStagger = true;
+                    else healthV2.IsHit = true;
+
+                    healthV2.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
+                }
+            }
+        }
+    }
+
+    public void PerformSecondAttack()
+    {
+        int hitCount = Runner.LagCompensation.OverlapSphere(
+            impactSecondFistPoint.position,
+            attackRadius,
+            Object.InputAuthority,
+            hitsSecondFist,
+            enemyLayerMask,
+            HitOptions.IgnoreInputAuthority
+        );
+
+        for (int i = 0; i < hitCount; i++)
+        {
+            var hitbox = hitsSecondFist[i].Hitbox;
+            if (hitbox == null)
+            {
+                continue;
+            }
+
+            NetworkObject hitObject = hitbox.transform.root.GetComponent<NetworkObject>();
+
+            if (hitObject == null)
+            {
+                continue;
+            }
+
+            if (hitObject.tag == "Bot")
+            {
+                Botdata tempdata = hitObject.GetComponent<Botdata>();
+
+                if (tempdata.IsStagger) return;
+                if (tempdata.IsGettingUp) return;
+                if (tempdata.IsDead) return;
+
+                if (!hitEnemiesSecondFist.Contains(hitObject))
+                {
+                    hitEnemiesSecondFist.Add(hitObject);
+
+                    string tag = hitbox.tag;
+
+                    float tempdamage = tag switch
+                    {
+                        "Head" => 30f,
+                        "Body" => 25f,
+                        "Thigh" => 20f,
+                        "Shin" => 15f,
+                        "Foot" => 10f,
+                        "Arm" => 20f,
+                        "Forearm" => 15f,
+                        _ => 0f
+                    };
+
+                    tempdata.IsHit = true;
+
+                    tempdata.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
+                }
+            }
+            else
+            {
+                PlayerPlayables tempplayables = hitObject.GetComponent<PlayerPlayables>();
+
+                if (tempplayables.healthV2.IsStagger) return;
+                if (tempplayables.healthV2.IsGettingUp) return;
+
+                // Avoid duplicate hits
+                if (!hitEnemiesSecondFist.Contains(hitObject))
+                {
+                    // Mark as hit
+                    hitEnemiesSecondFist.Add(hitObject);
+
+                    //bareHandsMovement.CanDamage = false;
+
+                    string tag = hitbox.tag;
+
+                    float tempdamage = tag switch
+                    {
+                        "Head" => 30f,
+                        "Body" => 25f,
+                        "Thigh" => 20f,
+                        "Shin" => 15f,
+                        "Foot" => 10f,
+                        "Arm" => 20f,
+                        "Forearm" => 15f,
+                        _ => 0f
+                    };
+
+                    PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
+
+                    healthV2.IsHit = true;
+
+                    healthV2.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
+                }
+            }
+        }
+    }
+
+    public void ResetFirstAttack()
+    {
+        hitEnemiesFirstFist.Clear();
+    }
+
+    public void ResetSecondAttack()
+    {
+        hitEnemiesSecondFist.Clear();
+    }
+
+    public UpperBodyAnimations GetPlayableAnimation(int index)
+    {
+        switch (index)
+        {
+            case 1:
+                return IdlePlayables;
+            case 2:
+                return RunPlayables;
+            case 3:
+                return FirstPunch;
+            case 4:
+                return SecondPunch;
+            case 5:
+                return FinalPunch;
+            case 6:
+                return SprintPlayables;
+            case 7:
+                return RollPlayables;
+            case 8:
+                return FallingPlayables;
+            //case 7:
+            //    return Punch3Playable;
+            //case 9:
+            //    return JumpPlayable;
+            //case 10:
+            //    return FallingPlayable;
+            //case 11:
+            //    return JumpPunchPlayable;
+            //case 12:
+            //    return BlockPlayable;
+            //case 13:
+            //    return HitPlayable;
+            //case 14:
+            //    return StaggerHitPlayable;
+            //case 15:
+            //    return GettingUpPlayable;
+            //case 16:
+            //    return DeathPlayable;
+            //case 17:
+            //    return HealPlayable;
+            //case 18:
+            //    return RepairPlayable;
+            //case 19:
+            //    return TrappingPlayable;
+            //case 20:
+            //    return MiddleHitPlayable;
+            //case 21:
+            //    return SwordIdlePlayable;
+            //case 22:
+            //    return SwordRunPlayable;
+            //case 23:
+            //    return SwordAttackFirstPlayable;
+            //case 24:
+            //    return SwordAttackSecondPlayable;
+            //case 25:
+            //    return SwordFinalAttackPlayable;
+            //case 26:
+            //    return SwordSprintPlayable;
+            //case 27:
+            //    return SwordBlockPlayable;
+            //case 28:
+            //    return SwordJumpAttackPlayable;
+            //case 29:
+            //    return SpearIdlePlayable;
+            //case 30:
+            //    return SpearRunPlayable;
+            //case 31:
+            //    return SpearSprintPlayable;
+            //case 32:
+            //    return SpearFirstAttackPlayable;
+            //case 33:
+            //    return SpearFinalAttackPlayable;
+            //case 34:
+            //    return SpearBlockPlayable;
+            //case 35:
+            //    return SpearJumpAttackPlayable;
+            default: return null;
+        }
+    }
+
+}

@@ -31,7 +31,7 @@ public class AnimationPlayable
     public SimpleKCC characterController;
     AnimationClipPlayable animationClipPlayable;
     bool oncePlay;
-    bool lower;
+    public bool lower;
 
     //  ======================
 
@@ -88,19 +88,12 @@ public class AnimationPlayable
         if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority)
         {
             playerPlayables.PlayableState = mixername;
-
-            if (lower)
-                playerPlayables.PlayableLowerBoddyAnimationIndex = animIndex;
-            else
-                playerPlayables.PlayableUpperBoddyAnimationIndex = animIndex;
+            playerPlayables.PlayableLowerBoddyAnimationIndex = animIndex;
         }
 
         if (playerPlayables.HasStateAuthority)
         {
-            if (lower)
-                playerPlayables.SetAnimationLowerTick();
-            else
-                playerPlayables.SetAnimationTick();
+            playerPlayables.SetAnimationLowerTick();
         }
     }
 
@@ -123,25 +116,4 @@ public class AnimationPlayable
     //}
 
     public virtual void NetworkUpdate() { }
-
-    private IEnumerator BlendWeights(AnimationMixerPlayable mixer, int inputIndex, float targetWeight, float duration)
-    {
-        float startWeight = mixer.GetInputWeight(inputIndex);
-        float elapsed = 0f;
-
-        // Cache the initial time to base our blending on real time, not frame time
-        float startTime = Time.time;
-
-        while (elapsed < duration)
-        {
-            elapsed = Time.time - startTime;
-            float t = Mathf.Clamp01(elapsed / duration);
-            float weight = Mathf.Lerp(startWeight, targetWeight, t);
-            mixer.SetInputWeight(inputIndex, weight);
-            yield return null;
-        }
-
-        // Ensure we set the final weight exactly
-        mixer.SetInputWeight(inputIndex, targetWeight);
-    }
 }

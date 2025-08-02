@@ -17,7 +17,6 @@ public class HitState : PlayerOnGround
     {
         base.Enter();
 
-        playerPlayables.healthV2.IsHit = false;
         timer = playerPlayables.TickRateAnimation + animationLength;
         canAction = true;
     }

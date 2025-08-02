@@ -9,11 +9,7 @@ public class FinalPunchState : PlayerOnGround
     float timer;
     float moveTimer;
     float stopMoveTimer;
-    float damageWindowStart;
-    float damageWindowEnd;
     bool canAction;
-    bool canMove;
-    bool doneResetHit;
 
     public FinalPunchState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
@@ -23,14 +19,10 @@ public class FinalPunchState : PlayerOnGround
     {
         base.Enter();
 
-        doneResetHit = false;
         timer = playerPlayables.TickRateAnimation + animationLength;
         moveTimer = playerPlayables.TickRateAnimation + 0.30f;
         stopMoveTimer = playerPlayables.TickRateAnimation + 0.50f;
-        damageWindowStart = playerPlayables.TickRateAnimation + 0.45f;
-        damageWindowEnd = playerPlayables.TickRateAnimation + 0.50f;
         canAction = true;
-        canMove = true;
     }
 
     public override void Exit()
@@ -42,29 +34,17 @@ public class FinalPunchState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
-        if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
-        {
-            if (!doneResetHit)
-            {
-                playerPlayables.lowerBodyMovement.ResetFirstAttack();
-                doneResetHit = true;
-            }
-
-            playerPlayables.lowerBodyMovement.PerformFirstAttack(true);
-        }
-
         Animation();
 
         if (playerPlayables.TickRateAnimation >= moveTimer && playerPlayables.TickRateAnimation <= stopMoveTimer)
         {
             characterController.Move(characterController.TransformDirection * 1.25f, 0f);
-            canMove = false;
         }
 
         playerPlayables.stamina.RecoverStamina(5f);
     }
 
-    private  void Animation()
+    private void Animation()
     {
         if (playerPlayables.healthV2.IsDead)
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);

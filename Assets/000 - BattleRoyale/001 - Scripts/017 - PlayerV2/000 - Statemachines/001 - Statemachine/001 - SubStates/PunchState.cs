@@ -47,16 +47,16 @@ public class PunchState : PlayerOnGround
     {
         playerMovement.RotatePlayer();
 
-        if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
-        {
-            if (!hasResetHitEnemies)
-            {
-                playerPlayables.lowerBodyMovement.ResetFirstAttack(); // Clear BEFORE performing attack
-                hasResetHitEnemies = true;
-            }
+        //if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
+        //{
+        //    if (!hasResetHitEnemies)
+        //    {
+        //        playerPlayables.lowerBodyMovement.ResetFirstAttack(); // Clear BEFORE performing attack
+        //        hasResetHitEnemies = true;
+        //    }
 
-            playerPlayables.lowerBodyMovement.PerformFirstAttack();
-        }
+        //    playerPlayables.lowerBodyMovement.PerformFirstAttack();
+        //}
 
         Animation();
 

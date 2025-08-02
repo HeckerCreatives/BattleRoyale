@@ -58,12 +58,6 @@ public class PlayerBasicMovement : NetworkBehaviour
     [SerializeField] private Transform impactFirstFistPoint;
     [SerializeField] private Transform impactSecondFistPoint;
 
-    [field: Header("NETWORK DEBUGGER")]
-    [Networked][field: SerializeField] public int AttackIndex { get; set; }
-
-    private readonly HashSet<NetworkObject> hitEnemiesFirstFist = new();
-    private readonly HashSet<NetworkObject> hitEnemiesSecondFist = new();
-
     //  ======================
 
     public AnimationMixerPlayable mixerPlayable;
@@ -103,11 +97,6 @@ public class PlayerBasicMovement : NetworkBehaviour
     public SpearFinalAttackState SpearFinalAttackPlayable { get; private set; }
     public BlockState SpearBlockPlayable { get; private set; }
     public SpearJumpAttack SpearJumpAttackPlayable { get; private set; }
-
-    //  ======================
-
-    private readonly List<LagCompensatedHit> hitsFirstFist = new List<LagCompensatedHit>();
-    private readonly List<LagCompensatedHit> hitsSecondFist = new List<LagCompensatedHit>();
 
     //  ======================
 
@@ -187,263 +176,63 @@ public class PlayerBasicMovement : NetworkBehaviour
         playerPlayables.playableGraph.Connect(spearBlockClip, 0, mixerPlayable, 34);
         playerPlayables.playableGraph.Connect(spearJumpAttackClip, 0, mixerPlayable, 35);
 
+        PlayablesChanger changer = playerPlayables.lowerBodyChanger;
+
         #region GLOBAL
 
-        FallingPlayable = new FallingState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "falling", "basic", falling.length, fallingClip, false, isLowerBody);
-        RollPlayable = new RollState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "roll", "basic", roll.length, rollClip, true, isLowerBody);
-        HitPlayable = new HitState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "hit", "basic", hit.length, hitClip, true, isLowerBody  );
-        StaggerHitPlayable = new StaggerHit(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "staggerhit", "basic", staggerHit.length, staggerHitClip, true, isLowerBody);
-        GettingUpPlayable = new GettingUp(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "gettingup", "basic", gettingUp.length, gettingUpClip, true, isLowerBody);
-        DeathPlayable = new DeathState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "death", "basic", death.length, deathClip, true, isLowerBody);
-        HealPlayable = new HealState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "heal", "basic", heal.length, healClip, true, isLowerBody);
-        RepairPlayable = new RepairState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "repair", "basic", heal.length, repairClip, true, isLowerBody);
-        TrappingPlayable = new TrappingState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "trapping", "basic", trapping.length, trappingClip, true, isLowerBody);
-        MiddleHitPlayable = new MiddleHitState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "middlehit", "basic", hit.length, hitClip, true, isLowerBody);
+        FallingPlayable = new FallingState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "falling", "basic", falling.length, fallingClip, false, isLowerBody);
+        RollPlayable = new RollState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "roll", "basic", roll.length, rollClip, true, isLowerBody);
+        HitPlayable = new HitState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "hit", "basic", hit.length, hitClip, true, isLowerBody  );
+        StaggerHitPlayable = new StaggerHit(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "staggerhit", "basic", staggerHit.length, staggerHitClip, true, isLowerBody);
+        GettingUpPlayable = new GettingUp(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "gettingup", "basic", gettingUp.length, gettingUpClip, true, isLowerBody);
+        DeathPlayable = new DeathState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "death", "basic", death.length, deathClip, true, isLowerBody);
+        HealPlayable = new HealState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "heal", "basic", heal.length, healClip, true, isLowerBody);
+        RepairPlayable = new RepairState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "repair", "basic", heal.length, repairClip, true, isLowerBody);
+        TrappingPlayable = new TrappingState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "trapping", "basic", trapping.length, trappingClip, true, isLowerBody);
+        MiddleHitPlayable = new MiddleHitState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "middlehit", "basic", hit.length, hitClip, true, isLowerBody);
 
         #endregion
 
         #region BASIC
 
-        IdlePlayable = new IdleState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "idle", "basic", idle.length, idleClip, false, isLowerBody);
-        RunPlayable = new RunState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "run", "basic", run.length, runClip, false, isLowerBody);
-        SprintPlayable = new SprintState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "sprint", "basic", sprint.length, sprintClip, false, isLowerBody);
-        JumpPlayable = new JumpState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumpidle", "basic", jumpidle.length, idleJumpClip, false, isLowerBody);
-        BlockPlayable = new BlockState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "block", "basic", block.length, blockClip, true, isLowerBody);
-        Punch1Playable = new PunchState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch1", "basic", punch1.length, punch1Clip, true, isLowerBody);
-        Punch2Playable = new MiddlePunchState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch2", "basic", punch2.length, punch2Clip, true, isLowerBody);
-        Punch3Playable = new FinalPunchState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch3", "basic", punch3.length, punch3Clip, true, isLowerBody);
-        JumpPunchPlayable = new JumpPunchState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumppunch", "basic", jumpPunch.length, jumpPunchClip, true, isLowerBody);
+        IdlePlayable = new IdleState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "idle", "basic", idle.length, idleClip, false, isLowerBody);
+        RunPlayable = new RunState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "run", "basic", run.length, runClip, false, isLowerBody);
+        SprintPlayable = new SprintState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "sprint", "basic", sprint.length, sprintClip, false, isLowerBody);
+        JumpPlayable = new JumpState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumpidle", "basic", jumpidle.length, idleJumpClip, false, isLowerBody);
+        BlockPlayable = new BlockState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "block", "basic", block.length, blockClip, true, isLowerBody);
+        Punch1Playable = new PunchState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch1", "basic", punch1.length, punch1Clip, true, isLowerBody);
+        Punch2Playable = new MiddlePunchState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch2", "basic", punch2.length, punch2Clip, true, isLowerBody);
+        Punch3Playable = new FinalPunchState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch3", "basic", punch3.length, punch3Clip, true, isLowerBody);
+        JumpPunchPlayable = new JumpPunchState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumppunch", "basic", jumpPunch.length, jumpPunchClip, true, isLowerBody);
 
         #endregion
 
         #region SWORD
 
-        SwordIdlePlayable = new SwordIdleState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordidle", "basic", swordIdle.length, swordIdleClip, false, isLowerBody);
-        SwordRunPlayable = new SwordRunState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordrun", "basic", swordRun.length, swordRunClip, false, isLowerBody);
-        SwordAttackFirstPlayable = new SwordFirstAttackState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfirstattack", "basic", swordFirstAttack.length, swordFirstAttackClip, true, isLowerBody);
-        SwordAttackSecondPlayable = new SwordSecondAttackState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsecondattack", "basic", swordSecondAttack.length, swordSecondAttackClip, true, isLowerBody);
-        SwordFinalAttackPlayable = new SwordFinalAttackState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfinalattack", "basic", swordFinalAttack.length, swordFinalAttackClip, true, isLowerBody);
-        SwordSprintPlayable = new SwordSprintState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsprint", "basic", swordSprint.length, swordSprintClip, false, isLowerBody);
-        SwordBlockPlayable = new BlockState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordblock", "basic", swordBlock.length, swordBlockClip, true, isLowerBody);
-        SwordJumpAttackPlayable = new SwordJumpAttack(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordjumpattack", "basic", swordJumpSlash.length, swordJumpAttackClip, true, isLowerBody);
+        SwordIdlePlayable = new SwordIdleState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordidle", "basic", swordIdle.length, swordIdleClip, false, isLowerBody);
+        SwordRunPlayable = new SwordRunState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordrun", "basic", swordRun.length, swordRunClip, false, isLowerBody);
+        SwordAttackFirstPlayable = new SwordFirstAttackState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfirstattack", "basic", swordFirstAttack.length, swordFirstAttackClip, true, isLowerBody);
+        SwordAttackSecondPlayable = new SwordSecondAttackState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsecondattack", "basic", swordSecondAttack.length, swordSecondAttackClip, true, isLowerBody);
+        SwordFinalAttackPlayable = new SwordFinalAttackState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfinalattack", "basic", swordFinalAttack.length, swordFinalAttackClip, true, isLowerBody);
+        SwordSprintPlayable = new SwordSprintState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsprint", "basic", swordSprint.length, swordSprintClip, false, isLowerBody);
+        SwordBlockPlayable = new BlockState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordblock", "basic", swordBlock.length, swordBlockClip, true, isLowerBody);
+        SwordJumpAttackPlayable = new SwordJumpAttack(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordjumpattack", "basic", swordJumpSlash.length, swordJumpAttackClip, true, isLowerBody);
 
         #endregion
 
         #region SPEAR
 
-        SpearIdlePlayable = new SpearIdleState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearidle", "basic", spearIdle.length, spearIdleClip, false, isLowerBody);
-        SpearRunPlayable = new SpearRunState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearrun", "basic", swordRun.length, spearRunClip, false, isLowerBody);
-        SpearSprintPlayable = new SpearSprintState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearsprint", "basic", swordSprint.length, spearSprintClip, false, isLowerBody);
-        SpearFirstAttackPlayable = new SpearFirstAttackState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfirstattack", "basic", spearFirstAttack.length, spearFirstAattackClip, true, isLowerBody);
-        SpearFinalAttackPlayable = new SpearFinalAttackState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfinalattack", "basic", spearFinalAttack.length, spearFinalAattackClip, true, isLowerBody);
-        SpearBlockPlayable = new BlockState(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearblock", "basic", swordBlock.length, spearBlockClip, true, isLowerBody);
-        SpearJumpAttackPlayable = new SpearJumpAttack(this, simpleKCC, playerPlayables.lowerBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearjumpattack", "basic", spearJumpAttack.length, spearJumpAttackClip, true, isLowerBody);
+        SpearIdlePlayable = new SpearIdleState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearidle", "basic", spearIdle.length, spearIdleClip, false, isLowerBody);
+        SpearRunPlayable = new SpearRunState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearrun", "basic", swordRun.length, spearRunClip, false, isLowerBody);
+        SpearSprintPlayable = new SpearSprintState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearsprint", "basic", swordSprint.length, spearSprintClip, false, isLowerBody);
+        SpearFirstAttackPlayable = new SpearFirstAttackState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfirstattack", "basic", spearFirstAttack.length, spearFirstAattackClip, true, isLowerBody);
+        SpearFinalAttackPlayable = new SpearFinalAttackState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfinalattack", "basic", spearFinalAttack.length, spearFinalAattackClip, true, isLowerBody);
+        SpearBlockPlayable = new BlockState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearblock", "basic", swordBlock.length, spearBlockClip, true, isLowerBody);
+        SpearJumpAttackPlayable = new SpearJumpAttack(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearjumpattack", "basic", spearJumpAttack.length, spearJumpAttackClip, true, isLowerBody);
 
         #endregion
 
         return mixerPlayable;
-    }
-
-    public void PerformFirstAttack(bool isFinal = false)
-    {
-        int hitCount = Runner.LagCompensation.OverlapSphere(
-            impactFirstFistPoint.position,
-            attackRadius,
-            Object.InputAuthority,
-            hitsFirstFist,
-            enemyLayerMask,
-            HitOptions.IgnoreInputAuthority
-        );
-
-        for (int i = 0; i < hitCount; i++)
-        {
-            var hitbox = hitsFirstFist[i].Hitbox;
-            if (hitbox == null)
-            {
-                continue;
-            }
-
-            NetworkObject hitObject = hitbox.transform.root.GetComponent<NetworkObject>();
-
-            if (hitObject == null)
-            {
-                continue;
-            }
-
-            if (hitObject.tag == "Bot")
-            {
-                Botdata tempdata = hitObject.GetComponent<Botdata>();
-
-                if (tempdata.IsStagger) return;
-                if (tempdata.IsGettingUp) return;
-                if (tempdata.IsDead) return;
-
-                if (!hitEnemiesFirstFist.Contains(hitObject))
-                {
-                    hitEnemiesFirstFist.Add(hitObject);
-
-                    string tag = hitbox.tag;
-
-                    float tempdamage = tag switch
-                    {
-                        "Head" => 30f,
-                        "Body" => 25f,
-                        "Thigh" => 20f,
-                        "Shin" => 15f,
-                        "Foot" => 10f,
-                        "Arm" => 20f,
-                        "Forearm" => 15f,
-                        _ => 0f
-                    };
-
-                    if (isFinal) tempdata.IsStagger = true;
-                    else tempdata.IsHit = true;
-
-                    tempdata.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
-                }
-            }
-            else
-            {
-                PlayerPlayables tempplayables = hitObject.GetComponent<PlayerPlayables>();
-
-                if (tempplayables.healthV2.IsStagger) return;
-                if (tempplayables.healthV2.IsGettingUp) return;
-
-                // Avoid duplicate hits
-                if (!hitEnemiesFirstFist.Contains(hitObject))
-                {
-                    // Mark as hit
-                    hitEnemiesFirstFist.Add(hitObject);
-
-                    string tag = hitbox.tag;
-
-                    float tempdamage = tag switch
-                    {
-                        "Head" => 30f,
-                        "Body" => 25f,
-                        "Thigh" => 20f,
-                        "Shin" => 15f,
-                        "Foot" => 10f,
-                        "Arm" => 20f,
-                        "Forearm" => 15f,
-                        _ => 0f
-                    };
-
-                    PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
-
-                    if (isFinal) healthV2.IsStagger = true;
-                    else healthV2.IsHit = true;
-
-                    healthV2.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
-                }
-            }
-        }
-    }
-
-    public void PerformSecondAttack()
-    {
-        int hitCount = Runner.LagCompensation.OverlapSphere(
-            impactSecondFistPoint.position,
-            attackRadius,
-            Object.InputAuthority,
-            hitsSecondFist,
-            enemyLayerMask,
-            HitOptions.IgnoreInputAuthority
-        );
-
-        for (int i = 0; i < hitCount; i++)
-        {
-            var hitbox = hitsSecondFist[i].Hitbox;
-            if (hitbox == null)
-            {
-                continue;
-            }
-
-            NetworkObject hitObject = hitbox.transform.root.GetComponent<NetworkObject>();
-
-            if (hitObject == null)
-            {
-                continue;
-            }
-
-            if (hitObject.tag == "Bot")
-            {
-                Botdata tempdata = hitObject.GetComponent<Botdata>();
-
-                if (tempdata.IsStagger) return;
-                if (tempdata.IsGettingUp) return;
-                if (tempdata.IsDead) return;
-
-                if (!hitEnemiesSecondFist.Contains(hitObject))
-                {
-                    hitEnemiesSecondFist.Add(hitObject);
-
-                    string tag = hitbox.tag;
-
-                    float tempdamage = tag switch
-                    {
-                        "Head" => 30f,
-                        "Body" => 25f,
-                        "Thigh" => 20f,
-                        "Shin" => 15f,
-                        "Foot" => 10f,
-                        "Arm" => 20f,
-                        "Forearm" => 15f,
-                        _ => 0f
-                    };
-
-                    tempdata.IsHit = true;
-
-                    tempdata.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
-                }
-            }
-            else
-            {
-                PlayerPlayables tempplayables = hitObject.GetComponent<PlayerPlayables>();
-
-                if (tempplayables.healthV2.IsStagger) return;
-                if (tempplayables.healthV2.IsGettingUp) return;
-
-                // Avoid duplicate hits
-                if (!hitEnemiesSecondFist.Contains(hitObject))
-                {
-                    // Mark as hit
-                    hitEnemiesSecondFist.Add(hitObject);
-
-                    //bareHandsMovement.CanDamage = false;
-
-                    string tag = hitbox.tag;
-
-                    float tempdamage = tag switch
-                    {
-                        "Head" => 30f,
-                        "Body" => 25f,
-                        "Thigh" => 20f,
-                        "Shin" => 15f,
-                        "Foot" => 10f,
-                        "Arm" => 20f,
-                        "Forearm" => 15f,
-                        _ => 0f
-                    };
-
-                    PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
-
-                    healthV2.IsHit = true;
-
-                    healthV2.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
-                }
-            }
-        }
-    }
-
-    public void ResetFirstAttack()
-    {
-        hitEnemiesFirstFist.Clear();
-    }
-
-    public void ResetSecondAttack()
-    {
-        hitEnemiesSecondFist.Clear();
     }
 
     public AnimationPlayable GetPlayableAnimation(int index)

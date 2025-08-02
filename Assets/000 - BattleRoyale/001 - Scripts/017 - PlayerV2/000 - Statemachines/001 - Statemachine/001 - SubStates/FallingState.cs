@@ -29,8 +29,6 @@ public class FallingState : AnimationPlayable
     {
         playerMovement.MoveCharacter();
 
-        playerMovement.WeaponSwitcher();
-
         FallDamage();
         Animation();
         WeaponsChecker(); //    NEXT FUNCTION AFTER DAMAGE IS APPLIED

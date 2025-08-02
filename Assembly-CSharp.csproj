@@ -76,6 +76,7 @@
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerCameraRotation.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingDescr.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\000 - Weapons\WeaponItem.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\013 - Leaderboard\LeaderboardTab.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\MinimapCamera.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\001 - Playables\002 - Jump\JumpMovement.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerNetworkLoader.cs" />
@@ -115,6 +116,7 @@
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\018 Bot\000 - Locomotions\001 - SubState\BotSpearAttackTwo.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\018 Bot\000 - Locomotions\001 - SubState\BotHitPlayable.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\001 - Playables\007 - Sword\SwordPlayable.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\002 - UpperBody\001 - Statemachines\PlayerUpperFalling.cs" />
     <Compile Include="Assets\UnityTechnologies\ParticlePack\Shared\Scripts\SimpleCharacterMotor.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LeanTest.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerController.cs" />
@@ -166,10 +168,13 @@
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\018 Bot\BotAnimationPlayable.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\PlayablesChanger.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\004 - MainMenu\ButtonSelector.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\002 - UpperBody\001 - Statemachines\PlayerFistFirstPunch.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\005 - ScriptableObjects\000 - Player\MovementData.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\002 - UpperBody\000 - Locomotions\PlayerUpperMovement.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\PlayerHealthV2.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\002 - Ammo\000 - Bullets\BulletObjectPool.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\001 - Playables\MainCorePlayable.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\002 - UpperBody\001 - Statemachines\PlayerFistSecondPunch.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\018 Bot\000 - Locomotions\001 - SubState\BotFistLastPunch.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\018 Bot\000 - Locomotions\001 - SubState\BotSpearAttackOne.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\007 - Matchmaking\ClientMatchmakingController.cs" />
@@ -191,7 +196,9 @@
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\002 - Ammo\000 - Bullets\BulletController.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\001 - Statemachine\001 - SubStates\GettingUp.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Scripts\YuME_tileGizmo.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\002 - UpperBody\001 - Statemachines\PlayerUpperSprint.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\001 - Statemachine\001 - SubStates\FinalPunchState.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\002 - UpperBody\001 - Statemachines\PlayerUpperHit.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingRotate.cs" />
     <Compile Include="Assets\000 - BattleRoyale\008 - Shaders\000 - Environment\Volume Fog V3\Scripts\FlyCamera.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\001 - Statemachine\001 - SubStates\SwordIdleState.cs" />
@@ -199,6 +206,7 @@
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerCameraFollow.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Scripts\YuME_tilesetData.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralSequencer.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\002 - UpperBody\001 - Statemachines\PlayerUpperIdle.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\MapZoomInOut.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\002 - Ammo\001 - Container\AmmoContainerController.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\001 - Statemachine\001 - SubStates\HealState.cs" />
@@ -220,6 +228,7 @@
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\Testing246.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\PointerEventDataPool.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\018 Bot\000 - Locomotions\001 - SubState\BotSwordAttackTwo.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\002 - UpperBody\UpperBodyAnimations.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\018 Bot\000 - Locomotions\001 - SubState\BotFistFirstPunch.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralBasic.cs" />
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Scripts\YuME_MapManager.cs" />
@@ -265,8 +274,10 @@
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\007 - Settings\ControllerSetting.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\011 - WaitingAreaTimer\WaitingAreaTimerController.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\001 - Statemachine\001 - SubStates\SpearFirstAttackState.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\002 - UpperBody\UpperBodyChanger.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Testing\TestingSequencer.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\001 - Statemachine\001 - SubStates\IdleState.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\014 - Profile\ProfileHistoryItem.cs" />
     <Compile Include="Assets\UnityTechnologies\ParticlePack\Shared\Scripts\ProximityActivate.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralEasingTypes.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\PlayerOnScreenStick.cs" />
@@ -284,6 +295,7 @@
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\000 - GameManagers\PostProcessingController.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\001 - Playables\003 - Falling\FallingAnimation.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\018 Bot\000 - Locomotions\001 - SubState\BotSpearAttackThree.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\002 - UpperBody\001 - Statemachines\PlayerUpperRun.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\002 - Ammo\001 - Bow\ArrowController.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Framework\LTDescrOptional.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\010 - KillCount\KillCountCounterController.cs" />
@@ -294,9 +306,11 @@
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\000 - Weapons\MeleeSoundController.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\008 - Items\000 - Weapons\WeaponListUIController.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\018 Bot\000 - Locomotions\BotBasicMovement.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\002 - UpperBody\001 - Statemachines\PlayerUpperRoll.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\018 Bot\BotPlayables.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\000 - Locomotions\PlayerBasicMovement.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\001 - Player\001 - Playables\001 - Punch\BareHandsMovement.cs" />
+    <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\002 - UpperBody\001 - Statemachines\PlayerFistFinalPunch.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\001 - Statemachine\001 - SubStates\SwordFinalAttackState.cs" />
     <Compile Include="Assets\000 - BattleRoyale\001 - Scripts\017 - PlayerV2\000 - Statemachines\001 - Statemachine\001 - SubStates\SprintState.cs" />
     <Compile Include="Assets\001 - ExternalAssets\LeanTween\Examples\Scripts\GeneralAdvancedTechniques.cs" />

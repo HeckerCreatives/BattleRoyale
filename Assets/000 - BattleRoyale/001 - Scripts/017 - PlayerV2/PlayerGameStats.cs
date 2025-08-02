@@ -207,7 +207,7 @@ public class PlayerGameStats : NetworkBehaviour
                     {
                         { "kill", KillCount },
                         { "death", PlayerPlacement != 1 ? 1 : 0 },
-                        { "rank", PlayerPlacement }
+                        { "rank", (PlayerPlacement + botsCount) }
                     }, true, (response) =>
                     {
                         StartCoroutine(GameManager.Instance.PostRequest("/leaderboard/updateuserleaderboard", "", new Dictionary<string, object>
@@ -292,7 +292,7 @@ public class PlayerGameStats : NetworkBehaviour
             {
                 { "kill", KillCount },
                 { "death", PlayerPlacement != 1 ? 1 : 0 },
-                { "rank", PlayerPlacement }
+                { "rank", (PlayerPlacement + ServerManager.Bots.Count) }
             }, true, (response) =>
             {
                 StartCoroutine(GameManager.Instance.PostRequest("/leaderboard/updateuserleaderboard", "", new Dictionary<string, object>
@@ -365,7 +365,7 @@ public class PlayerGameStats : NetworkBehaviour
         {
             { "kill", KillCount },
             { "death", PlayerPlacement != 1 ? 1 : 0 },
-            { "rank", PlayerPlacement }
+            { "rank", (PlayerPlacement + ServerManager.Bots.Count) }
         }, true, (response) =>
         {
             StartCoroutine(GameManager.Instance.PostRequest("/leaderboard/updateuserleaderboard", "", new Dictionary<string, object>

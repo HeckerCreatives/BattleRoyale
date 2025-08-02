@@ -33,7 +33,6 @@ public class MiddlePunchState : PlayerOnGround
     {
         base.Exit();
 
-        playerPlayables.lowerBodyMovement.ResetSecondAttack();
         canAction = false;
     }
 
@@ -42,15 +41,15 @@ public class MiddlePunchState : PlayerOnGround
     {
         playerMovement.RotatePlayer();
 
-        if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
-        {
-            if (!hasResetHitEnemies)
-            {
-                playerPlayables.lowerBodyMovement.ResetSecondAttack(); // Clear BEFORE performing attack
-                hasResetHitEnemies = true;
-            }
-            playerPlayables.lowerBodyMovement.PerformSecondAttack();
-        }
+        //if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
+        //{
+        //    if (!hasResetHitEnemies)
+        //    {
+        //        playerPlayables.lowerBodyMovement.ResetSecondAttack(); // Clear BEFORE performing attack
+        //        hasResetHitEnemies = true;
+        //    }
+        //    playerPlayables.lowerBodyMovement.PerformSecondAttack();
+        //}
 
         Animation();
 

@@ -21,16 +21,13 @@ public class RunState : PlayerOnGround
     {
         playerMovement.MoveCharacter();
 
-        playerMovement.WeaponSwitcher();
         WeaponsChecker();
-        UpperBodyAnimation();
+        Animation();
         playerPlayables.stamina.RecoverStamina(5f);
     }
 
-    private void UpperBodyAnimation()
+    private void Animation()
     {
-        if (playerPlayables.upperBodyMovement.isLowerBody) return;
-
         if (playerPlayables.healthV2.IsDead)
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
 
@@ -43,8 +40,8 @@ public class RunState : PlayerOnGround
         if (playerMovement.IsBlocking)
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BlockPlayable);
 
-        if (playerMovement.Attacking)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.Punch1Playable);
+        if (playerPlayables.FinalAttack)
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.Punch3Playable);
 
         if (playerPlayables.healthV2.IsHit)
         {

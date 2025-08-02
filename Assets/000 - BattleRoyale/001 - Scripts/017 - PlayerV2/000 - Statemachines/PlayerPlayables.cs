@@ -14,7 +14,7 @@ public class PlayerPlayables : NetworkBehaviour
 
     [Space]
     public PlayerHealthV2 healthV2;
-    public PlayerBasicMovement upperBodyMovement;
+    public PlayerUpperMovement upperBodyMovement;
     public PlayerBasicMovement lowerBodyMovement;
     public HealMovement healMovements;
 
@@ -37,12 +37,13 @@ public class PlayerPlayables : NetworkBehaviour
     [Networked][field: SerializeField] public int PlayableUpperBodyAnimationTick { get; set; }
     [Networked][field: SerializeField] public int PlayableLowerBodyAnimationTick { get; set; }
     [Networked][field: SerializeField] public string PlayableState { get; set; }
+    [Networked][field: SerializeField] public bool FinalAttack { get; set; }
 
     //  =======================
 
     public PlayableGraph playableGraph;
+    public UpperBodyChanger upperBodyChanger;
     public PlayablesChanger lowerBodyChanger;
-    public PlayablesChanger upperBodyChanger;
     public AnimationLayerMixerPlayable finalMixer;
 
     private ChangeDetector _changeDetector;
@@ -110,8 +111,8 @@ public class PlayerPlayables : NetworkBehaviour
 
     public void InitializePlayables()
     {
-        lowerBodyChanger = new PlayablesChanger(this);
-        upperBodyChanger = new PlayablesChanger(this);
+        lowerBodyChanger = new PlayablesChanger();
+        upperBodyChanger = new UpperBodyChanger();
 
         playableGraph = PlayableGraph.Create("Player Animation");
 
@@ -123,7 +124,7 @@ public class PlayerPlayables : NetworkBehaviour
         playableGraph.Connect(lowerBodyMovement.Initialize(), 0, finalMixer, 0);   //  BASIC MOVEMENT
         lowerBodyChanger.Initialize(lowerBodyMovement.IdlePlayable);
         playableGraph.Connect(upperBodyMovement.Initialize(), 0, finalMixer, 1);
-        upperBodyChanger.Initialize(upperBodyMovement.IdlePlayable);
+        upperBodyChanger.Initialize(upperBodyMovement.IdlePlayables);
 
         finalMixer.SetInputWeight(0, 1f);
         finalMixer.SetLayerMaskFromAvatarMask(0, lowerBodyMask);
@@ -137,7 +138,7 @@ public class PlayerPlayables : NetworkBehaviour
         GraphVisualizerClient.Show(playableGraph);
     }
 
-    public void SetAnimationTick() => PlayableUpperBodyAnimationTick = Runner.Tick;
+    public void SetAnimationUpperTick() => PlayableUpperBodyAnimationTick = Runner.Tick;
 
     public void SetAnimationLowerTick() => PlayableLowerBodyAnimationTick = Runner.Tick;
 }

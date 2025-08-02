@@ -21,7 +21,6 @@ public class IdleState : PlayerOnGround
     {
         characterController.Move(Vector3.zero, 0f);
 
-        playerMovement.WeaponSwitcher();
         WeaponsChecker();
         Animation();
 
@@ -90,9 +89,9 @@ public class IdleState : PlayerOnGround
             return;
         }
 
-        if (playerMovement.Attacking)
+        if (playerPlayables.FinalAttack)
         {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.Punch1Playable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.Punch3Playable);
             return;
         }
 

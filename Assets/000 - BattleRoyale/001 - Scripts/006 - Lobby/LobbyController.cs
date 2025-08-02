@@ -9,21 +9,56 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 
+public enum LeaderboardState
+{
+    POINTS,
+    KILL,
+    DEATH,
+    LEVEL
+}
+
 public class LobbyController : MonoBehaviour
 {
+    private event EventHandler LeaderboardStateChange;
+    public event EventHandler OnLeaderboardStateChange
+    {
+        add
+        {
+            if (LeaderboardStateChange == null || !LeaderboardStateChange.GetInvocationList().Contains(value))
+                LeaderboardStateChange += value;
+        }
+        remove { LeaderboardStateChange -= value; }
+    }
+    public LeaderboardState CurrentLeaderboardState
+    {
+        get => currentLeaderboardState;
+        set
+        {
+            currentLeaderboardState = value;
+            LeaderboardStateChange?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    //  ========================
+
     [SerializeField] private UserData userData;
     [SerializeField] private ClientMatchmakingController matchmakingController;
     [SerializeField] private CharacterCreationController characterCreationController;
     [SerializeField] private GameSettingController gameSettingController;
     [SerializeField] private ControllerSetting controllerSetting;
     [SerializeField] private LobbyUserProfile userProfile;
-    [SerializeField] private List<LeaderboardItem> leaderboardItems;
     [SerializeField] private AudioClip bgMusicClip;
     [SerializeField] private TextMeshProUGUI serverTMP;
     [SerializeField] private NetworkRunner instanceRunner;
     [SerializeField] private GameObject serverList;
     [SerializeField] private TextMeshProUGUI totalPlayersOnlineTMP; 
     [SerializeField] private TextMeshProUGUI seasonTMP;
+
+    [Space]
+    [SerializeField] private List<LeaderboardItem> leaderboardItems;
+    [SerializeField] private List<LeaderboardItem> killLeaderboardItems;
+    [SerializeField] private List<LeaderboardItem> deathLeaderboardItems;
+    [SerializeField] private List<LeaderboardItem> levelLeaderboardItems;
 
     [Space]
     [SerializeField] private AudioClip buttonClip;
@@ -37,7 +72,7 @@ public class LobbyController : MonoBehaviour
     [Header("DEBUGGER")]
     [SerializeField] private bool cancountdowntime;
     [SerializeField] public NetworkRunner currentRunnerInstance;
-
+    [SerializeField] private LeaderboardState currentLeaderboardState;
 
     //  ==================
 
@@ -109,6 +144,7 @@ public class LobbyController : MonoBehaviour
 
                 Dictionary<string, LeaderboardData> tempdata = JsonConvert.DeserializeObject<Dictionary<string, LeaderboardData>>(responsetempdata["leaderboard"].ToString());
 
+                //  POINTS
                 for (int a = 0; a < leaderboardItems.Count; a++)
                 {
                     if (a < tempdata.Count)
@@ -117,7 +153,7 @@ public class LobbyController : MonoBehaviour
                     }
                     else
                     {
-                        leaderboardItems[a].SetData("", (a + 1).ToString("n0"), "");
+                        leaderboardItems[a].SetData("-", (a + 1).ToString("n0"), "-");
                     }
                 }
             }
@@ -136,6 +172,121 @@ public class LobbyController : MonoBehaviour
             GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
             GameManager.Instance.SceneController.CurrentScene = "Login";
         }));
+        GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/leaderboard/getkillleaderboard", "", false, (response) =>
+        {
+            try
+            {
+                Dictionary<string, object> responsetempdata = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.ToString());
+
+                if (responsetempdata.Count <= 0) return;
+
+                Dictionary<string, LeaderboardData> tempdata = JsonConvert.DeserializeObject<Dictionary<string, LeaderboardData>>(responsetempdata["leaderboard"].ToString());
+
+                //  KILL
+                for (int a = 0; a < killLeaderboardItems.Count; a++)
+                {
+                    if (a < tempdata.Count)
+                    {
+                        killLeaderboardItems[a].SetData(tempdata[a.ToString()].user, (a + 1).ToString("n0"), tempdata[a.ToString()].amount.ToString("n0"));
+                    }
+                    else
+                    {
+                        killLeaderboardItems[a].SetData("-", (a + 1).ToString("n0"), "-");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                GameManager.Instance.SceneController.StopLoading();
+                Debug.Log(ex.ToString());
+                GameManager.Instance.SocketMngr.Socket.Disconnect();
+                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
+                GameManager.Instance.SceneController.CurrentScene = "Login";
+            }
+        }, () =>
+        {
+            GameManager.Instance.SceneController.StopLoading();
+            GameManager.Instance.SocketMngr.Socket.Disconnect();
+            GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
+            GameManager.Instance.SceneController.CurrentScene = "Login";
+        }));
+        GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/leaderboard/getdeathleaderboard", "", false, (response) =>
+        {
+            try
+            {
+                Dictionary<string, object> responsetempdata = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.ToString());
+
+                if (responsetempdata.Count <= 0) return;
+
+                Dictionary<string, LeaderboardData> tempdata = JsonConvert.DeserializeObject<Dictionary<string, LeaderboardData>>(responsetempdata["leaderboard"].ToString());
+
+                //  KILL
+                for (int a = 0; a < deathLeaderboardItems.Count; a++)
+                {
+                    if (a < tempdata.Count)
+                    {
+                        deathLeaderboardItems[a].SetData(tempdata[a.ToString()].user, (a + 1).ToString("n0"), tempdata[a.ToString()].amount.ToString("n0"));
+                    }
+                    else
+                    {
+                        deathLeaderboardItems[a].SetData("-", (a + 1).ToString("n0"), "-");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                GameManager.Instance.SceneController.StopLoading();
+                Debug.Log(ex.ToString());
+                GameManager.Instance.SocketMngr.Socket.Disconnect();
+                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
+                GameManager.Instance.SceneController.CurrentScene = "Login";
+            }
+        }, () =>
+        {
+            GameManager.Instance.SceneController.StopLoading();
+            GameManager.Instance.SocketMngr.Socket.Disconnect();
+            GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
+            GameManager.Instance.SceneController.CurrentScene = "Login";
+        }));
+        GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/leaderboard/getlevelleaderboard", "", false, (response) =>
+        {
+            try
+            {
+                Dictionary<string, object> responsetempdata = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.ToString());
+
+                if (responsetempdata.Count <= 0) return;
+
+                Dictionary<string, LeaderboardData> tempdata = JsonConvert.DeserializeObject<Dictionary<string, LeaderboardData>>(responsetempdata["leaderboard"].ToString());
+
+                //  KILL
+                for (int a = 0; a < levelLeaderboardItems.Count; a++)
+                {
+                    if (a < tempdata.Count)
+                    {
+                        levelLeaderboardItems[a].SetData(tempdata[a.ToString()].user, (a + 1).ToString("n0"), tempdata[a.ToString()].amount.ToString("n0"));
+                    }
+                    else
+                    {
+                        levelLeaderboardItems[a].SetData("-", (a + 1).ToString("n0"), "-");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                GameManager.Instance.SceneController.StopLoading();
+                Debug.Log(ex.ToString());
+                GameManager.Instance.SocketMngr.Socket.Disconnect();
+                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
+                GameManager.Instance.SceneController.CurrentScene = "Login";
+            }
+        }, () =>
+        {
+            GameManager.Instance.SceneController.StopLoading();
+            GameManager.Instance.SocketMngr.Socket.Disconnect();
+            GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
+            GameManager.Instance.SceneController.CurrentScene = "Login";
+        }));
+
         GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/season/getcurrentseason", "", false, (response) =>
         {
             try
