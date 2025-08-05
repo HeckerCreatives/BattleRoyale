@@ -12,7 +12,6 @@ public class SwordIdleState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
-        playerMovement.WeaponSwitcher();
         WeaponsChecker();
         Animations();
     }
@@ -34,10 +33,10 @@ public class SwordIdleState : PlayerOnGround
             if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
             {
                 if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearSprintPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordSprintPlayable);
 
                 else
-                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearRunPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordRunPlayable);
             }
         }
     }
@@ -104,11 +103,11 @@ public class SwordIdleState : PlayerOnGround
             return;
         }
 
-        if (playerMovement.Attacking)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordAttackFirstPlayable);
-            return;
-        }
+        //if (playerPlayables.FinalAttack)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.Punch3Playable);
+        //    return;
+        //}
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
         {

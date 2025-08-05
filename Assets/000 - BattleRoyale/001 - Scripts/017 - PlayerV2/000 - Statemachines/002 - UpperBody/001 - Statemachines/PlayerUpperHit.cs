@@ -36,36 +36,41 @@ public class PlayerUpperHit : UpperBodyAnimations
 
     private void Animation()
     {
+        if (!characterController.IsGrounded)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.FallingPlayables);
+            return;
+        }
 
-        //if (playerPlayables.healthV2.IsSecondHit)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
-        //    return;
-        //}
+        if (playerPlayables.healthV2.IsSecondHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.MiddleHitPlayable);
+            return;
+        }
 
-        //if (playerPlayables.healthV2.IsStagger)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
-        //    return;
-        //}
+        if (playerPlayables.healthV2.IsStagger)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
+            return;
+        }
 
-        //if (playerPlayables.healthV2.IsDead)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
-        //    return;
-        //}
+        if (playerPlayables.healthV2.IsDead)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
+            return;
+        }
 
-        //if (!characterController.IsGrounded)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
-        //    return;
-        //}
+        if (!characterController.IsGrounded)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.FallingPlayables);
+            return;
+        }
 
-        //if (playerPlayables.healthV2.IsHit)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
-        //    return;
-        //}
+        if (playerPlayables.healthV2.IsHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
+            return;
+        }
 
         if (playerPlayables.TickRateAnimation >= timer && canAction)
         {
@@ -83,8 +88,8 @@ public class PlayerUpperHit : UpperBodyAnimations
             if (playerMovement.Attacking)
                 playablesChanger.ChangeState(playerPlayables.upperBodyMovement.FirstPunch);
 
-            //if (playerMovement.IsBlocking)
-            //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BlockPlayable);
+            if (playerMovement.IsBlocking)
+                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BlockPlayable);
 
             if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
             {

@@ -37,8 +37,8 @@ public class PlayerUpperRoll : UpperBodyAnimations
     {
         if (playerPlayables.TickRateAnimation >= timer && canAction)
         {
-            //if (!characterController.IsGrounded)
-            //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
+            if (!characterController.IsGrounded)
+                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.FallingPlayables);
 
             WeaponsChecker();
         }

@@ -53,28 +53,28 @@ public class PlayerFistFinalPunch : UpperBodyAnimations
 
     private void Animation()
     {
-        //if (playerPlayables.healthV2.IsDead)
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
+        if (playerPlayables.healthV2.IsDead)
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
 
 
-        //if (playerPlayables.healthV2.IsHit)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-        //    return;
-        //}
+        if (playerPlayables.healthV2.IsHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
+            return;
+        }
 
 
-        //if (playerPlayables.healthV2.IsSecondHit)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
-        //    return;
-        //}
+        if (playerPlayables.healthV2.IsSecondHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.MiddleHitPlayable);
+            return;
+        }
 
-        //if (playerPlayables.healthV2.IsStagger)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
-        //    return;
-        //}
+        if (playerPlayables.healthV2.IsStagger)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
+            return;
+        }
 
         if (playerPlayables.TickRateAnimation >= timer && canAction)
         {

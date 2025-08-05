@@ -78,12 +78,25 @@ public class PlayerUpperMovement : NetworkBehaviour
     public PlayerUpperSprint SprintPlayables;
     public PlayerUpperRoll RollPlayables;
     public PlayerUpperFalling FallingPlayables;
+    public PlayerUpperDeath DeathPlayable;
+    public PlayerUpperHit HitPlayable;
+    public PlayerUpperJump JumpPlayable;
+    public PlayerUpperStagger StaggerHitPlayable;
+    public PlayerUpperGettingUp GettingUpPlayable;
+    public PlayerJumpPunchPlayable JumpPunchPlayable;
+    public PlayerBlockPlayable BlockPlayable;
+    public PlayerHealPlayable HealPlayable;
+    public PlayerUpperRepair RepairPlayable;
+    public PlayerUpperTrap TrapPlayable;
+    public PlayerMiddleHit MiddleHitPlayable;
+    public PlayerUpperSwordIdle SwordIdlePlayable;
+    public PlayerUpperSwordRun SwordRunPlayable;
 
     //  ======================
 
     public AnimationMixerPlayable Initialize()
     {
-        mixerPlayable = AnimationMixerPlayable.Create(playerPlayables.playableGraph, 9);
+        mixerPlayable = AnimationMixerPlayable.Create(playerPlayables.playableGraph, 22);
 
         var idleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, idle);
         var runClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, run);
@@ -93,21 +106,27 @@ public class PlayerUpperMovement : NetworkBehaviour
         var sprintClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, sprint);
         var rollClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, roll);
         var fallingClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, falling);
+        var deathClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, death);
+        var hitClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, hit);
+        var jumpClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, startJump);
+        var staggerHitClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, staggerHit);
+        var gettingUpClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, gettingUp);
+        var jumpPunchClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, jumpPunch);
+        var blockClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, block);
+        var healClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, heal);
+        var repairClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, heal);
+        var trappingClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, trapping);
+        var middleHitClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, hit);
+        var swordIdleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordIdle);
+        var swordRunClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordRun);
         //var fallingClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, falling);
         //var rollClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, roll);
         //var punch2Clip = AnimationClipPlayable.Create(playerPlayables.playableGraph, punch2);
         //var punch3Clip = AnimationClipPlayable.Create(playerPlayables.playableGraph, punch3);
         //var jumpPunchClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, jumpPunch);
         //var blockClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, block);
-        //var hitClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, hit);
-        //var staggerHitClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, staggerHit);
-        //var gettingUpClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, gettingUp);
-        //var deathClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, death);
-        //var healClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, heal);
-        //var repairClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, heal);
         //var trappingClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, trapping);
         //var middleHitClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, hit);
-        //var swordIdleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordIdle);
         //var swordRunClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordRun);
         //var swordFirstAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordFirstAttack);
         //var swordSecondAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordSecondAttack);
@@ -131,23 +150,28 @@ public class PlayerUpperMovement : NetworkBehaviour
         playerPlayables.playableGraph.Connect(sprintClip, 0, mixerPlayable, 6);
         playerPlayables.playableGraph.Connect(rollClip, 0, mixerPlayable, 7);
         playerPlayables.playableGraph.Connect(fallingClip, 0, mixerPlayable, 8);
-        //playerPlayables.playableGraph.Connect(punch2Clip, 0, mixerPlayable, 6);
+        playerPlayables.playableGraph.Connect(deathClip, 0, mixerPlayable, 9);
+        playerPlayables.playableGraph.Connect(hitClip, 0, mixerPlayable, 10);
+        playerPlayables.playableGraph.Connect(jumpClip, 0, mixerPlayable, 11);
+        playerPlayables.playableGraph.Connect(staggerHitClip, 0, mixerPlayable, 12);
+        playerPlayables.playableGraph.Connect(gettingUpClip, 0, mixerPlayable, 13);
+        playerPlayables.playableGraph.Connect(jumpPunchClip, 0, mixerPlayable, 14);
+        playerPlayables.playableGraph.Connect(blockClip, 0, mixerPlayable, 15);
+        playerPlayables.playableGraph.Connect(healClip, 0, mixerPlayable, 16);
+        playerPlayables.playableGraph.Connect(repairClip, 0, mixerPlayable, 17);
+        playerPlayables.playableGraph.Connect(trappingClip, 0, mixerPlayable, 18);
+        playerPlayables.playableGraph.Connect(middleHitClip, 0, mixerPlayable, 19);
+        playerPlayables.playableGraph.Connect(swordIdleClip, 0, mixerPlayable, 20);
+        playerPlayables.playableGraph.Connect(swordRunClip, 0, mixerPlayable, 21);
         //playerPlayables.playableGraph.Connect(punch3Clip, 0, mixerPlayable, 7);
         //playerPlayables.playableGraph.Connect(startJumpClip, 0, mixerPlayable, 8);
         //playerPlayables.playableGraph.Connect(idleJumpClip, 0, mixerPlayable, 9);
         //playerPlayables.playableGraph.Connect(fallingClip, 0, mixerPlayable, 10);
         //playerPlayables.playableGraph.Connect(jumpPunchClip, 0, mixerPlayable, 11);
-        //playerPlayables.playableGraph.Connect(blockClip, 0, mixerPlayable, 12);
-        //playerPlayables.playableGraph.Connect(hitClip, 0, mixerPlayable, 13);
         //playerPlayables.playableGraph.Connect(staggerHitClip, 0, mixerPlayable, 14);
         //playerPlayables.playableGraph.Connect(gettingUpClip, 0, mixerPlayable, 15);
-        //playerPlayables.playableGraph.Connect(deathClip, 0, mixerPlayable, 16);
-        //playerPlayables.playableGraph.Connect(healClip, 0, mixerPlayable, 17);
-        //playerPlayables.playableGraph.Connect(repairClip, 0, mixerPlayable, 18);
         //playerPlayables.playableGraph.Connect(trappingClip, 0, mixerPlayable, 19);
         //playerPlayables.playableGraph.Connect(middleHitClip, 0, mixerPlayable, 20);
-        //playerPlayables.playableGraph.Connect(swordIdleClip, 0, mixerPlayable, 21);
-        //playerPlayables.playableGraph.Connect(swordRunClip, 0, mixerPlayable, 22);
         //playerPlayables.playableGraph.Connect(swordFirstAttackClip, 0, mixerPlayable, 23);
         //playerPlayables.playableGraph.Connect(swordSecondAttackClip, 0, mixerPlayable, 24);
         //playerPlayables.playableGraph.Connect(swordFinalAttackClip, 0, mixerPlayable, 25);
@@ -166,14 +190,14 @@ public class PlayerUpperMovement : NetworkBehaviour
 
         FallingPlayables = new PlayerUpperFalling(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "falling", "basic", falling.length, fallingClip, false);
         RollPlayables = new PlayerUpperRoll(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "roll", "basic", roll.length, rollClip, true);
-        //HitPlayable = new HitState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "hit", "basic", hit.length, hitClip, true, isLowerBody);
-        //StaggerHitPlayable = new StaggerHit(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "staggerhit", "basic", staggerHit.length, staggerHitClip, true, isLowerBody);
-        //GettingUpPlayable = new GettingUp(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "gettingup", "basic", gettingUp.length, gettingUpClip, true, isLowerBody);
-        //DeathPlayable = new DeathState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "death", "basic", death.length, deathClip, true, isLowerBody);
-        //HealPlayable = new HealState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "heal", "basic", heal.length, healClip, true, isLowerBody);
-        //RepairPlayable = new RepairState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "repair", "basic", heal.length, repairClip, true, isLowerBody);
-        //TrappingPlayable = new TrappingState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "trapping", "basic", trapping.length, trappingClip, true, isLowerBody);
-        //MiddleHitPlayable = new MiddleHitState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "middlehit", "basic", hit.length, hitClip, true, isLowerBody);
+        DeathPlayable = new PlayerUpperDeath(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "death", "basic", death.length, deathClip, true);
+        HitPlayable = new PlayerUpperHit(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "hit", "basic", hit.length, hitClip, true);
+        StaggerHitPlayable = new PlayerUpperStagger(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "staggerhit", "basic", staggerHit.length, staggerHitClip, true);
+        GettingUpPlayable = new PlayerUpperGettingUp(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "gettingup", "basic", gettingUp.length, gettingUpClip, true);
+        HealPlayable = new PlayerHealPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "heal", "basic", heal.length, healClip, true);
+        RepairPlayable = new PlayerUpperRepair(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "repair", "basic", heal.length, repairClip, true);
+        TrapPlayable = new PlayerUpperTrap(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "trapping", "basic", trapping.length, trappingClip, true);
+        MiddleHitPlayable = new PlayerMiddleHit(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "middlehit", "basic", hit.length, hitClip, true);
 
         #endregion
 
@@ -185,17 +209,16 @@ public class PlayerUpperMovement : NetworkBehaviour
         SecondPunch = new PlayerFistSecondPunch(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch2", "basic", punch2.length, punch2Clip, true);
         FinalPunch = new PlayerFistFinalPunch(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch3", "basic", punch3.length, punch3Clip, true);
         SprintPlayables = new PlayerUpperSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "sprint", "basic", sprint.length, sprintClip, false);
-        //JumpPlayable = new JumpState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumpidle", "basic", jumpidle.length, idleJumpClip, false, isLowerBody);
-        //BlockPlayable = new BlockState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "block", "basic", block.length, blockClip, true, isLowerBody);
-        //Punch3Playable = new FinalPunchState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch3", "basic", punch3.length, punch3Clip, true, isLowerBody);
-        //JumpPunchPlayable = new JumpPunchState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumppunch", "basic", jumpPunch.length, jumpPunchClip, true, isLowerBody);
+        JumpPlayable = new PlayerUpperJump(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumpidle", "basic", jumpidle.length, jumpClip, false);
+        BlockPlayable = new PlayerBlockPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "block", "basic", block.length, blockClip, true);
+        JumpPunchPlayable = new PlayerJumpPunchPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumppunch", "basic", jumpPunch.length, jumpPunchClip, true);
 
         #endregion
 
         #region SWORD
 
-        //SwordIdlePlayable = new SwordIdleState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordidle", "basic", swordIdle.length, swordIdleClip, false, isLowerBody);
-        //SwordRunPlayable = new SwordRunState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordrun", "basic", swordRun.length, swordRunClip, false, isLowerBody);
+        SwordIdlePlayable = new PlayerUpperSwordIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordidle", "basic", swordIdle.length, swordIdleClip, false);
+        SwordRunPlayable = new PlayerUpperSwordRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordrun", "basic", swordRun.length, swordRunClip, false);
         //SwordAttackFirstPlayable = new SwordFirstAttackState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfirstattack", "basic", swordFirstAttack.length, swordFirstAttackClip, true, isLowerBody);
         //SwordAttackSecondPlayable = new SwordSecondAttackState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsecondattack", "basic", swordSecondAttack.length, swordSecondAttackClip, true, isLowerBody);
         //SwordFinalAttackPlayable = new SwordFinalAttackState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfinalattack", "basic", swordFinalAttack.length, swordFinalAttackClip, true, isLowerBody);
@@ -442,30 +465,34 @@ public class PlayerUpperMovement : NetworkBehaviour
                 return RollPlayables;
             case 8:
                 return FallingPlayables;
-            //case 7:
-            //    return Punch3Playable;
-            //case 9:
-            //    return JumpPlayable;
-            //case 10:
-            //    return FallingPlayable;
-            //case 11:
-            //    return JumpPunchPlayable;
-            //case 12:
-            //    return BlockPlayable;
-            //case 13:
-            //    return HitPlayable;
+            case 9:
+                return DeathPlayable;
+            case 10:
+                return HitPlayable;
+            case 11:
+                return JumpPlayable;
+            case 12:
+                return StaggerHitPlayable;
+            case 13:
+                return GettingUpPlayable;
+            case 14:
+                return JumpPunchPlayable;
+            case 15:
+                return BlockPlayable;
+            case 16:
+                return HealPlayable;
+            case 17:
+                return RepairPlayable;
+            case 18:
+                return TrapPlayable;
+            case 19:
+                return MiddleHitPlayable;
+            case 20:
+                return SwordIdlePlayable;
+            case 21:
+                return SwordRunPlayable;
             //case 14:
             //    return StaggerHitPlayable;
-            //case 15:
-            //    return GettingUpPlayable;
-            //case 16:
-            //    return DeathPlayable;
-            //case 17:
-            //    return HealPlayable;
-            //case 18:
-            //    return RepairPlayable;
-            //case 19:
-            //    return TrappingPlayable;
             //case 20:
             //    return MiddleHitPlayable;
             //case 21:

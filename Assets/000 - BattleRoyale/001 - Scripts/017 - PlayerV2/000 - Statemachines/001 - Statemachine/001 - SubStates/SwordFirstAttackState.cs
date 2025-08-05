@@ -8,13 +8,7 @@ public class SwordFirstAttackState : PlayerOnGround
 {
     float timer;
     float nextPunchWindow;
-    float moveTimer;
-    float stopMoveTimer;
-    float damageWindowStart;
-    float damageWindowEnd;
     bool canAction;
-    bool canMove;
-    bool hasResetHitEnemies;
 
     public SwordFirstAttackState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
@@ -24,15 +18,9 @@ public class SwordFirstAttackState : PlayerOnGround
     {
         base.Enter();
 
-        hasResetHitEnemies = false;
         timer = playerPlayables.TickRateAnimation + (animationLength * 0.9f);
         nextPunchWindow = playerPlayables.TickRateAnimation + (animationLength * 0.8f);
-        moveTimer = playerPlayables.TickRateAnimation + (animationLength * 0.3f);
-        stopMoveTimer = playerPlayables.TickRateAnimation + (animationLength * 0.5f);
-        damageWindowStart = playerPlayables.TickRateAnimation + (animationLength * 0.5f);
-        damageWindowEnd = playerPlayables.TickRateAnimation + (animationLength * 0.9f);
         canAction = true;
-        canMove = true;
     }
 
     public override void Exit()
@@ -45,22 +33,7 @@ public class SwordFirstAttackState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
-        playerMovement.RotatePlayer();
-
-        if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
-        {
-            if (!hasResetHitEnemies)
-            {
-                playerPlayables.inventory.PrimaryWeapon.ClearHitEnemies(); // Clear BEFORE performing attack
-                hasResetHitEnemies = true;
-            }
-
-            playerPlayables.inventory.PrimaryWeapon.DamagePlayer();
-        }
-
         Animation();
-
-        playerPlayables.stamina.RecoverStamina(5f);
     }
 
     private void Animation()

@@ -33,10 +33,6 @@ public class BlockState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
-        playerPlayables.healthV2.IsHit = false;
-        playerPlayables.healthV2.IsSecondHit = false;
-        playerPlayables.healthV2.IsStagger = false;
-
         Animation();
         playerPlayables.stamina.RecoverStamina(5f);
     }

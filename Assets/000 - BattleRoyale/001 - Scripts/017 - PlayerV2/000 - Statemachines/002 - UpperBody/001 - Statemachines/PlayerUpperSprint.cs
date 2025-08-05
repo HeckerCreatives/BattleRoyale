@@ -19,50 +19,50 @@ public class PlayerUpperSprint : UpperBodyAnimations
 
     private void Animation()
     {
-        //if (playerPlayables.healthV2.IsDead)
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
+        if (playerPlayables.healthV2.IsDead)
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
 
-        //if (!characterController.IsGrounded)
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
+        if (!characterController.IsGrounded)
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.FallingPlayables);
 
-        //if (playerMovement.IsJumping)
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.JumpPlayable);
+        if (playerMovement.IsJumping)
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.JumpPlayable);
 
-        //if (playerMovement.IsBlocking)
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BlockPlayable);
+        if (playerMovement.IsBlocking)
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BlockPlayable);
 
         if (playerMovement.Attacking)
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.FirstPunch);
 
-        //if (playerMovement.IsHealing)
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HealPlayable);
+        if (playerMovement.IsHealing)
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HealPlayable);
 
-        //if (playerMovement.IsRepairing)
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RepairPlayable);
+        if (playerMovement.IsRepairing)
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RepairPlayable);
 
-        //if (playerMovement.IsTrapping)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.TrappingPlayable);
-        //    return;
-        //}
+        if (playerMovement.IsTrapping)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.TrapPlayable);
+            return;
+        }
 
-        //if (playerPlayables.healthV2.IsHit)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-        //    return;
-        //}
+        if (playerPlayables.healthV2.IsHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
+            return;
+        }
 
-        //if (playerPlayables.healthV2.IsSecondHit)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
-        //    return;
-        //}
+        if (playerPlayables.healthV2.IsSecondHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.MiddleHitPlayable);
+            return;
+        }
 
-        //if (playerPlayables.healthV2.IsStagger)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
-        //    return;
-        //}
+        if (playerPlayables.healthV2.IsStagger)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
+            return;
+        }
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
         {

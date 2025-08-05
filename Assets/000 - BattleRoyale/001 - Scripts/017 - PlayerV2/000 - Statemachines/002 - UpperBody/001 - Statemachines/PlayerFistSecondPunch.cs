@@ -57,36 +57,37 @@ public class PlayerFistSecondPunch : UpperBodyAnimations
 
     private void Animation()
     {
-        //if (playerPlayables.healthV2.IsDead)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
-        //    return;
-        //}
+        if (playerPlayables.healthV2.IsDead)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
+            return;
+        }
 
 
-        //if (playerPlayables.healthV2.IsHit)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-        //    return;
-        //}
+        if (playerPlayables.healthV2.IsHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
+            return;
+        }
 
-        //if (playerPlayables.healthV2.IsSecondHit)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
-        //    return;
-        //}
 
-        //if (playerPlayables.healthV2.IsStagger)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
-        //    return;
-        //}
+        if (playerPlayables.healthV2.IsSecondHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.MiddleHitPlayable);
+            return;
+        }
 
-        //if (!characterController.IsGrounded)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
-        //    return;
-        //}
+        if (playerPlayables.healthV2.IsStagger)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
+            return;
+        }
+
+        if (!characterController.IsGrounded)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.FallingPlayables);
+            return;
+        }
 
         if (playerPlayables.TickRateAnimation >= nextPunchWindow && canAction)
         {
@@ -101,11 +102,11 @@ public class PlayerFistSecondPunch : UpperBodyAnimations
         if (playerPlayables.TickRateAnimation >= timer && canAction)
         {
 
-            //if (playerMovement.IsBlocking)
-            //{
-            //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BlockPlayable);
-            //    return;
-            //}
+            if (playerMovement.IsBlocking)
+            {
+                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BlockPlayable);
+                return;
+            }
 
             if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             {

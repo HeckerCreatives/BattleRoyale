@@ -25,6 +25,60 @@ public class PlayerUpperRun : UpperBodyAnimations
             return;
         }
 
+        if (!characterController.IsGrounded)
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.FallingPlayables);
+
+        if (playerMovement.IsJumping)
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.JumpPlayable);
+
+        if (playerPlayables.healthV2.IsDead)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
+            return;
+        }
+
+        if (playerPlayables.healthV2.IsHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
+            return;
+        }
+
+        if (playerPlayables.healthV2.IsSecondHit)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.MiddleHitPlayable);
+            return;
+        }
+
+        if (playerPlayables.healthV2.IsStagger)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
+            return;
+        }
+
+        if (playerMovement.IsJumping)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.JumpPlayable);
+            return;
+        }
+
+        if (playerMovement.IsBlocking)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BlockPlayable);
+            return;
+        }
+
+        if (playerMovement.IsHealing)
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HealPlayable);
+
+        if (playerMovement.IsRepairing)
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RepairPlayable);
+
+        if (playerMovement.IsTrapping)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.TrapPlayable);
+            return;
+        }
+
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RollPlayables);

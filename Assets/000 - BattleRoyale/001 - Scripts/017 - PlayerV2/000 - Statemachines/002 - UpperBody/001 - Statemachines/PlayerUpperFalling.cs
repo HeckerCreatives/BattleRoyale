@@ -14,23 +14,26 @@ public class PlayerUpperFalling : UpperBodyAnimations
     {
         playerMovement.WeaponSwitcher();
 
-        //Animation();
+        Animation();
         WeaponsChecker();
     }
 
-    //private void Animation()
-    //{
-    //    if (playerPlayables.healthV2.IsDead)
-    //        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
-    //}
+    private void Animation()
+    {
+        if (playerPlayables.healthV2.IsDead)
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
+
+        if (playerPlayables.healthV2.IsHit)
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
+    }
 
 
     private void WeaponsChecker()
     {
         if (playerMovement.Attacking)
         {
-            //if (playerPlayables.inventory.WeaponIndex == 1)
-            //    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.JumpPunchPlayable);
+            if (playerPlayables.inventory.WeaponIndex == 1)
+                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.JumpPunchPlayable);
             //else if (playerPlayables.inventory.WeaponIndex == 2)
             //{
             //    if (playerPlayables.inventory.PrimaryWeaponID() == "001")

@@ -13,7 +13,6 @@ public class SwordRunState : PlayerOnGround
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
-        playerMovement.WeaponSwitcher();
         WeaponsChecker();
         Animation();
         playerPlayables.stamina.RecoverStamina(5f);
@@ -34,8 +33,11 @@ public class SwordRunState : PlayerOnGround
         if (playerMovement.IsBlocking)
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordBlockPlayable);
 
-        if (playerMovement.Attacking)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordAttackFirstPlayable);
+        //if (playerPlayables.FinalAttack)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.Punch3Playable);
+        //    return;
+        //}
 
         if (playerPlayables.healthV2.IsHit)
         {

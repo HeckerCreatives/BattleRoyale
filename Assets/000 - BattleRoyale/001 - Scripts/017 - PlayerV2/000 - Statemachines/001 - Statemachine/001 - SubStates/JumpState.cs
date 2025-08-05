@@ -15,7 +15,6 @@ public class JumpState : PlayerOnGround
     {
         playerMovement.MoveCharacter();
 
-        playerMovement.WeaponSwitcher();
         Animation();
         WeaponChecker();    //  NEXT FUNCTION AFTER RESETTING JUMP STATE
 
