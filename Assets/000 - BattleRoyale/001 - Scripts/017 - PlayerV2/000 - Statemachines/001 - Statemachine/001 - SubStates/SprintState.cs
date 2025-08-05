@@ -59,12 +59,6 @@ public class SprintState : PlayerOnGround
             return;
         }
 
-        if (playerPlayables.healthV2.IsSecondHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
-            return;
-        }
-
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);

@@ -24,7 +24,6 @@ public class SpearRunState : PlayerOnGround
     {
         playerMovement.MoveCharacter();
 
-        playerMovement.WeaponSwitcher();
         WeaponsChecker();
         Animation();
         playerPlayables.stamina.RecoverStamina(5f);
@@ -44,18 +43,12 @@ public class SpearRunState : PlayerOnGround
         if (playerMovement.IsBlocking)
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearBlockPlayable);
 
-        if (playerMovement.Attacking)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearFirstAttackPlayable);
+        if (playerPlayables.FinalAttack)
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearFinalAttackPlayable);
 
         if (playerPlayables.healthV2.IsHit)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-            return;
-        }
-
-        if (playerPlayables.healthV2.IsSecondHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
             return;
         }
 

@@ -59,14 +59,7 @@ public class PlayerUpperTrap : UpperBodyAnimations
                 return;
             }
 
-            if (playerPlayables.healthV2.IsHit)
-            {
-
-                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
-                return;
-            }
-
-            if (playerPlayables.healthV2.IsSecondHit)
+            if (playerPlayables.healthV2.IsHitUpper)
             {
 
                 playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);

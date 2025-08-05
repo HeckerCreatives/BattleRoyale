@@ -24,7 +24,6 @@ public class SpearSprintState : PlayerOnGround
     {
         playerMovement.MoveCharacter();
 
-        playerMovement.WeaponSwitcher();
         WeaponsChecker();
         Animation();
 
@@ -66,12 +65,6 @@ public class SpearSprintState : PlayerOnGround
         if (playerPlayables.healthV2.IsHit)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-            return;
-        }
-
-        if (playerPlayables.healthV2.IsSecondHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
             return;
         }
 

@@ -8,7 +8,6 @@ public class SpearJumpAttack : AnimationPlayable
 {
     float timer;
     bool canAction;
-    bool hasResetHitEnemies;
 
     public SpearJumpAttack(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
@@ -19,8 +18,6 @@ public class SpearJumpAttack : AnimationPlayable
         base.Enter();
 
         playerPlayables.healthV2.FallDamageValue = 0;
-        hasResetHitEnemies = false;
-        playerPlayables.inventory.PrimaryWeapon.ClearHitEnemies();
         timer = playerPlayables.TickRateAnimation + animationLength;
         canAction = true;
     }
@@ -29,7 +26,6 @@ public class SpearJumpAttack : AnimationPlayable
     {
         base.Exit();
 
-        playerPlayables.inventory.PrimaryWeapon.ClearHitEnemies();
         canAction = false;
     }
 
@@ -37,14 +33,6 @@ public class SpearJumpAttack : AnimationPlayable
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
-
-        if (!hasResetHitEnemies)
-        {
-            playerPlayables.inventory.PrimaryWeapon.ClearHitEnemies();
-            hasResetHitEnemies = true;
-        }
-
-        playerPlayables.inventory.PrimaryWeapon.DamagePlayer();
 
         if (characterController.IsGrounded && canAction && playerPlayables.TickRateAnimation >= timer)
         {

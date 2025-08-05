@@ -281,7 +281,10 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                     if (isFinalHit)
                         healthV2.IsStagger = true;
                     else
+                    {
+                        healthV2.IsHitUpper = true;
                         healthV2.IsHit = true;
+                    }
 
                     healthV2.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username, CurrentPlayer);
                 }

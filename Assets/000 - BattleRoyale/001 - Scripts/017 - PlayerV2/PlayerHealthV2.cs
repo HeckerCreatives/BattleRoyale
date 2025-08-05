@@ -38,8 +38,8 @@ public class PlayerHealthV2 : NetworkBehaviour
     [Networked][field: SerializeField] public DedicatedServerManager ServerManager { get; set; }
     [Networked][field: SerializeField] public float CurrentHealth { get; set; }
     [Networked][field: SerializeField] public bool IsHit { get; set; }
+    [Networked][field: SerializeField] public bool IsHitUpper { get; set; }
     [Networked][field: SerializeField] public int Hitted { get; set; }
-    [Networked][field: SerializeField] public bool IsSecondHit { get; set; }
     [Networked][field: SerializeField] public bool IsStagger { get; set; }
     [Networked][field: SerializeField] public bool IsGettingUp { get; set; }
     [Networked][field: SerializeField] public bool DamagedSafeZone { get; set; }
@@ -85,13 +85,6 @@ public class PlayerHealthV2 : NetworkBehaviour
                     healthSlider.value = CurrentHealth / 100;
                     break;
                 case nameof(Hitted):
-
-                    DamageIndicator();
-
-                    break;
-                case nameof(IsSecondHit):
-
-                    if (!IsSecondHit) return;
 
                     DamageIndicator();
 

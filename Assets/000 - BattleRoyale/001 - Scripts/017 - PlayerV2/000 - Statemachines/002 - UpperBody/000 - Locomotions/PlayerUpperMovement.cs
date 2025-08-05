@@ -91,12 +91,25 @@ public class PlayerUpperMovement : NetworkBehaviour
     public PlayerMiddleHit MiddleHitPlayable;
     public PlayerUpperSwordIdle SwordIdlePlayable;
     public PlayerUpperSwordRun SwordRunPlayable;
+    public PlayerUpperSwordFirstAttack SwordAttackFirstPlayable;
+    public PlayerUpperSwordMiddleAttack SwordAttackSecondPlayable;
+    public PlayerUpperSwordFinalAttack SwordFinalAttackPlayable;
+    public PlayerUpperSwordSprint SwordSprint;
+    public PlayerBlockPlayable SwordBlockPlayable;
+    public PlayerUpperSwordJumpAttack SwordJumpAttackPlayable;
+    public PlayerUpperSpearIdle SpearIdle;
+    public PlayerUpperSpearRun SpearRunPlayable;
+    public PlayerUpperSpearSprint SpearSprintPlayable;
+    public PlayerUpperSpearFirstAttack SpearFirstAttackPlayable;
+    public PlayerUpperSpearFinalAttack SpearFinalAttackPlayable;
+    public PlayerUpperSpearJumpAttack SpearJumpAttackPlayable;
+    public PlayerBlockPlayable SpearBlockPlayable;
 
     //  ======================
 
     public AnimationMixerPlayable Initialize()
     {
-        mixerPlayable = AnimationMixerPlayable.Create(playerPlayables.playableGraph, 22);
+        mixerPlayable = AnimationMixerPlayable.Create(playerPlayables.playableGraph, 35);
 
         var idleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, idle);
         var runClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, run);
@@ -119,6 +132,19 @@ public class PlayerUpperMovement : NetworkBehaviour
         var middleHitClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, hit);
         var swordIdleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordIdle);
         var swordRunClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordRun);
+        var swordFirstAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordFirstAttack);
+        var swordSecondAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordSecondAttack);
+        var swordFinalAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordFinalAttack);
+        var swordSprintClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordSprint);
+        var swordBlockClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordBlock);
+        var swordJumpAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordJumpSlash);
+        var spearIdleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, spearIdle);
+        var spearSprintClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordSprint);
+        var spearRunClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordRun);
+        var spearBlockClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordBlock);
+        var spearFirstAattackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, spearFirstAttack);
+        var spearFinalAattackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, spearFinalAttack);
+        var spearJumpAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, spearJumpAttack);
         //var fallingClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, falling);
         //var rollClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, roll);
         //var punch2Clip = AnimationClipPlayable.Create(playerPlayables.playableGraph, punch2);
@@ -128,19 +154,6 @@ public class PlayerUpperMovement : NetworkBehaviour
         //var trappingClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, trapping);
         //var middleHitClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, hit);
         //var swordRunClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordRun);
-        //var swordFirstAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordFirstAttack);
-        //var swordSecondAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordSecondAttack);
-        //var swordFinalAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordFinalAttack);
-        //var swordSprintClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordSprint);
-        //var swordBlockClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordBlock);
-        //var swordJumpAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordJumpSlash);
-        //var spearIdleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, spearIdle);
-        //var spearRunClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordRun);
-        //var spearSprintClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordSprint);
-        //var spearFirstAattackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, spearFirstAttack);
-        //var spearFinalAattackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, spearFinalAttack);
-        //var spearBlockClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordBlock);
-        //var spearJumpAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, spearJumpAttack);
 
         playerPlayables.playableGraph.Connect(idleClip, 0, mixerPlayable, 1);
         playerPlayables.playableGraph.Connect(runClip, 0, mixerPlayable, 2);
@@ -163,28 +176,19 @@ public class PlayerUpperMovement : NetworkBehaviour
         playerPlayables.playableGraph.Connect(middleHitClip, 0, mixerPlayable, 19);
         playerPlayables.playableGraph.Connect(swordIdleClip, 0, mixerPlayable, 20);
         playerPlayables.playableGraph.Connect(swordRunClip, 0, mixerPlayable, 21);
-        //playerPlayables.playableGraph.Connect(punch3Clip, 0, mixerPlayable, 7);
-        //playerPlayables.playableGraph.Connect(startJumpClip, 0, mixerPlayable, 8);
-        //playerPlayables.playableGraph.Connect(idleJumpClip, 0, mixerPlayable, 9);
-        //playerPlayables.playableGraph.Connect(fallingClip, 0, mixerPlayable, 10);
-        //playerPlayables.playableGraph.Connect(jumpPunchClip, 0, mixerPlayable, 11);
-        //playerPlayables.playableGraph.Connect(staggerHitClip, 0, mixerPlayable, 14);
-        //playerPlayables.playableGraph.Connect(gettingUpClip, 0, mixerPlayable, 15);
-        //playerPlayables.playableGraph.Connect(trappingClip, 0, mixerPlayable, 19);
-        //playerPlayables.playableGraph.Connect(middleHitClip, 0, mixerPlayable, 20);
-        //playerPlayables.playableGraph.Connect(swordFirstAttackClip, 0, mixerPlayable, 23);
-        //playerPlayables.playableGraph.Connect(swordSecondAttackClip, 0, mixerPlayable, 24);
-        //playerPlayables.playableGraph.Connect(swordFinalAttackClip, 0, mixerPlayable, 25);
-        //playerPlayables.playableGraph.Connect(swordSprintClip, 0, mixerPlayable, 26);
-        //playerPlayables.playableGraph.Connect(swordBlockClip, 0, mixerPlayable, 27);
-        //playerPlayables.playableGraph.Connect(swordJumpAttackClip, 0, mixerPlayable, 28);
-        //playerPlayables.playableGraph.Connect(spearIdleClip, 0, mixerPlayable, 29);
-        //playerPlayables.playableGraph.Connect(spearRunClip, 0, mixerPlayable, 30);
-        //playerPlayables.playableGraph.Connect(spearSprintClip, 0, mixerPlayable, 31);
-        //playerPlayables.playableGraph.Connect(spearFirstAattackClip, 0, mixerPlayable, 32);
-        //playerPlayables.playableGraph.Connect(spearFinalAattackClip, 0, mixerPlayable, 33);
-        //playerPlayables.playableGraph.Connect(spearBlockClip, 0, mixerPlayable, 34);
-        //playerPlayables.playableGraph.Connect(spearJumpAttackClip, 0, mixerPlayable, 35);
+        playerPlayables.playableGraph.Connect(swordFirstAttackClip, 0, mixerPlayable, 22);
+        playerPlayables.playableGraph.Connect(swordSecondAttackClip, 0, mixerPlayable, 23);
+        playerPlayables.playableGraph.Connect(swordFinalAttackClip, 0, mixerPlayable, 24);
+        playerPlayables.playableGraph.Connect(swordSprintClip, 0, mixerPlayable, 25);
+        playerPlayables.playableGraph.Connect(swordBlockClip, 0, mixerPlayable, 26);
+        playerPlayables.playableGraph.Connect(swordJumpAttackClip, 0, mixerPlayable, 27);
+        playerPlayables.playableGraph.Connect(spearIdleClip, 0, mixerPlayable, 28);
+        playerPlayables.playableGraph.Connect(spearSprintClip, 0, mixerPlayable, 29);
+        playerPlayables.playableGraph.Connect(spearRunClip, 0, mixerPlayable, 30);
+        playerPlayables.playableGraph.Connect(spearBlockClip, 0, mixerPlayable, 31);
+        playerPlayables.playableGraph.Connect(spearFirstAattackClip, 0, mixerPlayable, 32);
+        playerPlayables.playableGraph.Connect(spearFinalAattackClip, 0, mixerPlayable, 33);
+        playerPlayables.playableGraph.Connect(spearJumpAttackClip, 0, mixerPlayable, 34);
 
         #region GLOBAL
 
@@ -219,24 +223,24 @@ public class PlayerUpperMovement : NetworkBehaviour
 
         SwordIdlePlayable = new PlayerUpperSwordIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordidle", "basic", swordIdle.length, swordIdleClip, false);
         SwordRunPlayable = new PlayerUpperSwordRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordrun", "basic", swordRun.length, swordRunClip, false);
-        //SwordAttackFirstPlayable = new SwordFirstAttackState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfirstattack", "basic", swordFirstAttack.length, swordFirstAttackClip, true, isLowerBody);
-        //SwordAttackSecondPlayable = new SwordSecondAttackState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsecondattack", "basic", swordSecondAttack.length, swordSecondAttackClip, true, isLowerBody);
-        //SwordFinalAttackPlayable = new SwordFinalAttackState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfinalattack", "basic", swordFinalAttack.length, swordFinalAttackClip, true, isLowerBody);
-        //SwordSprintPlayable = new SwordSprintState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsprint", "basic", swordSprint.length, swordSprintClip, false, isLowerBody);
-        //SwordBlockPlayable = new BlockState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordblock", "basic", swordBlock.length, swordBlockClip, true, isLowerBody);
-        //SwordJumpAttackPlayable = new SwordJumpAttack(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordjumpattack", "basic", swordJumpSlash.length, swordJumpAttackClip, true, isLowerBody);
+        SwordAttackFirstPlayable = new PlayerUpperSwordFirstAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfirstattack", "basic", swordFirstAttack.length, swordFirstAttackClip, true);
+        SwordAttackSecondPlayable = new PlayerUpperSwordMiddleAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsecondattack", "basic", swordSecondAttack.length, swordSecondAttackClip, true);
+        SwordFinalAttackPlayable = new PlayerUpperSwordFinalAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfinalattack", "basic", swordFinalAttack.length, swordFinalAttackClip, true);
+        SwordSprint = new PlayerUpperSwordSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsprint", "basic", swordSprint.length, swordSprintClip, false);
+        SwordBlockPlayable = new PlayerBlockPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordblock", "basic", swordBlock.length, swordBlockClip, true);
+        SwordJumpAttackPlayable = new PlayerUpperSwordJumpAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordjumpattack", "basic", swordJumpSlash.length, swordJumpAttackClip, true);
 
         #endregion
 
         #region SPEAR
 
-        //SpearIdlePlayable = new SpearIdleState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearidle", "basic", spearIdle.length, spearIdleClip, false, isLowerBody);
-        //SpearRunPlayable = new SpearRunState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearrun", "basic", swordRun.length, spearRunClip, false, isLowerBody);
-        //SpearSprintPlayable = new SpearSprintState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearsprint", "basic", swordSprint.length, spearSprintClip, false, isLowerBody);
-        //SpearFirstAttackPlayable = new SpearFirstAttackState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfirstattack", "basic", spearFirstAttack.length, spearFirstAattackClip, true, isLowerBody);
-        //SpearFinalAttackPlayable = new SpearFinalAttackState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfinalattack", "basic", spearFinalAttack.length, spearFinalAattackClip, true, isLowerBody);
-        //SpearBlockPlayable = new BlockState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearblock", "basic", swordBlock.length, spearBlockClip, true, isLowerBody);
-        //SpearJumpAttackPlayable = new SpearJumpAttack(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearjumpattack", "basic", spearJumpAttack.length, spearJumpAttackClip, true, isLowerBody);
+        SpearIdle = new PlayerUpperSpearIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearidle", "basic", spearIdle.length, spearIdleClip, false);
+        SpearRunPlayable = new PlayerUpperSpearRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearrun", "basic", swordRun.length, spearRunClip, false);
+        SpearSprintPlayable = new PlayerUpperSpearSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearsprint", "basic", swordSprint.length, spearSprintClip, false);
+        SpearFirstAttackPlayable = new PlayerUpperSpearFirstAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfirstattack", "basic", spearFirstAttack.length, spearFirstAattackClip, true);
+        SpearFinalAttackPlayable = new PlayerUpperSpearFinalAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfinalattack", "basic", spearFinalAttack.length, spearFinalAattackClip, true);
+        SpearBlockPlayable = new PlayerBlockPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearblock", "basic", swordBlock.length, spearBlockClip, true);
+        SpearJumpAttackPlayable = new PlayerUpperSpearJumpAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearjumpattack", "basic", spearJumpAttack.length, spearJumpAttackClip, true);
 
         #endregion
 
@@ -331,7 +335,11 @@ public class PlayerUpperMovement : NetworkBehaviour
                     PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
 
                     if (isFinal) healthV2.IsStagger = true;
-                    else healthV2.IsHit = true;
+                    else
+                    {
+                        healthV2.IsHitUpper = true;
+                        healthV2.IsHit = true;
+                    }
 
                     healthV2.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
                 }
@@ -427,6 +435,7 @@ public class PlayerUpperMovement : NetworkBehaviour
 
                     PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
 
+                    healthV2.IsHitUpper = true;
                     healthV2.IsHit = true;
 
                     healthV2.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
@@ -491,40 +500,32 @@ public class PlayerUpperMovement : NetworkBehaviour
                 return SwordIdlePlayable;
             case 21:
                 return SwordRunPlayable;
-            //case 14:
-            //    return StaggerHitPlayable;
-            //case 20:
-            //    return MiddleHitPlayable;
-            //case 21:
-            //    return SwordIdlePlayable;
-            //case 22:
-            //    return SwordRunPlayable;
-            //case 23:
-            //    return SwordAttackFirstPlayable;
-            //case 24:
-            //    return SwordAttackSecondPlayable;
-            //case 25:
-            //    return SwordFinalAttackPlayable;
-            //case 26:
-            //    return SwordSprintPlayable;
-            //case 27:
-            //    return SwordBlockPlayable;
-            //case 28:
-            //    return SwordJumpAttackPlayable;
-            //case 29:
-            //    return SpearIdlePlayable;
-            //case 30:
-            //    return SpearRunPlayable;
-            //case 31:
-            //    return SpearSprintPlayable;
-            //case 32:
-            //    return SpearFirstAttackPlayable;
-            //case 33:
-            //    return SpearFinalAttackPlayable;
-            //case 34:
-            //    return SpearBlockPlayable;
-            //case 35:
-            //    return SpearJumpAttackPlayable;
+            case 22:
+                return SwordAttackFirstPlayable;
+            case 23:
+                return SwordAttackSecondPlayable;
+            case 24:
+                return SwordFinalAttackPlayable;
+            case 25:
+                return SwordSprint;
+            case 26:
+                return SwordBlockPlayable;
+            case 27:
+                return SwordJumpAttackPlayable;
+            case 28:
+                return SpearIdle;
+            case 29:
+                return SpearSprintPlayable;
+            case 30:
+                return SpearRunPlayable;
+            case 31:
+                return SpearBlockPlayable;
+            case 32:
+                return SpearFirstAttackPlayable;
+            case 33:
+                return SpearFinalAttackPlayable;
+            case 34:
+                return SpearJumpAttackPlayable;
             default: return null;
         }
     }

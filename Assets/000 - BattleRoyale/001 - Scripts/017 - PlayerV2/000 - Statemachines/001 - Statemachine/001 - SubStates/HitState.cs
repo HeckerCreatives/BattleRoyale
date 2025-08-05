@@ -25,6 +25,7 @@ public class HitState : PlayerOnGround
     {
         base.Exit();
 
+        playerPlayables.healthV2.IsHit = false;
         canAction = false;
     }
 
@@ -38,12 +39,6 @@ public class HitState : PlayerOnGround
 
     private void Animation()
     {
-
-        if (playerPlayables.healthV2.IsSecondHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
-            return;
-        }
 
         if (playerPlayables.healthV2.IsStagger)
         {

@@ -33,8 +33,6 @@ public class PlayerJumpPunchPlayable : UpperBodyAnimations
 
     public override void NetworkUpdate()
     {
-        playerMovement.MoveCharacter();
-
         if (!hasResetHitEnemies)
         {
             playerPlayables.upperBodyMovement.ResetSecondAttack();

@@ -17,7 +17,6 @@ public class PlayerMiddleHit : UpperBodyAnimations
     {
         base.Enter();
 
-        playerPlayables.healthV2.IsSecondHit = false;
         timer = playerPlayables.TickRateAnimation + animationLength;
         canAction = true;
     }
@@ -39,7 +38,7 @@ public class PlayerMiddleHit : UpperBodyAnimations
 
     private void Animation()
     {
-        if (playerPlayables.healthV2.IsHit)
+        if (playerPlayables.healthV2.IsHitUpper)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
 
@@ -61,13 +60,6 @@ public class PlayerMiddleHit : UpperBodyAnimations
         if (!characterController.IsGrounded)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.FallingPlayables);
-            return;
-        }
-
-
-        if (playerPlayables.healthV2.IsSecondHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.MiddleHitPlayable);
             return;
         }
 

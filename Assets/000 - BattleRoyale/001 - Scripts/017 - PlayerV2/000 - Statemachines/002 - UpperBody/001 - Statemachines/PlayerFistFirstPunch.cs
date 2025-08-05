@@ -64,15 +64,9 @@ public class PlayerFistFirstPunch : UpperBodyAnimations
         }
 
 
-        if (playerPlayables.healthV2.IsHit)
+        if (playerPlayables.healthV2.IsHitUpper)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
-            return;
-        }
-
-        if (playerPlayables.healthV2.IsSecondHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.MiddleHitPlayable);
             return;
         }
 

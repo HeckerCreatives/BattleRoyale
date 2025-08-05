@@ -73,12 +73,6 @@ public class SwordIdleState : PlayerOnGround
             return;
         }
 
-        if (playerPlayables.healthV2.IsSecondHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
-            return;
-        }
-
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
@@ -103,11 +97,11 @@ public class SwordIdleState : PlayerOnGround
             return;
         }
 
-        //if (playerPlayables.FinalAttack)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.Punch3Playable);
-        //    return;
-        //}
+        if (playerPlayables.FinalAttack)
+        {
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordFinalAttackPlayable);
+            return;
+        }
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
         {

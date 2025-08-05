@@ -37,15 +37,9 @@ public class PlayerUpperRun : UpperBodyAnimations
             return;
         }
 
-        if (playerPlayables.healthV2.IsHit)
+        if (playerPlayables.healthV2.IsHitUpper)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
-            return;
-        }
-
-        if (playerPlayables.healthV2.IsSecondHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.MiddleHitPlayable);
             return;
         }
 
@@ -99,16 +93,16 @@ public class PlayerUpperRun : UpperBodyAnimations
                     playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SprintPlayables);
             }
         }
-        //else if (playerPlayables.inventory.WeaponIndex == 2)
-        //{
-        //    if (playerPlayables.inventory.PrimaryWeaponID() == "001")
-        //    {
-        //        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordRunPlayable);
-        //    }
-        //    else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
-        //    {
-        //        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearRunPlayable);
-        //    }
-        //}
+        else if (playerPlayables.inventory.WeaponIndex == 2)
+        {
+            if (playerPlayables.inventory.PrimaryWeaponID() == "001")
+            {
+                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordRunPlayable);
+            }
+            else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
+            {
+                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearRunPlayable);
+            }
+        }
     }
 }

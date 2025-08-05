@@ -33,21 +33,15 @@ public class SwordRunState : PlayerOnGround
         if (playerMovement.IsBlocking)
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordBlockPlayable);
 
-        //if (playerPlayables.FinalAttack)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.Punch3Playable);
-        //    return;
-        //}
+        if (playerPlayables.FinalAttack)
+        {
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordFinalAttackPlayable);
+            return;
+        }
 
         if (playerPlayables.healthV2.IsHit)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-            return;
-        }
-
-        if (playerPlayables.healthV2.IsSecondHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
             return;
         }
 

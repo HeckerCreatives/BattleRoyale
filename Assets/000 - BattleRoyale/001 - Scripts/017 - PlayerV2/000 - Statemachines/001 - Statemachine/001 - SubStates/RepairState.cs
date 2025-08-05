@@ -90,13 +90,6 @@ public class RepairState : AnimationPlayable
             return;
         }
 
-
-        if (playerPlayables.healthV2.IsSecondHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
-            return;
-        }
-
         if (playerPlayables.healthV2.IsStagger)
         {
 

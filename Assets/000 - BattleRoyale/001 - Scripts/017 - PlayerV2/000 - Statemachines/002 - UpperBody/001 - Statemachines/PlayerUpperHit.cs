@@ -17,7 +17,7 @@ public class PlayerUpperHit : UpperBodyAnimations
     {
         base.Enter();
 
-        playerPlayables.healthV2.IsHit = false;
+        playerPlayables.healthV2.IsHitUpper = false;
         timer = playerPlayables.TickRateAnimation + animationLength;
         canAction = true;
     }
@@ -42,12 +42,6 @@ public class PlayerUpperHit : UpperBodyAnimations
             return;
         }
 
-        if (playerPlayables.healthV2.IsSecondHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.MiddleHitPlayable);
-            return;
-        }
-
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
@@ -66,7 +60,7 @@ public class PlayerUpperHit : UpperBodyAnimations
             return;
         }
 
-        if (playerPlayables.healthV2.IsHit)
+        if (playerPlayables.healthV2.IsHitUpper)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
             return;
@@ -101,44 +95,44 @@ public class PlayerUpperHit : UpperBodyAnimations
             else
                 playablesChanger.ChangeState(playerPlayables.upperBodyMovement.IdlePlayables);
         }
-        //else if (playerPlayables.inventory.WeaponIndex == 2)
-        //{
-        //    if (playerPlayables.inventory.PrimaryWeaponID() == "001")
-        //    {
-        //        if (playerMovement.Attacking)
-        //            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordAttackFirstPlayable);
+        else if (playerPlayables.inventory.WeaponIndex == 2)
+        {
+            if (playerPlayables.inventory.PrimaryWeaponID() == "001")
+            {
+                if (playerMovement.Attacking)
+                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordAttackFirstPlayable);
 
-        //        if (playerMovement.IsBlocking)
-        //            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordBlockPlayable);
+                if (playerMovement.IsBlocking)
+                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordBlockPlayable);
 
-        //        if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
-        //        {
-        //            if (playerMovement.IsSprint)
-        //                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordSprintPlayable);
-        //            else
-        //                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordRunPlayable);
-        //        }
-        //        else
-        //            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordIdlePlayable);
-        //    }
-        //    else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
-        //    {
-        //        if (playerMovement.Attacking)
-        //            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearFirstAttackPlayable);
+                if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
+                {
+                    if (playerMovement.IsSprint)
+                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordSprint);
+                    else
+                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordRunPlayable);
+                }
+                else
+                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordIdlePlayable);
+            }
+            else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
+            {
+                if (playerMovement.Attacking)
+                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearFirstAttackPlayable);
 
-        //        if (playerMovement.IsBlocking)
-        //            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearBlockPlayable);
+                if (playerMovement.IsBlocking)
+                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearBlockPlayable);
 
-        //        if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
-        //        {
-        //            if (playerMovement.IsSprint)
-        //                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearSprintPlayable);
-        //            else
-        //                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearRunPlayable);
-        //        }
-        //        else
-        //            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearIdlePlayable);
-        //    }
-        //}
+                if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
+                {
+                    if (playerMovement.IsSprint)
+                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearSprintPlayable);
+                    else
+                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearRunPlayable);
+                }
+                else
+                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearIdle);
+            }
+        }
     }
 }

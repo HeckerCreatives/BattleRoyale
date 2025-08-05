@@ -12,7 +12,6 @@ public class SpearIdleState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
-        playerMovement.WeaponSwitcher();
         WeaponsChecker();
         Animation();
     }
@@ -35,7 +34,7 @@ public class SpearIdleState : PlayerOnGround
             if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
             {
                 if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordSprintPlayable);
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearSprintPlayable);
 
                 else
                     playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearRunPlayable);
@@ -75,12 +74,6 @@ public class SpearIdleState : PlayerOnGround
             return;
         }
 
-        if (playerPlayables.healthV2.IsSecondHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
-            return;
-        }
-
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
@@ -105,9 +98,9 @@ public class SpearIdleState : PlayerOnGround
             return;
         }
 
-        if (playerMovement.Attacking)
+        if (playerPlayables.FinalAttack)
         {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearFirstAttackPlayable);
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearFinalAttackPlayable);
             return;
         }
 

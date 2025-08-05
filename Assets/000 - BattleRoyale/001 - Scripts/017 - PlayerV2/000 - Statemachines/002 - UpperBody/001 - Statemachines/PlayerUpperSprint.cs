@@ -46,15 +46,9 @@ public class PlayerUpperSprint : UpperBodyAnimations
             return;
         }
 
-        if (playerPlayables.healthV2.IsHit)
+        if (playerPlayables.healthV2.IsHitUpper)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
-            return;
-        }
-
-        if (playerPlayables.healthV2.IsSecondHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.MiddleHitPlayable);
             return;
         }
 
@@ -87,24 +81,24 @@ public class PlayerUpperSprint : UpperBodyAnimations
 
                 return;
             }
-            //else if (playerPlayables.inventory.WeaponIndex == 2)
-            //{
-            //    if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "001")
-            //    {
-            //        if (playerMovement.MoveDirection != Vector3.zero)
-            //            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordSprintPlayable);
+            else if (playerPlayables.inventory.WeaponIndex == 2)
+            {
+                if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "001")
+                {
+                    if (playerMovement.MoveDirection != Vector3.zero)
+                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordSprint);
 
-            //        return;
-            //    }
+                    return;
+                }
 
-            //    if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "002")
-            //    {
-            //        if (playerMovement.MoveDirection != Vector3.zero)
-            //            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearSprintPlayable);
+                if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "002")
+                {
+                    if (playerMovement.MoveDirection != Vector3.zero)
+                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearSprintPlayable);
 
-            //        return;
-            //    }
-            //}
+                    return;
+                }
+            }
         }
         else
         {

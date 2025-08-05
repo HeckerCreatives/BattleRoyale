@@ -17,7 +17,6 @@ public class MiddleHitState : PlayerOnGround
     {
         base.Enter();
 
-        playerPlayables.healthV2.IsSecondHit = false;
         timer = playerPlayables.TickRateAnimation + animationLength;
         canAction = true;
     }
@@ -61,13 +60,6 @@ public class MiddleHitState : PlayerOnGround
         if (!characterController.IsGrounded)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
-            return;
-        }
-
-        if (playerPlayables.healthV2.IsSecondHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
-
             return;
         }
 

@@ -43,15 +43,9 @@ public class PlayerUpperIdle : UpperBodyAnimations
             return;
         }
 
-        if (playerPlayables.healthV2.IsHit)
+        if (playerPlayables.healthV2.IsHitUpper)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
-            return;
-        }
-
-        if (playerPlayables.healthV2.IsSecondHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.MiddleHitPlayable);
             return;
         }
 
@@ -105,17 +99,17 @@ public class PlayerUpperIdle : UpperBodyAnimations
                     playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RunPlayables);
             }
         }
-        //else if (playerPlayables.inventory.WeaponIndex == 2)
-        //{
-        //    if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "001")
-        //    {
-        //        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordIdlePlayables);
-        //    }
-        //    else if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "002")
-        //    {
-        //        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearIdlePlayables);
-        //    }
-        //}
+        else if (playerPlayables.inventory.WeaponIndex == 2)
+        {
+            if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "001")
+            {
+                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordIdlePlayable);
+            }
+            else if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "002")
+            {
+                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearIdle);
+            }
+        }
         //else if (playerPlayables.inventory.WeaponIndex == 3)
         //{
         //    if (playerPlayables.inventory.SecondaryWeapon.WeaponID == "003")

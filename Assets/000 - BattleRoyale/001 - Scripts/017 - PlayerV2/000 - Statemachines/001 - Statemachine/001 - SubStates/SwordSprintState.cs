@@ -14,7 +14,6 @@ public class SwordSprintState : PlayerOnGround
     {
         playerMovement.MoveCharacter();
 
-        playerMovement.WeaponSwitcher();
         WeaponsChecker();
         Animation();
 
@@ -56,12 +55,6 @@ public class SwordSprintState : PlayerOnGround
         if (playerPlayables.healthV2.IsHit)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-            return;
-        }
-
-        if (playerPlayables.healthV2.IsSecondHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.MiddleHitPlayable);
             return;
         }
 

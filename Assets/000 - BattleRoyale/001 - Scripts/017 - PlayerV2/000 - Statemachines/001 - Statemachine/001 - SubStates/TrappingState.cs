@@ -68,13 +68,6 @@ public class TrappingState : AnimationPlayable
                 return;
             }
 
-            if (playerPlayables.healthV2.IsSecondHit)
-            {
-
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-                return;
-            }
-
             if (playerPlayables.healthV2.IsStagger)
             {
 

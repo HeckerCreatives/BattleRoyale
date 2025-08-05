@@ -24,20 +24,20 @@ public class PlayerUpperSwordIdle : UpperBodyAnimations
         }
         else if (playerPlayables.inventory.WeaponIndex == 2)
         {
-            //if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "002")
-            //{
-            //    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearIdlePlayable);
-            //    return;
-            //}
+            if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "002")
+            {
+                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearIdle);
+                return;
+            }
 
-            //if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
-            //{
-            //    if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-            //        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearSprintPlayable);
+            if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
+            {
+                if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
+                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordSprint);
 
-            //    else
-            //        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearRunPlayable);
-            //}
+                else
+                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordRunPlayable);
+            }
         }
     }
 
@@ -61,21 +61,15 @@ public class PlayerUpperSwordIdle : UpperBodyAnimations
             return;
         }
 
-        //if (playerMovement.IsBlocking)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordBlockPlayable);
-        //    return;
-        //}
-
-        if (playerPlayables.healthV2.IsHit)
+        if (playerMovement.IsBlocking)
         {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordBlockPlayable);
             return;
         }
 
-        if (playerPlayables.healthV2.IsSecondHit)
+        if (playerPlayables.healthV2.IsHitUpper)
         {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.MiddleHitPlayable);
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
             return;
         }
 
@@ -103,11 +97,11 @@ public class PlayerUpperSwordIdle : UpperBodyAnimations
             return;
         }
 
-        //if (playerMovement.Attacking)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordAttackFirstPlayable);
-        //    return;
-        //}
+        if (playerMovement.Attacking)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordAttackFirstPlayable);
+            return;
+        }
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
         {
