@@ -1,3 +1,4 @@
+using Aws.GameLift.Server;
 using Fusion;
 using Fusion.Sample.DedicatedServer;
 using MyBox;
@@ -11,56 +12,116 @@ public class Loader : MonoBehaviour
     [SerializeField] private UserData userData;
 
     [SerializeField] private bool isDebugServer;
+    [SerializeField] private bool useGameLiftServer;
     [SerializeField] private string scene;
     //  Lobby: AsiaBR
 
-    private void Awake()
+    private void Start()
     {
-
-#if !UNITY_ANDROID && !UNITY_IOS
-        var args = CommandLineHelper.GetArgs();
-
-        if (isDebugServer)
+        if (useGameLiftServer)
         {
-            Application.runInBackground = true;
-            Application.targetFrameRate = 30;
-            userData.Username = "Server";
-
-            SceneManager.LoadScene(scene);
-            return;
+            DontDestroyOnLoad(this);
+            GameLiftInitialize();
         }
+        else
+            CustomServer();
+    }
 
-        if (args.TryGetValue("server", out string server))
+
+    private void GameLiftInitialize()
+    {
+#if !UNITY_ANDROID && !UNITY_IOS
+        // Initialize GameLift SDK
+        Debug.Log("STARTING GAMELIFT SDK");
+        var initOutcome = GameLiftServerAPI.InitSDK();
+        if (initOutcome.Success)
         {
-            if (server == "yes")
+            // Define what to do when a game session is created
+            ProcessParameters processParams = new ProcessParameters(
+                (gameSession) => {
+                    // Activate the session so players can connect
+                    GameLiftServerAPI.ActivateGameSession();
+
+                    CustomServer();
+                },
+                (updateGameSession) => {
+                    // Handle FlexMatch backfill or session property updates
+                },
+                () => {
+                    // On process termination
+                    GameLiftServerAPI.ProcessEnding();
+                },
+                () => {
+                    // Health check — return true if healthy
+                    return true;
+                },
+                7777, // Your listening port
+                new LogParameters(new List<string>() { "/local/game/logs/myserver.log" })
+            );
+
+            var readyOutcome = GameLiftServerAPI.ProcessReady(processParams);
+            if (readyOutcome.Success)
+            {
+                Debug.Log("GameLift process ready!");
+            }
+            else
+            {
+                Debug.Log("ProcessReady failed: " + readyOutcome.Error.ToString());
+            }
+        }
+        else
+        {
+            Debug.Log("InitSDK failed: " + initOutcome.Error.ToString());
+        }
+#endif
+    }
+
+    private void CustomServer()
+    {
+        
+#if !UNITY_ANDROID && !UNITY_IOS
+            var args = CommandLineHelper.GetArgs();
+
+            if (isDebugServer)
             {
                 Application.runInBackground = true;
-                Application.targetFrameRate = 60;
+                Application.targetFrameRate = 30;
                 userData.Username = "Server";
 
-                if (args.TryGetValue("mapname", out string sceneName))
-                    SceneManager.LoadScene(sceneName);
+                SceneManager.LoadScene(scene);
+                return;
+            }
+
+            if (args.TryGetValue("server", out string server))
+            {
+                if (server == "yes")
+                {
+                    Application.runInBackground = true;
+                    Application.targetFrameRate = 60;
+                    userData.Username = "Server";
+
+                    if (args.TryGetValue("mapname", out string sceneName))
+                        SceneManager.LoadScene(sceneName);
+                    else
+                        SceneManager.LoadScene("Persistent");
+                }
                 else
                     SceneManager.LoadScene("Persistent");
             }
             else
                 SceneManager.LoadScene("Persistent");
-        }
-        else
-            SceneManager.LoadScene("Persistent");
 #else
-        if (isDebugServer)
-        {
-            Application.runInBackground = true;
-            Application.targetFrameRate = 30;
-            userData.Username = "Server";
+                if (isDebugServer)
+                {
+                    Application.runInBackground = true;
+                    Application.targetFrameRate = 30;
+                    userData.Username = "Server";
 
-            SceneManager.LoadScene(scene);
-            return;
-        }
+                    SceneManager.LoadScene(scene);
+                    return;
+                }
 
-        SceneManager.LoadScene("Persistent");
+                SceneManager.LoadScene("Persistent");
 #endif
-
     }
 }

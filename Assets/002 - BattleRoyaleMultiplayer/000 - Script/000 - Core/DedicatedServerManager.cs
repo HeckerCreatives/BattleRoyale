@@ -104,7 +104,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [SerializeField] private string lobby;
     [SerializeField] private bool useMultiplay;
     [SerializeField] private bool usePrivateServer;
-    [SerializeField] private bool useGameLift;
     [SerializeField] private MultiplayController multiplayController;
     [SerializeField] private KillNotificationController killNotificationController;
     [SerializeField] private PoolObjectProvider poolObjectProvider;
@@ -370,16 +369,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             spawnBotTimer = UnityEngine.Random.Range(5f, 15f);
 
-            if (!useMultiplay && !usePrivateServer && !useGameLift) developerConsole.doShow = true;
+            if (!useMultiplay && !usePrivateServer) developerConsole.doShow = true;
 
-            if (useGameLift)
-            {
-                GameLiftInitialize();
-            }
-            else
-            {
-                StartGame();
-            }
+            StartGame();
         }
         else
         {
@@ -618,54 +610,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     #endregion
 
     #region SERVER INITIALIZE
-
-    private void GameLiftInitialize()
-    {
-#if !UNITY_ANDROID && !UNITY_IOS
-        // Initialize GameLift SDK
-        Debug.Log("STARTING GAMELIFT SDK");
-        var initOutcome = GameLiftServerAPI.InitSDK();
-        if (initOutcome.Success)
-        {
-            // Define what to do when a game session is created
-            ProcessParameters processParams = new ProcessParameters(
-                (gameSession) => {
-                    // Activate the session so players can connect
-                    GameLiftServerAPI.ActivateGameSession();
-
-                    StartGame();
-                },
-                (updateGameSession) => {
-                    // Handle FlexMatch backfill or session property updates
-                },
-                () => {
-                    // On process termination
-                    GameLiftServerAPI.ProcessEnding();
-                },
-                () => {
-                    // Health check — return true if healthy
-                    return true;
-                },
-                7777, // Your listening port
-                new LogParameters(new List<string>() { "/local/game/logs/myserver.log" })
-            );
-
-            var readyOutcome = GameLiftServerAPI.ProcessReady(processParams);
-            if (readyOutcome.Success)
-            {
-                Debug.Log("GameLift process ready!");
-            }
-            else
-            {
-                Debug.Log("ProcessReady failed: " + readyOutcome.Error.ToString());
-            }
-        }
-        else
-        {
-            Debug.Log("InitSDK failed: " + initOutcome.Error.ToString());
-        }
-#endif
-    }
 
     private FusionAppSettings BuildCustomAppSetting(string region)
     {

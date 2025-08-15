@@ -596,6 +596,15 @@ public class GameManager : MonoBehaviour
             default: return $"Unknown Region ({code})";
         }
     }
+
+    public static string GetGameLiftServer(string code)
+    {
+        switch (code)
+        {
+            case "asia": return "ap-southeast-1";
+            default: return "ap-southeast-1";
+        }
+    }
 }
 
 public static class ClipboardExtension
@@ -638,10 +647,12 @@ public static class CommandLineHelper
 
         for (int i = 0; i < args.Length; i++)
         {
-            if (args[i].StartsWith("-"))
+            if (args[i].StartsWith("-") || args[i].StartsWith("+"))
             {
-                string key = args[i].TrimStart('-');
-                string value = (i + 1 < args.Length && !args[i + 1].StartsWith("-")) ? args[i + 1] : "true";
+                string key = args[i].TrimStart('-', '+');
+                string value = (i + 1 < args.Length && !args[i + 1].StartsWith("-") && !args[i + 1].StartsWith("+"))
+                    ? args[i + 1]
+                    : "true";
                 result[key] = value;
             }
         }
