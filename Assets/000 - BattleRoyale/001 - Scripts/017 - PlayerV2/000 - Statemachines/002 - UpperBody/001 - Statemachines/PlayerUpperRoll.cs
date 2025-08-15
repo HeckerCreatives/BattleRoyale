@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class PlayerUpperRoll : UpperBodyAnimations
+public class PlayerUpperRoll : UpperNoAimState
 {
     float timer;
     bool canAction;
@@ -30,6 +30,9 @@ public class PlayerUpperRoll : UpperBodyAnimations
 
     public override void NetworkUpdate()
     {
+        base.NetworkUpdate();
+
+        playerPlayables.aimWeights.HipsOffset(0f, 0f, 0f);
         Animation();
     }
 
@@ -86,6 +89,35 @@ public class PlayerUpperRoll : UpperBodyAnimations
                 }
                 else
                     playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearIdle);
+            }
+        }
+        else if (playerPlayables.inventory.WeaponIndex == 3)
+        {
+            if (playerPlayables.inventory.SecondaryWeaponID() == "003")
+            {
+                if (playerMovement.MoveDirection != Vector3.zero)
+                {
+                    if (playerMovement.IsSprint)
+                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleSprintPlayable);
+
+                    else
+                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleRunPlayable);
+                }
+                else
+                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleIdle);
+            }
+            else if (playerPlayables.inventory.SecondaryWeaponID() == "004")
+            {
+                if (playerMovement.MoveDirection != Vector3.zero)
+                {
+                    if (playerMovement.IsSprint)
+                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowSprintPlayable);
+
+                    else
+                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowRunPlayable);
+                }
+                else
+                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowIdlePlayable);
             }
         }
     }

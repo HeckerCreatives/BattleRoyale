@@ -1,4 +1,5 @@
 using Fusion;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -18,8 +19,16 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
         get => weaponName;
     }
 
+    public MeleeSoundController SoundController
+    {
+        get => meleeSoundController;
+    }
+
     //  ======================
 
+    [SerializeField] private MeleeSoundController meleeSoundController;
+
+    [Space]
     [SerializeField] private string weaponID;
     [SerializeField] private string weaponName;
 
@@ -46,35 +55,39 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
     [Networked][field: SerializeField] public int Supplies { get; set; }
     [Networked][field: SerializeField] public bool IsPickedUp { get; set; }
     [Networked][field: SerializeField] public bool IsEquipped { get; set; }
+    [Networked][field: SerializeField] public bool IsBot { get; set; }
     [Networked][field: SerializeField] public NetworkObject CurrentPlayer { get; set; }
     [Networked][field: SerializeField] public PlayerOwnObjectEnabler PlayerCore { get; set; }
     [Networked][field: SerializeField] public Botdata BotData { get; set; }
     [Networked][field: SerializeField] public Vector3 Position { get; set; }
-    [Networked][field: SerializeField] public NetworkObject Back { get; set; }
-    [Networked][field: SerializeField] public NetworkObject Hand { get; set; }
+    [Networked][field: SerializeField] public Quaternion Rotation { get; set; }
 
     private readonly HashSet<NetworkObject> hitEnemies = new();
     private readonly List<LagCompensatedHit> hits = new List<LagCompensatedHit>();
 
     public override void Render()
     {
+        if (HasStateAuthority) return;
+
+        // Only the simulation should update the authoritative state
         if (IsPickedUp)
         {
             if (IsEquipped)
             {
-                transform.parent = Hand.transform;
-                transform.localRotation = Quaternion.Euler(handRotation);
+                transform.parent = !IsBot ? WeaponID == "001" ? PlayerCore.Inventory.SwordHand : PlayerCore.Inventory.SpearHand : WeaponID == "001" ? BotData.Inventory.SwordHand : BotData.Inventory.SpearHand;
+                transform.localPosition = Vector3.zero;
+                transform.localRotation = Quaternion.identity;
             }
             else
             {
-                transform.parent = Back.transform;
-                transform.localRotation = Quaternion.Euler(backRotation);
+                transform.parent = !IsBot ? WeaponID == "001" ? PlayerCore.Inventory.SwordBack : PlayerCore.Inventory.SpearBack : WeaponID == "001" ? BotData.Inventory.SwordBack : BotData.Inventory.SpearHand;
+                transform.localPosition = Vector3.zero;
+                transform.localRotation = Quaternion.identity;
             }
-
-            transform.localPosition = Vector3.zero;
         }
         else
         {
+            // If dropped, keep the position/rotation as-is (or update if needed)
             transform.parent = null;
             transform.position = Position;
             transform.rotation = Quaternion.Euler(dropRotation);
@@ -83,30 +96,33 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
 
     public override void FixedUpdateNetwork()
     {
+        // Only the simulation should update the authoritative state
         if (IsPickedUp)
         {
             if (IsEquipped)
             {
-                transform.parent = Hand.transform;
-                transform.localRotation = Quaternion.Euler(handRotation);
+                transform.parent = !IsBot ? WeaponID == "001" ? PlayerCore.Inventory.SwordHand : PlayerCore.Inventory.SpearHand : WeaponID == "001" ? BotData.Inventory.SwordHand : BotData.Inventory.SpearHand;
+                transform.localPosition = Vector3.zero;
+                transform.localRotation = Quaternion.identity;
             }
             else
             {
-                transform.parent = Back.transform;
-                transform.localRotation = Quaternion.Euler(backRotation);
+                transform.parent = !IsBot ? WeaponID == "001" ? PlayerCore.Inventory.SwordBack : PlayerCore.Inventory.SpearBack : WeaponID == "001" ? BotData.Inventory.SwordBack : BotData.Inventory.SpearHand;
+                transform.localPosition = Vector3.zero;
+                transform.localRotation = Quaternion.identity;
             }
-
-            transform.localPosition = Vector3.zero;
         }
         else
         {
+            // If dropped, keep the position/rotation as-is (or update if needed)
             transform.parent = null;
             transform.position = Position;
             transform.rotation = Quaternion.Euler(dropRotation);
         }
     }
 
-    public void InitializeItem(NetworkObject player, NetworkObject backParent, NetworkObject handParent, bool isBot = false)
+
+    public void InitializeItem(NetworkObject player, bool isBot = false, Action finalAction = null)
     {
         BotInventory tempBotinventory = null;
         PlayerInventoryV2 tempPlayerinventory = null;
@@ -128,14 +144,12 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
 
         CurrentPlayer = player;
 
+        IsBot = isBot;
+
         if (isBot)
             tempBotinventory.PrimaryWeapon = this;
         else
             tempPlayerinventory.PrimaryWeapon = this;
-
-        Position = backParent.transform.position;
-        Back = backParent;
-        Hand = handParent;
 
         transform.parent = CurrentPlayer.transform;
 
@@ -160,12 +174,14 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
             PlayerOwnObjectEnabler tempcore = player.GetComponent<PlayerOwnObjectEnabler>();
             PlayerCore = tempcore;
         }
+
+        finalAction?.Invoke();
     }
 
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-    public void RPC_PickupPrimaryWeapon(NetworkObject player, NetworkObject backParent, NetworkObject handParent)
+    public void RPC_PickupPrimaryWeapon(NetworkObject player)
     {
-        InitializeItem(player, backParent, handParent);
+        InitializeItem(player);
     }
 
     public void DropWeapon()
@@ -183,8 +199,6 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
         IsEquipped = false;
 
         CurrentPlayer = null;
-        Back = null;
-        Hand = null;
         PlayerCore = null;
         BotData = null;
         Object.RemoveInputAuthority();
@@ -280,11 +294,6 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
 
                     if (isFinalHit)
                         healthV2.IsStagger = true;
-                    else
-                    {
-                        healthV2.IsHitUpper = true;
-                        healthV2.IsHit = true;
-                    }
 
                     healthV2.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username, CurrentPlayer);
                 }

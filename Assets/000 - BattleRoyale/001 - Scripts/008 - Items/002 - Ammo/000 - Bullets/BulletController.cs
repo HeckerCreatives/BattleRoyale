@@ -10,7 +10,7 @@ public class BulletController : NetworkBehaviour
     [SerializeField] private GameObject hitEffectObj;
 
     [Space]
-    [SerializeField] private float bulletSpeed;
+    [SerializeField] private float travelTime = 0.1f; // Bullet should reach the target in 0.1 seconds
     [SerializeField] private float bulletRadius;
     [SerializeField] private LayerMask environmentLayers;
     [SerializeField] private LayerMask playerCollisionLayers;
@@ -18,6 +18,9 @@ public class BulletController : NetworkBehaviour
     [SerializeField] private AudioClip flybyClip;
     [SerializeField] private AudioClip hitClip;
     [SerializeField] private AudioClip bodyHitClip;
+
+    [Header("LOCAL DEBUGGER")]
+    [SerializeField] private bool alreadyHit;
 
     [field: Space]
     [field: SerializeField][Networked] public Vector3 TargetPos { get; set; }
@@ -28,9 +31,12 @@ public class BulletController : NetworkBehaviour
     [field: SerializeField][Networked] public bool Hit { get; set; }
     [field: SerializeField][Networked] public int PoolIndex { get; set; }
     [field: SerializeField][Networked] public BulletObjectPool Pooler { get; set; }
+    [field: SerializeField][Networked] public float TickRateAnimation { get; set; }
+    [field: SerializeField][Networked] public float HitTimer { get; set; }
+    [field: SerializeField][Networked] public float DecayTimer { get; set; }
 
 
-    private float travelTime = 0.1f; // Bullet should reach the target in 0.1 seconds
+   
     private float elapsedTime = 0f;
 
     //  =======================
@@ -41,11 +47,9 @@ public class BulletController : NetworkBehaviour
 
     //  =======================
 
-    private void OnEnable()
+    private void OnDisable()
     {
-        if (Runner == null) return;
-
-        transform.position = StartPos;
+        alreadyHit = false;
     }
 
     public override void Spawned()
@@ -53,27 +57,23 @@ public class BulletController : NetworkBehaviour
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
     }
 
+    public override void Despawned(NetworkRunner runner, bool hasState)
+    {
+        base.Despawned(runner, hasState);
+
+        StartPos = Vector3.zero;
+        DecayTimer = 0f;
+    }
+
     public override void Render()
     {
+        if (HasStateAuthority) return;
+
         foreach (var change in _changeDetector.DetectChanges(this))
         {
             switch (change)
             {
-                case nameof(Hit):
-                    if (HasStateAuthority) return;
-
-                    if (!Hit) return;
-
-                    hitEffectObj.SetActive(true);
-
-                    if (TargetObj.Hitbox != null)
-                        bulletSource.PlayOneShot(bodyHitClip);
-                    else
-                        bulletSource.PlayOneShot(hitClip);
-
-                    break;
                 case nameof(CanTravel):
-                    if (HasStateAuthority) return;
 
                     if (!CanTravel) return;
 
@@ -81,75 +81,90 @@ public class BulletController : NetworkBehaviour
                     break;
             }
         }
-    }
 
-    private void Update()
-    {
-        if (CanTravel)
+        if (!alreadyHit && CanTravel && StartPos != Vector3.zero)
         {
             elapsedTime += Time.deltaTime;
             float t = Mathf.Clamp01(elapsedTime / travelTime); // Normalize to 0-1 range
 
             transform.position = Vector3.Lerp(StartPos, TargetPoint, t);
+
+            if (Vector3.Distance(transform.position, TargetPoint) <= 1f)
+            {
+                hitEffectObj.SetActive(true);
+                HitEffectRotation = TargetObj.Normal;
+
+                if (TargetObj.Hitbox != null)
+                    bulletSource.PlayOneShot(bodyHitClip);
+                else
+                    bulletSource.PlayOneShot(hitClip);
+
+                alreadyHit = true;
+            }
         }
     }
 
     public void Fire(Vector3 startPos, LagCompensatedHit targetObj)
     {
-        transform.position = startPos;
         StartPos = startPos;
         TargetPoint = targetObj.Point;
         TargetPos = targetObj.GameObject.transform.position;
+        transform.position = startPos;
 
         TargetObj = targetObj;
+
         CanTravel = true;
+
+        TickRateAnimation = Runner.Tick * Runner.DeltaTime;
+
+        DecayTimer = TickRateAnimation + 5f;
     }
 
     public override void FixedUpdateNetwork()
     {
-        if (!HasStateAuthority) return;
-
-        if (!CanTravel) return;
-
-        if (transform.position != TargetPoint) return;
-
-        if (Hit) return;
-
-        Hit = true;
-
-        if ((1 << TargetObj.GameObject.layer) == playerCollisionLayers)
+        if (HasStateAuthority)
         {
-            if (Vector3.Distance(TargetObj.Point, TargetPos) <= 1f)
-            {
-
-                HitEffectRotation = TargetObj.Normal;
-
-                transform.position = TargetObj.Point;
-
-                Invoke(nameof(DestroyObject), 3f);
-            }
-            else
-            {
-
-                transform.position = TargetObj.Point;
-
-                Invoke(nameof(DestroyObject), 3f);
-            }
+            TickRateAnimation = Runner.Tick * Runner.DeltaTime;
+            DestroyObject();
         }
-        else
-        {
 
-            transform.position = TargetObj.Point;
-
-            Invoke(nameof(DestroyObject), 3f);
-        }
+        //ServerMoveBullet();
     }
+
+    //private void ServerMoveBullet()
+    //{
+    //    if (Runner == null) return;
+
+    //    if (!alreadyHit && CanTravel)
+    //    {
+    //        elapsedTime += Time.deltaTime;
+    //        float t = Mathf.Clamp01(elapsedTime / travelTime); // Normalize to 0-1 range
+
+    //        transform.position = Vector3.Lerp(StartPos.transform.position, TargetPoint, t);
+
+    //        if (Vector3.Distance(transform.position, TargetPoint) <= 1f)
+    //        {
+    //            hitEffectObj.SetActive(true);
+    //            HitEffectRotation = TargetObj.Normal;
+
+    //            if (HasInputAuthority)
+    //            {
+    //                if (TargetObj.Hitbox != null)
+    //                    bulletSource.PlayOneShot(bodyHitClip);
+    //                else
+    //                    bulletSource.PlayOneShot(hitClip);
+    //            }
+
+    //            alreadyHit = true;
+    //        }
+    //    }
+    //}
 
     private void DestroyObject()
     {
-        CanTravel = false;
-        Hit = false;
-        Pooler.DisableBullet(PoolIndex);
+        if (TickRateAnimation < DecayTimer) return;
+
+        Runner.Despawn(Object);
     }
 
     public void OnDrawGizmos()

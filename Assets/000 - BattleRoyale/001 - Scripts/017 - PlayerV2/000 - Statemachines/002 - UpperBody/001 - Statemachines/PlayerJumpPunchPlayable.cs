@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class PlayerJumpPunchPlayable : UpperBodyAnimations
+public class PlayerJumpPunchPlayable : UpperNoAimState
 {
     float timer;
     bool canAction;
@@ -33,6 +33,8 @@ public class PlayerJumpPunchPlayable : UpperBodyAnimations
 
     public override void NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         if (!hasResetHitEnemies)
         {
             playerPlayables.upperBodyMovement.ResetSecondAttack();

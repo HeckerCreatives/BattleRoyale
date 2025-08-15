@@ -5,7 +5,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class PlayerFistFinalPunch : UpperBodyAnimations
+public class PlayerFistFinalPunch : UpperNoAimState
 {
     float timer;
     float damageWindowStart;
@@ -21,22 +21,27 @@ public class PlayerFistFinalPunch : UpperBodyAnimations
     {
         base.Enter();
 
+
+        playerPlayables.fistSoundController.PlayAttackOne();
+
         doneResetHit = false;
         timer = playerPlayables.TickRateAnimation + animationLength;
         damageWindowStart = playerPlayables.TickRateAnimation + 0.45f;
         damageWindowEnd = playerPlayables.TickRateAnimation + 0.50f;
         canAction = true;
+        playerPlayables.FinalAttack = false;
     }
 
     public override void Exit()
     {
         base.Exit();
-        playerPlayables.FinalAttack = false;
         canAction = false;
     }
 
     public override void NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
         {
             if (!doneResetHit)
@@ -57,16 +62,20 @@ public class PlayerFistFinalPunch : UpperBodyAnimations
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
 
 
-        if (playerPlayables.healthV2.IsHitUpper)
+        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
         {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
-            return;
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RollPlayables);
+
         }
+        //if (playerPlayables.healthV2.IsHitUpper)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
+        //    return;
+        //}
 
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
-            return;
         }
 
         if (playerPlayables.TickRateAnimation >= timer && canAction)

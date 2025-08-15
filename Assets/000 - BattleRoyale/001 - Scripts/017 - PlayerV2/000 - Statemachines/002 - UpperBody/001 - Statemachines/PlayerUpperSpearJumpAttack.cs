@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class PlayerUpperSpearJumpAttack : UpperBodyAnimations
+public class PlayerUpperSpearJumpAttack : UpperNoAimState
 {
     float timer;
     bool canAction;
@@ -34,6 +34,8 @@ public class PlayerUpperSpearJumpAttack : UpperBodyAnimations
 
     public override void NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         if (!hasResetHitEnemies)
         {
             playerPlayables.inventory.PrimaryWeapon.ClearHitEnemies();

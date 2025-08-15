@@ -1,4 +1,5 @@
 using Fusion;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -52,25 +53,7 @@ public class ArmorItem : NetworkBehaviour, IPickupItem
         }
     }
 
-    public override void FixedUpdateNetwork()
-    {
-        if (IsPickedUp)
-        {
-            transform.parent = Parent.transform;
-            transform.localPosition = Vector3.zero;
-            transform.localRotation = Quaternion.Euler(pickedUpRotation);
-            transform.localScale = pickUpSize;
-        }
-        else
-        {
-            transform.parent = null;
-            transform.position = Position;
-            transform.rotation = Quaternion.Euler(dropRotation);
-            transform.localScale = dropSize;
-        }
-    }
-
-    public void InitializeItem(NetworkObject player, NetworkObject armorParent, bool isSpawn = false, bool isBot = false)
+    public void InitializeItem(NetworkObject player, NetworkObject armorParent, bool isSpawn = false, bool isBot = false, Action finalAction = null)
     {
         PlayerInventoryV2 tempPlayerinventory = null;
         BotInventory tempBotInventory = null;
@@ -103,6 +86,8 @@ public class ArmorItem : NetworkBehaviour, IPickupItem
         IsPickedUp = true;
 
         Supplies = isSpawn ? 100 : Supplies;
+
+        finalAction?.Invoke();
     }
 
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]

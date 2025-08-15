@@ -89,7 +89,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
         gameplayInputs = new GameplayInputs();
         gameplayInputs.Enable();
-        //EnhancedTouchSupport.Enable();
+        EnhancedTouchSupport.Enable();
 
         gameplayInputs.Gameplay.Jump.started += _ => JumpStart();
         gameplayInputs.Gameplay.Jump.canceled += _ => JumpTurnOff();
@@ -159,7 +159,7 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
             gameplayInputs.Gameplay.Movement.canceled -= _ => MovementStop();
 
             gameplayInputs.Disable();
-            //EnhancedTouchSupport.Disable();
+            EnhancedTouchSupport.Disable();
             Runner.RemoveCallbacks(this);
         }
     }

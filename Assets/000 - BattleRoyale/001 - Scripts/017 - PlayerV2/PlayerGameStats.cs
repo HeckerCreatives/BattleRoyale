@@ -161,8 +161,8 @@ public class PlayerGameStats : NetworkBehaviour
 
                     usernameResultTMP.text = userData.Username;
                     int botsCount = ServerManager.Bots.Count;
-                    Debug.Log(botsCount);
-                    playerCountResultTMP.text = $"<color=yellow><size=\"55\">#{(PlayerPlacement + botsCount)}</size></color> <size=\"50\"> / {ServerManager.RemainingPlayers.Capacity - 2}</size>";
+                    int rank = PlayerPlacement + botsCount;
+                    playerCountResultTMP.text = $"<color=yellow><size=\"55\">#{rank}</size></color> <size=\"50\"> / {ServerManager.RemainingPlayers.Capacity - 2}</size>";
                     rankResultTMP.text = (PlayerPlacement + botsCount).ToString();
                     killCountResultTMP.text = KillCount.ToString();
 
@@ -207,7 +207,7 @@ public class PlayerGameStats : NetworkBehaviour
                     {
                         { "kill", KillCount },
                         { "death", PlayerPlacement != 1 ? 1 : 0 },
-                        { "rank", (PlayerPlacement + botsCount) }
+                        { "rank", rank }
                     }, true, (response) =>
                     {
                         StartCoroutine(GameManager.Instance.PostRequest("/leaderboard/updateuserleaderboard", "", new Dictionary<string, object>
@@ -292,7 +292,7 @@ public class PlayerGameStats : NetworkBehaviour
             {
                 { "kill", KillCount },
                 { "death", PlayerPlacement != 1 ? 1 : 0 },
-                { "rank", (PlayerPlacement + ServerManager.Bots.Count) }
+                { "rank", 1 }
             }, true, (response) =>
             {
                 StartCoroutine(GameManager.Instance.PostRequest("/leaderboard/updateuserleaderboard", "", new Dictionary<string, object>
@@ -365,7 +365,7 @@ public class PlayerGameStats : NetworkBehaviour
         {
             { "kill", KillCount },
             { "death", PlayerPlacement != 1 ? 1 : 0 },
-            { "rank", (PlayerPlacement + ServerManager.Bots.Count) }
+            { "rank", 1 }
         }, true, (response) =>
         {
             StartCoroutine(GameManager.Instance.PostRequest("/leaderboard/updateuserleaderboard", "", new Dictionary<string, object>

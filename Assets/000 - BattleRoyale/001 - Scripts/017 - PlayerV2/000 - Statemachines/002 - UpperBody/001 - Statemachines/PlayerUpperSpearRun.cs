@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class PlayerUpperSpearRun : UpperBodyAnimations
+public class PlayerUpperSpearRun : UpperNoAimState
 {
     public PlayerUpperSpearRun(SimpleKCC characterController, UpperBodyChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
@@ -12,6 +12,8 @@ public class PlayerUpperSpearRun : UpperBodyAnimations
 
     public override void NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         playerMovement.WeaponSwitcher();
         WeaponsChecker();
         Animation();
@@ -34,16 +36,15 @@ public class PlayerUpperSpearRun : UpperBodyAnimations
         if (playerMovement.Attacking)
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearFirstAttackPlayable);
 
-        if (playerPlayables.healthV2.IsHitUpper)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
-            return;
-        }
+        //if (playerPlayables.healthV2.IsHitUpper)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
+        //    return;
+        //}
 
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
-            return;
         }
 
         if (playerMovement.IsHealing)
@@ -55,7 +56,6 @@ public class PlayerUpperSpearRun : UpperBodyAnimations
         if (playerMovement.IsTrapping)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.TrapPlayable);
-            return;
         }
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
@@ -86,6 +86,13 @@ public class PlayerUpperSpearRun : UpperBodyAnimations
                         playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearSprintPlayable);
                 }
             }
+        }
+        else if (playerPlayables.inventory.WeaponIndex == 3)
+        {
+            if (playerPlayables.inventory.SecondaryWeaponID() == "003")
+                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleSprintPlayable);
+            else if (playerPlayables.inventory.SecondaryWeaponID() == "004")
+                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowSprintPlayable);
         }
     }
 }

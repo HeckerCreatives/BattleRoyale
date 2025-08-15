@@ -138,7 +138,6 @@ public class TrapWeaponController : NetworkBehaviour
 
                 CanDamage = false;
 
-                health.IsHit = true;
                 health.ApplyDamage(30f, SpawnedBy, hitObject.GetComponent<NetworkObject>());
 
                 Invoke(nameof(DespawnObject), 2f);

@@ -40,6 +40,7 @@ public class StaggerHit : PlayerOnGround
         }
 
         Animation();
+
         playerPlayables.stamina.RecoverStamina(5f);
     }
 

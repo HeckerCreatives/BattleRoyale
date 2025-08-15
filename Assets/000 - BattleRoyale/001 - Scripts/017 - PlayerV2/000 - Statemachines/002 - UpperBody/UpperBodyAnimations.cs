@@ -107,4 +107,8 @@ public class UpperBodyAnimations
     //}
 
     public virtual void NetworkUpdate() { }
+
+    public virtual void NetworkLocalServerUpdate() { }
+
+    public virtual void NetworkLocalUpdate() { }
 }

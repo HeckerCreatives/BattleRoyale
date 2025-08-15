@@ -14,22 +14,22 @@ public class BotInventory : NetworkBehaviour
         get => armorBack;
     }
 
-    public NetworkObject SwordHand
+    public Transform SwordHand
     {
         get => swordHand;
     }
 
-    public NetworkObject SwordBack
+    public Transform SwordBack
     {
         get => swordBack;
     }
 
-    public NetworkObject SpearHand
+    public Transform SpearHand
     {
         get => spearHand;
     }
 
-    public NetworkObject SpearBack
+    public Transform SpearBack
     {
         get => spearBack;
     }
@@ -50,10 +50,10 @@ public class BotInventory : NetworkBehaviour
 
     [Space]
     [SerializeField] private NetworkObject armorBack;
-    [SerializeField] private NetworkObject swordHand;
-    [SerializeField] private NetworkObject swordBack;
-    [SerializeField] private NetworkObject spearHand;
-    [SerializeField] private NetworkObject spearBack;
+    [SerializeField] private Transform swordHand;
+    [SerializeField] private Transform swordBack;
+    [SerializeField] private Transform spearHand;
+    [SerializeField] private Transform spearBack;
 
     [field: Header("DEBUGGER NETWORK")]
     [field: SerializeField][Networked] public NetworkBool IsSkinInitialized { get; set; }
@@ -63,6 +63,7 @@ public class BotInventory : NetworkBehaviour
     [field: SerializeField][Networked] public int SkinColorIndex { get; set; }
     [field: SerializeField][Networked] public int WeaponIndex { get; set; }
     [field: SerializeField][Networked] public PrimaryWeaponItem PrimaryWeapon { get; set; }
+    [field: SerializeField][Networked] public SecondaryWeaponItem SecondaryWeapon { get; set; }
     [field: SerializeField][Networked] public ArmorItem Armor { get; set; }
     [field: SerializeField][Networked] public int HealCount { get; set; }
     [field: SerializeField][Networked] public int RepairCount { get; set; }

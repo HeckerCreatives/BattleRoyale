@@ -16,9 +16,10 @@ public class PlayerCameraRotation : NetworkBehaviour
 {
     //  ==================
 
+    [SerializeField] private SimpleKCC playerObj;
+
     [Header("References")]
-    [SerializeField] private PlayerAim playerAim;
-    [SerializeField] private PlayerHealth playerHealth;
+    [SerializeField] private PlayerMovementV2 movement;
     [SerializeField] private GameObject target;
 
     [Header("CAMERA HEIGHT")]
@@ -29,13 +30,17 @@ public class PlayerCameraRotation : NetworkBehaviour
     [Header("CAMERA LOOK TARGET")]
     [SerializeField] private Transform aimTF;
     [SerializeField] private LayerMask aimLayerMask;
+    [SerializeField] private LayerMask aimBotEnemyMask;
+    [SerializeField] private float AimDistance;
+    [SerializeField] private float CameraAngleOverride;
+    [SerializeField] private float aimAssistAngleRadius = 5f;
+    [SerializeField] private float aimAssistStrength = 5f;       // Pull speed
+    [SerializeField] private float magnetismDuration = 0.5f;     // Seconds aim assist lasts
 
     [field: Header("Parameters")]
-    [field: SerializeField][Networked] public float AimDistance { get; private set; }
     [field: SerializeField][Networked] public float Sensitivity { get; private set; }
     [field: SerializeField][Networked] public float TopClamp { get; private set; }
     [field: SerializeField][Networked] public float BottomClamp { get; private set; }
-    [field: SerializeField][Networked] public float CameraAngleOverride { get; private set; }
 
     [field: Header("DEBUGGER")]
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float _threshold { get; private set; }
@@ -44,7 +49,10 @@ public class PlayerCameraRotation : NetworkBehaviour
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float CurrentSensitivity { get; private set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float CurrentAdsSensitivity { get; private set; }
 
-    async public override void Spawned()
+    private float magnetismTimer = 0f;
+    private Transform magnetismTarget;
+
+    public override void Spawned()
     {
         if (!HasInputAuthority) return;
 
@@ -70,11 +78,6 @@ public class PlayerCameraRotation : NetworkBehaviour
 
         GameManager.Instance.GameSettingManager.OnLookSensitivityChanged -= LookSensitivityChanged;
         GameManager.Instance.GameSettingManager.OnLookAdsSensitivityChanged -= LookAdsSensitivityChanged;
-    }
-
-    public override void FixedUpdateNetwork()
-    {
-        HandleMobileCameraInput();
     }
 
     private void LateUpdate()
@@ -113,16 +116,12 @@ public class PlayerCameraRotation : NetworkBehaviour
         CurrentAdsSensitivity = Sensitivity * adsSensitivity;
     }
 
-    private void HandleMobileCameraInput()
+    public void HandleCameraNoAim()
     {
         if (GetInput<MyInput>(out var input) == false) return;
 
-        //if (playerHealth.CurrentHealth <= 0) return;
-
         if (input.LookDirection.sqrMagnitude >= _threshold)
         {
-            //_cinemachineTargetYaw += input.LookDirection.x * Runner.DeltaTime * (playerAim.IsAim ? CurrentAdsSensitivity : CurrentSensitivity);
-            //_cinemachineTargetPitch += -input.LookDirection.y * Runner.DeltaTime * (playerAim.IsAim ? CurrentAdsSensitivity : CurrentSensitivity);
             _cinemachineTargetYaw += input.LookDirection.x * Runner.DeltaTime * CurrentSensitivity;
             _cinemachineTargetPitch += -input.LookDirection.y * Runner.DeltaTime * CurrentSensitivity;
         }
@@ -130,14 +129,78 @@ public class PlayerCameraRotation : NetworkBehaviour
         _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
         _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
 
-        Vector3 Direction = new Vector3(
-            Mathf.Cos(_cinemachineTargetPitch * Mathf.Deg2Rad) * Mathf.Sin(_cinemachineTargetYaw * Mathf.Deg2Rad),
-            Mathf.Sin(-_cinemachineTargetPitch * Mathf.Deg2Rad),
-            Mathf.Cos(_cinemachineTargetPitch * Mathf.Deg2Rad) * Mathf.Cos(_cinemachineTargetYaw * Mathf.Deg2Rad)
-        );
+        target.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch, _cinemachineTargetYaw, 0.0f);
+    }
 
-        target.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride, _cinemachineTargetYaw, 0.0f);
-        aimTF.position = transform.position + Direction * AimDistance;
+    public void HandleCameraAimInput()
+    {
+        if (GetInput<MyInput>(out var input) == false) return;
+
+        bool hasInput = input.LookDirection.sqrMagnitude >= _threshold;
+
+        // Only check for target if aiming and not strongly moving the camera
+        if (movement.Aiming && !hasInput)
+        {
+            if (magnetismTimer <= 0f) // Only refresh target if no active assist
+            {
+                var targetEnemy = GetCameraRaycastTarget(input);
+                if (targetEnemy != null)
+                {
+                    magnetismTarget = targetEnemy;
+                    magnetismTimer = magnetismDuration;
+                }
+            }
+        }
+
+        // Apply look input
+        _cinemachineTargetYaw += input.LookDirection.x * Runner.DeltaTime * (movement.Aiming ? CurrentAdsSensitivity : CurrentSensitivity);
+        _cinemachineTargetPitch += -input.LookDirection.y * Runner.DeltaTime * (movement.Aiming ? CurrentAdsSensitivity : CurrentSensitivity);
+
+        // Apply magnetism pull
+        if (magnetismTarget != null && magnetismTimer > 0f)
+        {
+            Vector3 dirToTarget = (magnetismTarget.position - Camera.main.transform.position).normalized;
+            Quaternion targetRot = Quaternion.LookRotation(dirToTarget, Vector3.up);
+            Vector3 targetAngles = targetRot.eulerAngles;
+
+            _cinemachineTargetYaw = Mathf.LerpAngle(_cinemachineTargetYaw, targetAngles.y, aimAssistStrength * Runner.DeltaTime);
+            _cinemachineTargetPitch = Mathf.LerpAngle(_cinemachineTargetPitch, targetAngles.x, aimAssistStrength * Runner.DeltaTime);
+
+            magnetismTimer -= Runner.DeltaTime;
+            if (magnetismTimer <= 0f) magnetismTarget = null;
+        }
+
+        // Clamp angles
+        _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
+        _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
+
+        // Apply rotation to player + aim transform
+        playerObj.SetLookRotation(_cinemachineTargetPitch, _cinemachineTargetYaw);
+        target.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch, _cinemachineTargetYaw, 0.0f);
+
+        Vector3 origin = target.transform.position;
+        Vector3 direction = target.transform.forward;
+        aimTF.position = origin + direction * AimDistance;
+        aimTF.rotation = Quaternion.Euler(_cinemachineTargetPitch, _cinemachineTargetYaw + CameraAngleOverride, 0.0f);
+    }
+
+
+    private Transform GetCameraRaycastTarget(MyInput input)
+    {
+        Ray ray = new Ray(input.CameraHitOrigin, input.CameraHitDirection);
+
+        if (Physics.SphereCast(ray, aimAssistAngleRadius, out RaycastHit hit, AimDistance, aimBotEnemyMask))
+        {
+            Debug.Log(hit.collider.gameObject.name);
+            if (hit.collider.CompareTag("Player") || hit.collider.CompareTag("Bot"))
+            {
+                if (hit.collider.gameObject == gameObject) // Ignore self
+                    return null;
+
+                return hit.collider.transform;
+            }
+        }
+        return null;
     }
 
     //private void CameraHeight()
@@ -152,5 +215,26 @@ public class PlayerCameraRotation : NetworkBehaviour
         if (lfAngle < -360f) lfAngle += 360f;
         if (lfAngle > 360f) lfAngle -= 360f;
         return Mathf.Clamp(lfAngle, lfMin, lfMax);
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        // If you want to see gizmos in Play Mode, ensure you pass the current input
+        if (GetInput<MyInput>(out var input) == false) return;
+
+        // SphereCast parameters
+        Vector3 origin = input.CameraHitOrigin;
+        Vector3 direction = input.CameraHitDirection.normalized;
+
+        Gizmos.color = Color.yellow;
+
+        // Draw the cast line
+        Gizmos.DrawLine(origin, origin + direction * AimDistance);
+
+        // Draw start sphere
+        Gizmos.DrawWireSphere(origin, aimAssistAngleRadius);
+
+        // Draw end sphere
+        Gizmos.DrawWireSphere(origin + direction * AimDistance, aimAssistAngleRadius);
     }
 }

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1218355006974357699}
   - component: {fileID: 7782167564959681625}
   - component: {fileID: 8718209516328954601}
-  - component: {fileID: 2827732567491044492}
+  - component: {fileID: 2778236567379565943}
   - component: {fileID: 2836240876747883898}
   m_Layer: 12
   m_Name: bow_Storage
@@ -85,7 +85,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &2827732567491044492
+--- !u!114 &2778236567379565943
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -94,10 +94,22 @@ MonoBehaviour:
   m_GameObject: {fileID: 5713840924020863758}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c730071e9175004439bb6bc5f8c61ed6, type: 3}
+  m_Script: {fileID: 11500000, guid: 656741ef3e382c740a545d5877a2843e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ContainerParent: {fileID: 0}
+  weaponID: arrowcontainer
+  weaponName: arrowcontainer
+  impactPoint: {fileID: 0}
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 0
+  backRotation: {x: 0, y: 0, z: 0}
+  dropRotation: {x: 0, y: 0, z: 0}
+  _IsPickedUp: 0
+  _CurrentPlayer: {fileID: 0}
+  _PlayerCore: {fileID: 0}
+  _Position: {x: 0, y: 0, z: 0}
+  _Back: {fileID: 0}
 --- !u!114 &2836240876747883898
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -115,5 +127,5 @@ MonoBehaviour:
   Flags: 262145
   NestedObjects: []
   NetworkedBehaviours:
-  - {fileID: 2827732567491044492}
+  - {fileID: 2778236567379565943}
   ForceRemoteRenderTimeframe: 0

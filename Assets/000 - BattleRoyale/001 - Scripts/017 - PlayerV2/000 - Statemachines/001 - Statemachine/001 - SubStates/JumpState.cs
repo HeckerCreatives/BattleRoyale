@@ -7,17 +7,35 @@ using UnityEngine.Animations;
 
 public class JumpState : PlayerOnGround
 {
+    float timer;
+
     public JumpState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
+    }
+
+    public override void Enter()
+    {
+        base.Enter();
+
+        playerPlayables.CancelInvoke();
+
+        playerPlayables.PlayJumpSoundEffect();
+
+        timer = playerPlayables.TickRateAnimation + 0.15f;
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
+
+        playerPlayables.CancelInvoke();
     }
 
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
-
         Animation();
         WeaponChecker();    //  NEXT FUNCTION AFTER RESETTING JUMP STATE
-
         playerPlayables.stamina.RecoverStamina(5f);
     }
 
@@ -44,6 +62,14 @@ public class JumpState : PlayerOnGround
         {
             playerMovement.IsJumping = false;
             playerMovement.JumpImpulse = 0;
+        }
+        else
+        {
+            if (playerPlayables.TickRateAnimation >= timer)
+            {
+                playerMovement.IsJumping = false;
+                playerMovement.JumpImpulse = 0;
+            }
         }
     }
 
@@ -105,6 +131,35 @@ public class JumpState : PlayerOnGround
                     }
                     else
                         playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearIdlePlayable);
+                }
+            }
+            else if (playerPlayables.inventory.WeaponIndex == 3)
+            {
+                if (playerPlayables.inventory.SecondaryWeaponID() == "003")
+                {
+                    if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
+                    {
+                        if (playerMovement.IsSprint)
+                            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleSprintPlayable);
+
+                        else
+                            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleRunPlayable);
+                    }
+                    else
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleIdlePlayable);
+                }
+                else if (playerPlayables.inventory.SecondaryWeaponID() == "004")
+                {
+                    if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
+                    {
+                        if (playerMovement.IsSprint)
+                            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowSprintPlayable);
+
+                        else
+                            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowRunPlayable);
+                    }
+                    else
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowIdlePlayable);
                 }
             }
         }

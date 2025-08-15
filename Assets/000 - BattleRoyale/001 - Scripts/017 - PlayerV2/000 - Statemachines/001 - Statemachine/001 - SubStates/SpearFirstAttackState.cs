@@ -68,27 +68,23 @@ public class SpearFirstAttackState : PlayerOnGround
         if (playerPlayables.healthV2.IsDead)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
-            return;
         }
 
 
-        if (playerPlayables.healthV2.IsHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-            return;
-        }
+        //if (playerPlayables.healthV2.IsHit)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
+        //    return;
+        //}
 
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
-            return;
         }
 
         if (!characterController.IsGrounded)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
-
-            return;
         }
 
         if (playerPlayables.TickRateAnimation >= nextPunchWindow && canAction)
@@ -96,7 +92,6 @@ public class SpearFirstAttackState : PlayerOnGround
             if (playerMovement.Attacking)
             {
                 playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearFinalAttackPlayable);
-                return;
             }
         }
 
@@ -105,13 +100,11 @@ public class SpearFirstAttackState : PlayerOnGround
             if (playerMovement.IsBlocking)
             {
                 playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearBlockPlayable);
-                return;
             }
 
             if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             {
                 playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RollPlayable);
-                return;
             }
 
             if (playerMovement.MoveDirection != Vector3.zero)

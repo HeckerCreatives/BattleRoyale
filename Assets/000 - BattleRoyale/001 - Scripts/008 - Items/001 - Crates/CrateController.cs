@@ -1,4 +1,5 @@
 using Fusion;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -39,7 +40,7 @@ public class CrateController : NetworkBehaviour
 
                 Runner.Spawn(tempweapon, Vector3.zero, Quaternion.identity, player.Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
                 {
-                    obj.GetComponent<PrimaryWeaponItem>().InitializeItem(player.Object, player.SwordBack, player.SwordHand);
+                    obj.GetComponent<PrimaryWeaponItem>().InitializeItem(player.Object, false, () => Weapons.Remove(itemkey));
                 });
 
                 break;
@@ -48,8 +49,40 @@ public class CrateController : NetworkBehaviour
 
                 Runner.Spawn(tempweapon, Vector3.zero, Quaternion.identity, player.Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
                 {
-                    obj.GetComponent<PrimaryWeaponItem>().InitializeItem(player.Object, player.SpearBack, player.SpearHand);
+                    obj.GetComponent<PrimaryWeaponItem>().InitializeItem(player.Object, false, () => Weapons.Remove(itemkey));
                 });
+
+                break;
+            case "003":
+                tempweapon = weaponSpawnData.GetItemObject(itemkey.ToString());
+
+                Runner.Spawn(tempweapon, Vector3.zero, Quaternion.identity, player.Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                {
+                    obj.GetComponent<SecondaryWeaponItem>().InitializeItem(player.Object, Weapons[itemkey], false, () => Weapons.Remove(itemkey));
+                });
+
+                break;
+            case "004":
+                tempweapon = weaponSpawnData.GetItemObject(itemkey.ToString());
+
+                Runner.Spawn(tempweapon, Vector3.zero, Quaternion.identity, player.Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                {
+                    obj.GetComponent<SecondaryWeaponItem>().InitializeItem(player.Object, Weapons[itemkey], false, () => Weapons.Remove(itemkey));
+                });
+
+                break;
+            case "005":
+
+                player.RifleMagazine = Math.Min(player.RifleMagazine + Weapons[itemkey], 999);
+
+                Weapons.Remove(itemkey);
+
+                break;
+            case "006":
+
+                player.BowMagazine = Math.Min(player.BowMagazine + Weapons[itemkey], 999);
+
+                Weapons.Remove(itemkey);
 
                 break;
             case "007":
@@ -58,7 +91,7 @@ public class CrateController : NetworkBehaviour
 
                 Runner.Spawn(tempweapon, Vector3.zero, Quaternion.identity, player.Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
                 {
-                    obj.GetComponent<ArmorItem>().InitializeItem(player.Object, player.ArmorHand, true);
+                    obj.GetComponent<ArmorItem>().InitializeItem(player.Object, player.ArmorHand, true, false, () => Weapons.Remove(itemkey));
                 });
                 break;
             case "008":
@@ -67,12 +100,16 @@ public class CrateController : NetworkBehaviour
 
                 player.HealCount++;
 
+                Weapons.Remove(itemkey);
+
                 break;
             case "009":
 
                 if (player.ArmorRepairCount >= 4) return;
 
                 player.ArmorRepairCount++;
+
+                Weapons.Remove(itemkey);
 
                 break;
             case "010":
@@ -81,9 +118,9 @@ public class CrateController : NetworkBehaviour
 
                 player.TrapCount++;
 
+                Weapons.Remove(itemkey);
+
                 break;
         }
-
-        Weapons.Remove(itemkey);
     }
 }

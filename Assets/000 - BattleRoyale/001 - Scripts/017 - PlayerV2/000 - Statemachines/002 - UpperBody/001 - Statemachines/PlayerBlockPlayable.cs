@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class PlayerBlockPlayable : UpperBodyAnimations
+public class PlayerBlockPlayable : UpperNoAimState
 {
     float timer;
     bool canAction;
@@ -32,7 +32,8 @@ public class PlayerBlockPlayable : UpperBodyAnimations
 
     public override void NetworkUpdate()
     {
-        playerPlayables.healthV2.IsHit = false;
+        base.NetworkUpdate();
+
         playerPlayables.healthV2.IsStagger = false;
 
         Animation();

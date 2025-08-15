@@ -195,7 +195,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hitEffectObj: {fileID: 1719402305924115555}
-  bulletSpeed: 350
+  travelTime: 0.12
   bulletRadius: 0.025
   environmentLayers:
     serializedVersion: 2
@@ -207,6 +207,7 @@ MonoBehaviour:
   flybyClip: {fileID: 8300000, guid: 321521b30b2fc4347a9268beaf6b0297, type: 3}
   hitClip: {fileID: 8300000, guid: 98913ac5cbac97648b9f0e9f1e45fc73, type: 3}
   bodyHitClip: {fileID: 8300000, guid: 868aeb0c2827461458b51c1f1e03557d, type: 3}
+  alreadyHit: 0
   _TargetPos: {x: 0, y: 0, z: 0}
   _TargetPoint: {x: 0, y: 0, z: 0}
   _StartPos: {x: 0, y: 0, z: 0}
@@ -215,6 +216,9 @@ MonoBehaviour:
   _Hit: 0
   _PoolIndex: 0
   _Pooler: {fileID: 0}
+  _TickRateAnimation: 0
+  _HitTimer: 0
+  _DecayTimer: 0
 --- !u!114 &1937236310385575576
 MonoBehaviour:
   m_ObjectHideFlags: 0

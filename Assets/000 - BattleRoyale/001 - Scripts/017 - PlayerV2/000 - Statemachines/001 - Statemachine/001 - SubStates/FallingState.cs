@@ -6,7 +6,6 @@ using UnityEngine.Animations;
 
 public class FallingState : AnimationPlayable
 {
-    float fallDamage;
 
     public FallingState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
@@ -15,8 +14,6 @@ public class FallingState : AnimationPlayable
     public override void Enter()
     {
         base.Enter();
-
-        fallDamage = 0;
     }
 
     public override void Exit()
@@ -28,7 +25,6 @@ public class FallingState : AnimationPlayable
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
-
         FallDamage();
         Animation();
         WeaponsChecker(); //    NEXT FUNCTION AFTER DAMAGE IS APPLIED
@@ -112,6 +108,41 @@ public class FallingState : AnimationPlayable
                     else
                         playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearRunPlayable);
                 }
+            }
+            else if (playerPlayables.inventory.WeaponIndex == 3)
+            {
+                if (playerPlayables.inventory.SecondaryWeaponID() == "003")
+                {
+                    if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleIdlePlayable);
+                    else if (playerMovement.IsSprint)
+                    {
+                        if (playerPlayables.stamina.Stamina >= 10f)
+                            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleSprintPlayable);
+                    }
+                    else
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleRunPlayable);
+                }
+                else if (playerPlayables.inventory.SecondaryWeaponID() == "004")
+                {
+                    if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowIdlePlayable);
+                    else if (playerMovement.IsSprint)
+                    {
+                        if (playerPlayables.stamina.Stamina >= 10f)
+                            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowSprintPlayable);
+                    }
+                    else
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowRunPlayable);
+                }
+            }
+        }
+        else
+        {
+            if (playerPlayables.inventory.WeaponIndex == 3)
+            {
+                if (playerPlayables.inventory.SecondaryWeaponID() == "003")
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleFallingPlayable);
             }
         }
     }

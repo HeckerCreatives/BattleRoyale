@@ -32,6 +32,7 @@ public class BotSpearAttackOne : BotAnimationPlayable
         moveTimer = botPlayables.TickRateAnimation + (animationLength * 0.3f);
         stopMoveTimer = botPlayables.TickRateAnimation + (animationLength * 0.5f);
         damageWindowEnd = botPlayables.TickRateAnimation + (animationLength * 0.9f);
+        nextPuncDelay = timer + 0.05f;
         canAction = true;
     }
 
@@ -97,6 +98,7 @@ public class BotSpearAttackOne : BotAnimationPlayable
             {
                 if (botPlayables.TickRateAnimation >= nextPuncDelay)
                     botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearAttackThree);
+                //botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearAttackThree);
 
                 return;
             }

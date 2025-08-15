@@ -19,6 +19,10 @@ public class RollState : PlayerOnGround
     {
         base.Enter();
 
+        playerPlayables.CancelInvoke();
+
+        playerPlayables.PlayRollSoundEffect();
+
         timer = playerPlayables.TickRateAnimation + animationLength;
         canAction = true;
         canReduce = true;
@@ -28,6 +32,9 @@ public class RollState : PlayerOnGround
     public override void Exit()
     {
         base.Exit();
+
+        playerPlayables.CancelInvoke();
+
         canAction = false;
         canReduce = false;
     }
@@ -35,15 +42,16 @@ public class RollState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
+        characterController.Move(characterController.TransformDirection * 8f, 0f);
+
+        Animation();
+
+
         if (canReduce)
         {
             playerPlayables.stamina.ReduceStamina(35f);
             canReduce = false;
         }
-
-        Animation();
-
-        characterController.Move(characterController.TransformDirection * 8f, 0f);
     }
 
     private void Animation()
@@ -99,6 +107,35 @@ public class RollState : PlayerOnGround
                 }
                 else
                     playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearIdlePlayable);
+            }
+        }
+        else if (playerPlayables.inventory.WeaponIndex == 3)
+        {
+            if (playerPlayables.inventory.SecondaryWeaponID() == "003")
+            {
+                if (playerMovement.MoveDirection != Vector3.zero)
+                {
+                    if (playerMovement.IsSprint)
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleSprintPlayable);
+
+                    else
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleRunPlayable);
+                }
+                else
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleIdlePlayable);
+            }
+            else if (playerPlayables.inventory.SecondaryWeaponID() == "004")
+            {
+                if (playerMovement.MoveDirection != Vector3.zero)
+                {
+                    if (playerMovement.IsSprint)
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowSprintPlayable);
+
+                    else
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowRunPlayable);
+                }
+                else
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowIdlePlayable);
             }
         }
     }

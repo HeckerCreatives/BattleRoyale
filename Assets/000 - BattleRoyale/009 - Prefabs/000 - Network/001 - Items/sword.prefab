@@ -46,7 +46,6 @@ GameObject:
   - component: {fileID: 3283460978109500959}
   - component: {fileID: -6896107499734453323}
   - component: {fileID: -2041506180087163115}
-  - component: {fileID: 2161710917413007540}
   - component: {fileID: 6689319316517026329}
   m_Layer: 12
   m_Name: sword
@@ -84,6 +83,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 292a2a56ecc75594e8b09145de8ab672, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  meleeSoundController: {fileID: 3283460978109500959}
   weaponID: 001
   weaponName: Sword
   impactPoint: {fileID: 7638595848337183244}
@@ -104,12 +104,12 @@ MonoBehaviour:
   _Supplies: 0
   _IsPickedUp: 0
   _IsEquipped: 0
+  _IsBot: 0
   _CurrentPlayer: {fileID: 0}
   _PlayerCore: {fileID: 0}
   _BotData: {fileID: 0}
   _Position: {x: 0, y: 0, z: 0}
-  _Back: {fileID: 0}
-  _Hand: {fileID: 0}
+  _Rotation: {x: 0, y: 0, z: 0, w: 0}
 --- !u!33 &2511843833045033619
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -195,7 +195,6 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 1251601267454481847}
   - {fileID: 3283460978109500959}
-  - {fileID: 2161710917413007540}
   ForceRemoteRenderTimeframe: 0
 --- !u!65 &-2041506180087163115
 BoxCollider:
@@ -218,23 +217,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.35768747, y: 1.2829473, z: 0.08813867}
   m_Center: {x: -0.095538884, y: 0.30272177, z: -0.0012031328}
---- !u!114 &2161710917413007540
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7616198628887366643}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _stateAuthorityChangeErrorCorrectionDelta: 0.15
-  SyncScale: 0
-  SyncParent: 0
-  _autoAOIOverride: 1
-  DisableSharedModeInterpolation: 0
 --- !u!114 &6689319316517026329
 MonoBehaviour:
   m_ObjectHideFlags: 0

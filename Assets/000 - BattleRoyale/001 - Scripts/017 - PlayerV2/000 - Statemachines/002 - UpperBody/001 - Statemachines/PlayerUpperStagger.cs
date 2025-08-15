@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class PlayerUpperStagger : UpperBodyAnimations
+public class PlayerUpperStagger : UpperNoAimState
 {
     float timer;
     bool canAction;
@@ -30,6 +30,8 @@ public class PlayerUpperStagger : UpperBodyAnimations
 
     public override void NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         Animation();
     }
 

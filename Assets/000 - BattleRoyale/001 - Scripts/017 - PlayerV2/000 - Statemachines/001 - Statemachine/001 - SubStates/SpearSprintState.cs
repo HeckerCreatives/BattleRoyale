@@ -13,28 +13,33 @@ public class SpearSprintState : PlayerOnGround
     public override void Enter()
     {
         base.Enter();
+
+        playerPlayables.CancelInvoke();
+
+        playerPlayables.InvokeRepeating(nameof(playerPlayables.PlayFootstepSound), (animationLength * 0.20f), animationLength);
+        playerPlayables.InvokeRepeating(nameof(playerPlayables.PlayFootstepSound), (animationLength * 0.80f), animationLength);
     }
 
     public override void Exit()
     {
         base.Exit();
+
+        playerPlayables.CancelInvoke();
     }
 
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
-
         WeaponsChecker();
         Animation();
-
-        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RollPlayable);
-
         playerPlayables.stamina.DecreaseStamina(20f);
     }
 
     private void Animation()
     {
+        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RollPlayable);
+
         if (playerPlayables.healthV2.IsDead)
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
 
@@ -59,19 +64,16 @@ public class SpearSprintState : PlayerOnGround
         if (playerMovement.IsTrapping)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.TrappingPlayable);
-            return;
         }
 
-        if (playerPlayables.healthV2.IsHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-            return;
-        }
+        //if (playerPlayables.healthV2.IsHit)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
+        //}
 
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
-            return;
         }
     }
 
@@ -83,16 +85,27 @@ public class SpearSprintState : PlayerOnGround
             {
                 if (playerMovement.MoveDirection != Vector3.zero)
                     playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SprintPlayable);
-
-                return;
             }
-
-            if (playerPlayables.inventory.PrimaryWeaponID() == "001")
+            else if (playerPlayables.inventory.WeaponIndex == 2)
             {
-                if (playerMovement.MoveDirection != Vector3.zero)
-                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordSprintPlayable);
-
-                return;
+                if (playerPlayables.inventory.PrimaryWeaponID() == "001")
+                {
+                    if (playerMovement.MoveDirection != Vector3.zero)
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordSprintPlayable);
+                }
+            }
+            else if (playerPlayables.inventory.WeaponIndex == 3)
+            {
+                if (playerPlayables.inventory.SecondaryWeaponID() == "003")
+                {
+                    if (playerMovement.MoveDirection != Vector3.zero)
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleSprintPlayable);
+                }
+                else if (playerPlayables.inventory.SecondaryWeaponID() == "004")
+                {
+                    if (playerMovement.MoveDirection != Vector3.zero)
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowSprintPlayable);
+                }
             }
 
             if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)

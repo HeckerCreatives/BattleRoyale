@@ -370,11 +370,11 @@ GameObject:
   - component: {fileID: 1332796610542767457}
   - component: {fileID: 4725592279981676786}
   - component: {fileID: 6587729525209111312}
+  - component: {fileID: 4019571769232571412}
   - component: {fileID: 8568232396353850000}
   - component: {fileID: 6386291090666172441}
   - component: {fileID: 1688678152560465373}
   - component: {fileID: 7563563738046141104}
-  - component: {fileID: 5176600585531283054}
   - component: {fileID: -6495896517934399311}
   m_Layer: 12
   m_Name: rifle
@@ -393,7 +393,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.8230621, y: 0.8230621, z: 0.8230621}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3990499799047293559}
@@ -452,6 +452,43 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &4019571769232571412
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7526382556810105679}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 872c07e61abb17b4194e257a0096adb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  meleeSoundController: {fileID: 6386291090666172441}
+  weaponID: 003
+  weaponName: Rifle
+  enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 403520
+  impactPoint: {fileID: 3990499799047293559}
+  backRotation: {x: 0, y: 0, z: 0}
+  handRotation: {x: 0, y: 0, z: 0}
+  dropRotation: {x: 0, y: 0, z: 90}
+  _Head: 85
+  _Body: 65
+  _Thigh: 55
+  _Shin: 50
+  _Foot: 45
+  _Arm: 60
+  _Forearm: 50
+  _Supplies: 0
+  _IsPickedUp: 0
+  _IsEquipped: 0
+  _CurrentPlayer: {fileID: 0}
+  _PlayerCore: {fileID: 0}
+  _BotData: {fileID: 0}
+  _Position: {x: 0, y: 0, z: 0}
+  _Rotation: {x: 0, y: 0, z: 0, w: 0}
 --- !u!114 &8568232396353850000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -542,27 +579,10 @@ MonoBehaviour:
   Flags: 262145
   NestedObjects: []
   NetworkedBehaviours:
+  - {fileID: 4019571769232571412}
   - {fileID: 8568232396353850000}
   - {fileID: 6386291090666172441}
-  - {fileID: 5176600585531283054}
   ForceRemoteRenderTimeframe: 0
---- !u!114 &5176600585531283054
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7526382556810105679}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _stateAuthorityChangeErrorCorrectionDelta: 0.15
-  SyncScale: 0
-  SyncParent: 1
-  _autoAOIOverride: 0
-  DisableSharedModeInterpolation: 0
 --- !u!65 &-6495896517934399311
 BoxCollider:
   m_ObjectHideFlags: 0

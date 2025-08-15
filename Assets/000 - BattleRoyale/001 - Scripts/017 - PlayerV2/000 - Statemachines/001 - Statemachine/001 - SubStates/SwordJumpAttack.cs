@@ -31,6 +31,9 @@ public class SwordJumpAttack : AnimationPlayable
 
     public override void NetworkUpdate()
     {
+        playerMovement.MoveCharacter();
+        FallDamage();
+
         if (characterController.IsGrounded && canAction && playerPlayables.TickRateAnimation >= timer)
         {
             playerMovement.IsJumping = false;
@@ -42,7 +45,6 @@ public class SwordJumpAttack : AnimationPlayable
             Animation();
         }
 
-        FallDamage();
         playerPlayables.stamina.RecoverStamina(5f);
     }
 

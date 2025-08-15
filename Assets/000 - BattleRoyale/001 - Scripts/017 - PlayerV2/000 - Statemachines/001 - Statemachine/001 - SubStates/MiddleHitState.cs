@@ -38,12 +38,12 @@ public class MiddleHitState : PlayerOnGround
 
     private void Animation()
     {
-        if (playerPlayables.healthV2.IsHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
+        //if (playerPlayables.healthV2.IsHit)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
 
-            return;
-        }
+        //    return;
+        //}
 
         if (playerPlayables.healthV2.IsStagger)
         {
@@ -54,13 +54,11 @@ public class MiddleHitState : PlayerOnGround
         if (playerPlayables.healthV2.IsDead)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
-            return;
         }
 
         if (!characterController.IsGrounded)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
-            return;
         }
 
         if (playerPlayables.TickRateAnimation >= timer && canAction)
@@ -83,8 +81,6 @@ public class MiddleHitState : PlayerOnGround
             }
             else
                 playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.IdlePlayable);
-
-            return;
         }
     }
 }

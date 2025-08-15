@@ -31,20 +31,29 @@ public class PlayerHealthV2 : NetworkBehaviour
     [SerializeField] private ParticleSystem healParticles;
     [SerializeField] private ParticleSystem repairParticles;
 
+    [Space]
+    [SerializeField] private AudioClip[] gruntClips;
+    [SerializeField] private AudioClip thumpGruntClip;
+    [SerializeField] private AudioClip deathClip;
+    [SerializeField] private AudioSource damageSource;
+
     [Header("DEBUGGER")]
     [SerializeField] private int bloodIndex;
+    [SerializeField] AudioClip selectedClip;
+    [SerializeField] AudioClip previousClip;
 
     [field: Header("DEBUGGER")]
     [Networked][field: SerializeField] public DedicatedServerManager ServerManager { get; set; }
     [Networked][field: SerializeField] public float CurrentHealth { get; set; }
-    [Networked][field: SerializeField] public bool IsHit { get; set; }
-    [Networked][field: SerializeField] public bool IsHitUpper { get; set; }
+    //[Networked][field: SerializeField] public bool IsHit { get; set; }
+    //[Networked][field: SerializeField] public bool IsHitUpper { get; set; }
     [Networked][field: SerializeField] public int Hitted { get; set; }
     [Networked][field: SerializeField] public bool IsStagger { get; set; }
     [Networked][field: SerializeField] public bool IsGettingUp { get; set; }
     [Networked][field: SerializeField] public bool DamagedSafeZone { get; set; }
+    [Networked][field: SerializeField] public int SafeZoneDamaged { get; set; }
     [Networked][field: SerializeField] public float FallDamageValue { get; set; }
-    [Networked][field: SerializeField] public bool FallDamage { get; set; }
+    [Networked][field: SerializeField] public int FallDamage { get; set; }
     [Networked][field: SerializeField] public bool IsDead { get; set; }
     [Networked][field: SerializeField] public int Healed { get; set; }
     [Networked][field: SerializeField] public int Repaired { get; set; }
@@ -88,6 +97,8 @@ public class PlayerHealthV2 : NetworkBehaviour
 
                     DamageIndicator();
 
+                    HitSoundEffects();
+
                     break;
                 case nameof(IsStagger):
 
@@ -96,19 +107,19 @@ public class PlayerHealthV2 : NetworkBehaviour
                     DamageIndicator();
 
                     break;
-                case nameof(DamagedSafeZone):
-
-                    if (!DamagedSafeZone) return;
+                case nameof(SafeZoneDamaged):
 
                     DamageIndicatorWithoutBlood();
 
                     break;
                 case nameof(FallDamage):
 
-                    if (!FallDamage) return;
-
                     DamageIndicatorWithoutBlood();
+                    FallSoundEffects();
 
+                    break;
+                case nameof(IsDead):
+                    DeathSoundEffect();
                     break;
                 case nameof(Healed):
 
@@ -155,6 +166,30 @@ public class PlayerHealthV2 : NetworkBehaviour
         base.FixedUpdateNetwork();
 
         CircleDamage();
+    }
+
+    private void HitSoundEffects()
+    {
+        if (HasStateAuthority) return;
+
+        damageSource.PlayOneShot(GetClip(gruntClips));
+        playerPlayables.fistSoundController.PlayHit();
+    }
+
+    private void FallSoundEffects()
+    {
+        if (HasStateAuthority) return;
+
+        damageSource.PlayOneShot(thumpGruntClip);
+
+    }
+
+    private void DeathSoundEffect()
+    {
+        if (HasStateAuthority) return;
+
+        if (CurrentHealth <= 0)
+            damageSource.PlayOneShot(deathClip);
     }
 
     private void ArmorUI()
@@ -236,6 +271,7 @@ public class PlayerHealthV2 : NetworkBehaviour
         if (distanceFromCenter > radius)
         {
             DamagedSafeZone = true;
+            SafeZoneDamaged++;
             CurrentHealth -= Runner.DeltaTime * ((ServerManager.SafeZone.ShrinkSizeIndex + 1) / 2);
         }
         else
@@ -269,7 +305,7 @@ public class PlayerHealthV2 : NetworkBehaviour
         float remainingDamage = damage;
 
         //  Block
-        if (playerPlayables.PlayableUpperBoddyAnimationIndex == 12)
+        if (playerPlayables.PlayableLowerBoddyAnimationIndex == 12)
         {
             remainingDamage -= (remainingDamage * .15f);
         }
@@ -339,6 +375,8 @@ public class PlayerHealthV2 : NetworkBehaviour
     {
         if (IsDead) return;
 
+        FallDamage++;
+
         if (ServerManager.CurrentGameState != GameState.ARENA) return;
 
         CurrentHealth -= FallDamageValue;
@@ -357,5 +395,22 @@ public class PlayerHealthV2 : NetworkBehaviour
                 ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} killed by fall damage");
             }
         }
+    }
+
+    AudioClip GetClip(AudioClip[] clipArray)
+    {
+        int attempts = 3;
+        selectedClip = clipArray[UnityEngine.Random.Range(0, clipArray.Length - 1)];
+
+        while (selectedClip == previousClip && attempts > 0)
+        {
+            selectedClip =
+            clipArray[UnityEngine.Random.Range(0, clipArray.Length - 1)];
+
+            attempts--;
+        }
+
+        previousClip = selectedClip;
+        return selectedClip;
     }
 }

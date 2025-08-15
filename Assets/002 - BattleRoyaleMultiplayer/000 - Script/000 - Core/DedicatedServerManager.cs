@@ -1,3 +1,6 @@
+#if !UNITY_ANDROID && !UNITY_IOS
+using Aws.GameLift.Server;
+#endif
 using Fusion;
 using Fusion.Addons.SimpleKCC;
 using Fusion.Photon.Realtime;
@@ -101,15 +104,17 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [SerializeField] private string lobby;
     [SerializeField] private bool useMultiplay;
     [SerializeField] private bool usePrivateServer;
+    [SerializeField] private bool useGameLift;
     [SerializeField] private MultiplayController multiplayController;
     [SerializeField] private KillNotificationController killNotificationController;
-    [SerializeField] private GridManager waitingAreaGridManager;
-    [SerializeField] private GridManager battleAreaGridManager;
+    [SerializeField] private PoolObjectProvider poolObjectProvider;
+    [SerializeField] private DeveloperConsole developerConsole;
 
     [Header("SERVER")]
     [SerializeField] private NetworkRunner serverNetworkRunnerPrefab;
     [SerializeField] private List<Transform> spawnWaitingAreaPositions;
     [SerializeField] private List<Transform> spawnBattleAreaPositions;
+    [SerializeField] private List<GameObject> soundsObjs;
 
     [Header("PLAYER")]
     [SerializeField] private NetworkObject killNotifObj;
@@ -356,13 +361,25 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             if (usePrivateServer)
                 InitializeSocket();
 
+            for (int a = 0; a < soundsObjs.Count; a++)
+                soundsObjs[a].SetActive(false);
+
             cbsbotnames.Shuffle();
             botnames.Shuffle();
             botSpawnPoints.Shuffle();
 
             spawnBotTimer = UnityEngine.Random.Range(5f, 15f);
 
-            StartGame();
+            if (!useMultiplay && !usePrivateServer && !useGameLift) developerConsole.doShow = true;
+
+            if (useGameLift)
+            {
+                GameLiftInitialize();
+            }
+            else
+            {
+                StartGame();
+            }
         }
         else
         {
@@ -602,6 +619,54 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
     #region SERVER INITIALIZE
 
+    private void GameLiftInitialize()
+    {
+#if !UNITY_ANDROID && !UNITY_IOS
+        // Initialize GameLift SDK
+        Debug.Log("STARTING GAMELIFT SDK");
+        var initOutcome = GameLiftServerAPI.InitSDK();
+        if (initOutcome.Success)
+        {
+            // Define what to do when a game session is created
+            ProcessParameters processParams = new ProcessParameters(
+                (gameSession) => {
+                    // Activate the session so players can connect
+                    GameLiftServerAPI.ActivateGameSession();
+
+                    StartGame();
+                },
+                (updateGameSession) => {
+                    // Handle FlexMatch backfill or session property updates
+                },
+                () => {
+                    // On process termination
+                    GameLiftServerAPI.ProcessEnding();
+                },
+                () => {
+                    // Health check — return true if healthy
+                    return true;
+                },
+                7777, // Your listening port
+                new LogParameters(new List<string>() { "/local/game/logs/myserver.log" })
+            );
+
+            var readyOutcome = GameLiftServerAPI.ProcessReady(processParams);
+            if (readyOutcome.Success)
+            {
+                Debug.Log("GameLift process ready!");
+            }
+            else
+            {
+                Debug.Log("ProcessReady failed: " + readyOutcome.Error.ToString());
+            }
+        }
+        else
+        {
+            Debug.Log("InitSDK failed: " + initOutcome.Error.ToString());
+        }
+#endif
+    }
+
     private FusionAppSettings BuildCustomAppSetting(string region)
     {
 
@@ -661,31 +726,34 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         else
             sessionname = new Guid().ToString();
 
-            //if (args.TryGetValue("region", out string region))
-            //    appSettings = BuildCustomAppSetting(region);
-            //else
-            //    appSettings = BuildCustomAppSetting("asia");
+        //if (args.TryGetValue("region", out string region))
+        //    appSettings = BuildCustomAppSetting(region);
+        //else
+        //    appSettings = BuildCustomAppSetting("asia");
 
-            //Debug.Log($"STARTING REGION: {appSettings.FixedRegion}");
+        //Debug.Log($"STARTING REGION: {appSettings.FixedRegion}");
 
-            await networkRunner.StartGame(new StartGameArgs()
-            {
-                SessionName = sessionname,
-                GameMode = GameMode.Server,
-                IsVisible = false,
-                IsOpen = false,
-                SceneManager = networkRunner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
-                Scene = networkSceneInfo,
-                PlayerCount = maxPlayers,
-                Address = NetAddress.Any(),
-                CustomLobbyName = lobby,
-                //CustomPhotonAppSettings = appSettings
-            });
+        await networkRunner.StartGame(new StartGameArgs()
+        {
+            ObjectProvider = poolObjectProvider,
+            SessionName = sessionname,
+            GameMode = GameMode.Server,
+            IsVisible = false,
+            IsOpen = false,
+            SceneManager = networkRunner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
+            Scene = networkSceneInfo,
+            PlayerCount = maxPlayers,
+            Address = NetAddress.Any(),
+            CustomLobbyName = lobby,
+            //CustomPhotonAppSettings = appSettings
+        });
 
 
         if (networkRunner.IsRunning)
         {
             Debug.Log($"Done Setting up photon server");
+
+            poolObjectProvider.SetMaxPoolCount(100);
 
             SpawnNotifUI();
 
@@ -713,11 +781,11 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
 
 #if !UNITY_ANDROID && !UNITY_IOS
-        if (useMultiplay)
-        {
-            Debug.Log("Initializing Multiplay");
-            await multiplayController.InitializeUnityAuthentication();
-        }
+        //if (useMultiplay)
+        //{
+        //    Debug.Log("Initializing Multiplay");
+        //    await multiplayController.InitializeUnityAuthentication();
+        //}
 #endif
 
             networkRunner.SessionInfo.IsOpen = true;
@@ -730,7 +798,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         }
     }
 
-    #endregion
+#endregion
 
     public override async void Spawned()
     {
@@ -894,6 +962,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                     tempinventory.HealCount = 0;
                     tempinventory.TrapCount = 0;
                     tempinventory.ArmorRepairCount = 0;
+                    tempinventory.RifleMagazine = 0;
+                    tempinventory.BowMagazine = 0;
 
                     if (tempinventory.Armor != null)
                     {
@@ -907,7 +977,21 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                         tempinventory.PrimaryWeapon = null;
                     }
 
+                    if (tempinventory.SecondaryWeapon != null)
+                    {
+                        Runner.Despawn(tempinventory.SecondaryWeapon.Object);
+                        tempinventory.SecondaryWeapon = null;
+                    }
+
+                    if (tempinventory.MagazineContainer != null)
+                    {
+                        Runner.Despawn(tempinventory.MagazineContainer.Object);
+                        tempinventory.MagazineContainer = null;
+                    }
+
                     tempinventory.WeaponIndex = 1;
+
+                    Players.ElementAt(a).Value.GetComponent<PlayerHealthV2>().CurrentHealth = 100f;
 
                     Players.ElementAt(a).Value.GetComponent<SimpleKCC>().SetPosition(spawnBattleAreaPositions[battleSpawnPosIndex].position, true);
 
@@ -1033,7 +1117,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             {
                 PrimaryWeaponItem tempWeapon = weaponObj.GetComponent<PrimaryWeaponItem>();
 
-                weaponObj.GetComponent<PrimaryWeaponItem>().InitializeItem(obj, primaryWeaponRand == 0 ? inventory.SwordBack : inventory.SpearBack, primaryWeaponRand == 0 ? inventory.SwordHand : inventory.SpearHand, true);
+                weaponObj.GetComponent<PrimaryWeaponItem>().InitializeItem(obj, true);
 
                 inventory.PrimaryWeapon = tempWeapon;
                 inventory.WeaponIndex = 2;
@@ -1070,15 +1154,15 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         inventory.TrapCount = randTrap;
     }
 
-    public GridManager CurrentGridManager()
-    {
-        if (CurrentGameState == GameState.WAITINGAREA)
-            return waitingAreaGridManager;
-        else if (CurrentGameState == GameState.ARENA)
-            return battleAreaGridManager;
+    //public GridManager CurrentGridManager()
+    //{
+    //    if (CurrentGameState == GameState.WAITINGAREA)
+    //        return waitingAreaGridManager;
+    //    else if (CurrentGameState == GameState.ARENA)
+    //        return battleAreaGridManager;
 
-        return null;
-    }
+    //    return null;
+    //}
 
     #endregion
 
@@ -1164,7 +1248,11 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             if (playerinventory.PrimaryWeapon != null) playerinventory.PrimaryWeapon.DropWeapon();
 
-            if (playerinventory.Armor != null) playerinventory.Armor.DropArmor();
+            if (playerinventory.SecondaryWeapon != null) playerinventory.SecondaryWeapon.DropWeapon();
+
+            if (playerinventory.Armor != null) playerinventory.Armor. DropArmor();
+
+            if (playerinventory.MagazineContainer != null) playerinventory.MagazineContainer.DropWeapon();
 
             //if (playerinventory.SecondaryWeapon != null)
             //{

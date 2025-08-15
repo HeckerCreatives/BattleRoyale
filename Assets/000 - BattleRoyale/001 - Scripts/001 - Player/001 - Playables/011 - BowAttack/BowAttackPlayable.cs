@@ -294,9 +294,9 @@ public class BowAttackPlayable : NetworkBehaviour
 
             Vector3 mouseWorldPosition = hit.Point;
 
-            Vector3 aimDir = (mouseWorldPosition - playerInventory.SecondaryWeapon.impactPoint.position).normalized;
+            Vector3 aimDir = (mouseWorldPosition - playerInventory.SecondaryWeapon.impactPoint.transform.transform.position).normalized;
 
-            bulletObjectPool.TempArrows[bulletObjectPool.CurrentArrowIndex].GetComponent<ArrowController>().Fire(playerInventory.SecondaryWeapon.impactPoint.position, aimDir, hit);
+            bulletObjectPool.TempArrows[bulletObjectPool.CurrentArrowIndex].GetComponent<ArrowController>().Fire(playerInventory.SecondaryWeapon.impactPoint, aimDir, hit);
 
             bulletObjectPool.SetEnabledArrow();
 

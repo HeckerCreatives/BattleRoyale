@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class PlayerUpperSpearFinalAttack : UpperBodyAnimations
+public class PlayerUpperSpearFinalAttack : UpperNoAimState
 {
     float timer;
     float damageWindowStart;
@@ -20,11 +20,14 @@ public class PlayerUpperSpearFinalAttack : UpperBodyAnimations
     {
         base.Enter();
 
+        playerPlayables.inventory.PrimaryWeapon.SoundController.PlayAttackTwo();
+
         hasResetHitEnemies = false;
         timer = playerPlayables.TickRateAnimation + animationLength;
         damageWindowStart = playerPlayables.TickRateAnimation + 0.2f;
         damageWindowEnd = playerPlayables.TickRateAnimation + 0.8f;
         canAction = true;
+        playerPlayables.FinalAttack = false;
     }
 
     public override void Exit()
@@ -37,6 +40,8 @@ public class PlayerUpperSpearFinalAttack : UpperBodyAnimations
 
     public override void NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
         {
             if (!hasResetHitEnemies)
@@ -56,21 +61,26 @@ public class PlayerUpperSpearFinalAttack : UpperBodyAnimations
         if (playerPlayables.healthV2.IsDead)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
-            return;
+            
         }
 
-
-        if (playerPlayables.healthV2.IsHitUpper)
+        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
         {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
-            return;
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RollPlayables);
+
         }
+
+        //if (playerPlayables.healthV2.IsHitUpper)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
+        //    
+        //}
 
 
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
-            return;
+            
         }
 
         if (playerPlayables.TickRateAnimation >= timer && canAction)
@@ -78,13 +88,13 @@ public class PlayerUpperSpearFinalAttack : UpperBodyAnimations
             if (playerMovement.IsBlocking)
             {
                 playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearBlockPlayable);
-                return;
+                
             }
 
             if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             {
                 playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RollPlayables);
-                return;
+                
             }
 
             if (playerMovement.MoveDirection != Vector3.zero)

@@ -41,6 +41,7 @@ public class WeaponEquipBtnController : MonoBehaviour
     public void ResetUI()
     {
         btnIndicator.sprite = offIndicatorSprite;
+        ammoTMP.text = "";
         weaponImg.sprite = null;
         weaponImg.gameObject.SetActive(false);
     }

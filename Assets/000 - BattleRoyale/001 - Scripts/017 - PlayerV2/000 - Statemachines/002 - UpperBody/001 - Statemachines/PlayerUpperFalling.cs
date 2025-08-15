@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class PlayerUpperFalling : UpperBodyAnimations
+public class PlayerUpperFalling : UpperNoAimState
 {
     public PlayerUpperFalling(SimpleKCC characterController, UpperBodyChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
@@ -12,6 +12,8 @@ public class PlayerUpperFalling : UpperBodyAnimations
 
     public override void NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         playerMovement.WeaponSwitcher();
 
         Animation();
@@ -23,8 +25,8 @@ public class PlayerUpperFalling : UpperBodyAnimations
         if (playerPlayables.healthV2.IsDead)
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
 
-        if (playerPlayables.healthV2.IsHit)
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
+        //if (playerPlayables.healthV2.IsHit)
+        //    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
     }
 
 
@@ -83,6 +85,44 @@ public class PlayerUpperFalling : UpperBodyAnimations
                     else
                         playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearRunPlayable);
                 }
+            }
+            else if (playerPlayables.inventory.WeaponIndex == 3)
+            {
+                if (playerPlayables.inventory.SecondaryWeaponID() == "003")
+                {
+                    if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
+                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleIdle);
+                    else if (playerMovement.IsSprint)
+                    {
+                        if (playerPlayables.stamina.Stamina >= 10f)
+                            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleSprintPlayable);
+                    }
+                    else
+                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleRunPlayable);
+                }
+                else if (playerPlayables.inventory.SecondaryWeaponID() == "004")
+                {
+                    if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
+                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowIdlePlayable);
+                    else if (playerMovement.IsSprint)
+                    {
+                        if (playerPlayables.stamina.Stamina >= 10f)
+                            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowSprintPlayable);
+                    }
+                    else
+                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowRunPlayable);
+                }
+            }
+        }
+        else
+        {
+            if (playerPlayables.inventory.WeaponIndex == 3)
+            {
+                if (playerPlayables.inventory.SecondaryWeaponID() == "003")
+                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleFallingPlayable);
+
+                else if (playerPlayables.inventory.SecondaryWeaponID() == "004")
+                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowFallingPlayable);
             }
         }
     }

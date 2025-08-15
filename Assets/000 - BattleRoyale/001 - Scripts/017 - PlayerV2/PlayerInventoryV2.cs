@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TMPro;
+using Unity.Services.Matchmaker.Models;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +13,7 @@ public class PlayerInventoryV2 : NetworkBehaviour
 {
     [SerializeField] private UserData userData;
     [SerializeField] private PlayerOwnObjectEnabler playerOwnObjectEnabler;
+    [SerializeField] private WeaponSpawnData weaponSpawnData;
 
     [Header("SKINS")]
     [SerializeField] private List<GameObject> hairStyles;
@@ -38,6 +40,12 @@ public class PlayerInventoryV2 : NetworkBehaviour
     [SerializeField] private TextMeshProUGUI trapCountTMP;
     [SerializeField] private NetworkObject trapObj;
 
+    [Header("WEAPON MELEE BUTTONS")]
+    [SerializeField] private GameObject blockBtn;
+
+    [Header("WEAPON RANGE BUTTONS")]
+    [SerializeField] private GameObject aimBtn;
+
     [Header("CRATE DETECTOR")]
     [SerializeField] private LayerMask objecMask;
     [SerializeField] private Vector3 colliderOffset;
@@ -48,11 +56,15 @@ public class PlayerInventoryV2 : NetworkBehaviour
     [SerializeField] private WeaponSpawnData itemSpritesData;
 
     [field: Header("ITEM BODY SLOTS IN PLAYER")]
-    [field: SerializeField][Networked] public NetworkObject ArmorHand { get; set; }
-    [field: SerializeField][Networked] public NetworkObject SwordHand { get; set; }
-    [field: SerializeField][Networked] public NetworkObject SwordBack { get; set; }
-    [field: SerializeField][Networked] public NetworkObject SpearHand { get; set; }
-    [field: SerializeField][Networked] public NetworkObject SpearBack { get; set; }
+    [field: SerializeField] public Transform SwordHand { get; set; }
+    [field: SerializeField] public Transform SwordBack { get; set; }
+    [field: SerializeField] public Transform SpearHand { get; set; }
+    [field: SerializeField] public Transform SpearBack { get; set; }
+    [field: SerializeField] public Transform RifleHand { get; set; }
+    [field: SerializeField] public Transform RifleBack { get; set; }
+    [field: SerializeField] public Transform BowBack { get; set; }
+    [field: SerializeField] public Transform BowHand { get; set; }
+    [field: SerializeField] public Transform BowAmmoBack { get; set; }
 
     [field: Header("DEBUGGER")]
     [field: SerializeField] public CrateController CrateObject { get; set; }
@@ -61,6 +73,7 @@ public class PlayerInventoryV2 : NetworkBehaviour
     [field: SerializeField] private bool isCacheUpdated = false;
 
     [field: Header("DEBUGGER NETWORK")]
+    [field: SerializeField][Networked] public NetworkObject ArmorHand { get; set; }
     [field: SerializeField][Networked] public NetworkBool IsSkinInitialized { get; set; }
     [field: SerializeField][Networked] public NetworkBool IsWeaponInitialize { get; set; }
     [field: SerializeField][Networked] public int HairStyle { get; set; }
@@ -71,7 +84,11 @@ public class PlayerInventoryV2 : NetworkBehaviour
     [field: SerializeField][Networked] public int HealCount { get; set; }
     [field: SerializeField][Networked] public int ArmorRepairCount { get; set; }
     [field: SerializeField][Networked] public int TrapCount { get; set; }
+    [field: SerializeField][Networked] public int RifleMagazine { get; set; }
+    [field: SerializeField][Networked] public int BowMagazine { get; set; }
     [field: SerializeField][Networked] public PrimaryWeaponItem PrimaryWeapon { get; set; }
+    [field: SerializeField][Networked] public SecondaryWeaponItem SecondaryWeapon { get; set; }
+    [field: SerializeField][Networked] public MagazineContainerItem MagazineContainer { get; set; }
     [field: SerializeField][Networked] public ArmorItem Armor { get; set; }
 
 
@@ -112,9 +129,17 @@ public class PlayerInventoryV2 : NetworkBehaviour
             repairCountIndicator.fillAmount = 1 - (float)ArmorRepairCount / 4;
             trapCountTMP.text = $"{TrapCount} / 4";
 
+            //aimBtn.SetActive(WeaponIndex == 3);
+            aimBtn.SetActive(false);
+            blockBtn.SetActive(WeaponIndex != 3);
+
             if (PrimaryWeapon != null)
                 PrimaryBtn.ChangeSpriteButton(PrimaryWeapon.WeaponID, PrimaryWeapon.Supplies.ToString(), false);
             else PrimaryBtn.ResetUI();
+
+            if (SecondaryWeapon != null)
+                SecondaryBtn.ChangeSpriteButton(SecondaryWeapon.WeaponID, $"{(SecondaryWeaponID() == "004" ? (SecondaryWeapon.Supplies + BowMagazine) : SecondaryWeapon.Supplies)}{(SecondaryWeaponID() == "003" ? $" / {RifleMagazine}" : "")}", true);
+            else SecondaryBtn.ResetUI();
         }
     }
 
@@ -178,6 +203,7 @@ public class PlayerInventoryV2 : NetworkBehaviour
         WeaponIndex = 1;
 
         if (PrimaryWeapon != null) PrimaryWeapon.IsEquipped = false;
+        if (SecondaryWeapon != null) SecondaryWeapon.IsEquipped = false;
     }
 
     public void SwitchToPrimary()
@@ -189,6 +215,8 @@ public class PlayerInventoryV2 : NetworkBehaviour
         WeaponIndex = 2;
 
         PrimaryWeapon.IsEquipped = true;
+
+        if (SecondaryWeapon != null) SecondaryWeapon.IsEquipped = false;
     }
 
     public string PrimaryWeaponID()
@@ -196,6 +224,44 @@ public class PlayerInventoryV2 : NetworkBehaviour
         if (PrimaryWeapon == null) return "000";
 
         return PrimaryWeapon.WeaponID;
+    }
+
+    public void SwitchToSecondary()
+    {
+        if (SecondaryWeapon == null) return;
+
+        if (SecondaryWeapon.IsEquipped) return;
+
+        WeaponIndex = 3;
+
+        SecondaryWeapon.IsEquipped = true;
+
+        if (PrimaryWeapon != null) PrimaryWeapon.IsEquipped = false;
+    }
+
+    public string SecondaryWeaponID()
+    {
+        if (SecondaryWeapon == null) return "000";
+
+        return SecondaryWeapon.WeaponID;
+    }
+
+
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
+    public void RPC_SpawnBowMagazine()
+    {
+        Runner.Spawn(weaponSpawnData.GetItemObject("arrowcontainer"), Vector3.zero, Quaternion.identity, Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+        {
+            obj.GetComponent<MagazineContainerItem>().InitializeItem(Object);
+        });
+    }
+
+    public void SpawnBowMagazine()
+    {
+        Runner.Spawn(weaponSpawnData.GetItemObject("arrowcontainer"), Vector3.zero, Quaternion.identity, Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+        {
+            obj.GetComponent<MagazineContainerItem>().InitializeItem(Object);
+        });
     }
 
     #endregion
@@ -334,14 +400,28 @@ public class PlayerInventoryV2 : NetworkBehaviour
             {
                 PrimaryWeaponItem tempweapon = weapon.GetComponent<PrimaryWeaponItem>();
 
-                tempweapon.RPC_PickupPrimaryWeapon(tempobject, SwordBack, SwordHand);
+                tempweapon.RPC_PickupPrimaryWeapon(tempobject);
             }
 
             else if (itemID == "002")
             {
                 PrimaryWeaponItem tempweapon = weapon.GetComponent<PrimaryWeaponItem>();
 
-                tempweapon.RPC_PickupPrimaryWeapon(tempobject, SpearBack, SpearHand);
+                tempweapon.RPC_PickupPrimaryWeapon(tempobject);
+            }
+
+            else if (itemID == "003")
+            {
+                SecondaryWeaponItem tempweapon = weapon.GetComponent<SecondaryWeaponItem>();
+
+                tempweapon.RPC_PickupSecondaryWeapon(tempobject, tempweapon.Supplies);
+            }
+
+            else if (itemID == "004")
+            {
+                SecondaryWeaponItem tempweapon = weapon.GetComponent<SecondaryWeaponItem>();
+
+                tempweapon.RPC_PickupSecondaryWeapon(tempobject, tempweapon.Supplies);
             }
 
             else if (itemID == "007")

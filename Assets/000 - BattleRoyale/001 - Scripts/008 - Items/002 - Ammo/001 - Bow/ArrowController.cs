@@ -25,7 +25,7 @@ public class ArrowController : NetworkBehaviour
     [field: SerializeField][Networked] public string firedByPlayerUName { get; set; }
     [field: SerializeField][Networked] public Vector3 TargetPos { get; set; }
     [field: SerializeField][Networked] public Vector3 TargetPoint { get; set; }
-    [field: SerializeField][Networked] public Vector3 StartPos { get; set; }
+    [field: SerializeField][Networked] public NetworkObject StartPos { get; set; }
     [field: SerializeField][Networked] public Vector3 HitEffectRotation { get; set; }
     [field: SerializeField][Networked] public Vector3 Rotation { get; set; }
     [field: SerializeField][Networked] public bool CanTravel { get; set; }
@@ -54,7 +54,7 @@ public class ArrowController : NetworkBehaviour
     {
         if (Runner == null) return;
 
-        transform.position = StartPos;
+        transform.position = StartPos.transform.position;
         transform.rotation = Quaternion.LookRotation(Rotation, Vector3.up);
     }
 
@@ -90,9 +90,9 @@ public class ArrowController : NetworkBehaviour
         }
     }
 
-    public void Fire(Vector3 startPos, Vector3 rotation, LagCompensatedHit targetObj)
+    public void Fire(NetworkObject startPos, Vector3 rotation, LagCompensatedHit targetObj)
     {
-        transform.position = startPos;
+        transform.position = startPos.transform.position;
         StartPos = startPos;
         TargetPoint = targetObj.Point;
         TargetPos = targetObj.GameObject.transform.position;
@@ -108,7 +108,7 @@ public class ArrowController : NetworkBehaviour
             elapsedTime += Time.deltaTime;
             float t = Mathf.Clamp01(elapsedTime / travelTime); // Normalize to 0-1 range
 
-            transform.position = Vector3.Lerp(StartPos, TargetPoint, t);
+            transform.position = Vector3.Lerp(StartPos.transform.position, TargetPoint, t);
         }
     }
 

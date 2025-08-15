@@ -4,7 +4,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Experimental.AI;
 using UnityEngine.Playables;
+using static UnityEngine.Rendering.PostProcessing.HistogramMonitor;
 
 public class PlayerUpperMovement : NetworkBehaviour
 {
@@ -51,6 +53,18 @@ public class PlayerUpperMovement : NetworkBehaviour
     [SerializeField] private AnimationClip spearFirstAttack;
     [SerializeField] private AnimationClip spearFinalAttack;
     [SerializeField] private AnimationClip spearJumpAttack;
+    [SerializeField] private AnimationClip rifleIdle;
+    [SerializeField] private AnimationClip rifleRun;
+    [SerializeField] private AnimationClip rifleSprint;
+    [SerializeField] private AnimationClip rifleCocking;
+    [SerializeField] private AnimationClip rifleShoot;
+    [SerializeField] private AnimationClip rifleReload;
+    [SerializeField] private AnimationClip bowIdle;
+    [SerializeField] private AnimationClip bowRun;
+    [SerializeField] private AnimationClip bowSprint;
+    [SerializeField] private AnimationClip bowDrawArrow;
+    [SerializeField] private AnimationClip bowCharge;
+    [SerializeField] private AnimationClip bowShot;
 
     [Space]
     [SerializeField] private LayerMask enemyLayerMask;
@@ -104,12 +118,28 @@ public class PlayerUpperMovement : NetworkBehaviour
     public PlayerUpperSpearFinalAttack SpearFinalAttackPlayable;
     public PlayerUpperSpearJumpAttack SpearJumpAttackPlayable;
     public PlayerBlockPlayable SpearBlockPlayable;
+    public PlayerUpperRifleIdle RifleIdle;
+    public PlayerUpperRifleRun RifleRunPlayable;
+    public PlayerUpperRifleSprint RifleSprintPlayable;
+    public PlayerUpperRifleShoot RifleShootPlayable;
+    public PlayerUpperRifleCocking RifleCockingPlayable;
+    public PlayerUpperRifleReload RifleReloadPlayable;
+    public PlayerUpperJumpRange RifleJumpPlayable;
+    public PlayerUpperFallingRange RifleFallingPlayable;
+    public PlayerUpperBowIdle BowIdlePlayable;
+    public PlayerUpperBowRun BowRunPlayable;
+    public PlayerUpperBowSprint BowSprintPlayable;
+    public PlayerUpperBowDrawArrow BowDrawArrowPlayable;
+    public PlayerUpperBowCharge BowChargePlayable;
+    public PlayerUpperBowShot BowShotPlayable;
+    public PlayerUpperJumpRange BowJumpPlayable;
+    public PlayerUpperFallingRange BowFallingPlayable;
 
     //  ======================
 
     public AnimationMixerPlayable Initialize()
     {
-        mixerPlayable = AnimationMixerPlayable.Create(playerPlayables.playableGraph, 35);
+        mixerPlayable = AnimationMixerPlayable.Create(playerPlayables.playableGraph, 51);
 
         var idleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, idle);
         var runClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, run);
@@ -145,15 +175,22 @@ public class PlayerUpperMovement : NetworkBehaviour
         var spearFirstAattackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, spearFirstAttack);
         var spearFinalAattackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, spearFinalAttack);
         var spearJumpAttackClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, spearJumpAttack);
-        //var fallingClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, falling);
-        //var rollClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, roll);
-        //var punch2Clip = AnimationClipPlayable.Create(playerPlayables.playableGraph, punch2);
-        //var punch3Clip = AnimationClipPlayable.Create(playerPlayables.playableGraph, punch3);
-        //var jumpPunchClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, jumpPunch);
-        //var blockClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, block);
-        //var trappingClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, trapping);
-        //var middleHitClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, hit);
-        //var swordRunClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, swordRun);
+        var rifleIdleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, rifleIdle);
+        var rifleRunClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, rifleRun);
+        var rifleSprintClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, rifleSprint);
+        var rifleShootClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, rifleShoot);
+        var rifleCockingClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, rifleCocking);
+        var rifleReloadClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, rifleReload);
+        var rifleJumpClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, rifleRun);
+        var rifleFallingClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, rifleRun);
+        var bowIdleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, bowIdle);
+        var bowRunClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, bowRun);
+        var bowSprintClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, bowSprint);
+        var bowDrawArrowClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, bowDrawArrow);
+        var bowChargeClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, bowCharge);
+        var bowShotClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, bowShot);
+        var bowJumpClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, jumpidle);
+        var bowFallingClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, falling);
 
         playerPlayables.playableGraph.Connect(idleClip, 0, mixerPlayable, 1);
         playerPlayables.playableGraph.Connect(runClip, 0, mixerPlayable, 2);
@@ -189,6 +226,22 @@ public class PlayerUpperMovement : NetworkBehaviour
         playerPlayables.playableGraph.Connect(spearFirstAattackClip, 0, mixerPlayable, 32);
         playerPlayables.playableGraph.Connect(spearFinalAattackClip, 0, mixerPlayable, 33);
         playerPlayables.playableGraph.Connect(spearJumpAttackClip, 0, mixerPlayable, 34);
+        playerPlayables.playableGraph.Connect(rifleIdleClip, 0, mixerPlayable, 35);
+        playerPlayables.playableGraph.Connect(rifleRunClip, 0, mixerPlayable, 36);
+        playerPlayables.playableGraph.Connect(rifleSprintClip, 0, mixerPlayable, 37);
+        playerPlayables.playableGraph.Connect(rifleShootClip, 0, mixerPlayable, 38);
+        playerPlayables.playableGraph.Connect(rifleCockingClip, 0, mixerPlayable, 39);
+        playerPlayables.playableGraph.Connect(rifleReloadClip, 0, mixerPlayable, 40);
+        playerPlayables.playableGraph.Connect(rifleJumpClip, 0, mixerPlayable, 41);
+        playerPlayables.playableGraph.Connect(rifleFallingClip, 0, mixerPlayable, 42);
+        playerPlayables.playableGraph.Connect(bowIdleClip, 0, mixerPlayable, 43);
+        playerPlayables.playableGraph.Connect(bowRunClip, 0, mixerPlayable, 44);
+        playerPlayables.playableGraph.Connect(bowSprintClip, 0, mixerPlayable, 45);
+        playerPlayables.playableGraph.Connect(bowDrawArrowClip, 0, mixerPlayable, 46);
+        playerPlayables.playableGraph.Connect(bowChargeClip, 0, mixerPlayable, 47);
+        playerPlayables.playableGraph.Connect(bowShotClip, 0, mixerPlayable, 48);
+        playerPlayables.playableGraph.Connect(bowJumpClip, 0, mixerPlayable, 49);
+        playerPlayables.playableGraph.Connect(bowFallingClip, 0, mixerPlayable, 50);
 
         #region GLOBAL
 
@@ -241,6 +294,32 @@ public class PlayerUpperMovement : NetworkBehaviour
         SpearFinalAttackPlayable = new PlayerUpperSpearFinalAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfinalattack", "basic", spearFinalAttack.length, spearFinalAattackClip, true);
         SpearBlockPlayable = new PlayerBlockPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearblock", "basic", swordBlock.length, spearBlockClip, true);
         SpearJumpAttackPlayable = new PlayerUpperSpearJumpAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearjumpattack", "basic", spearJumpAttack.length, spearJumpAttackClip, true);
+
+        #endregion
+
+        #region RIFLE
+
+        RifleIdle = new PlayerUpperRifleIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "rifleidle", "basic", rifleIdle.length, rifleIdleClip, false);
+        RifleRunPlayable = new PlayerUpperRifleRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "rifleRun", "basic", rifleRun.length, rifleRunClip, false);
+        RifleSprintPlayable = new PlayerUpperRifleSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "rifleSprint", "basic", rifleSprint.length, rifleSprintClip, false);
+        RifleShootPlayable = new PlayerUpperRifleShoot(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "rifleshoot", "basic", rifleShoot.length, rifleShootClip, true);
+        RifleCockingPlayable = new PlayerUpperRifleCocking(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "riflecocking", "basic", rifleCocking.length, rifleCockingClip, true);
+        RifleReloadPlayable = new PlayerUpperRifleReload(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "riflereload", "basic", rifleReload.length, rifleReloadClip, true);
+        RifleJumpPlayable = new PlayerUpperJumpRange(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "riflejump", "basic", rifleRun.length, rifleJumpClip, false);
+        RifleFallingPlayable = new PlayerUpperFallingRange(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "riflefalling", "basic", rifleRun.length, rifleFallingClip, false);
+
+        #endregion
+
+        #region BOW
+
+        BowIdlePlayable = new PlayerUpperBowIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowidle", "basic", bowIdle.length, bowIdleClip, false);
+        BowRunPlayable = new PlayerUpperBowRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowrun", "basic", bowRun.length, bowRunClip, false);
+        BowSprintPlayable = new PlayerUpperBowSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowsprint", "basic", bowSprint.length, bowSprintClip, false);
+        BowDrawArrowPlayable = new PlayerUpperBowDrawArrow(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowdrawarrow", "basic", bowDrawArrow.length, bowDrawArrowClip, true);
+        BowChargePlayable = new PlayerUpperBowCharge(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowcharge", "basic", bowCharge.length, bowChargeClip, true);
+        BowShotPlayable = new PlayerUpperBowShot(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowshot", "basic", bowShot.length, bowShotClip, true);
+        BowJumpPlayable = new PlayerUpperJumpRange(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowjump", "basic", jumpidle.length, jumpClip, false);
+        BowFallingPlayable = new PlayerUpperFallingRange(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowfalling", "basic", falling.length, fallingClip, false);
 
         #endregion
 
@@ -335,11 +414,6 @@ public class PlayerUpperMovement : NetworkBehaviour
                     PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
 
                     if (isFinal) healthV2.IsStagger = true;
-                    else
-                    {
-                        healthV2.IsHitUpper = true;
-                        healthV2.IsHit = true;
-                    }
 
                     healthV2.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
                 }
@@ -435,9 +509,6 @@ public class PlayerUpperMovement : NetworkBehaviour
 
                     PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
 
-                    healthV2.IsHitUpper = true;
-                    healthV2.IsHit = true;
-
                     healthV2.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
                 }
             }
@@ -526,6 +597,38 @@ public class PlayerUpperMovement : NetworkBehaviour
                 return SpearFinalAttackPlayable;
             case 34:
                 return SpearJumpAttackPlayable;
+            case 35:
+                return RifleIdle;
+            case 36:
+                return RifleRunPlayable;
+            case 37:
+                return RifleSprintPlayable;
+            case 38:
+                return RifleShootPlayable;
+            case 39:
+                return RifleCockingPlayable;
+            case 40:
+                return RifleReloadPlayable;
+            case 41:
+                return RifleJumpPlayable;
+            case 42:
+                return RifleFallingPlayable;
+            case 43:
+                return BowIdlePlayable;
+            case 44:
+                return BowRunPlayable;
+            case 45:
+                return BowSprintPlayable;
+            case 46:
+                return BowDrawArrowPlayable;
+            case 47:
+                return BowChargePlayable;
+            case 48:
+                return BowShotPlayable;
+            case 49:
+                return BowJumpPlayable;
+            case 50:
+                return BowFallingPlayable;
             default: return null;
         }
     }

@@ -88,8 +88,9 @@ public class BotSpearAttackTwo : BotAnimationPlayable
         {
             if (botMovement.CanSwordAttack())
             {
-                if (botPlayables.TickRateAnimation >= nextPuncDelay)
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearAttackThree);
+                //if (botPlayables.TickRateAnimation >= nextPuncDelay)
+                //    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearAttackThree);
+                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearAttackThree);
 
                 return;
             }

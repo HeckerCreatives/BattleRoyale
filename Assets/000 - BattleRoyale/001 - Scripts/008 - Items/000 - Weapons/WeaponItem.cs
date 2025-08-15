@@ -1,10 +1,7 @@
 using Fusion;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Unity.Services.Matchmaker.Models;
 using UnityEngine;
-using static Fusion.NetworkBehaviour;
 
 public enum PlayerAction
 {
@@ -20,7 +17,7 @@ public class WeaponItem : NetworkBehaviour
     [SerializeField] private LayerMask enemyLayerMask;
     [SerializeField] private Vector3 impactSize;
     public GameObject muzzleFlash;
-    public Transform impactPoint;
+    public NetworkObject impactPoint;
 
     [Header("DAMAGE")]
     [SerializeField] private float head;

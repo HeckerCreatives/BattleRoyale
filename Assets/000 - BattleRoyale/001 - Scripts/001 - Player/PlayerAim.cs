@@ -1,30 +1,21 @@
 using Cinemachine;
 using Fusion;
 using MyBox;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations;
 using UnityEngine.Animations.Rigging;
 using UnityEngine.InputSystem.XR;
 
 public class PlayerAim : NetworkBehaviour
 {
-
-    //  =====================
-
-    [SerializeField] private PlayerController playerController;
-    [SerializeField] private PlayerInventory playerInventory;
-
     [Header("RIG AIM")]
     [SerializeField] private CinemachineVirtualCamera aimVcam;
     [SerializeField] private Rig hipsRig;
-
-    [field: Header("DEBUGGER")]
-    [field: MyBox.ReadOnly] [field: SerializeField] [Networked] public NetworkBool IsAim { get; private set; }
-
-    //  ====================
-
-    [Networked] public NetworkButtons ButtonsPrevious { get; set; }
+    [SerializeField] private RigBuilder hipsRigBuilder;
+    [SerializeField] private MultiAimConstraint hipsConstraint;
 
     //  ====================
 
@@ -66,25 +57,58 @@ public class PlayerAim : NetworkBehaviour
     //        aimVcam.gameObject.SetActive(false);
     //}
 
-    //private void HipsWeightNetwork()
+    public void HipsWeight(float value)
+    {
+        //RigBuilderSetter(value == 1);
+        hipsRig.weight = value;
+        hipsConstraint.weight = value;
+        SetSourceWeight(0, value);
+    }
+
+    //public void RigBuilderSetter(bool setter)
     //{
-    //    if (playerController.IsProne)
-    //    {
-    //        hipsRig.weight = 0f;
-    //        return;
-    //    }
+    //    hipsConstraint.enabled = setter;
 
-    //    if (IsAim)
-    //        hipsRig.weight = 1f;
-    //    else
-    //    {
-    //        if (playerInventory.WeaponIndex != 3)
-    //        {
-    //            hipsRig.weight = 0f;
-    //            return;
-    //        }
-
-    //        hipsRig.weight = 1f;
-    //    }
+    //    //if (setter)
+    //    //    hipsRigBuilder.Build();
     //}
+
+    public void EnableRigConstraints()
+    {
+        foreach (var constraint in hipsRig.GetComponentsInChildren<IRigConstraint>())
+        {
+            (constraint as MonoBehaviour).enabled = true;
+        }
+    }
+
+    public void DisableRigConstraints()
+    {
+        foreach (var constraint in hipsRig.GetComponentsInChildren<IRigConstraint>())
+        {
+            (constraint as MonoBehaviour).enabled = false;
+        }
+    }
+
+    public void HipsOffset(float x, float y, float z)
+    {
+        var data = hipsConstraint.data;
+        data.offset = new Vector3(x, y, z); // Set the full offset vector
+        hipsConstraint.data = data;         // Reassign to apply changes
+    }
+
+    void SetSourceWeight(int index, float newWeight)
+    {
+        var data = hipsConstraint.data;
+        var sources = data.sourceObjects;
+
+        if (index < 0 || index >= sources.Count)
+        {
+            Debug.LogWarning("Invalid source index");
+            return;
+        }
+
+        sources.SetWeight(index, newWeight);       // update weight
+        data.sourceObjects = sources;              // reassign to data
+        hipsConstraint.data = data;
+    }
 }

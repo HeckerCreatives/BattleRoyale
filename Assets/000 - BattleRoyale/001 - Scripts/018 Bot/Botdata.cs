@@ -397,7 +397,6 @@ public class Botdata : NetworkBehaviour
                     PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
 
                     if (isFinal) healthV2.IsStagger = true;
-                    else healthV2.IsHit = true;
 
                     healthV2.ApplyDamage(tempdamage, BotName, Object);
                 }
@@ -494,8 +493,6 @@ public class Botdata : NetworkBehaviour
                     };
 
                     PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
-
-                    healthV2.IsHit = true;
 
                     healthV2.ApplyDamage(tempdamage, BotName, Object);
                 }

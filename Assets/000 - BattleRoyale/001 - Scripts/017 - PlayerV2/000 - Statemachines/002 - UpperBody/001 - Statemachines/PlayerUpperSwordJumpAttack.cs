@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class PlayerUpperSwordJumpAttack : UpperBodyAnimations
+public class PlayerUpperSwordJumpAttack : UpperNoAimState
 {
     float timer;
     bool canAction;
@@ -34,7 +34,7 @@ public class PlayerUpperSwordJumpAttack : UpperBodyAnimations
 
     public override void NetworkUpdate()
     {
-        playerMovement.MoveCharacter();
+        base.NetworkUpdate();
 
         if (!hasResetHitEnemies)
         {

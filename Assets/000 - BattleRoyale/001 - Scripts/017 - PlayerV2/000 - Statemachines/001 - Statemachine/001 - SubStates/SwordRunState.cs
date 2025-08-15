@@ -10,6 +10,23 @@ public class SwordRunState : PlayerOnGround
     {
     }
 
+    public override void Enter()
+    {
+        base.Enter();
+
+        playerPlayables.CancelInvoke();
+
+        playerPlayables.InvokeRepeating(nameof(playerPlayables.PlayFootstepSound), (animationLength * 0.35f), animationLength);
+        playerPlayables.InvokeRepeating(nameof(playerPlayables.PlayFootstepSound), (animationLength * 0.85f), animationLength);
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
+
+        playerPlayables.CancelInvoke();
+    }
+
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
@@ -36,19 +53,17 @@ public class SwordRunState : PlayerOnGround
         if (playerPlayables.FinalAttack)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordFinalAttackPlayable);
-            return;
         }
 
-        if (playerPlayables.healthV2.IsHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-            return;
-        }
+        //if (playerPlayables.healthV2.IsHit)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
+        //    return;
+        //}
 
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
-            return;
         }
 
         if (playerMovement.IsHealing)
@@ -88,6 +103,17 @@ public class SwordRunState : PlayerOnGround
             {
                 if (playerPlayables.stamina.Stamina >= 10f)
                     playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordSprintPlayable);
+            }
+        }
+        else if (playerPlayables.inventory.WeaponIndex == 3)
+        {
+            if (playerPlayables.inventory.SecondaryWeaponID() == "003")
+            {
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleRunPlayable);
+            }
+            else if (playerPlayables.inventory.SecondaryWeaponID() == "004")
+            {
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowRunPlayable);
             }
         }
     }

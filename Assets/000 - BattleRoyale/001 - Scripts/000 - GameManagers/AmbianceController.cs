@@ -21,6 +21,8 @@ public class AmbianceController : MonoBehaviour
             GameManager.Instance.AudioController.OnAmbientVolumeChange += AmbianceChange;
             GameManager.Instance.AudioController.OnVolumeChange += VolumeChange;
         }
+        else
+            gameObject.SetActive(false);
     }
 
     private void OnDisable()

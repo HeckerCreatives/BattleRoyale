@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class PlayerUpperSwordMiddleAttack : UpperBodyAnimations
+public class PlayerUpperSwordMiddleAttack : UpperNoAimState
 {
     float timer;
     float nextPunchWindow;
@@ -23,6 +23,9 @@ public class PlayerUpperSwordMiddleAttack : UpperBodyAnimations
     public override void Enter()
     {
         base.Enter();
+
+
+        playerPlayables.inventory.PrimaryWeapon.SoundController.PlayAttackTwo();
 
         hasResetHitEnemies = false;
         timer = playerPlayables.TickRateAnimation + (animationLength * 0.9f);
@@ -46,6 +49,8 @@ public class PlayerUpperSwordMiddleAttack : UpperBodyAnimations
 
     public override void NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
         {
             if (!hasResetHitEnemies)
@@ -67,27 +72,32 @@ public class PlayerUpperSwordMiddleAttack : UpperBodyAnimations
         if (playerPlayables.healthV2.IsDead)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
-            return;
+            
         }
 
         if (!characterController.IsGrounded)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.FallingPlayables);
-            return;
+            
         }
 
-        if (playerPlayables.healthV2.IsHitUpper)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
-            return;
-        }
+        //if (playerPlayables.healthV2.IsHitUpper)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
+        //    
+        //}
 
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
-            return;
+            
         }
 
+        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
+        {
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RollPlayables);
+
+        }
 
         if (canAction)
         {
@@ -95,7 +105,7 @@ public class PlayerUpperSwordMiddleAttack : UpperBodyAnimations
             {
                 playerPlayables.FinalAttack = true;
                 playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordFinalAttackPlayable);
-                return;
+                
             }
 
             if (playerPlayables.TickRateAnimation >= timer && canAction)
@@ -103,13 +113,13 @@ public class PlayerUpperSwordMiddleAttack : UpperBodyAnimations
                 if (playerMovement.IsBlocking)
                 {
                     playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordBlockPlayable);
-                    return;
+                    
                 }
 
                 if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
                 {
                     playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RollPlayables);
-                    return;
+                    
                 }
 
                 if (playerMovement.MoveDirection != Vector3.zero)

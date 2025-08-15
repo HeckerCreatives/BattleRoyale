@@ -297,9 +297,9 @@ public class RifleAttackPlayables : NetworkBehaviour
 
             Vector3 mouseWorldPosition = hit.Point;
 
-            Vector3 aimDir = (mouseWorldPosition - playerInventory.SecondaryWeapon.impactPoint.position).normalized;
+            Vector3 aimDir = (mouseWorldPosition - playerInventory.SecondaryWeapon.impactPoint.transform.position).normalized;
 
-            bulletObjectPool.TempBullets[bulletObjectPool.CurrentBulletIndex].GetComponent<BulletController>().Fire(playerInventory.SecondaryWeapon.impactPoint.position, hit);
+            //bulletObjectPool.TempBullets[bulletObjectPool.CurrentBulletIndex].GetComponent<BulletController>().Fire(playerInventory.SecondaryWeapon.impactPoint, hit);
 
             bulletObjectPool.SetEnabledBullet();
 

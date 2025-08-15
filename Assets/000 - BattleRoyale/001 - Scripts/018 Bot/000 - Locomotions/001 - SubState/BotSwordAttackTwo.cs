@@ -31,7 +31,7 @@ public class BotSwordAttackTwo : BotAnimationPlayable
         moveTimer = botPlayables.TickRateAnimation + (animationLength * 0.3f);
         stopMoveTimer = botPlayables.TickRateAnimation + (animationLength * 0.18f);
         damageWindowEnd = botPlayables.TickRateAnimation + (animationLength * 0.23f);
-        nextPuncDelay = timer + 0.3f;
+        nextPuncDelay = timer + 0.05f;
         canAction = true;
     }
 
@@ -91,6 +91,7 @@ public class BotSwordAttackTwo : BotAnimationPlayable
             {
                 if (botPlayables.TickRateAnimation >= nextPuncDelay)
                     botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordAttackThreePlayable);
+                //botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordAttackThreePlayable);
 
                 return;
             }

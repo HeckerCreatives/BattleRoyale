@@ -34,12 +34,12 @@ public class FinalPunchState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
-        Animation();
-
         if (playerPlayables.TickRateAnimation >= moveTimer && playerPlayables.TickRateAnimation <= stopMoveTimer)
         {
             characterController.Move(characterController.TransformDirection * 1.25f, 0f);
         }
+
+        Animation();
 
         playerPlayables.stamina.RecoverStamina(5f);
     }
@@ -50,11 +50,11 @@ public class FinalPunchState : PlayerOnGround
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
 
 
-        if (playerPlayables.healthV2.IsHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-            return;
-        }
+        //if (playerPlayables.healthV2.IsHit)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
+        //    return;
+        //}
 
         if (playerPlayables.healthV2.IsStagger)
         {

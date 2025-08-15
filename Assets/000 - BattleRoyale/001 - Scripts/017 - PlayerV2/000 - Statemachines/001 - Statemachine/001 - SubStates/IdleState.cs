@@ -32,67 +32,68 @@ public class IdleState : PlayerOnGround
         if (playerPlayables.healthV2.IsDead)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
-            return;
-        }
-
-        if (!characterController.IsGrounded)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
-            return;
+            
         }
 
         if (playerMovement.IsJumping)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.JumpPlayable);
-            return;
+            
         }
 
         if (playerMovement.IsBlocking)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BlockPlayable);
-            return;
+            
         }
 
-        if (playerPlayables.healthV2.IsHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-            return;
-        }
+        //if (playerPlayables.healthV2.IsHit)
+        //{
+        //    Debug.Log($"I'M HIT IN IDLE LOWER");
+        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
+            
+        //}
 
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
-            return;
+            
         }
 
         if (playerMovement.IsHealing)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HealPlayable);
-            return;
+            
         }
 
         if (playerMovement.IsRepairing)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RepairPlayable);
-            return;
+            
         }
 
         if (playerMovement.IsTrapping)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.TrappingPlayable);
-            return;
+            
         }
 
         if (playerPlayables.FinalAttack)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.Punch3Playable);
-            return;
+            
         }
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RollPlayable);
-            return;
+            
+        }
+
+        if (!characterController.IsGrounded)
+        {
+            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
+
         }
     }
 
@@ -119,6 +120,17 @@ public class IdleState : PlayerOnGround
             else if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "002")
             {
                 playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearIdlePlayable);
+            }
+        }
+        else if (playerPlayables.inventory.WeaponIndex == 3)
+        {
+            if (playerPlayables.inventory.SecondaryWeapon.WeaponID == "003")
+            {
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleIdlePlayable);
+            }
+            else if (playerPlayables.inventory.SecondaryWeapon.WeaponID == "004")
+            {
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowIdlePlayable);
             }
         }
     }

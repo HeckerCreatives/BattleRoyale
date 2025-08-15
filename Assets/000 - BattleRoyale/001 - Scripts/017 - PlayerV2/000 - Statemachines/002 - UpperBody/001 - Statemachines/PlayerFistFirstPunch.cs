@@ -5,7 +5,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class PlayerFistFirstPunch : UpperBodyAnimations
+public class PlayerFistFirstPunch : UpperNoAimState
 {
     float timer;
     float nextPunchWindow;
@@ -21,6 +21,8 @@ public class PlayerFistFirstPunch : UpperBodyAnimations
     public override void Enter()
     {
         base.Enter();
+
+        playerPlayables.fistSoundController.PlayAttackOne();
 
         hasResetHitEnemies = false;
         timer = playerPlayables.TickRateAnimation + (animationLength * 0.9f);
@@ -39,7 +41,7 @@ public class PlayerFistFirstPunch : UpperBodyAnimations
 
     public override void NetworkUpdate()
     {
-        playerMovement.RotatePlayer();
+        base.NetworkUpdate();
 
         if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
         {
@@ -60,26 +62,28 @@ public class PlayerFistFirstPunch : UpperBodyAnimations
         if (playerPlayables.healthV2.IsDead)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
-            return;
         }
 
 
-        if (playerPlayables.healthV2.IsHitUpper)
+        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
         {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
-            return;
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RollPlayables);
+
         }
+        //if (playerPlayables.healthV2.IsHitUpper)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
+        //    return;
+        //}
 
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
-            return;
         }
 
         if (!characterController.IsGrounded)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.FallingPlayables);
-            return;
         }
 
         if (playerPlayables.TickRateAnimation >= nextPunchWindow && canAction)
@@ -87,7 +91,6 @@ public class PlayerFistFirstPunch : UpperBodyAnimations
             if (playerMovement.Attacking)
             {
                 playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SecondPunch);
-                return;
             }
         }
 
@@ -97,13 +100,11 @@ public class PlayerFistFirstPunch : UpperBodyAnimations
             if (playerMovement.IsBlocking)
             {
                 playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BlockPlayable);
-                return;
             }
 
             if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             {
                 playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RollPlayables);
-                return;
             }
 
             if (playerMovement.MoveDirection != Vector3.zero)

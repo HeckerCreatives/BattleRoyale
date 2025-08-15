@@ -1,4 +1,5 @@
 using Fusion;
+using log4net.Filter;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
@@ -47,18 +48,26 @@ public class LobbyController : MonoBehaviour
     [SerializeField] private GameSettingController gameSettingController;
     [SerializeField] private ControllerSetting controllerSetting;
     [SerializeField] private LobbyUserProfile userProfile;
+    [SerializeField] private InventoryController inventoryController;
+
+    [Space]
     [SerializeField] private AudioClip bgMusicClip;
     [SerializeField] private TextMeshProUGUI serverTMP;
     [SerializeField] private NetworkRunner instanceRunner;
     [SerializeField] private GameObject serverList;
     [SerializeField] private TextMeshProUGUI totalPlayersOnlineTMP; 
     [SerializeField] private TextMeshProUGUI seasonTMP;
+    [SerializeField] private TextMeshProUGUI potionMultiplier;
+    [SerializeField] private TextMeshProUGUI titleTMP;
 
     [Space]
     [SerializeField] private List<LeaderboardItem> leaderboardItems;
     [SerializeField] private List<LeaderboardItem> killLeaderboardItems;
     [SerializeField] private List<LeaderboardItem> deathLeaderboardItems;
     [SerializeField] private List<LeaderboardItem> levelLeaderboardItems;
+
+    [Space]
+    [SerializeField] private List<ProfileHistoryItem> profileHistoryItems;
 
     [Space]
     [SerializeField] private AudioClip buttonClip;
@@ -286,12 +295,95 @@ public class LobbyController : MonoBehaviour
             GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
             GameManager.Instance.SceneController.CurrentScene = "Login";
         }));
+        GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/usergamedetail/getmatchhistory", "?limit=10", false, (response) =>
+        {
+            Debug.Log(response.ToString());
+            try
+            {
+                Dictionary<string, MatchHistory> tempdata = JsonConvert.DeserializeObject<Dictionary<string, MatchHistory>>(response.ToString());
+
+                //  KILL
+                for (int a = 0; a < profileHistoryItems.Count; a++)
+                {
+                    if (a < tempdata.Count)
+                    {
+                        profileHistoryItems[a].InitializeHistory(tempdata[a.ToString()].kill, tempdata[a.ToString()].placement, tempdata[a.ToString()].date);
+                    }
+                    else
+                    {
+                        profileHistoryItems[a].InitializeHistory("-", "-", "-");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                GameManager.Instance.SceneController.StopLoading();
+                Debug.Log(ex.ToString());
+                GameManager.Instance.SocketMngr.Socket.Disconnect();
+                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
+                GameManager.Instance.SceneController.CurrentScene = "Login";
+            }
+        }, () =>
+        {
+            GameManager.Instance.SceneController.StopLoading();
+            GameManager.Instance.SocketMngr.Socket.Disconnect();
+            GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
+            GameManager.Instance.SceneController.CurrentScene = "Login";
+        }));
+        GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/marketplace/wallets", "", false, (response) =>
+        {
+            try
+            {
+                Dictionary<string, float> tempdata = JsonConvert.DeserializeObject<Dictionary<string, float>>(response.ToString());
+
+                userData.GameDetails.coins = tempdata["coins"];
+
+                userProfile.SetData();
+            }
+            catch (Exception ex)
+            {
+                GameManager.Instance.SceneController.StopLoading();
+                Debug.Log(ex.ToString());
+                GameManager.Instance.SocketMngr.Socket.Disconnect();
+                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
+                GameManager.Instance.SceneController.CurrentScene = "Login";
+            }
+        }, () =>
+        {
+            GameManager.Instance.SceneController.StopLoading();
+            GameManager.Instance.SocketMngr.Socket.Disconnect();
+            GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
+            GameManager.Instance.SceneController.CurrentScene = "Login";
+        }));
 
         GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/season/getcurrentseason", "", false, (response) =>
         {
             try
             {
                 seasonTMP.text = response.ToString();
+            }
+            catch (Exception ex)
+            {
+                GameManager.Instance.SceneController.StopLoading();
+                GameManager.Instance.SocketMngr.Socket.Disconnect();
+                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
+                GameManager.Instance.SceneController.CurrentScene = "Login";
+            }
+        }, () =>
+        {
+            GameManager.Instance.SceneController.StopLoading();
+            GameManager.Instance.SocketMngr.Socket.Disconnect();
+            GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
+            GameManager.Instance.SceneController.CurrentScene = "Login";
+        }));
+
+        GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/marketplace/effects", "", false, (response) =>
+        {
+            try
+            {
+                Dictionary<string, ItemEffects> tempeffects = JsonConvert.DeserializeObject<Dictionary<string, ItemEffects>>(response.ToString());
+
+                userData.PlayerItemEffects = tempeffects;
             }
             catch (Exception ex)
             {
@@ -327,6 +419,7 @@ public class LobbyController : MonoBehaviour
                     unreadObj.SetActive(false);
             }
         }, null));
+        GameManager.Instance.SceneController.AddActionLoadinList(inventoryController.GetInventory());
         GameManager.Instance.AudioController.SetBGMusic(bgMusicClip);
         GameManager.Instance.SceneController.ActionPass = true;
 
@@ -334,6 +427,7 @@ public class LobbyController : MonoBehaviour
         GameManager.Instance.SocketMngr.OnPlayerCountServerChange += PlayerCountChange;
 
         userData.OnSelectedServerChange += ServerChange;
+        userData.OnTitleChange += TitleChange;
 
         serverTMP.text = $"Server: {GameManager.GetRegionName(userData.SelectedServer)}";
         totalPlayersOnlineTMP.text = $"Online: <color=green>{GameManager.Instance.SocketMngr.PlayerCountServer:n0}</color>";
@@ -343,6 +437,7 @@ public class LobbyController : MonoBehaviour
     {
         GameManager.Instance.SocketMngr.OnPlayerCountServerChange -= PlayerCountChange;
         userData.OnSelectedServerChange -= ServerChange;
+        userData.OnTitleChange -= TitleChange;
     }
 
     private void Update()
@@ -364,11 +459,26 @@ public class LobbyController : MonoBehaviour
             }
             else
             {
+                userData.GameDetails.energyresettime = 86400; // Reset to 24 hours
+
+                if (userData.GameDetails.energy > 10) return;
+
                 userData.GameDetails.energy = 10;
 
-                userData.GameDetails.energyresettime = 86400; // Reset to 24 hours
             }
         }
+
+        if (userData.PlayerItemEffects.Count > 0)
+        {
+            userData.PlayerItemEffects.ElementAt(0).Value.timeRemaining -= Time.unscaledDeltaTime;
+
+            potionMultiplier.text = $"x{userData.PlayerItemEffects.ElementAt(0).Value.multiplier}";
+
+            if (userData.PlayerItemEffects.ElementAt(0).Value.timeRemaining <= 0)
+                userData.PlayerItemEffects.Clear();
+        }
+        else
+            potionMultiplier.text = $"x1";
     }
 
     private void ServerChange(object sender, EventArgs e)
@@ -379,6 +489,11 @@ public class LobbyController : MonoBehaviour
     private void PlayerCountChange(object sender, EventArgs e)
     {
         totalPlayersOnlineTMP.text = $"Online: <color=green>{GameManager.Instance.SocketMngr.PlayerCountServer:n0}</color>";
+    }
+
+    private void TitleChange(object sender, EventArgs e)
+    {
+        TitleChecker();
     }
 
     public async void GetAvailableRegions()
@@ -439,6 +554,23 @@ public class LobbyController : MonoBehaviour
     }
 
     public void ButtonPress() => GameManager.Instance.AudioController.PlaySFX(buttonClip);
+
+    public void TitleChecker()
+    {
+        if (userData.PlayerInventory.Count > 0)
+        {
+            var filteredItems = userData.PlayerInventory
+                .Where(kvp => kvp.Value.type == "title" && kvp.Value.isEquipped == true)
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+            if (filteredItems.Count > 0)
+                titleTMP.text = filteredItems.ElementAt(0).Value.itemname;
+            else
+                titleTMP.text = "";
+        }
+        else
+            titleTMP.text = "";
+    }
 }
 
 [System.Serializable]
@@ -446,4 +578,12 @@ public class LeaderboardData
 {
     public string user;
     public int amount;
+}
+
+[System.Serializable]
+public class MatchHistory
+{
+    public string kill;
+    public string placement;
+    public string date;
 }

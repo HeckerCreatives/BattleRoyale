@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 6858074894650343498}
   - component: {fileID: 7262115569505198717}
   - component: {fileID: 7258497585221354807}
-  - component: {fileID: 340040335221564200}
   - component: {fileID: 4379322588926416586}
   m_Layer: 12
   m_Name: Spear
@@ -53,6 +52,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 292a2a56ecc75594e8b09145de8ab672, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  meleeSoundController: {fileID: 6858074894650343498}
   weaponID: 002
   weaponName: Spear
   impactPoint: {fileID: 7662138281644343327}
@@ -73,12 +73,12 @@ MonoBehaviour:
   _Supplies: 0
   _IsPickedUp: 0
   _IsEquipped: 0
+  _IsBot: 0
   _CurrentPlayer: {fileID: 0}
   _PlayerCore: {fileID: 0}
   _BotData: {fileID: 0}
   _Position: {x: 0, y: 0, z: 0}
-  _Back: {fileID: 0}
-  _Hand: {fileID: 0}
+  _Rotation: {x: 0, y: 0, z: 0, w: 0}
 --- !u!33 &7597264622304753617
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -178,25 +178,7 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 8190455501384522856}
   - {fileID: 6858074894650343498}
-  - {fileID: 340040335221564200}
   ForceRemoteRenderTimeframe: 0
---- !u!114 &340040335221564200
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1146007469215679106}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _stateAuthorityChangeErrorCorrectionDelta: 0.15
-  SyncScale: 0
-  SyncParent: 1
-  _autoAOIOverride: 0
-  DisableSharedModeInterpolation: 0
 --- !u!65 &4379322588926416586
 BoxCollider:
   m_ObjectHideFlags: 0

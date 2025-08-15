@@ -9,6 +9,18 @@ using static UnityEngine.CullingGroup;
 
 public class PlayerOwnObjectEnabler : NetworkBehaviour
 {
+    public PlayerPlayables CurrentPlayerPlayables
+    {
+        get => playerPlayables;
+    }
+
+    public PlayerInventoryV2 Inventory
+    {
+        get => inventory;
+    }
+
+    //  ==============
+
     [SerializeField] private UserData userData;
 
     [Space]
@@ -16,6 +28,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     [SerializeField] private PlayerCameraRotation cameraRotation;
     [SerializeField] private PlayerMovementV2 movementV2;
     [SerializeField] private GameSettingController gameSettingController;
+    [SerializeField] private PlayerInventoryV2 inventory;
 
     [Space]
     [SerializeField] private GameObject canvasPlayer;
@@ -26,6 +39,8 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     [SerializeField] private GameObject playerMinimapIcon;
     [SerializeField] private GameObject playerMinimapCam;
     [SerializeField] private GameObject playerSpawnLocCam;
+    [SerializeField] private GameObject footstepSFX;
+    [SerializeField] private GameObject punchSFX;
 
     [field: Header("DEBUGGER")]
     [Networked][field: SerializeField] public DedicatedServerManager ServerManager { get; set; }
@@ -43,6 +58,12 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         while (!Runner) await Task.Yield();
 
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+
+        if (HasStateAuthority)
+        {
+            footstepSFX.SetActive(false);
+            punchSFX.SetActive(false);
+        }
 
         if (!HasInputAuthority) return;
 
@@ -154,7 +175,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
 
         if (ServerManager.CurrentGameState == GameState.WAITINGAREA)
         {
-            GameManager.Instance.NotificationController.ShowConfirmation("Are you sure you want to quit the match?", () =>
+            GameManager.Instance.NotificationController.ShowConfirmation("Quit now and lose 1 energy", () =>
             {
                 Runner.Shutdown();
                 GameManager.Instance.SceneController.CurrentScene = "Lobby";
@@ -162,7 +183,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         }
         else if (ServerManager.CurrentGameState == GameState.ARENA)
         {
-            GameManager.Instance.NotificationController.ShowConfirmation("Are you sure you want to quit the match? You will not gain any xp and points for this match.", () =>
+            GameManager.Instance.NotificationController.ShowConfirmation("Quit now and lose all XP, points, and 1 energy.", () =>
             {
                 Runner.Shutdown();
                 GameManager.Instance.SceneController.CurrentScene = "Lobby";

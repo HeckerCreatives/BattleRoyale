@@ -7,6 +7,9 @@ using UnityEngine.EventSystems;
 
 public class RunState : PlayerOnGround
 {
+    float firstStepTimer;
+    float secondStepTimer;
+
     public RunState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
     }
@@ -14,13 +17,24 @@ public class RunState : PlayerOnGround
     public override void Enter()
     {
         base.Enter();
+
+        playerPlayables.CancelInvoke();
+
+        playerPlayables.InvokeRepeating(nameof(playerPlayables.PlayFootstepSound), (animationLength * 0.35f), animationLength);
+        playerPlayables.InvokeRepeating(nameof(playerPlayables.PlayFootstepSound), (animationLength * 0.85f), animationLength);
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
+
+        playerPlayables.CancelInvoke();
     }
 
 
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
-
         WeaponsChecker();
         Animation();
         playerPlayables.stamina.RecoverStamina(5f);
@@ -43,16 +57,14 @@ public class RunState : PlayerOnGround
         if (playerPlayables.FinalAttack)
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.Punch3Playable);
 
-        if (playerPlayables.healthV2.IsHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-            return;
-        }
+        //if (playerPlayables.healthV2.IsHit)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
+        //}
 
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
-            return;
         }
 
         if (playerMovement.IsHealing)
@@ -64,7 +76,6 @@ public class RunState : PlayerOnGround
         if (playerMovement.IsTrapping)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.TrappingPlayable);
-            return;
         }
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
@@ -93,6 +104,18 @@ public class RunState : PlayerOnGround
             else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
             {
                 playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearRunPlayable);
+            }
+        }
+        else if (playerPlayables.inventory.WeaponIndex == 3)
+        {
+            if (playerPlayables.inventory.SecondaryWeaponID() == "003")
+            {
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleRunPlayable);
+            }
+
+            else if (playerPlayables.inventory.SecondaryWeaponID() == "004")
+            {
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowRunPlayable);
             }
         }
     }

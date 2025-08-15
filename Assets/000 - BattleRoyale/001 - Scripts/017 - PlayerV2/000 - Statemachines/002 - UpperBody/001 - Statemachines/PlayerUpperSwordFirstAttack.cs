@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class PlayerUpperSwordFirstAttack : UpperBodyAnimations
+public class PlayerUpperSwordFirstAttack : UpperNoAimState
 {
     float timer;
     float nextPunchWindow;
@@ -22,6 +22,9 @@ public class PlayerUpperSwordFirstAttack : UpperBodyAnimations
     public override void Enter()
     {
         base.Enter();
+
+
+        playerPlayables.inventory.PrimaryWeapon.SoundController.PlayAttackOne();
 
         hasResetHitEnemies = false;
         timer = playerPlayables.TickRateAnimation + (animationLength * 0.9f);
@@ -42,6 +45,8 @@ public class PlayerUpperSwordFirstAttack : UpperBodyAnimations
 
     public override void NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
         {
             if (!hasResetHitEnemies)
@@ -63,27 +68,32 @@ public class PlayerUpperSwordFirstAttack : UpperBodyAnimations
         if (playerPlayables.healthV2.IsDead)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
-            return;
+            
         }
 
-
-        if (playerPlayables.healthV2.IsHitUpper)
+        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
         {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
-            return;
+            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RollPlayables);
+
         }
+
+        //if (playerPlayables.healthV2.IsHitUpper)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
+        //    
+        //}
 
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
-            return;
+            
         }
 
         if (!characterController.IsGrounded)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.FallingPlayables);
 
-            return;
+            
         }
 
         if (playerPlayables.TickRateAnimation >= nextPunchWindow && canAction)
@@ -91,7 +101,7 @@ public class PlayerUpperSwordFirstAttack : UpperBodyAnimations
             if (playerMovement.Attacking)
             {
                 playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordAttackSecondPlayable);
-                return;
+                
             }
         }
 
@@ -100,13 +110,13 @@ public class PlayerUpperSwordFirstAttack : UpperBodyAnimations
             if (playerMovement.IsBlocking)
             {
                 playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordBlockPlayable);
-                return;
+                
             }
 
             if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             {
                 playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RollPlayables);
-                return;
+                
             }
 
 

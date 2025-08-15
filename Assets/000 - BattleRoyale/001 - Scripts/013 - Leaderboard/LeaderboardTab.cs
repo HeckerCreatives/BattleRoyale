@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,6 +10,10 @@ public class LeaderboardTab : MonoBehaviour
     [SerializeField] private LeaderboardState tabState;
     [SerializeField] private Sprite onTab;
     [SerializeField] private Sprite offTab;
+
+    [Space]
+    [SerializeField] private string header;
+    [SerializeField] private TextMeshProUGUI headerTMP;
 
     [Space]
     [SerializeField] private LobbyController lobbyController;
@@ -39,6 +44,7 @@ public class LeaderboardTab : MonoBehaviour
         {
             leaderboardContainer.SetActive(true);
             tabBtn.sprite = onTab;
+            headerTMP.text = header;
         }
         else
         {

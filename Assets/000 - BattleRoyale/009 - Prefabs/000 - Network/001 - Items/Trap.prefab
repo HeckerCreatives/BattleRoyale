@@ -5102,7 +5102,6 @@ GameObject:
   - component: {fileID: 3505882418226494538}
   - component: {fileID: 5786415566250745775}
   - component: {fileID: 3903919334271738960}
-  - component: {fileID: 7255135067462260282}
   - component: {fileID: 6002779089064722847}
   - component: {fileID: 397974116788107284}
   m_Layer: 0
@@ -5149,7 +5148,6 @@ MonoBehaviour:
   NestedObjects: []
   NetworkedBehaviours:
   - {fileID: 3903919334271738960}
-  - {fileID: 7255135067462260282}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &3903919334271738960
 MonoBehaviour:
@@ -5177,23 +5175,6 @@ MonoBehaviour:
   _CloseTrap: 0
   _Rotation: {x: 0, y: 0, z: 0}
   _CanDamage: 0
---- !u!114 &7255135067462260282
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9139365946298080655}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _stateAuthorityChangeErrorCorrectionDelta: 0.15
-  SyncScale: 0
-  SyncParent: 0
-  _autoAOIOverride: 1
-  DisableSharedModeInterpolation: 0
 --- !u!82 &6002779089064722847
 AudioSource:
   m_ObjectHideFlags: 0

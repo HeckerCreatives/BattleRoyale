@@ -17,6 +17,9 @@ public class HitState : PlayerOnGround
     {
         base.Enter();
 
+        //if (playerPlayables.HasStateAuthority || playerPlayables.HasInputAuthority)
+        //    playerPlayables.healthV2.IsHit = false;
+
         timer = playerPlayables.TickRateAnimation + animationLength;
         canAction = true;
     }
@@ -25,7 +28,6 @@ public class HitState : PlayerOnGround
     {
         base.Exit();
 
-        playerPlayables.healthV2.IsHit = false;
         canAction = false;
     }
 
@@ -43,26 +45,22 @@ public class HitState : PlayerOnGround
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
-            return;
         }
 
         if (playerPlayables.healthV2.IsDead)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
-            return;
         }
 
         if (!characterController.IsGrounded)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
-            return;
         }
 
-        if (playerPlayables.healthV2.IsHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-            return;
-        }
+        //if (playerPlayables.healthV2.IsHit)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
+        //}
 
         if (playerPlayables.TickRateAnimation >= timer && canAction)
         {
@@ -131,6 +129,24 @@ public class HitState : PlayerOnGround
                 }
                 else
                     playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearIdlePlayable);
+            }
+        }
+        else if (playerPlayables.inventory.WeaponIndex == 3)
+        {
+            if (playerPlayables.inventory.PrimaryWeaponID() == "003")
+            {
+                //if (playerMovement.Attacking)
+                //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordAttackFirstPlayable);
+
+                if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
+                {
+                    if (playerMovement.IsSprint)
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleSprintPlayable);
+                    else
+                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleRunPlayable);
+                }
+                else
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleIdlePlayable);
             }
         }
     }

@@ -339,10 +339,9 @@ GameObject:
   - component: {fileID: 3017889475508174176}
   - component: {fileID: 4342220998110146478}
   - component: {fileID: 4958141697009178782}
-  - component: {fileID: 1005599763375513639}
+  - component: {fileID: 1336716729350718279}
   - component: {fileID: 8167375209823505411}
   - component: {fileID: 8326772955841786204}
-  - component: {fileID: 1771881613202312020}
   - component: {fileID: 6014757930188030952}
   - component: {fileID: 6992234579933452061}
   m_Layer: 12
@@ -420,7 +419,7 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &1005599763375513639
+--- !u!114 &1336716729350718279
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -429,38 +428,34 @@ MonoBehaviour:
   m_GameObject: {fileID: 7145553266978761743}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 58e432449cdabfd42890861b85aa9062, type: 3}
+  m_Script: {fileID: 11500000, guid: 872c07e61abb17b4194e257a0096adb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  weponsData: {fileID: 11400000, guid: c12335f14c4d0e549986dfe35b8f1a53, type: 2}
-  meleeSoundController: {fileID: 0}
-  dropRotation: {x: 0, y: 90, z: 90}
+  meleeSoundController: {fileID: 8167375209823505411}
+  weaponID: 004
+  weaponName: Bow
   enemyLayerMask:
     serializedVersion: 2
-    m_Bits: 0
-  impactSize: {x: 0, y: 0, z: 0}
-  muzzleFlash: {fileID: 0}
+    m_Bits: 403520
   impactPoint: {fileID: 3614233377561701245}
-  head: 0
-  body: 0
-  thigh: 0
-  shin: 0
-  foot: 0
-  arm: 0
-  forearm: 0
-  _WeaponID: 
-  _WeaponName: 
-  _Ammo: 0
-  _TempPlayer: {fileID: 0}
-  _ItemCheckerController: {fileID: 0}
-  _Back: {fileID: 0}
-  _Hand: {fileID: 0}
+  backRotation: {x: 0, y: 0, z: 0}
+  handRotation: {x: 0, y: 0, z: 0}
+  dropRotation: {x: 0, y: 0, z: 90}
+  _Head: 35
+  _Body: 25
+  _Thigh: 15
+  _Shin: 10
+  _Foot: 20
+  _Arm: 30
+  _Forearm: 20
+  _Supplies: 0
   _IsPickedUp: 0
-  _IsHand: 0
-  _DropPosition: {x: 0, y: 0, z: 0}
-  _Hit: 0
-  _hitEnemiesFirst: []
-  _hitEnemiesSecond: []
+  _IsEquipped: 0
+  _CurrentPlayer: {fileID: 0}
+  _PlayerCore: {fileID: 0}
+  _BotData: {fileID: 0}
+  _Position: {x: 0, y: 0, z: 0}
+  _Rotation: {x: 0, y: 0, z: 0, w: 0}
 --- !u!114 &8167375209823505411
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -493,23 +488,6 @@ MonoBehaviour:
   ambienceSources:
   - {fileID: 4804869075223907449}
   - {fileID: 1954145535945360550}
---- !u!114 &1771881613202312020
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7145553266978761743}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _stateAuthorityChangeErrorCorrectionDelta: 0.15
-  SyncScale: 0
-  SyncParent: 1
-  _autoAOIOverride: 0
-  DisableSharedModeInterpolation: 0
 --- !u!114 &6014757930188030952
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -527,9 +505,8 @@ MonoBehaviour:
   Flags: 262145
   NestedObjects: []
   NetworkedBehaviours:
-  - {fileID: 1005599763375513639}
+  - {fileID: 1336716729350718279}
   - {fileID: 8167375209823505411}
-  - {fileID: 1771881613202312020}
   ForceRemoteRenderTimeframe: 0
 --- !u!65 &6992234579933452061
 BoxCollider:

@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using MyBox;
 using Newtonsoft.Json;
 using System;
@@ -5,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 
 [CreateAssetMenu(fileName = "UserData", menuName = "Battle Royale/Player/UserData")]
 public class UserData : ScriptableObject
@@ -23,22 +25,91 @@ public class UserData : ScriptableObject
         }
     }
 
+    private event EventHandler LeaderboardPointsChange;
+    public event EventHandler OnLeaderboardPointsChange
+    {
+        add
+        {
+            if (LeaderboardPointsChange == null || !LeaderboardPointsChange.GetInvocationList().Contains(value))
+                LeaderboardPointsChange += value;
+        }
+        remove { LeaderboardPointsChange -= value; }
+    }
+
+
+    private event EventHandler CoinsPointsChange;
+    public event EventHandler OnCoinsPointsChange
+    {
+        add
+        {
+            if (CoinsPointsChange == null || !CoinsPointsChange.GetInvocationList().Contains(value))
+                CoinsPointsChange += value;
+        }
+        remove { CoinsPointsChange -= value; }
+    }
+
+    public void AddLeaderboardPoints(int amount)
+    {
+        GameDetails.leaderboard += amount;
+        LeaderboardPointsChange?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void AddCoins(float amount)
+    {
+        GameDetails.coins += amount;
+        CoinsPointsChange?.Invoke(this, EventArgs.Empty);
+    }
+
+    private event EventHandler TitleChange;
+    public event EventHandler OnTitleChange
+    {
+        add
+        {
+            if (TitleChange == null || !TitleChange.GetInvocationList().Contains(value))
+                TitleChange += value;
+        }
+        remove { TitleChange -= value; }
+    }
+    public void TitleChangeFireEvent()
+    {
+        TitleChange?.Invoke(this, EventArgs.Empty);
+    }
+
+    private event EventHandler EnergyChange;
+    public event EventHandler OnEnergyChange
+    {
+        add
+        {
+            if (EnergyChange == null || !EnergyChange.GetInvocationList().Contains(value))
+                EnergyChange += value;
+        }
+        remove { EnergyChange -= value; }
+    }
+    public void EnergyChangeFireEvent()
+    {
+        EnergyChange?.Invoke(this, EventArgs.Empty);
+    }
+
     //  =====================
 
-    [field: ReadOnly][field: SerializeField] public string UserToken { get; set; }
-    [field: ReadOnly][field: SerializeField] public string Username { get; set; }
-    [field: ReadOnly][field: SerializeField] public string Password { get; set; }
-    [field: ReadOnly][field: SerializeField] public bool RememberMe { get; set; }
-    [field: ReadOnly][field: SerializeField] public string SelectedServer { get; set; }
+    [field: SerializeField] public string UserToken { get; set; }
+    [field: SerializeField] public string Username { get; set; }
+    [field: SerializeField] public string Password { get; set; }
+    [field: SerializeField] public bool RememberMe { get; set; }
+    [field: SerializeField] public string SelectedServer { get; set; }
 
     [field: Header("CHARACTER")]
-    [field: ReadOnly][field: SerializeField] public PlayerCharacterSetting CharacterSetting { get; set; }
+    [field: SerializeField] public PlayerCharacterSetting CharacterSetting { get; set; }
 
     [field: Header("GAME USER DETAILS")]
-    [field: ReadOnly][field: SerializeField] public GameUserDetails GameDetails { get; set; }
+    [field: SerializeField] public GameUserDetails GameDetails { get; set; }
+
+    [field: Header("PLAYER INVENTORY")]
+    [field: SerializeField] public Dictionary<string, Inventory> PlayerInventory { get; set; }
+    [field: SerializeField] public Dictionary<string, ItemEffects> PlayerItemEffects { get; set; }
 
     [field: Header("MESSAGES")]
-    [field: ReadOnly][field: SerializeField] public List<MessageItem> Messages { get; set; }
+    [field: SerializeField] public List<MessageItem> Messages { get; set; }
 
 
 
@@ -89,6 +160,8 @@ public class UserData : ScriptableObject
         CharacterSetting = new PlayerCharacterSetting();
         GameDetails = new GameUserDetails();
         Messages = new List<MessageItem>();
+        PlayerInventory = new Dictionary<string, Inventory>();
+        PlayerItemEffects = new Dictionary<string, ItemEffects>();
     }
 
     public IEnumerator CheckControlSettingSave()
@@ -118,7 +191,7 @@ public class UserData : ScriptableObject
                 { "AnalogStick", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -733f, localPositionY = -219f, opacity = 1f} },
                 { "LeftAttack", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 607f, localPositionY = -20f, opacity = 1f} },
                 { "RightAttack", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -308f, localPositionY = 177f, opacity = 1f} },
-                { "Aim", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = 654f, localPositionY = -90.999f, opacity = 1f} },
+                { "Aim", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -431.9999f, localPositionY = 425f, opacity = 1f} },
                 { "Jump", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -253f, localPositionY = 413f, opacity = 1f} },
                 { "Block", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -95f, localPositionY = 509f, opacity = 1f} },
                 { "Sprint", new ControllerSettingData{ sizeDeltaX = 1f, sizeDeltaY = 1f, localPositionX = -95f, localPositionY = 283f, opacity = 1f} },
@@ -184,6 +257,11 @@ public class UserData : ScriptableObject
         RememberMe = false;
         LoadRememberMe();
         ControlSetting = new Dictionary<string, ControllerSettingData>();
+        CharacterSetting = new PlayerCharacterSetting();
+        GameDetails = new GameUserDetails();
+        Messages = new List<MessageItem>();
+        PlayerInventory = new Dictionary<string, Inventory>();
+        PlayerItemEffects = new Dictionary<string, ItemEffects>();
     }
 
     public void ChangeServerEventTrigger() => SelectedServerChange?.Invoke(this, EventArgs.Empty);
@@ -206,4 +284,28 @@ public class ControllerSettingData
     public float localPositionX;
     public float localPositionY;
     public float opacity;
+}
+
+[System.Serializable]
+public class Inventory
+{
+    public string itemid;
+    public string itemname;
+    public int quantity;
+    public string type;
+    public bool isEquipped;
+    public bool canUse;
+    public bool canEquip;
+    public bool canSell;
+}
+
+[System.Serializable]
+public class ItemEffects
+{
+    public string itemid;
+    public string itemname;
+    public string type;
+    public int multiplier;
+    public string expiresAt;
+    public float timeRemaining;
 }

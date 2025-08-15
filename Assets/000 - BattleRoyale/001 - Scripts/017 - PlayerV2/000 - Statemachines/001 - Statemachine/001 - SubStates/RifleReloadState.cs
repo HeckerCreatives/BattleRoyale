@@ -1,0 +1,14 @@
+using Fusion.Addons.SimpleKCC;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Animations;
+
+public class RifleReloadState : PlayerOnGround
+{
+    public RifleReloadState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
+    {
+    }
+
+
+}

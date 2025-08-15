@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
 using UnityEngine.InputSystem.XR;
 using UnityEngine.Windows;
@@ -29,6 +28,7 @@ public class PlayerMovementV2 : NetworkBehaviour
     [SerializeField] private PlayerStamina stamina;
     [SerializeField] private PlayerInventoryV2 inventory;
     [SerializeField] private PlayerHealthV2 heatlh;
+    [SerializeField] private PlayerPlayables playerplayables;
 
     [Space]
     [SerializeField] private float moveSpeed;
@@ -49,6 +49,8 @@ public class PlayerMovementV2 : NetworkBehaviour
     [field: SerializeField][Networked] public Vector3 MoveDir { get; set; }
     [field: SerializeField][Networked] public float XMovement { get; set; }
     [field: SerializeField][Networked] public float YMovement { get; set; }
+    [field: SerializeField][Networked] public Vector3 CameraHitOrigin { get; set; }
+    [field: SerializeField][Networked] public Vector3 CameraHitDirection { get; set; }
     [field: SerializeField][Networked] public bool IsSprint { get; set; }
     [field: SerializeField][Networked] public bool IsRoll { get; set; }
     [field: SerializeField][Networked] public bool Attacking { get; set; }
@@ -62,6 +64,9 @@ public class PlayerMovementV2 : NetworkBehaviour
     [field: SerializeField][Networked] public bool IsTouching { get; set; }
     [field: SerializeField][Networked] public bool SwitchingHands { get; set; }
     [field: SerializeField][Networked] public bool SwitchingPrimary { get; set; }
+    [field: SerializeField][Networked] public bool SwitchingSecondary { get; set; }
+    [field: SerializeField][Networked] public bool Aiming { get; set; }
+    [field: SerializeField][Networked] public bool Reloading { get; set; }
 
     //  =======================
 
@@ -112,35 +117,17 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     private void TouchMovements()
     {
-        if (Touchscreen.current == null)
-            return;
-
-        foreach (var touch in Touchscreen.current.touches)
+        foreach (var touch in UnityEngine.InputSystem.EnhancedTouch.Touch.activeTouches)
         {
-            // Filter out inactive touches (no press info and no position changes)
-            if (!touch.press.wasPressedThisFrame && !touch.press.isPressed && !touch.press.wasReleasedThisFrame)
-                continue;
-
-            int id = touch.touchId.ReadValue();
-            Vector2 pos = touch.position.ReadValue();
-            var phase = touch.phase.ReadValue();
+            int id = touch.touchId;
+            Vector2 pos = touch.screenPosition;
+            var phase = touch.phase;
 
             // --- Handle Ended/Canceled early and skip any further handling ---
             if (phase == UnityEngine.InputSystem.TouchPhase.Ended || phase == UnityEngine.InputSystem.TouchPhase.Canceled)
             {
-                if (activeTouchIds.Contains(id))
-                    TouchFingeUp(id);
-
-                activeTouchIds.Remove(id);
-                lastTouchPositions.Remove(id);
+                TouchFingeUp(id);
                 continue; // Skip rest of the loop
-            }
-
-            // --- Handle new touches ---
-            if (!activeTouchIds.Contains(id))
-            {
-                activeTouchIds.Add(id);
-                TouchFingerDown(id, pos);
             }
 
             // --- Handle touch phase states ---
@@ -148,10 +135,16 @@ public class PlayerMovementV2 : NetworkBehaviour
             {
                 case UnityEngine.InputSystem.TouchPhase.Began:
                     // Already handled in the block above, but safe to re-call
+                    activeTouchIds.Add(id);
                     TouchFingerDown(id, pos);
                     break;
 
                 case UnityEngine.InputSystem.TouchPhase.Moved:
+                    if (!activeTouchIds.Contains(id))
+                    {
+                        activeTouchIds.Add(id);
+                        TouchFingerDown(id, pos);
+                    }
                     if (lastTouchPositions.TryGetValue(id, out var lastPos))
                     {
                         float delta = Vector2.Distance(pos, lastPos);
@@ -170,11 +163,18 @@ public class PlayerMovementV2 : NetworkBehaviour
                         TouchFingerMove(id, pos);
                     }
                     break;
-
-                //case UnityEngine.InputSystem.TouchPhase.Stationary:
-                //    // Optional: handle this if needed
-                //    gameplayController.LookDirection = Vector2.zero;
-                //    break;
+                case UnityEngine.InputSystem.TouchPhase.Stationary:
+                    if (touchRoles.TryGetValue(id, out string role))
+                    {
+                        if (role == "camera")
+                        {
+                            gameplayController.LookDirection = Vector2.zero;
+                            activeTouchIds.Remove(id);
+                            touchRoles.Remove(id);
+                            lastTouchPositions.Remove(id); // Remove the finger's position data
+                        }
+                    }
+                    break;
             }
 
             // --- Store last position ---
@@ -201,6 +201,7 @@ public class PlayerMovementV2 : NetworkBehaviour
                 gameplayController.MovementDirection = Vector2.zero;
                 ResetJoystick();
             }
+            activeTouchIds.Remove(touchId);
             touchRoles.Remove(touchId);
             lastTouchPositions.Remove(touchId); // Remove the finger's position data
         }
@@ -244,7 +245,7 @@ public class PlayerMovementV2 : NetworkBehaviour
             touchRoles[touchId] = "joystick";
         }
         // 🔒 Then: If it touched any other UI (like attack/jump), block it
-        else if (EventSystem.current.IsPointerOverGameObject(touchId))
+        else if (IsTouchOverUI(pos))
         {
             return; // Ignore this touch completely — it's over attack/jump/etc
         }
@@ -345,6 +346,9 @@ public class PlayerMovementV2 : NetworkBehaviour
 
         controllerInput = input;
 
+        CameraHitOrigin = controllerInput.CameraHitOrigin;
+        CameraHitDirection = controllerInput.CameraHitDirection;
+
         Move();
         Sprint();
         Jump();
@@ -356,9 +360,8 @@ public class PlayerMovementV2 : NetworkBehaviour
         Trapping();
         SwitchToHand();
         SwitchToPrimary();
-        //Crouch();
-        //Prone();
-        //PlayerRotateAnimation();
+        SwitchToSecondary();
+        Reload();
 
         PreviousButtons = input.Buttons;
     }
@@ -389,6 +392,21 @@ public class PlayerMovementV2 : NetworkBehaviour
         float moveSpeedValue = IsSprint ? SprintSpeed : MoveSpeed;
         MoveDirection = MoveDir * moveSpeedValue * Runner.DeltaTime;
 
+        characterController.Move(MoveDirection, JumpImpulse);
+        playerplayables.CheckGround();
+    }
+
+    public void MoveWithAim()
+    {
+        XMovement = controllerInput.MovementDirection.x;
+        YMovement = controllerInput.MovementDirection.y;
+
+        MoveDirection = characterController.TransformRotation * new Vector3(controllerInput.MovementDirection.x, 0f, controllerInput.MovementDirection.y) * (IsSprint ? SprintSpeed : MoveSpeed) * Runner.DeltaTime;
+
+        MoveDirection.Normalize();
+
+
+        // Apply the movement
         characterController.Move(MoveDirection, JumpImpulse);
     }
 
@@ -566,12 +584,30 @@ public class PlayerMovementV2 : NetworkBehaviour
             SwitchingPrimary = false;
     }
 
+    private void SwitchToSecondary()
+    {
+        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchSecondary))
+            SwitchingSecondary = true;
+        else
+            SwitchingSecondary = false;
+    }
+
+    private void Reload()
+    {
+        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Reload))
+            Reloading = true;
+        else
+            Reloading = false;
+    }
+
     public void WeaponSwitcher()
     {
         if (SwitchingHands)
             inventory.SwitchToHands();
         else if (SwitchingPrimary)
             inventory.SwitchToPrimary();
+        else if (SwitchingSecondary)
+            inventory.SwitchToSecondary();
     }
 
     #endregion

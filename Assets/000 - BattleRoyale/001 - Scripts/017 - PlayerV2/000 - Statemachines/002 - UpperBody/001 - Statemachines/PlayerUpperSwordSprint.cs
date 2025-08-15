@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class PlayerUpperSwordSprint : UpperBodyAnimations
+public class PlayerUpperSwordSprint : UpperNoAimState
 {
     public PlayerUpperSwordSprint(SimpleKCC characterController, UpperBodyChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
@@ -12,7 +12,8 @@ public class PlayerUpperSwordSprint : UpperBodyAnimations
 
     public override void NetworkUpdate()
     {
-        playerMovement.WeaponSwitcher();
+        base.NetworkUpdate();
+
         WeaponsChecker();
         Animation();
 
@@ -46,19 +47,19 @@ public class PlayerUpperSwordSprint : UpperBodyAnimations
         if (playerMovement.IsTrapping)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.TrapPlayable);
-            return;
+            
         }
 
-        if (playerPlayables.healthV2.IsHitUpper)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
-            return;
-        }
+        //if (playerPlayables.healthV2.IsHitUpper)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
+        //    
+        //}
 
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
-            return;
+            
         }
     }
 
@@ -71,15 +72,28 @@ public class PlayerUpperSwordSprint : UpperBodyAnimations
                 if (playerMovement.MoveDirection != Vector3.zero)
                     playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SprintPlayables);
 
-                return;
+                
             }
-
-            if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "002")
+            else if (playerPlayables.inventory.WeaponIndex == 2)
             {
-                if (playerMovement.MoveDirection != Vector3.zero)
-                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearSprintPlayable);
-
-                return;
+                if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "002")
+                {
+                    if (playerMovement.MoveDirection != Vector3.zero)
+                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearSprintPlayable);
+                }
+            }
+            else if (playerPlayables.inventory.WeaponIndex == 3)
+            {
+                if (playerPlayables.inventory.SecondaryWeaponID() == "003")
+                {
+                    if (playerMovement.MoveDirection != Vector3.zero)
+                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleSprintPlayable);
+                }
+                else if (playerPlayables.inventory.SecondaryWeaponID() == "004")
+                {
+                    if (playerMovement.MoveDirection != Vector3.zero)
+                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowSprintPlayable);
+                }
             }
 
             if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)

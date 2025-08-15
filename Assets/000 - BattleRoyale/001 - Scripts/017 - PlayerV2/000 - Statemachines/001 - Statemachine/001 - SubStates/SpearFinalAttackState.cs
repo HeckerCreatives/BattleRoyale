@@ -37,13 +37,13 @@ public class SpearFinalAttackState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
-        Animation();
-
         if (playerPlayables.TickRateAnimation >= moveTimer && playerPlayables.TickRateAnimation <= stopMoveTimer)
         {
             characterController.Move(characterController.TransformDirection * 3.5f, 0f);
             canMove = false;
         }
+
+        Animation();
 
         playerPlayables.stamina.RecoverStamina(5f);
     }
@@ -57,16 +57,15 @@ public class SpearFinalAttackState : PlayerOnGround
         }
 
 
-        if (playerPlayables.healthV2.IsHit)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-            return;
-        }
+        //if (playerPlayables.healthV2.IsHit)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
+        //    return;
+        //}
 
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
-            return;
         }
 
         if (playerPlayables.TickRateAnimation >= timer && canAction)
@@ -74,13 +73,11 @@ public class SpearFinalAttackState : PlayerOnGround
             if (playerMovement.IsBlocking)
             {
                 playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearBlockPlayable);
-                return;
             }
 
             if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             {
                 playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RollPlayable);
-                return;
             }
 
             if (playerMovement.MoveDirection != Vector3.zero)

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class PlayerMiddleHit : UpperBodyAnimations
+public class PlayerMiddleHit : UpperNoAimState
 {
     float timer;
     bool canAction;
@@ -31,6 +31,8 @@ public class PlayerMiddleHit : UpperBodyAnimations
 
     public override void NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         Animation();
 
         playerPlayables.stamina.RecoverStamina(5f);
@@ -38,29 +40,26 @@ public class PlayerMiddleHit : UpperBodyAnimations
 
     private void Animation()
     {
-        if (playerPlayables.healthV2.IsHitUpper)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
+        //if (playerPlayables.healthV2.IsHitUpper)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
 
-            return;
-        }
+        //    return;
+        //}
 
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
-            return;
         }
 
         if (playerPlayables.healthV2.IsDead)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
-            return;
         }
 
         if (!characterController.IsGrounded)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.FallingPlayables);
-            return;
         }
 
         if (playerPlayables.TickRateAnimation >= timer && canAction)

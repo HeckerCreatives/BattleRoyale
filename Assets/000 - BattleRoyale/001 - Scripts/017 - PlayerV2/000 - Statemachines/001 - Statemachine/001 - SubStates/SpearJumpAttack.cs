@@ -33,8 +33,9 @@ public class SpearJumpAttack : AnimationPlayable
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
+        FallDamage();
 
-        if (characterController.IsGrounded && canAction && playerPlayables.TickRateAnimation >= timer)
+        if (characterController.IsGrounded && canAction)
         {
             playerMovement.IsJumping = false;
             playerMovement.JumpImpulse = 0;
@@ -45,7 +46,6 @@ public class SpearJumpAttack : AnimationPlayable
             Animation();
         }
 
-        FallDamage();
         playerPlayables.stamina.RecoverStamina(5f);
     }
 

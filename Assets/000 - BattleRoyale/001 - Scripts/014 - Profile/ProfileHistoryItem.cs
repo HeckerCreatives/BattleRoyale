@@ -9,10 +9,10 @@ public class ProfileHistoryItem : MonoBehaviour
     [SerializeField] private TextMeshProUGUI placementTMP;
     [SerializeField] private TextMeshProUGUI dateTMP;
 
-    public void OnEnable()
+    public void InitializeHistory(string kill, string placement, string date)
     {
-        killTMP.text = "-";
-        placementTMP.text = "-";
-        dateTMP.text = "-";
+        killTMP.text = kill;
+        placementTMP.text = placement;
+        dateTMP.text = date;
     }
 }

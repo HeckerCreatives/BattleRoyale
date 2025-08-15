@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class PlayerUpperHit : UpperBodyAnimations
+public class PlayerUpperHit : UpperNoAimState
 {
     float timer;
     bool canAction;
@@ -17,7 +17,9 @@ public class PlayerUpperHit : UpperBodyAnimations
     {
         base.Enter();
 
-        playerPlayables.healthV2.IsHitUpper = false;
+        //if (playerPlayables.HasStateAuthority || playerPlayables.HasInputAuthority)
+        //    playerPlayables.healthV2.IsHitUpper = false;
+
         timer = playerPlayables.TickRateAnimation + animationLength;
         canAction = true;
     }
@@ -31,6 +33,8 @@ public class PlayerUpperHit : UpperBodyAnimations
 
     public override void NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         Animation();
     }
 
@@ -39,32 +43,27 @@ public class PlayerUpperHit : UpperBodyAnimations
         if (!characterController.IsGrounded)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.FallingPlayables);
-            return;
         }
 
         if (playerPlayables.healthV2.IsStagger)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
-            return;
         }
 
         if (playerPlayables.healthV2.IsDead)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
-            return;
         }
 
         if (!characterController.IsGrounded)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.FallingPlayables);
-            return;
         }
 
-        if (playerPlayables.healthV2.IsHitUpper)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
-            return;
-        }
+        //if (playerPlayables.healthV2.IsHitUpper)
+        //{
+        //    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
+        //}
 
         if (playerPlayables.TickRateAnimation >= timer && canAction)
         {

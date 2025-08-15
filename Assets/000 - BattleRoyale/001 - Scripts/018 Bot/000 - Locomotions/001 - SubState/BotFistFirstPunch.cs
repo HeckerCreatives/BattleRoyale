@@ -31,7 +31,7 @@ public class BotFistFirstPunch : BotAnimationPlayable
         moveTimer = botPlayables.TickRateAnimation + (animationLength * 0.3f);
         stopMoveTimer = botPlayables.TickRateAnimation + (animationLength * 0.18f);
         damageWindowEnd = botPlayables.TickRateAnimation + (animationLength * 0.23f);
-        nextPuncDelay = timer + 1.4f;
+        nextPuncDelay = timer + 0.05f;
         canAction = true;
     }
 
@@ -95,6 +95,8 @@ public class BotFistFirstPunch : BotAnimationPlayable
             {
                 if (botPlayables.TickRateAnimation >= nextPuncDelay)
                     botPlayablesChanger.ChangeState(botPlayables.BasicMovement.FistMiddlePunch);
+
+                //botPlayablesChanger.ChangeState(botPlayables.BasicMovement.FistMiddlePunch);
 
                 return;
             }

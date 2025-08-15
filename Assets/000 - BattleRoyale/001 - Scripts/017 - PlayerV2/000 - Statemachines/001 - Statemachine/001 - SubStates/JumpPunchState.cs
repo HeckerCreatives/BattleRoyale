@@ -35,18 +35,10 @@ public class JumpPunchState : PlayerOnGround
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
-
-        //if (!hasResetHitEnemies)
-        //{
-        //    playerPlayables.lowerBodyMovement.ResetSecondAttack();
-        //    hasResetHitEnemies = true;
-        //}
-
-        //playerPlayables.lowerBodyMovement.PerformSecondAttack();
-
         FallDamage();
 
-        if (characterController.IsGrounded && canAction && playerPlayables.TickRateAnimation >= timer)
+
+        if (characterController.IsGrounded && canAction)
         {
             playerMovement.IsJumping = false;
             playerMovement.JumpImpulse = 0;
