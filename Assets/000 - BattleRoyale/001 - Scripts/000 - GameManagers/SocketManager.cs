@@ -290,18 +290,20 @@ public class SocketManager : MonoBehaviour
                     PlayerAfricaCountServer = tempservercount["za"];
                     PlayerUAECountServer = tempservercount["uae"];
                     PlayerAmericaEastCountServer = tempservercount["us"];
-                    PlayerAmericaWestCountServer = tempservercount["usw"];
+                    //PlayerAmericaWestCountServer = tempservercount["usw"];
                 }
 
             });
         });
 
 
-        EmitEvent("login", JsonConvert.SerializeObject(new Dictionary<string, string>
-        {
-            { "userid", userData.Username },
-            { "region", userData.SelectedServer }
-        }));
+        //EmitEvent("login", JsonConvert.SerializeObject(new Dictionary<string, string>
+        //{
+        //    { "userid", userData.Username },
+        //    { "region", userData.SelectedServer }
+        //}));
+
+        EmitEvent("login", userData.Username);
     }
 
     private void RestartPingTimeout()

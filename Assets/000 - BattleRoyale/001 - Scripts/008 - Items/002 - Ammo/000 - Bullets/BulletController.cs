@@ -103,7 +103,7 @@ public class BulletController : NetworkBehaviour
         }
     }
 
-    public void Fire(Vector3 startPos, LagCompensatedHit targetObj)
+    public void Fire(Vector3 startPos, LagCompensatedHit targetObj, float additionalTimer = 5f)
     {
         StartPos = startPos;
         TargetPoint = targetObj.Point;
@@ -115,7 +115,7 @@ public class BulletController : NetworkBehaviour
 
         TickRateAnimation = Runner.Tick * Runner.DeltaTime;
 
-        DecayTimer = TickRateAnimation + 5f;
+        DecayTimer = TickRateAnimation + additionalTimer;
     }
 
     public override void FixedUpdateNetwork()

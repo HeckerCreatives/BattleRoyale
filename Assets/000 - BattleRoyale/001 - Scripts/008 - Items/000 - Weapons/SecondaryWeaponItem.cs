@@ -241,7 +241,7 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
 
         if (validTargetFound)
         {
-            PlayerCore.CurrentPlayerPlayables.SpawnBullets(impactPoint.transform.position, hit);
+            PlayerCore.CurrentPlayerPlayables.SpawnBullets(impactPoint.transform.position, hit, WeaponID == "003" ? 5f : 2.5f);
 
             if (hit.Hitbox != null)
             {

@@ -663,17 +663,17 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         var args = CommandLineHelper.GetArgs();
 
-        //FusionAppSettings appSettings;
+        FusionAppSettings appSettings;
 
         if (usePrivateServer && args.TryGetValue("roomname", out string roomname))
             sessionname = roomname;
         else
             sessionname = new Guid().ToString();
 
-        //if (args.TryGetValue("region", out string region))
-        //    appSettings = BuildCustomAppSetting(region);
-        //else
-        //    appSettings = BuildCustomAppSetting("asia");
+        if (args.TryGetValue("region", out string region))
+            appSettings = BuildCustomAppSetting(region);
+        else
+            appSettings = BuildCustomAppSetting("asia");
 
         //Debug.Log($"STARTING REGION: {appSettings.FixedRegion}");
 
@@ -689,7 +689,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             PlayerCount = maxPlayers,
             Address = NetAddress.Any(),
             CustomLobbyName = lobby,
-            //CustomPhotonAppSettings = appSettings
+            CustomPhotonAppSettings = appSettings
         });
 
 

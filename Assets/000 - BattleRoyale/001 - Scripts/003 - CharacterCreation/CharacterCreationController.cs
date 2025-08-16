@@ -98,6 +98,7 @@ public class CharacterCreationController : MonoBehaviour
     public void ChangeHairStyle(bool isNext)
     {
         hairStyles[hairStyleIndex].SetActive(false);
+        profileHairStyles[hairStyleIndex].SetActive(false);
 
         if (isNext)
         {

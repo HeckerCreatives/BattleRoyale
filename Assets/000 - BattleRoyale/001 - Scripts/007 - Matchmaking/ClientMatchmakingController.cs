@@ -313,10 +313,7 @@ public class ClientMatchmakingController : MonoBehaviour
                 currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
 
                 if (usePrivateServer)
-                    GameManager.Instance.SocketMngr.EmitEvent("findmatch", JsonConvert.SerializeObject(new Dictionary<string, string>
-                    {
-                        { "region", GameManager.GetGameLiftServer(userData.SelectedServer) }
-                    }));
+                    GameManager.Instance.SocketMngr.EmitEvent("findmatch", JsonConvert.SerializeObject(new Dictionary<string, string>()));
                 else
                     StartMatchFinding();
             }

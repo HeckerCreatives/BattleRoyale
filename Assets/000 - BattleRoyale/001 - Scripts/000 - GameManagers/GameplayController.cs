@@ -166,10 +166,11 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
     public override void FixedUpdateNetwork()
     {
-        Vector2 ScreenCenter = new Vector2(Screen.width / 2f, Screen.height / 2f);
+        Vector2 ScreenCenter = new Vector2((Screen.width - 1) * 0.5f, (Screen.height) * 0.5f);
         cameraRay = Camera.main.ScreenPointToRay(ScreenCenter);
         CameraHitOrigin = cameraRay.origin;
         CameraHitDirection = cameraRay.direction;
+        Debug.DrawRay(CameraHitOrigin, CameraHitDirection * 100f, Color.red, 5f);
     }
 
     #region LOCAL INPUTS

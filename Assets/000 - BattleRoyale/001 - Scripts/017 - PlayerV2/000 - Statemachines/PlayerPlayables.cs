@@ -214,11 +214,11 @@ public class PlayerPlayables : NetworkBehaviour
 
     public void SetAnimationLowerTick() => PlayableLowerBodyAnimationTick = Runner.Tick;
 
-    public void SpawnBullets(Vector3 startPos, LagCompensatedHit hit)
+    public void SpawnBullets(Vector3 startPos, LagCompensatedHit hit, float additionalTimer = 5f)
     {
         Runner.Spawn(bullets, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
         {
-            obj.GetComponent<BulletController>().Fire(startPos, hit);
+            obj.GetComponent<BulletController>().Fire(startPos, hit, additionalTimer);
         });
     }
 
