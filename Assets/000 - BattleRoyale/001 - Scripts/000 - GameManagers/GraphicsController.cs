@@ -202,8 +202,8 @@ public class GraphicsController : MonoBehaviour
         }
         else
         {
-            CurrentGraphicsQualityIndex = 1;
-            PlayerPrefs.SetInt("GraphicsQuality", 1);
+            CurrentGraphicsQualityIndex = 0;
+            PlayerPrefs.SetInt("GraphicsQuality", 0);
             QualitySettings.SetQualityLevel(CurrentGraphicsQualityIndex, false);
         }
 
@@ -214,7 +214,7 @@ public class GraphicsController : MonoBehaviour
         }
         else
         {
-            CurrentResolutionIndex = 2;
+            CurrentResolutionIndex = 0;
             ChangeResolution();
         }
 
@@ -236,7 +236,7 @@ public class GraphicsController : MonoBehaviour
         }
         else
         {
-            CurrentShadowIndex = 1;
+            CurrentShadowIndex = 0;
             ChangeShadow();
         }
 
@@ -274,8 +274,8 @@ public class GraphicsController : MonoBehaviour
 
         float renderScale = CurrentResolutionIndex switch
         {
-            0 => 0.7f,
-            1 => 0.85f,
+            0 => 0.5f,
+            1 => 0.7f,
             2 => 1f,
             _ => 1f,
         };

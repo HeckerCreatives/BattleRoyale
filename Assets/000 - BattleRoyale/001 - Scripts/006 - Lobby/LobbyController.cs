@@ -420,6 +420,7 @@ public class LobbyController : MonoBehaviour
             }
         }, null));
         GameManager.Instance.SceneController.AddActionLoadinList(inventoryController.GetInventory());
+        GameManager.Instance.SceneController.AddActionLoadinList(CheckIfFirstTimeDownload());
         GameManager.Instance.AudioController.SetBGMusic(bgMusicClip);
         GameManager.Instance.SceneController.ActionPass = true;
 
@@ -481,6 +482,17 @@ public class LobbyController : MonoBehaviour
             potionMultiplier.text = $"x1";
     }
 
+    private IEnumerator CheckIfFirstTimeDownload()
+    {
+        if (PlayerPrefs.HasKey("firstdownload")) yield break;
+
+        GameManager.Instance.NotificationController.ShowError("You're currently on the lowest graphics settings. You can change your graphics by going to settings");
+
+        PlayerPrefs.SetInt("firstdownload", 1);
+
+        yield return null;
+    }
+
     private void ServerChange(object sender, EventArgs e)
     {
         serverTMP.text = $"Server: {GameManager.GetRegionName(userData.SelectedServer)}";
@@ -500,37 +512,39 @@ public class LobbyController : MonoBehaviour
     {
         GameManager.Instance.NoBGLoading.SetActive(true);
 
-        if (currentRunnerInstance != null)
-        {
-            Destroy(currentRunnerInstance.gameObject);
+        //if (currentRunnerInstance != null)
+        //{
+        //    Destroy(currentRunnerInstance.gameObject);
 
-            currentRunnerInstance = null;
-        }
-        else
-        {
-            currentRunnerInstance = Instantiate(instanceRunner);
-        }
+        //    currentRunnerInstance = null;
+        //}
+        //else
+        //{
+        //    currentRunnerInstance = Instantiate(instanceRunner);
+        //}
 
-        var _tokenSource = new CancellationTokenSource();
+        //var _tokenSource = new CancellationTokenSource();
 
-        var regions = await NetworkRunner.GetAvailableRegions(cancellationToken: _tokenSource.Token);
+        //var regions = await NetworkRunner.GetAvailableRegions(cancellationToken: _tokenSource.Token);
 
-        AvailableServers.Clear();
+        //AvailableServers.Clear();
 
-        foreach (var region in regions)
-        {
-            if (userData.SelectedServer != "asia" && userData.SelectedServer != "za" && userData.SelectedServer != "uae" && userData.SelectedServer != "us" && userData.SelectedServer != "usw") continue;
+        //foreach (var region in regions)
+        //{
+        //    if (userData.SelectedServer != "asia" && userData.SelectedServer != "za" && userData.SelectedServer != "uae" && userData.SelectedServer != "us" && userData.SelectedServer != "usw") continue;
 
-            AvailableServers.Add(region.RegionCode, region.RegionPing);
+        //    AvailableServers.Add(region.RegionCode, region.RegionPing);
 
-            await Task.Yield();
-        }
+        //    await Task.Yield();
+        //}
+
+        //serverList.SetActive(true);
+
+        //Destroy(currentRunnerInstance.gameObject);
+
+        //currentRunnerInstance = null;
 
         serverList.SetActive(true);
-
-        Destroy(currentRunnerInstance.gameObject);
-
-        currentRunnerInstance = null;
 
         GameManager.Instance.NoBGLoading.SetActive(false);
     }

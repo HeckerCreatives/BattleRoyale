@@ -299,7 +299,7 @@ public class Botdata : NetworkBehaviour
         if (!HasStateAuthority) return;
 
         Runner.Spawn(trapObj, transform.position, Quaternion.identity, Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) => {
-            obj.GetComponent<TrapWeaponController>().Initialize(BotName, Vector3.zero);
+            obj.GetComponent<TrapWeaponController>().Initialize(BotName, transform.position, Vector3.zero);
         });
     }
 

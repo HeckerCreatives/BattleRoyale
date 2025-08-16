@@ -1,9 +1,14 @@
+#if !UNITY_ANDROID && !UNITY_IOS
 using Aws.GameLift.Server;
+#endif
+
 using Fusion;
 using Fusion.Sample.DedicatedServer;
 using MyBox;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -14,6 +19,9 @@ public class Loader : MonoBehaviour
     [SerializeField] private bool isDebugServer;
     [SerializeField] private bool useGameLiftServer;
     [SerializeField] private string scene;
+
+    private static string logFilePath = "/local/game/server.log";
+
     //  Lobby: AsiaBR
 
     private void Start()
@@ -21,19 +29,49 @@ public class Loader : MonoBehaviour
         if (useGameLiftServer)
         {
             DontDestroyOnLoad(this);
+
+            // Ensure directory exists
+            string dir = Path.GetDirectoryName(logFilePath);
+            if (!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+
+            // Clear old logs on start
+            File.WriteAllText(logFilePath, "=== New GameLift Session Started ===\n");
+
+            // Hook Unity’s logging
+            Application.logMessageReceived += HandleLog;
+
             GameLiftInitialize();
         }
         else
             CustomServer();
     }
 
+    void OnDestroy()
+    {
+        Application.logMessageReceived -= HandleLog;
+    }
+
+
+
+    private void HandleLog(string condition, string stackTrace, UnityEngine.LogType type)
+    {
+        string logEntry = $"[{System.DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{type}] {condition}\n";
+
+        if (type == UnityEngine.LogType.Exception)
+            logEntry += stackTrace + "\n";
+
+        File.AppendAllText(logFilePath, logEntry);
+    }
 
     private void GameLiftInitialize()
     {
 #if !UNITY_ANDROID && !UNITY_IOS
         // Initialize GameLift SDK
         Debug.Log("STARTING GAMELIFT SDK");
+
         var initOutcome = GameLiftServerAPI.InitSDK();
+
         if (initOutcome.Success)
         {
             // Define what to do when a game session is created
@@ -56,7 +94,7 @@ public class Loader : MonoBehaviour
                     return true;
                 },
                 7777, // Your listening port
-                new LogParameters(new List<string>() { "/local/game/logs/myserver.log" })
+                new LogParameters(new List<string>() { logFilePath })
             );
 
             var readyOutcome = GameLiftServerAPI.ProcessReady(processParams);
@@ -80,36 +118,41 @@ public class Loader : MonoBehaviour
     {
         
 #if !UNITY_ANDROID && !UNITY_IOS
-            var args = CommandLineHelper.GetArgs();
+        var args = CommandLineHelper.GetArgs();
 
-            if (isDebugServer)
+        if (isDebugServer)
+        {
+            Application.runInBackground = true;
+            Application.targetFrameRate = 30;
+            userData.Username = "Server";
+
+            SceneManager.LoadScene(scene);
+            return;
+        }
+
+        if (args.TryGetValue("server", out string server))
+        {
+            Debug.Log("GET ARGUMENT VALUE FOR SERVER: " + server);
+
+            if (server == "yes")
             {
                 Application.runInBackground = true;
-                Application.targetFrameRate = 30;
+                Application.targetFrameRate = 60;
                 userData.Username = "Server";
 
-                SceneManager.LoadScene(scene);
-                return;
-            }
-
-            if (args.TryGetValue("server", out string server))
-            {
-                if (server == "yes")
-                {
-                    Application.runInBackground = true;
-                    Application.targetFrameRate = 60;
-                    userData.Username = "Server";
-
-                    if (args.TryGetValue("mapname", out string sceneName))
-                        SceneManager.LoadScene(sceneName);
-                    else
-                        SceneManager.LoadScene("Persistent");
-                }
+                if (args.TryGetValue("mapname", out string sceneName))
+                    SceneManager.LoadScene(sceneName);
                 else
                     SceneManager.LoadScene("Persistent");
             }
             else
                 SceneManager.LoadScene("Persistent");
+        }
+        else
+        {
+            Debug.Log("NO SERVER AGUMENTS FOUND");
+            SceneManager.LoadScene("Persistent");
+        }
 #else
                 if (isDebugServer)
                 {

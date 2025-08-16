@@ -163,9 +163,9 @@ public class TrapPlayables : NetworkBehaviour
 
                 Debug.Log($"Trap placed by {playerNetworkLoader.Username}");
 
-                Runner.Spawn(trapObject, hit.Point, Quaternion.Euler(hit.Normal), Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) => {
-                    obj.GetComponent<TrapWeaponController>().Initialize(playerNetworkLoader.Username, hit.Normal);
-                });
+                //Runner.Spawn(trapObject, hit.Point, Quaternion.Euler(hit.Normal), Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) => {
+                //    obj.GetComponent<TrapWeaponController>().Initialize(playerNetworkLoader.Username, hit.Normal);
+                //});
 
                 SetTrap = true;
 

@@ -50,11 +50,6 @@ public class ServerItem : MonoBehaviour
         GameManager.Instance.SocketMngr.OnPlayerCountAmericaWestServerChange -= USWChange;
     }
 
-    void Update()
-    {
-        Debug.Log($"[MAIN THREAD] Thread: {System.Threading.Thread.CurrentThread.ManagedThreadId}");
-    }
-
     private void USWChange(object sender, EventArgs e)
     {
         ChangeServerCount();
@@ -107,9 +102,9 @@ public class ServerItem : MonoBehaviour
     {
         if (!isLoggin) return;
 
-        changeServer.interactable = loginManager.AvailableServers.ContainsKey(serverCode);
+        changeServer.interactable = userData.ServerList.Contains(serverCode);
 
-        if (!loginManager.AvailableServers.ContainsKey(serverCode))
+        if (!userData.ServerList.Contains(serverCode))
         {
             selectedServerTMP.text = $"{GameManager.GetRegionName(serverCode)} <size=25><color=red>Not Available</color></size>";
             changeServer.interactable = false;
@@ -117,8 +112,11 @@ public class ServerItem : MonoBehaviour
         }
         else
         {
-            selectedServerTMP.text = $"<color=white>{GameManager.GetRegionName(serverCode)}</color> <size=25>{(loginManager.AvailableServers[serverCode] < 100 ? $"<color=#00BA0D>{loginManager.AvailableServers[serverCode]}ms</color>" : loginManager.AvailableServers[serverCode] > 100 && loginManager.AvailableServers[serverCode] < 250 ? $"<color=#D26E05>{loginManager.AvailableServers[serverCode]}ms</color>" : $"<color=red>{loginManager.AvailableServers[serverCode]}ms</color>")}</size>";
-            pingImg.sprite = loginManager.AvailableServers[serverCode] < 100 ? goodPing : loginManager.AvailableServers[serverCode] > 100 && loginManager.AvailableServers[serverCode] < 250 ? mediumPing : badPing;
+            //selectedServerTMP.text = $"<color=white>{GameManager.GetRegionName(serverCode)}</color> <size=25>{(loginManager.AvailableServers[serverCode] < 100 ? $"<color=#00BA0D>{loginManager.AvailableServers[serverCode]}ms</color>" : loginManager.AvailableServers[serverCode] > 100 && loginManager.AvailableServers[serverCode] < 250 ? $"<color=#D26E05>{loginManager.AvailableServers[serverCode]}ms</color>" : $"<color=red>{loginManager.AvailableServers[serverCode]}ms</color>")}</size>";
+            //pingImg.sprite = loginManager.AvailableServers[serverCode] < 100 ? goodPing : loginManager.AvailableServers[serverCode] > 100 && loginManager.AvailableServers[serverCode] < 250 ? mediumPing : badPing;
+            //changeServer.interactable = true;
+
+            selectedServerTMP.text = $"<color=white>{GameManager.GetRegionName(serverCode)}</color>";
             changeServer.interactable = true;
         }
     }
@@ -129,7 +127,7 @@ public class ServerItem : MonoBehaviour
 
         changeServer.interactable = lobbyController.AvailableServers.ContainsKey(serverCode);
 
-        if (!lobbyController.AvailableServers.ContainsKey(serverCode))
+        if (!userData.ServerList.Contains(serverCode))
         {
             selectedServerTMP.text = $"{GameManager.GetRegionName(serverCode)} <size=25><color=red>Not Available</color></size>";
             changeServer.interactable = false;
@@ -137,8 +135,10 @@ public class ServerItem : MonoBehaviour
         }
         else
         {
-            selectedServerTMP.text = $"<color=white>{GameManager.GetRegionName(serverCode)}</color> <size=25>{(lobbyController.AvailableServers[serverCode] < 100 ? $"<color=#00BA0D>{lobbyController.AvailableServers[serverCode]}ms</color>" : lobbyController.AvailableServers[serverCode] > 100 && lobbyController.AvailableServers[serverCode] < 250 ? $"<color=#D26E05>{lobbyController.AvailableServers[serverCode]}ms</color>" : $"<color=red>{lobbyController.AvailableServers[serverCode]}ms</color>")}</size>";
-            pingImg.sprite = lobbyController.AvailableServers[serverCode] < 100 ? goodPing : lobbyController.AvailableServers[serverCode] > 100 && lobbyController.AvailableServers[serverCode] < 250 ? mediumPing : badPing;
+            //selectedServerTMP.text = $"<color=white>{GameManager.GetRegionName(serverCode)}</color> <size=25>{(lobbyController.AvailableServers[serverCode] < 100 ? $"<color=#00BA0D>{lobbyController.AvailableServers[serverCode]}ms</color>" : lobbyController.AvailableServers[serverCode] > 100 && lobbyController.AvailableServers[serverCode] < 250 ? $"<color=#D26E05>{lobbyController.AvailableServers[serverCode]}ms</color>" : $"<color=red>{lobbyController.AvailableServers[serverCode]}ms</color>")}</size>";
+            //pingImg.sprite = lobbyController.AvailableServers[serverCode] < 100 ? goodPing : lobbyController.AvailableServers[serverCode] > 100 && lobbyController.AvailableServers[serverCode] < 250 ? mediumPing : badPing;
+
+            selectedServerTMP.text = $"<color=white>{GameManager.GetRegionName(serverCode)}</color>";
             changeServer.interactable = true;
         }
     }

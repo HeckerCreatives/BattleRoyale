@@ -82,19 +82,7 @@ public class SprintState : PlayerOnGround
     {
         if (playerPlayables.stamina.Stamina > 0f)
         {
-            if (playerPlayables.inventory.WeaponIndex == 1)
-            {
-                if (!playerMovement.IsSprint)
-                {
-                    if (playerMovement.MoveDirection != Vector3.zero)
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RunPlayable);
-                    else
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.IdlePlayable);
-                }
-
-                return;
-            }
-            else if (playerPlayables.inventory.WeaponIndex == 2)
+            if (playerPlayables.inventory.WeaponIndex == 2)
             {
                 if (playerPlayables.inventory.PrimaryWeaponID() == "001")
                 {
@@ -127,11 +115,23 @@ public class SprintState : PlayerOnGround
                         playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowSprintPlayable);
                 }
             }
+
+            if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
+            {
+                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.IdlePlayable);
+            }
+            else if (!playerMovement.IsSprint)
+            {
+                if (playerMovement.MoveDirection != Vector3.zero)
+                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RunPlayable);
+            }
         }
         else
         {
             if (playerMovement.MoveDirection == Vector3.zero)
+            {
                 playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.IdlePlayable);
+            }
             else
                 playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RunPlayable);
         }

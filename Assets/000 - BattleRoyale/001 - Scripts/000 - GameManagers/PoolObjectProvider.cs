@@ -91,6 +91,8 @@ public class PoolObjectProvider : Fusion.Behaviour, INetworkObjectProvider
         // -- At this point a free queue was not yet created or were empty. Create new object.
         result = Instantiate(prefab);
 
+        result.gameObject.SetActive(true);
+
         return result;
     }
 

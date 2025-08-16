@@ -20,6 +20,7 @@ public class TrapWeaponController : NetworkBehaviour
     [field: SerializeField][Networked] public string SpawnedBy { get; set; }
     [field: SerializeField][Networked] public bool CloseTrap { get; set; }
     [field: SerializeField][Networked] public Vector3 Rotation { get; set; }
+    [field: SerializeField][Networked] public Vector3 Position { get; set; }
     [field: SerializeField][Networked] public bool CanDamage { get; set; }
 
     //  ====================
@@ -38,9 +39,10 @@ public class TrapWeaponController : NetworkBehaviour
         trapAudioSource.PlayOneShot(trapPlaced);
     }
 
-    public void Initialize(string spawnedby, Vector3 rotation)
+    public void Initialize(string spawnedby, Vector3 position, Vector3 rotation)
     {
         SpawnedBy = spawnedby;
+        Position = position;
         Rotation = rotation;
         Invoke(nameof(DamageStart), 3f);
     }
@@ -67,6 +69,8 @@ public class TrapWeaponController : NetworkBehaviour
             }
 
             transform.rotation = Quaternion.Euler(Rotation);
+
+            transform.position = Position;
         }
     }
 

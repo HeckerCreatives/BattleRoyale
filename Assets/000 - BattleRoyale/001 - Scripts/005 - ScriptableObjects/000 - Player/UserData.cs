@@ -111,6 +111,9 @@ public class UserData : ScriptableObject
     [field: Header("MESSAGES")]
     [field: SerializeField] public List<MessageItem> Messages { get; set; }
 
+    [field: Header("SERVERS")]
+    [field: SerializeField] public List<string> ServerList { get; set; }
+
 
 
     //  ===========================

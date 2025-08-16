@@ -23,7 +23,6 @@ public class BulletController : NetworkBehaviour
     [SerializeField] private bool alreadyHit;
 
     [field: Space]
-    [field: SerializeField][Networked] public Vector3 TargetPos { get; set; }
     [field: SerializeField][Networked] public Vector3 TargetPoint { get; set; }
     [field: SerializeField][Networked] public Vector3 StartPos { get; set; }
     [field: SerializeField][Networked] public Vector3 HitEffectRotation { get; set; }
@@ -108,7 +107,6 @@ public class BulletController : NetworkBehaviour
     {
         StartPos = startPos;
         TargetPoint = targetObj.Point;
-        TargetPos = targetObj.GameObject.transform.position;
         transform.position = startPos;
 
         TargetObj = targetObj;

@@ -22,7 +22,12 @@ public class AmbianceController : MonoBehaviour
             GameManager.Instance.AudioController.OnVolumeChange += VolumeChange;
         }
         else
-            gameObject.SetActive(false);
+        {
+            foreach (var ambience in ambienceSources)
+            {
+                ambience.enabled = false;
+            }
+        }
     }
 
     private void OnDisable()

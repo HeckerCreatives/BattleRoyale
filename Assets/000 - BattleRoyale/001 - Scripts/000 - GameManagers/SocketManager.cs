@@ -297,7 +297,11 @@ public class SocketManager : MonoBehaviour
         });
 
 
-        EmitEvent("login", userData.Username);
+        EmitEvent("login", JsonConvert.SerializeObject(new Dictionary<string, string>
+        {
+            { "userid", userData.Username },
+            { "region", userData.SelectedServer }
+        }));
     }
 
     private void RestartPingTimeout()

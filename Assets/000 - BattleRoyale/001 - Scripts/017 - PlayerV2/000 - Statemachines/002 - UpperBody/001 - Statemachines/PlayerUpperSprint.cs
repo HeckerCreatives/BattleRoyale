@@ -68,21 +68,9 @@ public class PlayerUpperSprint : UpperNoAimState
 
     private void WeaponsChecker()
     {
-        if (playerPlayables.stamina.Stamina > 0f)
+        if (playerPlayables.stamina.Stamina > 0f || !playerMovement.IsSprint)
         {
-            if (playerPlayables.inventory.WeaponIndex == 1)
-            {
-                if (!playerMovement.IsSprint)
-                {
-                    if (playerMovement.MoveDirection != Vector3.zero)
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RunPlayables);
-                    else
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.IdlePlayables);
-                }
-
-                
-            }
-            else if (playerPlayables.inventory.WeaponIndex == 2)
+            if (playerPlayables.inventory.WeaponIndex == 2)
             {
                 if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "001")
                 {
@@ -108,6 +96,17 @@ public class PlayerUpperSprint : UpperNoAimState
                     if (playerMovement.MoveDirection != Vector3.zero)
                         playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowSprintPlayable);
                 }
+            }
+
+
+            if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
+            {
+                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.IdlePlayables);
+            }
+            else if (!playerMovement.IsSprint)
+            {
+                if (playerMovement.MoveDirection != Vector3.zero)
+                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RunPlayables);
             }
         }
         else

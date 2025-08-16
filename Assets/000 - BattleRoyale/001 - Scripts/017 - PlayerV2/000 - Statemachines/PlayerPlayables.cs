@@ -200,7 +200,10 @@ public class PlayerPlayables : NetworkBehaviour
     public void SetLookAtWeight(float newWeight)
     {
         if (!lookAtPlayable.IsValid())
+        {
+            Debug.Log("look at playable not valid");
             return;
+        }
 
         var currentJob = lookAtPlayable.GetJobData<LookAtJobBoneIK>();
         currentJob.weight = newWeight; // Smooth transition

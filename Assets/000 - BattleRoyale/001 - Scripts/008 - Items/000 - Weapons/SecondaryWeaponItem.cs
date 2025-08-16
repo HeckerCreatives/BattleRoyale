@@ -65,25 +65,23 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
         {
             if (IsEquipped)
             {
-                transform.parent = WeaponID == "003"
+                transform.SetParent(WeaponID == "003"
                     ? PlayerCore.Inventory.RifleHand
-                    : PlayerCore.Inventory.BowHand;
-                transform.localPosition = Vector3.zero;
-                transform.localRotation = Quaternion.identity;
+                    : PlayerCore.Inventory.BowHand, false);
+                transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
             }
             else
             {
-                transform.parent = WeaponID == "003"
+                transform.SetParent(WeaponID == "003"
                     ? PlayerCore.Inventory.RifleBack
-                    : PlayerCore.Inventory.BowBack;
-                transform.localPosition = Vector3.zero;
-                transform.localRotation = Quaternion.identity;
+                    : PlayerCore.Inventory.BowBack, false);
+                transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
             }
         }
         else
         {
             // If dropped, keep the position/rotation as-is (or update if needed)
-            transform.parent = null;
+            transform.SetParent(null, false);
             transform.position = Position;
             transform.rotation = Quaternion.Euler(dropRotation);
         }
@@ -96,25 +94,23 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
         {
             if (IsEquipped)
             {
-                transform.parent = WeaponID == "003"
+                transform.SetParent(WeaponID == "003"
                     ? PlayerCore.Inventory.RifleHand
-                    : PlayerCore.Inventory.BowHand;
-                transform.localPosition = Vector3.zero;
-                transform.localRotation = Quaternion.identity;
+                    : PlayerCore.Inventory.BowHand, false);
+                transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
             }
             else
             {
-                transform.parent = WeaponID == "003"
+                transform.SetParent(WeaponID == "003"
                     ? PlayerCore.Inventory.RifleBack
-                    : PlayerCore.Inventory.BowBack;
-                transform.localPosition = Vector3.zero;
-                transform.localRotation = Quaternion.identity;
+                    : PlayerCore.Inventory.BowBack, false);
+                transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
             }
         }
         else
         {
             // If dropped, keep the position/rotation as-is (or update if needed)
-            transform.parent = null;
+            transform.SetParent(null, false);
             transform.position = Position;
             transform.rotation = Quaternion.Euler(dropRotation);
         }
@@ -153,6 +149,19 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
         else
             tempPlayerinventory.SecondaryWeapon = this;
 
+        if (isBot)
+        {
+            Botdata tempbotdata = player.GetComponent<Botdata>();
+            BotData = tempbotdata;
+        }
+        else
+        {
+            PlayerOwnObjectEnabler tempcore = player.GetComponent<PlayerOwnObjectEnabler>();
+            PlayerCore = tempcore;
+        }
+
+        Supplies = supplies;
+
         IsPickedUp = true;
 
         if (isBot) IsEquipped = true;
@@ -169,20 +178,7 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
                 //transform.parent = Back.transform;
             }
         }
-        
 
-        Supplies = supplies;
-
-        if (isBot)
-        {
-            Botdata tempbotdata = player.GetComponent<Botdata>();
-            BotData = tempbotdata;
-        }
-        else
-        {
-            PlayerOwnObjectEnabler tempcore = player.GetComponent<PlayerOwnObjectEnabler>();
-            PlayerCore = tempcore;
-        }
 
         finalAction?.Invoke();
     }
