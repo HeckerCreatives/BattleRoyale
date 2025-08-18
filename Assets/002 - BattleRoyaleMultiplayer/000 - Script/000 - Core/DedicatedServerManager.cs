@@ -941,6 +941,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
                     battleSpawnPosIndex++;
                 }
+
+                yield return null;
             }
 
             for (int a = 0; a < Bots.Count; a++)
@@ -950,14 +952,33 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 SpawnItems(Bots.ElementAt(a).Value);
 
                 battleSpawnPosIndex++;
+
+                yield return null;
             }
 
             if (battleSpawnPosIndex >= (Bots.Count + Players.Count)) isDone = true;
+
+            yield return null;
         }
 
         yield return new WaitForSeconds(5f);
 
         //  WAIT 5 SECONDS HERE
+
+        for (int a = 0; a < Players.Count; a++)
+        {
+            // Set player position
+
+            if (Players.ElementAt(a).Value.transform.position.x != spawnBattleAreaPositions[battleSpawnPosIndex].position.x && Players.ElementAt(a).Value.transform.position.z != spawnBattleAreaPositions[battleSpawnPosIndex].position.z)
+            {
+                Players.ElementAt(a).Value.GetComponent<PlayerHealthV2>().CurrentHealth = 100f;
+            }
+
+            yield return null;
+        }
+
+        yield return new WaitForSeconds(1f);
+
 
         DonePlayerBattlePositions = true;
 

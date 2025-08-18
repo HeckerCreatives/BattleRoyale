@@ -13,12 +13,14 @@ public class FallingRangeState : AnimationPlayable
     public override void Enter()
     {
         base.Enter();
+
     }
 
     public override void Exit()
     {
         base.Exit();
-
+        playerPlayables.healthV2.FallDamageValue = 0f;
+        characterController.ResetVelocity();
     }
 
     public override void NetworkUpdate()
