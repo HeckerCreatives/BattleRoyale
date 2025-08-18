@@ -233,6 +233,7 @@ public class SocketManager : MonoBehaviour
         {
             GameManager.Instance.AddJob(() =>
             {
+                Debug.Log("player count change");
                 PlayerCountServer = response.GetValue<int>();
             });
         });
@@ -242,6 +243,7 @@ public class SocketManager : MonoBehaviour
         {
             GameManager.Instance.AddJob(() =>
             {
+                Debug.Log("Change asia user count");
                 PlayerAsiaCountServer = response.GetValue<int>();
             });
         });
@@ -250,6 +252,7 @@ public class SocketManager : MonoBehaviour
         {
             GameManager.Instance.AddJob(() =>
             {
+                Debug.Log("Change asia uae count");
                 PlayerUAECountServer = response.GetValue<int>();
             });
         });
@@ -262,7 +265,7 @@ public class SocketManager : MonoBehaviour
             });
         });
 
-        Socket.On("americaeastcount", (response) =>
+        Socket.On("americacount", (response) =>
         {
             GameManager.Instance.AddJob(() =>
             {
@@ -297,13 +300,13 @@ public class SocketManager : MonoBehaviour
         });
 
 
-        //EmitEvent("login", JsonConvert.SerializeObject(new Dictionary<string, string>
-        //{
-        //    { "userid", userData.Username },
-        //    { "region", userData.SelectedServer }
-        //}));
+        EmitEvent("login", JsonConvert.SerializeObject(new Dictionary<string, string>
+        {
+            { "userid", userData.Username },
+            { "region", userData.SelectedServer }
+        }));
 
-        EmitEvent("login", userData.Username);
+        //EmitEvent("login", userData.Username);
     }
 
     private void RestartPingTimeout()

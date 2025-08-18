@@ -100,6 +100,8 @@ public class ClientMatchmakingController : MonoBehaviour
             {
                 string tempresponse = response.ToString();
 
+                Debug.Log(tempresponse);
+
                 GameManager.Instance.AddJob(() =>
                 {
                     if (matchFound) return;
@@ -407,15 +409,17 @@ public class ClientMatchmakingController : MonoBehaviour
                     networkSceneInfo.AddSceneRef(sceneRef, LoadSceneMode.Single, LocalPhysicsMode.None, true);
                 }
 
-                //var appSettings = BuildCustomAppSetting(userData.SelectedServer);
+                var appSettings = BuildCustomAppSetting(userData.SelectedServer);
+
+                Debug.Log($"FINDING MATCH TO SERVER {userData.SelectedServer}");
 
                 return runner.StartGame(new StartGameArgs()
                 {
                     GameMode = gameMode,
                     SceneManager = runner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
                     Scene = sceneRef,
-                    SessionName = roomname
-                    //CustomPhotonAppSettings = appSettings
+                    SessionName = roomname,
+                    CustomPhotonAppSettings = appSettings
                 });
             }
         }

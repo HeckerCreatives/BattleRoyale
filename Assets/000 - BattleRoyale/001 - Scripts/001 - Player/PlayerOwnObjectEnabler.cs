@@ -175,7 +175,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
 
         if (ServerManager.CurrentGameState == GameState.WAITINGAREA)
         {
-            GameManager.Instance.NotificationController.ShowConfirmation("Quit now and lose 1 energy", () =>
+            GameManager.Instance.NotificationController.ShowConfirmation("Quit now and lose 2 energy", () =>
             {
                 Runner.Shutdown();
                 GameManager.Instance.SceneController.CurrentScene = "Lobby";
@@ -183,7 +183,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         }
         else if (ServerManager.CurrentGameState == GameState.ARENA)
         {
-            GameManager.Instance.NotificationController.ShowConfirmation("Quit now and lose all XP, points, and 1 energy.", () =>
+            GameManager.Instance.NotificationController.ShowConfirmation("Quit now and lose all XP, points, and 2 energy.", () =>
             {
                 Runner.Shutdown();
                 GameManager.Instance.SceneController.CurrentScene = "Lobby";

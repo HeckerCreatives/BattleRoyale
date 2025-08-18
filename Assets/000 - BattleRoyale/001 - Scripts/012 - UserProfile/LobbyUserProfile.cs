@@ -49,7 +49,7 @@ public class LobbyUserProfile : MonoBehaviour
 
     private void EnergyChange(object sender, EventArgs e)
     {
-        energyTMP.text = $"{userData.GameDetails.energy:n0} / 10";
+        energyTMP.text = $"{userData.GameDetails.energy:n0} / 20";
     }
 
     private void TitleChange(object sender, EventArgs e)

@@ -390,9 +390,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     public void InitializeSocket()
     {
         Debug.Log("starting initialize socket");
-        var uri = new Uri("http://localhost:5007");
+        var uri = new Uri("http://localhost:5008/");
 
-        Debug.Log($"Initializing URI.... http://localhost:5007");
+        Debug.Log($"Initializing URI.... http://localhost:5008/");
 
         try
         {
@@ -675,7 +675,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         else
             appSettings = BuildCustomAppSetting("asia");
 
-        //Debug.Log($"STARTING REGION: {appSettings.FixedRegion}");
+        Debug.Log($"STARTING REGION: {appSettings.FixedRegion}");
 
         await networkRunner.StartGame(new StartGameArgs()
         {

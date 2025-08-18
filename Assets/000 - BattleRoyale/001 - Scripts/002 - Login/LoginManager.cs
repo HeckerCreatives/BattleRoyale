@@ -17,6 +17,7 @@ public class LoginManager : MonoBehaviour
 {
     [SerializeField] private UserData userData;
     [SerializeField] private NetworkRunner instanceRunner;
+    [SerializeField] private TextMeshProUGUI clientVersionTMP;
 
     [Space]
     [SerializeField] private AudioClip buttonClip;
@@ -316,6 +317,8 @@ public class LoginManager : MonoBehaviour
 
     private void Awake()
     {
+        clientVersionTMP.text = $"Client Version v{Application.version}";
+
         float brightness = GameManager.Instance.GraphicsManager.CurrentBrightness * 10f - 5f;
         if (postProcessing.profile.TryGet<ColorAdjustments>(out colorAdjustments))
         {
@@ -491,6 +494,8 @@ public class LoginManager : MonoBehaviour
                     userData.RememberMeDelete();
                 }
 
+                CheckSelectedServer();
+
                 Debug.Log("starting initialize socket");
                 GameManager.Instance.SocketMngr.InitializeSocket();
 
@@ -598,7 +603,7 @@ public class LoginManager : MonoBehaviour
     {
         if (userData.SelectedServer == "asia")
             selectedServerPlayersOnlineTMP.text = GameManager.Instance.SocketMngr.PlayerAsiaCountServer.ToString("n0");
-        else if (userData.SelectedServer == "za")
+        else if (userData.SelectedServer == "tr")
             selectedServerPlayersOnlineTMP.text = GameManager.Instance.SocketMngr.PlayerAfricaCountServer.ToString("n0");
         else if (userData.SelectedServer == "uae")
             selectedServerPlayersOnlineTMP.text = GameManager.Instance.SocketMngr.PlayerUAECountServer.ToString("n0");
@@ -768,9 +773,6 @@ public class LoginManager : MonoBehaviour
         //Destroy(currentRunnerInstance.gameObject);
 
         //currentRunnerInstance = null;
-
-        CheckSelectedServer();
-
 
         loginObj.SetActive(false);
         selectedServer.SetActive(true);

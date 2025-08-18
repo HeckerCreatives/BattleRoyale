@@ -57,22 +57,34 @@ public class ServerItem : MonoBehaviour
 
     private void USChange(object sender, EventArgs e)
     {
-        ChangeServerCount();
+        string display = "0";
+        display = GameManager.Instance.SocketMngr.PlayerAmericaEastCountServer.ToString("n0");
+        userCount.text = display;
+        userCount.color = Color.white; // just in case
     }
 
     private void UAEChange(object sender, EventArgs e)
     {
-        ChangeServerCount();
+        string display = "0";
+        display = GameManager.Instance.SocketMngr.PlayerUAECountServer.ToString("n0");
+        userCount.text = display;
+        userCount.color = Color.white; // just in case
     }
 
     private void AfricaChange(object sender, EventArgs e)
     {
-        ChangeServerCount();
+        string display = "0";
+        display = GameManager.Instance.SocketMngr.PlayerAfricaCountServer.ToString("n0");
+        userCount.text = display;
+        userCount.color = Color.white; // just in case
     }
 
     private void AsiaChange(object sender, EventArgs e)
     {
-        ChangeServerCount();
+        string display = "0";
+        display = GameManager.Instance.SocketMngr.PlayerAsiaCountServer.ToString("n0");
+        userCount.text = display;
+        userCount.color = Color.white; // just in case
     }
 
     private void ChangeServerCount()
@@ -81,7 +93,7 @@ public class ServerItem : MonoBehaviour
         switch (serverCode)
         {
             case "asia": display = GameManager.Instance.SocketMngr.PlayerAsiaCountServer.ToString("n0"); break;
-            case "za": display = GameManager.Instance.SocketMngr.PlayerAfricaCountServer.ToString("n0"); break;
+            case "tr": display = GameManager.Instance.SocketMngr.PlayerAfricaCountServer.ToString("n0"); break;
             case "uae": display = GameManager.Instance.SocketMngr.PlayerUAECountServer.ToString("n0"); break;
             case "us": display = GameManager.Instance.SocketMngr.PlayerAmericaEastCountServer.ToString("n0"); break;
             case "usw": display = GameManager.Instance.SocketMngr.PlayerAmericaWestCountServer.ToString("n0"); break;
@@ -145,14 +157,11 @@ public class ServerItem : MonoBehaviour
 
     public void ChangeServer()
     {
-        if (!isLoggin)
+        GameManager.Instance.SocketMngr.EmitEvent("changeregion", JsonConvert.SerializeObject(new Dictionary<string, string>()
         {
-            GameManager.Instance.SocketMngr.EmitEvent("changeregion", JsonConvert.SerializeObject(new Dictionary<string, string>()
-            {
-                { "oldregion", userData.SelectedServer },
-                { "newregion", serverCode }
-            }));
-        }
+            { "oldregion", userData.SelectedServer },
+            { "newregion", serverCode }
+        }));
 
         userData.SelectedServer = serverCode;
 

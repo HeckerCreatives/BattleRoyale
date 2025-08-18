@@ -213,6 +213,8 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
     {
         Ray tempRay = new Ray(cameraHitOrigin, cameraHitDirection);
 
+        //Debug.DrawRay(cameraHitOrigin, cameraHitDirection * 999f, Color.red, 5);
+
         LagCompensatedHit hit = new LagCompensatedHit();
         bool validTargetFound = false;
         Vector3 raystart = tempRay.origin;
@@ -243,8 +245,11 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
         {
             PlayerCore.CurrentPlayerPlayables.SpawnBullets(impactPoint.transform.position, hit, WeaponID == "003" ? 5f : 2.5f);
 
+            //Debug.Log($"raycast hit: {hit.GameObject.name}");
+
             if (hit.Hitbox != null)
             {
+
                 if (hit.Hitbox.Root.tag == "Bot")
                 {
                     Botdata tempdata = hit.Hitbox.Root.GetComponent<Botdata>();

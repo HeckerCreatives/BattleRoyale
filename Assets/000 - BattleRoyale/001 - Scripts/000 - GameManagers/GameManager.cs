@@ -564,9 +564,10 @@ public class GameManager : MonoBehaviour
             case "za": return "South Africa";
             case "sa": return "South America";
             case "kr": return "South Korea";
-            case "tr": return "Turkey";
+            //case "tr": return "Turkey";
+            case "tr": return "South Africa";
             case "uae": return "U.A.E.";
-            case "us": return "USA East";
+            case "us": return "USA";
             case "usw": return "USA West";
             case "ussc": return "USA South Central";
             default: return $"Unknown Region ({code})";
@@ -588,9 +589,10 @@ public class GameManager : MonoBehaviour
             case "za": return "SouthAfrica";
             case "sa": return "SouthAmerica";
             case "kr": return "SouthKorea";
-            case "tr": return "Turkey";
+            //case "tr": return "Turkey";
+            case "tr": return "South Africa";
             case "uae": return "UAE";
-            case "us": return "USAEast";
+            case "us": return "USA";
             case "usw": return "USAWest";
             case "ussc": return "USASouthCentral";
             default: return $"Unknown Region ({code})";
