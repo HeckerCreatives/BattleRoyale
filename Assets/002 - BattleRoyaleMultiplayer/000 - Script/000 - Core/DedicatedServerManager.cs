@@ -329,6 +329,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         "FloofCircuit",
         "Meowdule"
     };
+    [SerializeField] private bool canStartCountDownToCloseServer;
+    [SerializeField] private float closeServerCount;
 
     [field: Space]
     [field: SerializeField][Networked] public GameState CurrentGameState { get; set; }
@@ -725,12 +727,16 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
 
 #if !UNITY_ANDROID && !UNITY_IOS
-        //if (useMultiplay)
-        //{
-        //    Debug.Log("Initializing Multiplay");
-        //    await multiplayController.InitializeUnityAuthentication();
-        //}
+            //if (useMultiplay)
+            //{
+            //    Debug.Log("Initializing Multiplay");
+            //    await multiplayController.InitializeUnityAuthentication();
+            //}
 #endif
+
+            canStartCountDownToCloseServer = true;
+
+            closeServerCount = 600;
 
             networkRunner.SessionInfo.IsOpen = true;
             networkRunner.SessionInfo.IsVisible = true;
@@ -788,6 +794,21 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         CountDownWaitingAreaTimer();
         CountDownSafeZoneTimer();
         SpawnBot();
+    }
+
+    private void Update()
+    {
+        if (canStartCountDownToCloseServer)
+        {
+            if (closeServerCount <= 0)
+            {
+                Application.Quit();
+
+                return;
+            }
+
+            closeServerCount -= Time.deltaTime;
+        }
     }
 
     #region GAME LOGIC
@@ -942,7 +963,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                     battleSpawnPosIndex++;
                 }
 
-                yield return null;
             }
 
             for (int a = 0; a < Bots.Count; a++)
@@ -952,13 +972,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 SpawnItems(Bots.ElementAt(a).Value);
 
                 battleSpawnPosIndex++;
-
-                yield return null;
             }
 
             if (battleSpawnPosIndex >= (Bots.Count + Players.Count)) isDone = true;
-
-            yield return null;
         }
 
         yield return new WaitForSeconds(5f);
@@ -973,8 +989,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             {
                 Players.ElementAt(a).Value.GetComponent<PlayerHealthV2>().CurrentHealth = 100f;
             }
-
-            yield return null;
         }
 
         yield return new WaitForSeconds(1f);
@@ -1143,6 +1157,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             //    nobject.GetComponent<BulletController>().Fire(Object.InputAuthority, playerInventory.SecondaryWeapon.impactPoint.position, mainCorePlayable.Object, hit, playerNetworkLoader.Username);
             //});
 
+            canStartCountDownToCloseServer = false;
+
             int tempspawnpos = UnityEngine.Random.Range(0, spawnWaitingAreaPositions.Count);
 
             NetworkObject playerCharacter = Runner.Spawn(playerObj, Vector3.up, Quaternion.identity, player, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
@@ -1243,6 +1259,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             if (Players.Count <= 0 && CanCountWaitingAreaTimer)
             {
+                closeServerCount = 600;
+                canStartCountDownToCloseServer = true;
                 WaitingAreaTimer = waitingAreaStartTimer;
                 CanCountWaitingAreaTimer = false;
                 CurrentWaitingAreaTimerState = WaitingAreaTimerState.WAITING;
