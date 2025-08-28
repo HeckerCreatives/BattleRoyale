@@ -436,6 +436,7 @@
     <None Include="Assets\TextMesh Pro\Resources\LineBreaking Following Characters.txt" />
     <None Include="Assets\Photon\Fusion\Plugins\NanoSockets\Windows\nanosockets.dll" />
     <None Include="Assets\Photon\FusionAddons\SimpleKCC\simple_kcc_build_info.txt" />
+    <None Include="Assets\OneSignal\link.xml" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile Masking.shader" />
     <None Include="Assets\UnityTechnologies\ParticlePack\EffectExamples\Misc Effects\Shaders\FireFly.shader" />
     <None Include="Assets\Photon\Fusion\Assemblies\Fusion.Realtime.xml" />
@@ -1529,6 +1530,10 @@
       <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.Shared.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="OneSignal.Core">
+      <HintPath>Library\ScriptAssemblies\OneSignal.Core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.ShaderGraph.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.ShaderGraph.Editor.dll</HintPath>
       <Private>False</Private>
@@ -1593,12 +1598,12 @@
       <HintPath>Library\ScriptAssemblies\Unity.Postprocessing.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.Services.Authentication">
-      <HintPath>Library\ScriptAssemblies\Unity.Services.Authentication.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.VisualScripting.State.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.VisualScripting.State.Editor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Services.Authentication">
+      <HintPath>Library\ScriptAssemblies\Unity.Services.Authentication.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Services.Matchmaker">
@@ -1621,10 +1626,6 @@
       <HintPath>Library\ScriptAssemblies\Unity.TextMeshPro.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Unity.Searcher.Editor">
-      <HintPath>Library\ScriptAssemblies\Unity.Searcher.Editor.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Unity.AI.Navigation.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.AI.Navigation.Editor.dll</HintPath>
       <Private>False</Private>
@@ -1635,6 +1636,10 @@
     </Reference>
     <Reference Include="Cinemachine">
       <HintPath>Library\ScriptAssemblies\Cinemachine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.Searcher.Editor">
+      <HintPath>Library\ScriptAssemblies\Unity.Searcher.Editor.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -1659,6 +1664,10 @@
       <Project>{39DD10B8-5E09-AA4F-A9BF-DB8C3491909F}</Project>
       <Name>Fusion.Unity.Editor</Name>
     </ProjectReference>
+    <ProjectReference Include="OneSignal.UnityPackage.Editor.csproj">
+      <Project>{696C04F0-4D43-E778-2C9C-B361AD52B47B}</Project>
+      <Name>OneSignal.UnityPackage.Editor</Name>
+    </ProjectReference>
     <ProjectReference Include="CandyCoded.env.Editor.csproj">
       <Project>{652DA2B4-4548-077C-D3D4-018807E1AB6E}</Project>
       <Name>CandyCoded.env.Editor</Name>
@@ -1670,6 +1679,10 @@
     <ProjectReference Include="GPUInstancer.csproj">
       <Project>{1CBED70B-07CF-FF1F-EAB9-39B68024B59C}</Project>
       <Name>GPUInstancer</Name>
+    </ProjectReference>
+    <ProjectReference Include="OneSignal.UnityPackage.Example.csproj">
+      <Project>{6EED820A-661E-51B8-151E-3D72CD054A99}</Project>
+      <Name>OneSignal.UnityPackage.Example</Name>
     </ProjectReference>
     <ProjectReference Include="Unity.PlayableGraphVisualizer.csproj">
       <Project>{ED9EC5B1-5D4A-247A-494A-AB761B738205}</Project>
@@ -1690,6 +1703,10 @@
     <ProjectReference Include="Unity.PlayableGraphVisualizer.Editor.csproj">
       <Project>{955DAEF8-27ED-9BCD-DB9B-38145D9182B7}</Project>
       <Name>Unity.PlayableGraphVisualizer.Editor</Name>
+    </ProjectReference>
+    <ProjectReference Include="OneSignal.UnityPackage.Attribution.csproj">
+      <Project>{41F7B55E-6471-5084-61A6-54524D077564}</Project>
+      <Name>OneSignal.UnityPackage.Attribution</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -52,6 +52,8 @@ public class Botdata : NetworkBehaviour
     [field: SerializeField][Networked] public TickTimer DeadTimer { get; set; }
     [field: SerializeField][Networked] public TickTimer HealTimer { get; set; }
     [field: SerializeField][Networked] public TickTimer ArmorTimer { get; set; }
+    [field: SerializeField][Networked] public TickTimer DamageAwareness { get; set; }
+    [field: SerializeField][Networked] public NetworkObject DamageBy { get; set; }
 
     //  ======================
 
@@ -193,6 +195,10 @@ public class Botdata : NetworkBehaviour
         if (IsDead) return;
 
         Hitted++;
+
+        DamageBy = nobject;
+
+        DamageAwareness = TickTimer.CreateFromSeconds(Runner, 10f);
 
         if (ServerManager.CurrentGameState != GameState.ARENA) return;
 

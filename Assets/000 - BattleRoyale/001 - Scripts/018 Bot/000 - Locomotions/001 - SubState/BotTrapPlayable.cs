@@ -65,8 +65,6 @@ public class BotTrapPlayable : BotAnimationPlayable
 
     private void MovePlayer()
     {
-        botMovement.DetectTarget();
-
         if (botMovement.detectedTarget != null)
         {
             if (botPlayables.Inventroy.WeaponIndex == 1)

@@ -392,9 +392,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     public void InitializeSocket()
     {
         Debug.Log("starting initialize socket");
-        var uri = new Uri("http://localhost:5008/");
+        var uri = new Uri("http://localhost:5009/");
 
-        Debug.Log($"Initializing URI.... http://localhost:5008/");
+        Debug.Log($"Initializing URI.... http://localhost:5009/");
 
         try
         {
@@ -996,7 +996,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         DonePlayerBattlePositions = true;
 
-        SafeZoneTimer = 100f;
+        SafeZoneTimer = 85f;
         CurrentSafeZoneState = SafeZoneState.TIMER;
     }
 

@@ -5,10 +5,13 @@ using Aws.GameLift.Server;
 using Fusion;
 using Fusion.Sample.DedicatedServer;
 using MyBox;
+using OneSignalSDK;
+using OneSignalSDK.Notifications;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -116,7 +119,7 @@ public class Loader : MonoBehaviour
 
     private void CustomServer()
     {
-        
+
 #if !UNITY_ANDROID && !UNITY_IOS
         var args = CommandLineHelper.GetArgs();
 
@@ -154,17 +157,44 @@ public class Loader : MonoBehaviour
             SceneManager.LoadScene("Persistent");
         }
 #else
-                if (isDebugServer)
-                {
-                    Application.runInBackground = true;
-                    Application.targetFrameRate = 30;
-                    userData.Username = "Server";
+        if (isDebugServer)
+        {
+            Application.runInBackground = true;
+            Application.targetFrameRate = 30;
+            userData.Username = "Server";
 
-                    SceneManager.LoadScene(scene);
-                    return;
-                }
+            SceneManager.LoadScene(scene);
+            return;
+        }
 
-                SceneManager.LoadScene("Persistent");
+        InitializeOneSignal();
 #endif
+    }
+
+    private async Task InitializeOneSignal()
+    {
+        OneSignal.Initialize("ea9a6f18-f823-4e81-a388-6ba45633972a");
+
+        OneSignal.ConsentRequired = true;
+
+        if (OneSignal.Notifications.Permission)
+        {
+            SceneManager.LoadScene("Persistent");
+        }
+        else
+        {
+            OneSignal.Notifications.PermissionChanged += CheckPermission;
+            await OneSignal.Notifications.RequestPermissionAsync(true);
+        }
+    }
+
+    private void CheckPermission(object sender, NotificationPermissionChangedEventArgs e)
+    {
+        if (e.Permission)
+        {
+            OneSignal.ConsentGiven = true;
+        }
+
+        SceneManager.LoadScene("Persistent");
     }
 }

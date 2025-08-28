@@ -21,6 +21,7 @@ public class BotMovementController : NetworkBehaviour
 
     [SerializeField] private SimpleKCC botKCC;
     [SerializeField] private BotPlayables playables;
+    [SerializeField] private Botdata botData;
 
     [Space]
     [SerializeField] private float detectionRadius = 10f;
@@ -30,6 +31,10 @@ public class BotMovementController : NetworkBehaviour
     [SerializeField] private float maxWanderDelay = 5f;
     [SerializeField] private LayerMask playerLayer;
     [SerializeField] private LayerMask obstructionLayer;
+
+    [Space]
+    [SerializeField] private float maxSlopeAngle = 45f; // max walkable slope
+    [SerializeField] private LayerMask groundLayer;
 
     [Header("DEBUGGER")]
     [SerializeField] private Vector3 direction;
@@ -55,7 +60,17 @@ public class BotMovementController : NetworkBehaviour
 
     public void DetectTarget()
     {
-        // Check if current target is still valid
+        if (detectedTarget == gameObject)
+        {
+            SetTarget(null);
+        }
+
+        if (cacheDetectedTargetBotdata == gameObject)
+        {
+            SetTarget(null);
+        }
+
+        // 1. If current target is still valid → keep it
         if (detectedTarget != null && (cacheDetectedTargetBotdata != null || cacheDetectedTargetPlayerdata != null))
         {
             Vector3 dirToTarget = (detectedTarget.transform.position - transform.position).normalized;
@@ -73,7 +88,7 @@ public class BotMovementController : NetworkBehaviour
 
             if (detectedTarget.tag == "Bot")
             {
-                isInvalid = cacheDetectedTargetBotdata.Object.IsValid && (cacheDetectedTargetBotdata.IsStagger || cacheDetectedTargetBotdata.IsGettingUp || cacheDetectedTargetBotdata.IsDead);
+                isInvalid = (cacheDetectedTargetBotdata.Object.IsValid && (cacheDetectedTargetBotdata.IsStagger || cacheDetectedTargetBotdata.IsGettingUp || cacheDetectedTargetBotdata.IsDead)) || cacheDetectedTargetPlayerdata == transform.root;
 
                 isDead = cacheDetectedTargetBotdata.IsDead;
             }
@@ -95,12 +110,29 @@ public class BotMovementController : NetworkBehaviour
             }
         }
 
-        // Search for a new target
+        // 2. If recently damaged → chase attacker
+        if (botData.DamageBy != null && !botData.DamageAwareness.Expired(Runner))
+        {
+            GameObject attacker = botData.DamageBy.gameObject;
+            if (attacker != null)
+            {
+                float distance = Vector3.Distance(transform.position, attacker.transform.position);
+                if (distance <= 50)
+                {
+                    SetTarget(attacker);
+                    return;
+                }
+            }
+        }
+        else
+            botData.DamageBy = null;
+
+        // 3. Otherwise → normal sphere detection
         Collider[] hits = Physics.OverlapSphere(transform.position, detectionRadius, playerLayer);
 
         foreach (var hit in hits)
         {
-            if (hit.transform.root == transform.root)
+            if (hit.transform.root == transform.root || hit.transform.gameObject == gameObject)
                 continue;
 
             Vector3 dirToTarget = (hit.transform.position - transform.position).normalized;
@@ -156,6 +188,12 @@ public class BotMovementController : NetworkBehaviour
 
         if (detectedTarget.CompareTag("Bot"))
         {
+            if (detectedTarget == transform.root)
+            {
+                SetTarget(null);
+                return false;
+            }
+
             if (cacheDetectedTargetBotdata.IsStagger || cacheDetectedTargetBotdata.IsGettingUp || cacheDetectedTargetBotdata.IsDead) return false;
         }
         else
@@ -174,6 +212,12 @@ public class BotMovementController : NetworkBehaviour
 
         if (detectedTarget.CompareTag("Bot"))
         {
+            if (detectedTarget == transform.root)
+            {
+                SetTarget(null);
+                return false;
+            }
+
             if (cacheDetectedTargetBotdata.IsStagger || cacheDetectedTargetBotdata.IsGettingUp || cacheDetectedTargetBotdata.IsDead) return false;
         }
         else
@@ -200,11 +244,53 @@ public class BotMovementController : NetworkBehaviour
 
     private void AvoidObstacles()
     {
+        // 1. Check direct obstacle in front
         if (Physics.Raycast(transform.position + Vector3.up * 0.5f, direction, out RaycastHit hit, 1f, obstructionLayer))
         {
             Vector3 hitNormal = hit.normal;
             hitNormal.y = 0;
             direction = Vector3.Reflect(direction, hitNormal).normalized;
+            return;
         }
+
+        // 2. Check steep slope ahead
+        Vector3 checkPos = transform.position + direction * 0.5f; // look slightly ahead
+        if (Physics.Raycast(checkPos + Vector3.up * 0.5f, Vector3.down, out RaycastHit slopeHit, 2f, groundLayer))
+        {
+            float slopeAngle = Vector3.Angle(slopeHit.normal, Vector3.up);
+
+            if (slopeAngle > maxSlopeAngle) // too steep, treat like an obstacle
+            {
+                Vector3 slopeNormal = slopeHit.normal;
+                slopeNormal.y = 0;
+                direction = Vector3.Reflect(direction, slopeNormal).normalized;
+            }
+        }
+
+        // 3. Safe zone correction
+        if (IsOutsideSafeZone(transform.position, botData.ServerManager.SafeZone.transform) && botData.ServerManager.CurrentGameState == GameState.ARENA)
+        {
+            Vector3 toSafeZone = GetSafeZoneDirection(transform.position, botData.ServerManager.SafeZone.transform);
+
+            // Blend wander/avoid with safe zone direction
+            direction = Vector3.Lerp(direction, toSafeZone, 0.6f).normalized;
+        }
+    }
+
+    private bool IsOutsideSafeZone(Vector3 botPosition, Transform safeZone)
+    {
+        float radius = safeZone.localScale.x * 0.5f; // X = radius in world units
+        Vector3 flatBotPos = new Vector3(botPosition.x, 0, botPosition.z);
+        Vector3 flatZonePos = new Vector3(safeZone.position.x, 0, safeZone.position.z);
+
+        float distance = Vector3.Distance(flatBotPos, flatZonePos);
+        return distance > radius;
+    }
+
+    private Vector3 GetSafeZoneDirection(Vector3 botPosition, Transform safeZone)
+    {
+        Vector3 toCenter = safeZone.position - botPosition;
+        toCenter.y = 0; // ignore height
+        return toCenter.normalized;
     }
 }

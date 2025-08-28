@@ -2,6 +2,9 @@
   "dependencies": {
     "com.amazonaws.gameliftserver.sdk": "file:../Assets/AWSGameLift/com.amazonaws.gameliftserver.sdk-5.3.0.tgz",
     "com.itisnajim.socketiounity": "https://github.com/itisnajim/SocketIOUnity.git",
+    "com.onesignal.unity.android": "5.1.14",
+    "com.onesignal.unity.core": "5.1.14",
+    "com.onesignal.unity.ios": "5.1.14",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.ai.navigation": "1.1.7",
     "com.unity.animation.rigging": "1.2.1",
@@ -70,6 +73,13 @@
       "url": "https://unitynuget-registry.openupm.com",
       "scopes": [
         "org.nuget"
+      ]
+    },
+    {
+      "name": "npmjs",
+      "url": "https://registry.npmjs.org",
+      "scopes": [
+        "com.onesignal"
       ]
     }
   ]
