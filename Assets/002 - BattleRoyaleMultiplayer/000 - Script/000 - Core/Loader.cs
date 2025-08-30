@@ -173,9 +173,11 @@ public class Loader : MonoBehaviour
 
     private async Task InitializeOneSignal()
     {
+        OneSignal.ConsentRequired = true;
+
         OneSignal.Initialize("ea9a6f18-f823-4e81-a388-6ba45633972a");
 
-        OneSignal.ConsentRequired = true;
+        OneSignal.ConsentGiven = true;
 
         if (OneSignal.Notifications.Permission)
         {
@@ -190,11 +192,6 @@ public class Loader : MonoBehaviour
 
     private void CheckPermission(object sender, NotificationPermissionChangedEventArgs e)
     {
-        if (e.Permission)
-        {
-            OneSignal.ConsentGiven = true;
-        }
-
         SceneManager.LoadScene("Persistent");
     }
 }
