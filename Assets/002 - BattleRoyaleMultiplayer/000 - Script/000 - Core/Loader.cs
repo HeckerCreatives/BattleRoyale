@@ -41,7 +41,7 @@ public class Loader : MonoBehaviour
             // Clear old logs on start
             File.WriteAllText(logFilePath, "=== New GameLift Session Started ===\n");
 
-            // Hook Unity’s logging
+            // Hook Unity?s logging
             Application.logMessageReceived += HandleLog;
 
             GameLiftInitialize();
@@ -93,7 +93,7 @@ public class Loader : MonoBehaviour
                     GameLiftServerAPI.ProcessEnding();
                 },
                 () => {
-                    // Health check — return true if healthy
+                    // Health check ? return true if healthy
                     return true;
                 },
                 7777, // Your listening port
@@ -179,19 +179,22 @@ public class Loader : MonoBehaviour
 
         OneSignal.ConsentGiven = true;
 
-        if (OneSignal.Notifications.Permission)
+        if (!OneSignal.Notifications.Permission)
         {
-            SceneManager.LoadScene("Persistent");
-        }
-        else
-        {
-            OneSignal.Notifications.PermissionChanged += CheckPermission;
+            //OneSignal.Notifications.PermissionChanged += CheckPermission;
             await OneSignal.Notifications.RequestPermissionAsync(true);
         }
-    }
 
-    private void CheckPermission(object sender, NotificationPermissionChangedEventArgs e)
-    {
+
         SceneManager.LoadScene("Persistent");
     }
+
+    //private void CheckPermission(object sender, NotificationPermissionChangedEventArgs e)
+    //{
+        // You can check what the new permission is
+        //Debug.Log($"Notification permission changed: {e.Permission}");
+
+        // If you want to continue regardless:
+        //SceneManager.LoadScene("Persistent");
+    //}
 }
