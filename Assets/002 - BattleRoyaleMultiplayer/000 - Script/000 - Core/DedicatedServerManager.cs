@@ -691,7 +691,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             PlayerCount = maxPlayers,
             Address = NetAddress.Any(),
             CustomLobbyName = lobby,
-            CustomPhotonAppSettings = appSettings
+            CustomPhotonAppSettings = appSettings,
         });
 
 

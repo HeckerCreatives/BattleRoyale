@@ -26,7 +26,7 @@ public class PlayerMultiplayerEvents : SimulationBehaviour, INetworkRunnerCallba
 
     private void DisconnectPlayer(object sender, string e)
     {
-        Runner.Shutdown();
+        //Runner.Shutdown();
     }
 
     #region NETWORK
@@ -106,7 +106,7 @@ public class PlayerMultiplayerEvents : SimulationBehaviour, INetworkRunnerCallba
 
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
     {
-        if (shutdownReason == ShutdownReason.ConnectionTimeout || shutdownReason == ShutdownReason.OperationTimeout || shutdownReason == ShutdownReason.ConnectionRefused || shutdownReason == ShutdownReason.DisconnectedByPluginLogic)
+        if (shutdownReason == ShutdownReason.DisconnectedByPluginLogic)
         {
             Debug.Log($"Server error: {shutdownReason}");
 
@@ -138,6 +138,28 @@ public class PlayerMultiplayerEvents : SimulationBehaviour, INetworkRunnerCallba
 
             queuedisconnection?.Invoke();
         }
+        //if (shutdownReason == ShutdownReason.MaxCcuReached || shutdownReason == ShutdownReason.GameIsFull || shutdownReason == ShutdownReason.GameClosed)
+        //{
+
+        //    string errormessage = "";
+
+        //    switch (shutdownReason)
+        //    {
+        //        case ShutdownReason.GameIsFull:
+        //            errormessage = $"The game you're trying to join is full! Please queue up and try again";
+        //            break;
+        //        case ShutdownReason.GameClosed:
+        //            errormessage = $"The game you're trying to join is now closed! Please queue up and try again";
+        //            break;
+        //        case ShutdownReason.MaxCcuReached:
+        //            errormessage = $"The game server is experiencing high level of players! Please try again later or contact customer support for more details";
+        //            break;
+        //    }
+
+        //    GameManager.Instance.NotificationController.ShowError(errormessage);
+
+        //    queuedisconnection?.Invoke();
+        //}
     }
 
     public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message)

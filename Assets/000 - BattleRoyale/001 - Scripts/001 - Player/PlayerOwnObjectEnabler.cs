@@ -42,6 +42,9 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     [SerializeField] private GameObject footstepSFX;
     [SerializeField] private GameObject punchSFX;
 
+    [Space]
+    [SerializeField] private GameObject reconnectObj;
+
     [field: Header("DEBUGGER")]
     [Networked][field: SerializeField] public DedicatedServerManager ServerManager { get; set; }
     [Networked][field: SerializeField] public bool NotEnoughPlayer { get; set; }
@@ -52,6 +55,11 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     private ChangeDetector _changeDetector;
 
     //  ====================
+
+    private void OnDisable()
+    {
+        GameManager.Instance.SocketMngr.IsOnGame = false;
+    }
 
     public async override void Spawned()
     {
@@ -66,6 +74,8 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         }
 
         if (!HasInputAuthority) return;
+
+        GameManager.Instance.SocketMngr.IsOnGame = true;
 
         GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.PostRequest("/usergamedetail/useenergy", "", new Dictionary<string, object> { }, false, (response) =>
         {
@@ -99,9 +109,39 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         playerVcam.transform.parent = null;
         playerAimVCam.transform.parent = null;
 
+        NetworkRunner.CloudConnectionLost += OnCloudConnectionLost;
+
         while (ServerManager == null) await Task.Yield();
 
         ServerManager.OnCurrentStateChange += StateChange;
+    }
+
+    private void OnCloudConnectionLost(NetworkRunner networkRunner, ShutdownReason shutdownReason, bool reconnecting)
+    {
+        Debug.Log($"Cloud Connection Lost: {shutdownReason} (Reconnecting: {reconnecting})");
+
+        if (!reconnecting) 
+        {
+            Debug.Log($"Server error: {shutdownReason}");
+
+            GameManager.Instance.NotificationController.ShowError($"There's a problem with the game server! Please queue up and try again. Error: {(shutdownReason == ShutdownReason.DisconnectedByPluginLogic ? "Server Shutdown due to unexpected error." : shutdownReason)}");
+
+            Runner.Shutdown();
+
+            GameManager.Instance.SceneController.CurrentScene = "Lobby";
+        }
+        else
+        {
+            StartCoroutine(WaitForReconnection(networkRunner));
+        }
+    }
+
+    private IEnumerator WaitForReconnection(NetworkRunner runner)
+    {
+        reconnectObj.SetActive(true);
+        yield return new WaitUntil(() => runner.IsInSession);
+        Debug.Log("Reconnected to the Cloud!");
+        reconnectObj.SetActive(false);
     }
 
     public override void Render()

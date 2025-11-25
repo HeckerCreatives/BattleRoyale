@@ -1026,7 +1026,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a3ac0e352c8466343b7c7bb0a09feb19, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  doShow: 0
+  doShow: 1
 --- !u!114 &425614886
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1088,6 +1088,7 @@ MonoBehaviour:
   playerAfricaCountServer: 0
   playerAmericaEastCountServer: 0
   playerAmericaWestCountServer: 0
+  isOnGame: 0
 --- !u!1 &432989998
 GameObject:
   m_ObjectHideFlags: 0
@@ -2130,10 +2131,10 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.5
-  far clip plane: 5000
-  field of view: 60.000004
+  far clip plane: 1000
+  field of view: 60
   orthographic: 0
-  orthographic size: 10
+  orthographic size: 5
   m_Depth: 1
   m_CullingMask:
     serializedVersion: 2
@@ -2157,8 +2158,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1151185118}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.08715578, z: 0, w: 0.9961947}
-  m_LocalPosition: {x: -0.033726335, y: 1.5680046, z: -3.2434185}
+  m_LocalRotation: {x: 0.032258704, y: 0.8680373, z: -0.05689419, w: 0.49217254}
+  m_LocalPosition: {x: 257.22, y: 26.6, z: 185.24}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

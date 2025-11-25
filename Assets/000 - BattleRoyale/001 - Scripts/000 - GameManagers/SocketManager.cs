@@ -141,6 +141,12 @@ public class SocketManager : MonoBehaviour
         }
     }
 
+    public bool IsOnGame
+    {
+        get => isOnGame;
+        set => isOnGame = value;
+    }
+
     // ============================
 
     [SerializeField] private UserData userData;
@@ -163,6 +169,7 @@ public class SocketManager : MonoBehaviour
     [SerializeField] private int playerAfricaCountServer;
     [SerializeField] private int playerAmericaEastCountServer;
     [SerializeField] private int playerAmericaWestCountServer;
+    [SerializeField] private bool isOnGame;
 
     //  ===========================
 
@@ -189,9 +196,9 @@ public class SocketManager : MonoBehaviour
                 Socket = new SocketIOUnity(uri, new SocketIOOptions
                 {
                     Query = new Dictionary<string, string>
-            {
-                { "token", "UNITY" }
-            },
+                {
+                    { "token", "UNITY" }
+                },
                     EIO = EngineIO.V4,
                     Transport = SocketIOClient.Transport.TransportProtocol.WebSocket
                 });
@@ -360,14 +367,34 @@ public class SocketManager : MonoBehaviour
         Debug.Log("Socket Disconnected to server");
         CancelPingTimeout();
 
-        GameManager.Instance.AddJob(() =>
+        if (!IsOnGame)
         {
-            EmitEvent("disconnect", null);
-            GameManager.Instance.NoBGLoading.SetActive(false);
-            ConnectionStatus = "Disconnected";
-            sceneController.CurrentScene = "Login";
-            Socket = null;
-        });
+            GameManager.Instance.AddJob(() =>
+            {
+                EmitEvent("disconnect", null);
+                GameManager.Instance.NoBGLoading.SetActive(false);
+                ConnectionStatus = "Disconnected";
+                sceneController.CurrentScene = "Login";
+                Socket = null;
+            });
+        }
+        else
+        {
+            Reconnect();
+        }
+    }
+
+    private void Reconnect()
+    {
+        try
+        {
+            Socket.Connect();
+        }
+        catch(Exception e)
+        {
+            Debug.Log($"ERROR RECONNECTING: {e.ToString()}");
+            Reconnect();
+        }
     }
 
     public void EmitEvent(string eventname, object data)
