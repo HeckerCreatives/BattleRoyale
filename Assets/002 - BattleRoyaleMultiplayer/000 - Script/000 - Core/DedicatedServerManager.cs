@@ -694,7 +694,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             CustomPhotonAppSettings = appSettings,
         });
 
-
         if (networkRunner.IsRunning)
         {
             Debug.Log($"Done Setting up photon server");
@@ -1161,7 +1160,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             int tempspawnpos = UnityEngine.Random.Range(0, spawnWaitingAreaPositions.Count);
 
-            NetworkObject playerCharacter = Runner.Spawn(playerObj, Vector3.up, Quaternion.identity, player, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+            NetworkObject playerCharacter = Runner.Spawn(playerObj, Vector3.up, Quaternion.identity, null, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
             {
                 obj.GetComponent<SimpleKCC>().SetPosition(spawnWaitingAreaPositions[tempspawnpos].position);
                 obj.GetComponent<PlayerOwnObjectEnabler>().ServerManager = this;
@@ -1169,13 +1168,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 obj.GetComponent<PlayerGameStats>().ServerManager = this;
                 obj.GetComponent<MapZoomInOut>().ServerManager = this;
                 obj.GetComponent<PlayerShrinkZoneTimer>().ServerManager = this;
-                //obj.GetComponent<WaitingAreaTimerController>().ServerManager = this;
-                //obj.GetComponent<PlayerHealth>().ServerManager = this;
-                //obj.GetComponent<PlayerSpawnLocationController>().ServerManager = this;
-                //obj.GetComponent<PlayerQuitController>().ServerManager = this;
-                //obj.GetComponent<PlayerGameOverScreen>().ServerManager = this;
-                //obj.GetComponent<MainCorePlayable>().ServerManager = this;
             });
+
+            playerCharacter.AssignInputAuthority(player);
 
             //BulletObjectPool temppool = playerCharacter.GetComponent<BulletObjectPool>();
 
@@ -1234,25 +1229,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             if (playerinventory.Armor != null) playerinventory.Armor. DropArmor();
 
             if (playerinventory.MagazineContainer != null) playerinventory.MagazineContainer.DropWeapon();
-
-            //if (playerinventory.SecondaryWeapon != null)
-            //{
-            //    if (playerinventory.SecondaryWeapon.WeaponID == "003") playerinventory.SecondaryWeapon.DropSecondaryWeapon();
-            //    else if (playerinventory.SecondaryWeapon.WeaponID == "004") playerinventory.SecondaryWeapon.DropSecondaryWithAmmoCaseWeapon();
-            //}
-
-
-            //var bulletPooler = clientPlayer.GetComponent<BulletObjectPool>();
-
-            //for (int a = 0; a < bulletPooler.BulletQueue.Count; a++)
-            //{
-            //    Runner.Despawn(bulletPooler.BulletQueue.ElementAt(a).Key);
-            //}
-
-            //for (int a = 0; a < bulletPooler.ArrowQueue.Count; a++)
-            //{
-            //    Runner.Despawn(bulletPooler.ArrowQueue.ElementAt(a).Key);
-            //}
 
             Players.Remove(player);
             Runner.Despawn(clientPlayer);

@@ -367,21 +367,21 @@ public class SocketManager : MonoBehaviour
         Debug.Log("Socket Disconnected to server");
         CancelPingTimeout();
 
-        if (!IsOnGame)
-        {
-            GameManager.Instance.AddJob(() =>
-            {
-                EmitEvent("disconnect", null);
-                GameManager.Instance.NoBGLoading.SetActive(false);
-                ConnectionStatus = "Disconnected";
-                sceneController.CurrentScene = "Login";
-                Socket = null;
-            });
-        }
-        else
-        {
-            Reconnect();
-        }
+        //if (!IsOnGame)
+        //{
+        //    GameManager.Instance.AddJob(() =>
+        //    {
+        //        EmitEvent("disconnect", null);
+        //        GameManager.Instance.NoBGLoading.SetActive(false);
+        //        ConnectionStatus = "Disconnected";
+        //        sceneController.CurrentScene = "Login";
+        //        Socket = null;
+        //    });
+        //}
+        //else
+        //{
+        //    Reconnect();
+        //}
     }
 
     private void Reconnect()
