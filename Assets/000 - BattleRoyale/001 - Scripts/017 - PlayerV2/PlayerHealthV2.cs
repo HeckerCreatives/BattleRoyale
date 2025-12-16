@@ -1,4 +1,5 @@
 using Fusion;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -350,6 +351,11 @@ public class PlayerHealthV2 : NetworkBehaviour
 
                 playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
                 ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
+
+                playerOwnObjectEnabler.ServerManager.Socket.Emit("serverremovereconnect", JsonConvert.SerializeObject(new Dictionary<string, string>()
+                {
+                    { "username", playerOwnObjectEnabler.Username }
+                }));
 
                 ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{killer} KILLED {playerOwnObjectEnabler.Username}");
             }

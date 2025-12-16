@@ -39,6 +39,8 @@ public class ArmorItem : NetworkBehaviour, IPickupItem
     {
         if (IsPickedUp)
         {
+            if (Parent == null) return;
+
             transform.parent = Parent.transform;
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.Euler(pickedUpRotation);

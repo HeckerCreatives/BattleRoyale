@@ -19,6 +19,7 @@ using Unity.VisualScripting.Antlr3.Runtime;
 using System.Drawing;
 using Fusion.Photon.Realtime;
 using Newtonsoft.Json;
+using System.Text;
 
 public class ClientMatchmakingController : MonoBehaviour
 {
@@ -62,8 +63,10 @@ public class ClientMatchmakingController : MonoBehaviour
     [SerializeField] private NetworkRunner instanceRunner;
     [SerializeField] private TextMeshProUGUI timerTMP;
     [SerializeField] private Button cancelBtn;
+    [SerializeField] private GameObject matchBtn;
     [SerializeField] private GameObject matchmakingObj;
     [SerializeField] private GameObject findABattleObj;
+    [SerializeField] private GameObject reconObj;
 
     [Space]
     [SerializeField] private GameObject serverListLoader;
@@ -78,6 +81,7 @@ public class ClientMatchmakingController : MonoBehaviour
     [ReadOnly][SerializeField] int secondsFindMatch;
     [SerializeField] private List<string> serverSelected;
     [SerializeField] private string roomname;
+    [SerializeField] private bool finishCheckingIfCanRecon;
 
     //  =====================
 
@@ -87,6 +91,45 @@ public class ClientMatchmakingController : MonoBehaviour
 
     private void OnEnable()
     {
+        GameManager.Instance.SocketMngr.Socket.On("reconnectfail", (response) =>
+        {
+            GameManager.Instance.AddJob(() =>
+            {
+                finishCheckingIfCanRecon = true;
+            });
+        });
+
+
+        GameManager.Instance.SocketMngr.Socket.On("reconnectexist", (response) =>
+        {
+            GameManager.Instance.AddJob(() =>
+            {
+                finishCheckingIfCanRecon = true;
+
+                List<Dictionary<string, string>> tempdata = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(response.ToString());
+
+                if (tempdata.Count <= 0) return;
+
+                roomname = tempdata[0]["roomName"];
+
+                reconObj.SetActive(true);
+
+                matchBtn.SetActive(false);
+            });
+        });
+
+        GameManager.Instance.SocketMngr.Socket.On("doneremovereconnect", (response) =>
+        {
+            GameManager.Instance.AddJob(() =>
+            {
+                GameManager.Instance.NoBGLoading.SetActive(false);
+
+                reconObj.SetActive(false);
+
+                matchBtn.SetActive(true);
+            });
+        });
+
         if (usePrivateServer)
         {
             GameManager.Instance.SocketMngr.Socket.On("matchfound", (response) =>
@@ -122,6 +165,13 @@ public class ClientMatchmakingController : MonoBehaviour
     private void Update()
     {
         FindMatchTimer();
+    }
+
+    public IEnumerator WaitForReconnectStatus()
+    {
+        GameManager.Instance.SocketMngr.EmitEvent("needtoreconnect", null);
+
+        while (!finishCheckingIfCanRecon) yield return null;
     }
 
     private void FindMatchTimer()
@@ -419,7 +469,8 @@ public class ClientMatchmakingController : MonoBehaviour
                     SceneManager = runner.gameObject.AddComponent<NetworkSceneManagerDefault>(),
                     Scene = sceneRef,
                     SessionName = roomname,
-                    CustomPhotonAppSettings = appSettings
+                    CustomPhotonAppSettings = appSettings,
+                    ConnectionToken = Encoding.UTF8.GetBytes(userData.Username)
                 });
             }
         }
@@ -469,5 +520,45 @@ public class ClientMatchmakingController : MonoBehaviour
         await tempRunner.Shutdown(true);
 
         Destroy(tempRunner.gameObject);
+    }
+
+    public async void ReconnectMatch()
+    {
+        GameManager.Instance.NoBGLoading.SetActive(true);
+
+        currentRunnerInstance = Instantiate(instanceRunner);
+
+        var sessionResult = await StartSimulation(currentRunnerInstance, GameMode.Client);
+
+        if (sessionResult.Ok)
+        {
+            GameManager.Instance.SceneController.MultiplayerScene = true;
+
+            GameManager.Instance.NoBGLoading.SetActive(false);
+        }
+        else
+        {
+            GameManager.Instance.NoBGLoading.SetActive(false);
+
+            roomname = "";
+
+            reconObj.SetActive(false);
+
+            matchBtn.SetActive(true);
+
+            GameManager.Instance.NotificationController.ShowError("Your current match is not available or already finished the match. Please queue up again!", null);
+
+            ShutdownServer();
+        }
+    }
+
+    public void CancelReconnectMatch()
+    {
+        GameManager.Instance.NotificationController.ShowConfirmation("Are you sure you want to leave the current match? You will lose the progress and any currency that you use.", () =>
+        {
+            GameManager.Instance.NoBGLoading.SetActive(true);
+
+            GameManager.Instance.SocketMngr.EmitEvent("removereconnect", null);
+        }, null);
     }
 }

@@ -1,4 +1,4 @@
-#if !UNITY_ANDROID && !UNITY_IOS
+﻿#if !UNITY_ANDROID && !UNITY_IOS
 using Aws.GameLift.Server;
 #endif
 using Fusion;
@@ -353,6 +353,15 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
     Coroutine despawnBotsCoroutine;
 
+
+    public Dictionary<string, PlayerOwnObjectEnabler> ConnectedPlayers = new Dictionary<string, PlayerOwnObjectEnabler>();
+
+    public Dictionary<PlayerRef, string> playerIdMap = new Dictionary<PlayerRef, string>();
+
+    public List<string> PlayerIDs = new List<string>();
+
+    Queue<Action> jobs = new Queue<Action>();
+
     //  =================
 
     private void Awake()
@@ -371,7 +380,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             spawnBotTimer = UnityEngine.Random.Range(5f, 15f);
 
-            if (!useMultiplay && !usePrivateServer) developerConsole.doShow = true;
+            developerConsole.doShow = true;
 
             StartGame();
         }
@@ -426,6 +435,20 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     private void SocketConnected(object sender, EventArgs e)
     {
         ChangeServerStatus();
+
+        Socket.On("gameremoveplayer", (response) =>
+        {
+            jobs.Enqueue(() =>
+            {
+                Debug.Log($"game remove player response: {response}");
+
+                string username = response.GetValue<string>();
+
+                Debug.Log($"STARTING TO REMOVE PLAYER {username}");
+
+                RemovePlayerByUsername(username);
+            });
+        });
     }
 
     private void ChangeServerStatus()
@@ -766,6 +789,16 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 case nameof(CurrentGameState): 
                     if (CurrentGameState == GameState.ARENA)
                         ArenaEnabler(false, true);
+                    else if (CurrentGameState == GameState.DONE)
+                    {
+                        if (HasStateAuthority)
+                        {
+                            Socket.Emit("doneroom", JsonConvert.SerializeObject(new Dictionary<string, string>
+                            {
+                                { "sessioname", sessionname }
+                            }));
+                        }
+                    }
 
                     CurrentStateChange?.Invoke(this, EventArgs.Empty);
                     break;
@@ -808,6 +841,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             closeServerCount -= Time.deltaTime;
         }
+
+        if (jobs.Count > 0)
+            jobs.Dequeue().Invoke();
     }
 
     #region GAME LOGIC
@@ -844,11 +880,11 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         }
         else if (CurrentWaitingAreaTimerState == WaitingAreaTimerState.GETREADY)
         {
-            if (WaitingAreaTimer <= 30f && networkRunner.SessionInfo.IsOpen)
-            {
-                networkRunner.SessionInfo.IsOpen = false;
-                networkRunner.SessionInfo.IsVisible = false;
-            }
+            //if (WaitingAreaTimer <= 30f && networkRunner.SessionInfo.IsOpen)
+            //{
+            //    networkRunner.SessionInfo.IsOpen = false;
+            //    networkRunner.SessionInfo.IsVisible = false;
+            //}
 
             if (WaitingAreaTimer <= 0f)
             {
@@ -999,7 +1035,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         CurrentSafeZoneState = SafeZoneState.TIMER;
     }
 
-    private void ArenaEnabler(bool waitingArea, bool battleField)
+    public void ArenaEnabler(bool waitingArea, bool battleField)
     {
         waitingAreaArenaObjects.SetActive(waitingArea);
         battleFieldArenaObjects.SetActive(battleField);
@@ -1017,7 +1053,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         {
             Vector3 spawnPosition = botSpawnPoints[spawnBotIndex].position;
 
-            Runner.Spawn(botPrefab, spawnPosition, Quaternion.identity, Object.InputAuthority, onBeforeSpawned: (runner, obj) =>
+            Runner.Spawn(botPrefab, spawnPosition, Quaternion.identity, Object.StateAuthority, onBeforeSpawned: (runner, obj) =>
             {
                 string tempbotname = GetBotName();
 
@@ -1146,51 +1182,111 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
     #region SERVER LOGIC
 
+    string GetPlayerId(NetworkRunner runner, PlayerRef player)
+    {
+        if (runner.GetPlayerConnectionToken(player) is byte[] tokenBytes)
+            return System.Text.Encoding.UTF8.GetString(tokenBytes);
+        return null;
+    }
+
+    public void RemovePlayerByUsername(string username)
+    {
+        if (!HasStateAuthority)
+            return;
+
+        if (!TryGetPlayerRefFromUsername(username, out PlayerRef playerRef))
+        {
+            Debug.LogWarning($"Cannot remove player — username not found: {username}");
+            return;
+        }
+
+        Debug.Log($"[Kick/Quit] Removing player: {username}");
+
+        if (Players.TryGet(playerRef, out NetworkObject remainingPlayer))
+        {
+            Debug.Log("trying get network object in players");
+
+            remainingPlayer.GetComponent<PlayerOwnObjectEnabler>().Removing = true;
+
+            Debug.Log("activating removing");
+
+            PlayerLeftLocal(playerRef, username); // Call your existing logic
+        }
+    }
+
+    public bool TryGetPlayerRefFromUsername(string username, out PlayerRef playerRef)
+    {
+        Debug.Log($"TOTAL PLAYER ID MAPS: {playerIdMap.Count}");
+
+        foreach (var pair in playerIdMap)
+        {
+            Debug.Log($"PLAYER ID MAP, KEY: {pair.Key}    VALUE: {pair.Value}");
+            if (pair.Value == username)
+            {
+                playerRef = pair.Key;
+                return true;
+            }
+        }
+
+        playerRef = default;
+        return false;
+    }
+
+
     public void PlayerJoined(PlayerRef player)
     {
         if (HasStateAuthority)
         {
-            //  OLD SPAWN BULLET
-            //Runner.Spawn(bulletNO, playerInventory.SecondaryWeapon.impactPoint.position, Quaternion.LookRotation(aimDir, Vector3.up), onBeforeSpawned: (NetworkRunner runner, NetworkObject nobject) =>
-            //{
-            //    nobject.GetComponent<BulletController>().Fire(Object.InputAuthority, playerInventory.SecondaryWeapon.impactPoint.position, mainCorePlayable.Object, hit, playerNetworkLoader.Username);
-            //});
+            string playerId = GetPlayerId(Runner, player);
+            Debug.Log($"Player joined with ID: {playerId}");
+
+            if (!PlayerIDs.Contains(playerId))
+            {
+                Debug.Log($"ADDING PLAYER ID TO LIST {playerId}");
+                PlayerIDs.Add(playerId);
+            }
+
+            // 🔑 Check if this player already exists (reconnecting)
+            if (!string.IsNullOrEmpty(playerId) && ConnectedPlayers.TryGetValue(playerId, out var existingCore))
+            {
+                //PlayerDisconnected = false;
+
+                if (!string.IsNullOrEmpty(playerId))
+                    playerIdMap[player] = playerId;
+
+                // Restore their PlayerRef
+                existingCore.Object.AssignInputAuthority(player);
+
+                Debug.Log($"♻️ Player {playerId} reconnected, reassigned authority.");
+                return;
+            }
 
             canStartCountDownToCloseServer = false;
 
             int tempspawnpos = UnityEngine.Random.Range(0, spawnWaitingAreaPositions.Count);
 
-            NetworkObject playerCharacter = Runner.Spawn(playerObj, Vector3.up, Quaternion.identity, null, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+            NetworkObject playerCharacter = Runner.Spawn(playerObj, Vector3.up, Quaternion.identity, player, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
             {
+                PlayerOwnObjectEnabler core = obj.GetComponent<PlayerOwnObjectEnabler>();
+
                 obj.GetComponent<SimpleKCC>().SetPosition(spawnWaitingAreaPositions[tempspawnpos].position);
-                obj.GetComponent<PlayerOwnObjectEnabler>().ServerManager = this;
+                core.ServerManager = this;
                 obj.GetComponent<PlayerHealthV2>().ServerManager = this;
                 obj.GetComponent<PlayerGameStats>().ServerManager = this;
                 obj.GetComponent<MapZoomInOut>().ServerManager = this;
                 obj.GetComponent<PlayerShrinkZoneTimer>().ServerManager = this;
             });
 
-            playerCharacter.AssignInputAuthority(player);
+            if (!string.IsNullOrEmpty(playerId))
+                ConnectedPlayers[playerId] = playerCharacter.GetComponent<PlayerOwnObjectEnabler>();
 
-            //BulletObjectPool temppool = playerCharacter.GetComponent<BulletObjectPool>();
+            if (!string.IsNullOrEmpty(playerId))
+            {
+                Debug.Log($"PLAYER JOINED WOULD ADD TO ID MAP");
+                playerIdMap.Add(player, playerId);
+            }
 
-            //for (int a = 0; a < 15; a++)
-            //{
-            //    temppool.BulletQueue.Add(Runner.Spawn(bulletNO, Vector2.zero, Quaternion.identity, playerCharacter.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
-            //    {
-            //        temppool.TempBullets.Add(obj);
-            //        obj.GetComponent<BulletController>().PoolIndex = a;
-            //        obj.GetComponent<BulletController>().Pooler = temppool;
-            //    }), false);
-            //    temppool.ArrowQueue.Add(Runner.Spawn(arrowNO, Vector2.zero, Quaternion.identity, playerCharacter.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
-            //    {
-            //        temppool.TempArrows.Add(obj);
-            //        obj.GetComponent<ArrowController>().PoolIndex = a;
-            //        obj.GetComponent<ArrowController>().Pooler = temppool;
-            //    }), false);
-            //}
-
-            //playerCharacter.GetComponent<BulletObjectPool>().DoneInitialize = true;
+            Runner.SetPlayerObject(player, playerCharacter);
 
             Players.Add(player, playerCharacter);
             RemainingPlayers.Add(player, playerCharacter);
@@ -1209,53 +1305,143 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         }
     }
 
+    private void PlayerLeftLocal(PlayerRef player, string username)
+    {
+        if (!HasStateAuthority) return;
+
+        if (Players.TryGet(player, out NetworkObject remainingPlayer))
+        {
+            PlayerOwnObjectEnabler core = remainingPlayer.GetComponent<PlayerOwnObjectEnabler>();
+
+            if (core.Removing)
+                RemainingPlayers.Remove(player);
+        }
+
+        if (Players.TryGet(player, out NetworkObject clientPlayer))
+        {
+
+            Debug.Log("activating removing 1");
+            PlayerOwnObjectEnabler core = remainingPlayer.GetComponent<PlayerOwnObjectEnabler>();
+
+            Debug.Log("activating removing 2");
+            if (core.Removing)
+            {
+                Debug.Log("activating removing 3");
+                RemainingPlayers.Remove(player);
+
+                Debug.Log("activating removing 4");
+                var playerinventory = remainingPlayer.GetComponent<PlayerInventoryV2>();
+
+                Debug.Log("activating removing 5");
+                if (playerinventory.PrimaryWeapon != null) playerinventory.PrimaryWeapon.DropWeapon();
+
+                Debug.Log("activating removing6");
+                if (playerinventory.SecondaryWeapon != null) playerinventory.SecondaryWeapon.DropWeapon();
+
+                Debug.Log("activating removing 7");
+                if (playerinventory.Armor != null) playerinventory.Armor.DropArmor();
+
+                Debug.Log("activating removing 8");
+                if (playerinventory.MagazineContainer != null) playerinventory.MagazineContainer.DropWeapon();
+
+                Debug.Log("activating removing 9");
+                Players.Remove(player);
+                //Debug.Log($"activating removing 10   player obj null? {remainingPlayer == null}");
+                Runner.Despawn(clientPlayer);
+
+                PlayerIDs.Remove(username);
+                playerIdMap.Remove(player);
+                ConnectedPlayers.Remove(username);
+
+                Debug.Log("activating removing 11");
+                if (Players.Count <= 0 && CanCountWaitingAreaTimer)
+                {
+                    closeServerCount = 600;
+                    canStartCountDownToCloseServer = true;
+                    WaitingAreaTimer = waitingAreaStartTimer;
+                    CanCountWaitingAreaTimer = false;
+                    CurrentWaitingAreaTimerState = WaitingAreaTimerState.WAITING;
+
+                    if (despawnBotsCoroutine != null) StopCoroutine(despawnBotsCoroutine);
+
+                    despawnBotsCoroutine = StartCoroutine(UnspawnedBots());
+                }
+            }
+            else
+                core.Object.AssignInputAuthority(Runner.LocalPlayer);
+        }
+
+        if ((CurrentGameState == GameState.DONE || CurrentGameState == GameState.ARENA) && Players.Count <= 0)
+            Application.Quit();
+
+        PlayerCountChange?.Invoke(this, EventArgs.Empty);
+    }
+
     public void PlayerLeft(PlayerRef player)
     {
         if (!HasStateAuthority) return;
 
         if (Players.TryGet(player, out NetworkObject remainingPlayer))
         {
-            RemainingPlayers.Remove(player);
+            PlayerOwnObjectEnabler core = remainingPlayer.GetComponent<PlayerOwnObjectEnabler>();
+
+            if (core.Removing)
+                RemainingPlayers.Remove(player);
         }
 
         if (Players.TryGet(player, out NetworkObject clientPlayer))
         {
-            var playerinventory = clientPlayer.GetComponent<PlayerInventoryV2>();
 
-            if (playerinventory.PrimaryWeapon != null) playerinventory.PrimaryWeapon.DropWeapon();
+            Debug.Log("activating removing 1");
+            PlayerOwnObjectEnabler core = remainingPlayer.GetComponent<PlayerOwnObjectEnabler>();
 
-            if (playerinventory.SecondaryWeapon != null) playerinventory.SecondaryWeapon.DropWeapon();
-
-            if (playerinventory.Armor != null) playerinventory.Armor. DropArmor();
-
-            if (playerinventory.MagazineContainer != null) playerinventory.MagazineContainer.DropWeapon();
-
-            Players.Remove(player);
-            Runner.Despawn(clientPlayer);
-
-            if (Players.Count <= 0 && CanCountWaitingAreaTimer)
+            Debug.Log("activating removing 2");
+            if (core.Removing)
             {
-                closeServerCount = 600;
-                canStartCountDownToCloseServer = true;
-                WaitingAreaTimer = waitingAreaStartTimer;
-                CanCountWaitingAreaTimer = false;
-                CurrentWaitingAreaTimerState = WaitingAreaTimerState.WAITING;
+                Debug.Log("activating removing 3");
+                RemainingPlayers.Remove(player);
 
-                if (despawnBotsCoroutine != null) StopCoroutine(despawnBotsCoroutine);
+                Debug.Log("activating removing 4");
+                var playerinventory = remainingPlayer.GetComponent<PlayerInventoryV2>();
 
-                despawnBotsCoroutine = StartCoroutine(UnspawnedBots());
+                Debug.Log("activating removing 5");
+                if (playerinventory.PrimaryWeapon != null) playerinventory.PrimaryWeapon.DropWeapon();
+
+                Debug.Log("activating removing6");
+                if (playerinventory.SecondaryWeapon != null) playerinventory.SecondaryWeapon.DropWeapon();
+
+                Debug.Log("activating removing 7");
+                if (playerinventory.Armor != null) playerinventory.Armor.DropArmor();
+
+                Debug.Log("activating removing 8");
+                if (playerinventory.MagazineContainer != null) playerinventory.MagazineContainer.DropWeapon();
+
+                Debug.Log("activating removing 9");
+                Players.Remove(player);
+                //Debug.Log($"activating removing 10   player obj null? {remainingPlayer == null}");
+                //Runner.Despawn(clientPlayer);
+
+                Debug.Log("activating removing 11");
+                if (Players.Count <= 0 && CanCountWaitingAreaTimer)
+                {
+                    closeServerCount = 600;
+                    canStartCountDownToCloseServer = true;
+                    WaitingAreaTimer = waitingAreaStartTimer;
+                    CanCountWaitingAreaTimer = false;
+                    CurrentWaitingAreaTimerState = WaitingAreaTimerState.WAITING;
+
+                    if (despawnBotsCoroutine != null) StopCoroutine(despawnBotsCoroutine);
+
+                    despawnBotsCoroutine = StartCoroutine(UnspawnedBots());
+                }
             }
-
-            if ((CurrentGameState == GameState.DONE || CurrentGameState == GameState.ARENA) && Players.Count <= 0)
-                Application.Quit();
         }
 
-        
+        if ((CurrentGameState == GameState.DONE || CurrentGameState == GameState.ARENA) && Players.Count <= 0)
+            Application.Quit();
 
         PlayerCountChange?.Invoke(this, EventArgs.Empty);
     }
-
-
 
     #endregion
 }
@@ -1264,4 +1450,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 public class ShrinkSizeList
 {
     public List<Vector3> shrinksizes;
+}
+
+public class RemovePlayerData
+{
+    public string username { get; set; }
 }
