@@ -17,10 +17,9 @@ public class PlayerInventoryV2 : NetworkBehaviour
 
     [Header("SKINS")]
     [SerializeField] private List<GameObject> hairStyles;
-    [SerializeField] private List<MeshRenderer> hairMR;
+    [SerializeField] private List<SkinnedMeshRenderer> hairMR;
     [SerializeField] private SkinnedMeshRenderer bodyColorMR;
-    [SerializeField] private SkinnedMeshRenderer upperClothingMR;
-    [SerializeField] private SkinnedMeshRenderer lowerClothingMR;
+    [SerializeField] private List<SkinnedMeshRenderer> clothingMRList;
 
     [Header("SKIN COLOR")]
     [SerializeField] private List<Color> hairColor;
@@ -165,8 +164,10 @@ public class PlayerInventoryV2 : NetworkBehaviour
 
         hairStyles[HairStyle].SetActive(true);
         hairMR[HairStyle].material.SetColor("_BaseColor", hairColor[HairColorIndex]);
-        upperClothingMR.material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
-        lowerClothingMR.materials[0].SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
+
+        for (int a = 0; a < clothingMRList.Count; a++)
+            clothingMRList[a].material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
+
         bodyColorMR.material.SetColor("_BaseColor", skinColor[SkinColorIndex]);
 
         WeaponIndex = 1;
@@ -178,8 +179,10 @@ public class PlayerInventoryV2 : NetworkBehaviour
 
         hairStyles[HairStyle].SetActive(true);
         hairMR[HairStyle].material.SetColor("_BaseColor", hairColor[HairColorIndex]);
-        upperClothingMR.material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
-        lowerClothingMR.materials[0].SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
+
+        for (int a = 0; a < clothingMRList.Count; a++)
+            clothingMRList[a].material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
+
         bodyColorMR.material.SetColor("_BaseColor", skinColor[SkinColorIndex]);
     }
 

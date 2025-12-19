@@ -43,10 +43,9 @@ public class BotInventory : NetworkBehaviour
 
     [Header("SKINS")]
     [SerializeField] private List<GameObject> hairStyles;
-    [SerializeField] private List<MeshRenderer> hairMR;
+    [SerializeField] private List<SkinnedMeshRenderer> hairMR;
+    [SerializeField] private List<SkinnedMeshRenderer> clothingMR;
     [SerializeField] private SkinnedMeshRenderer bodyColorMR;
-    [SerializeField] private SkinnedMeshRenderer upperClothingMR;
-    [SerializeField] private SkinnedMeshRenderer lowerClothingMR;
 
     [Space]
     [SerializeField] private NetworkObject armorBack;
@@ -81,8 +80,10 @@ public class BotInventory : NetworkBehaviour
 
             hairStyles[HairStyle].SetActive(true);
             hairMR[HairStyle].material.SetColor("_BaseColor", hairColorList[HairColorIndex]);
-            upperClothingMR.material.SetColor("_BaseColor", clothingColorList[ClothingColorIndex]);
-            lowerClothingMR.materials[0].SetColor("_BaseColor", clothingColorList[ClothingColorIndex]);
+            
+            for (int a = 0; a < clothingMR.Count; a++)
+                clothingMR[a].material.SetColor("_BaseColor", clothingColorList[ClothingColorIndex]);
+
             bodyColorMR.material.SetColor("_BaseColor", skinColorList[SkinColorIndex]);
         }
         else if (!HasInputAuthority && !HasStateAuthority)
@@ -95,8 +96,10 @@ public class BotInventory : NetworkBehaviour
 
         hairStyles[HairStyle].SetActive(true);
         hairMR[HairStyle].material.SetColor("_BaseColor", hairColorList[HairColorIndex]);
-        upperClothingMR.material.SetColor("_BaseColor", clothingColorList[ClothingColorIndex]);
-        lowerClothingMR.materials[0].SetColor("_BaseColor", clothingColorList[ClothingColorIndex]);
+
+        for (int a = 0; a < clothingMR.Count; a++)
+            clothingMR[a].material.SetColor("_BaseColor", clothingColorList[ClothingColorIndex]);
+
         bodyColorMR.material.SetColor("_BaseColor", skinColorList[SkinColorIndex]);
     }
 
