@@ -74,12 +74,16 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
         {
             if (IsEquipped)
             {
+                if (IsBot && BotData == null) return;
+
                 transform.parent = !IsBot ? WeaponID == "001" ? PlayerCore.Inventory.SwordHand : PlayerCore.Inventory.SpearHand : WeaponID == "001" ? BotData.Inventory.SwordHand : BotData.Inventory.SpearHand;
                 transform.localPosition = Vector3.zero;
                 transform.localRotation = Quaternion.identity;
             }
             else
             {
+                if (IsBot && BotData == null) return;
+
                 transform.parent = !IsBot ? WeaponID == "001" ? PlayerCore.Inventory.SwordBack : PlayerCore.Inventory.SpearBack : WeaponID == "001" ? BotData.Inventory.SwordBack : BotData.Inventory.SpearHand;
                 transform.localPosition = Vector3.zero;
                 transform.localRotation = Quaternion.identity;

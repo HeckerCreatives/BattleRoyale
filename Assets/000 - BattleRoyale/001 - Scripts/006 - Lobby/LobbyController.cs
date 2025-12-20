@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public enum LeaderboardState
@@ -78,6 +79,10 @@ public class LobbyController : MonoBehaviour
     [Space]
     [SerializeField] private TextMeshProUGUI resetTimerTMP;
 
+    [Space]
+    [SerializeField] private GameObject reconObj;
+    [SerializeField] private GameObject findMatchObj;
+
     [Header("DEBUGGER")]
     [SerializeField] private bool cancountdowntime;
     [SerializeField] public NetworkRunner currentRunnerInstance;
@@ -91,6 +96,7 @@ public class LobbyController : MonoBehaviour
 
     private void Awake()
     {
+        GameManager.Instance.SceneController.AddActionLoadinList(matchmakingController.WaitForReconnectStatus());
         GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/characters/getcharactersetting", "", false, (response) =>
         {
             try

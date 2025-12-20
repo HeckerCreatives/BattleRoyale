@@ -49,6 +49,8 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     [Networked][field: SerializeField] public DedicatedServerManager ServerManager { get; set; }
     [Networked][field: SerializeField] public bool NotEnoughPlayer { get; set; }
     [Networked][field: SerializeField] public string Username { get; set; }
+    [Networked][field: SerializeField] public bool Removing { get; set; }
+    [Networked][field: SerializeField] public bool DoneInit { get; set; }
 
     //  ====================
 
@@ -77,21 +79,28 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
 
         GameManager.Instance.SocketMngr.IsOnGame = true;
 
-        GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.PostRequest("/usergamedetail/useenergy", "", new Dictionary<string, object> { }, false, (response) =>
+        if (!DoneInit)
         {
-            userData.GameDetails.energy -= userData.GameDetails.energy > 0 ? 1 : 0;
-        }, () =>
-        {
-            Runner.Shutdown(true);
-            GameManager.Instance.SceneController.StopLoading();
-            GameManager.Instance.SocketMngr.Socket.Disconnect();
-            GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later.", null);
-            GameManager.Instance.SceneController.CurrentScene = "Login";
-        }));
+            GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.PostRequest("/usergamedetail/useenergy", "", new Dictionary<string, object> { }, false, (response) =>
+            {
+                userData.GameDetails.energy -= userData.GameDetails.energy > 0 ? 1 : 0;
+            }, () =>
+            {
+                Runner.Shutdown(true);
+                GameManager.Instance.SceneController.StopLoading();
+                GameManager.Instance.SocketMngr.Socket.Disconnect();
+                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later.", null);
+                GameManager.Instance.SceneController.CurrentScene = "Login";
+            }));
+        }
+        else
+            GameManager.Instance.SceneController.AddActionLoadinList(CheckArena());
+
         GameManager.Instance.SceneController.AddActionLoadinList(InitializePlayer());
         GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetVolumeSlidersOnStart());
         GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetGraphicsOnStart());
         GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetLookSensitivityOnStart());
+        GameManager.Instance.SceneController.AddActionLoadinList(ChangeDoneInitialize());
         GameManager.Instance.SceneController.ActionPass = true;
 
         RPC_SetUsername(userData.Username);
@@ -114,6 +123,28 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         while (ServerManager == null) await Task.Yield();
 
         ServerManager.OnCurrentStateChange += StateChange;
+    }
+
+    private IEnumerator ChangeDoneInitialize()
+    {
+        RPC_ChangeDoneInit();
+        yield return null;
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    public void RPC_ChangeDoneInit()
+    {
+        DoneInit = true;
+    }
+
+    private IEnumerator CheckArena()
+    {
+        if (ServerManager.CurrentGameState == GameState.WAITINGAREA)
+            ServerManager.ArenaEnabler(true, false);
+        else
+            ServerManager.ArenaEnabler(false, true);
+
+        yield return null;
     }
 
     private void OnCloudConnectionLost(NetworkRunner networkRunner, ShutdownReason shutdownReason, bool reconnecting)
@@ -217,6 +248,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         {
             GameManager.Instance.NotificationController.ShowConfirmation("Quit now and lose 2 energy", () =>
             {
+                RPC_Removeplayer(false);
                 Runner.Shutdown();
                 GameManager.Instance.SceneController.CurrentScene = "Lobby";
             }, null);
@@ -225,15 +257,31 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         {
             GameManager.Instance.NotificationController.ShowConfirmation("Quit now and lose all XP, points, and 2 energy.", () =>
             {
+                RPC_Removeplayer(false);
                 Runner.Shutdown();
                 GameManager.Instance.SceneController.CurrentScene = "Lobby";
             }, null);
         }
     }
 
-    public void ReturnToMenuBtn()
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    public void RPC_Removeplayer(bool value)
     {
-        Runner.Shutdown();
+        Removing = value;
+    }
+
+    public async void ReturnToMenuBtn()
+    {
+        GameManager.Instance.NoBGLoading.SetActive(true);
+
+        RPC_Removeplayer(true);
+
+        await Task.Delay(2000);
+
+        GameManager.Instance.NoBGLoading.SetActive(false);
+
+        await Runner.Shutdown();
+
         GameManager.Instance.SceneController.CurrentScene = "Lobby";
     }
 }

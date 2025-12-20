@@ -108,7 +108,9 @@ public class PlayerInventoryV2 : NetworkBehaviour
 
         if (HasInputAuthority)
         {
-            RPC_SendPlayerDataToServer(JsonConvert.SerializeObject(userData.CharacterSetting));
+            if (!playerOwnObjectEnabler.DoneInit)
+                RPC_SendPlayerDataToServer(JsonConvert.SerializeObject(userData.CharacterSetting));
+
             InitializeSkinOnStart();
         }
         else if (!HasInputAuthority && !HasStateAuthority)
