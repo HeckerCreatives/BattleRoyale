@@ -23,6 +23,24 @@ using System.Text;
 
 public class ClientMatchmakingController : MonoBehaviour
 {
+    public enum PlayState
+    {
+        NORMAL,
+        RANKED
+    }
+    private event EventHandler PlayStateChange;
+    public event EventHandler OnPlayStateChange
+    {
+        add
+        {
+            if (PlayStateChange == null || !PlayStateChange.GetInvocationList().Contains(value))
+                PlayStateChange += value;
+        }
+        remove { PlayStateChange -= value; }
+    }
+
+    //  =====================
+
     private event EventHandler ServerChange;
     public event EventHandler OnServerChange
     {
@@ -50,6 +68,16 @@ public class ClientMatchmakingController : MonoBehaviour
         get => serverSelected;
     }
 
+    public PlayState CurrentPlayState
+    {
+        get => currentPlayState;
+        set
+        {
+            currentPlayState = value;
+            PlayStateChange?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
     //  ========================
 
     [SerializeField] private UserData userData;
@@ -65,12 +93,20 @@ public class ClientMatchmakingController : MonoBehaviour
     [SerializeField] private Button cancelBtn;
     [SerializeField] private GameObject matchBtn;
     [SerializeField] private GameObject matchmakingObj;
-    [SerializeField] private GameObject findABattleObj;
     [SerializeField] private GameObject reconObj;
 
     [Space]
     [SerializeField] private GameObject serverListLoader;
     [SerializeField] private GameObject serverListContent;
+
+    [Space]
+    [SerializeField] private RectTransform playSettingsRT;
+    [SerializeField] private LeanTweenType easeType;
+    [SerializeField] private float easeDuration;
+    [SerializeField] private GameObject rankedMatchBtn;
+    [SerializeField] private GameObject rankedMatchSettings;
+    [SerializeField] private GameObject normalMatchBtn;
+    [SerializeField] private GameObject normalMatchSettings;
 
     [Header("DEBUGGER")]
     [ReadOnly][SerializeField] public NetworkRunner currentRunnerInstance;
@@ -82,12 +118,22 @@ public class ClientMatchmakingController : MonoBehaviour
     [SerializeField] private List<string> serverSelected;
     [SerializeField] private string roomname;
     [SerializeField] private bool finishCheckingIfCanRecon;
+    [SerializeField] private bool playSettingIsOn;
+    [SerializeField] private PlayState currentPlayState;
 
     //  =====================
 
     CreateTicketResponse ticketResponse;
 
+    int playLT;
+
     //  =====================
+
+    private void Awake()
+    {
+        ChangePlayStates();
+        OnPlayStateChange += PlayStateChanged;
+    }
 
     private void OnEnable()
     {
@@ -162,10 +208,45 @@ public class ClientMatchmakingController : MonoBehaviour
         }
     }
 
+    private void OnDisable()
+    {
+        OnPlayStateChange -= PlayStateChanged;
+    }
+
+    private void PlayStateChanged(object sender, EventArgs e)
+    {
+        ChangePlayStates();
+    }
+
     private void Update()
     {
         FindMatchTimer();
     }
+
+    private void ChangePlayStates()
+    {
+        switch (CurrentPlayState)
+        {
+            case PlayState.NORMAL:
+                normalMatchBtn.SetActive(false);
+                normalMatchSettings.SetActive(true);
+
+                rankedMatchSettings.SetActive(false);
+                rankedMatchBtn.SetActive(true);
+
+                break;
+            case PlayState.RANKED:
+                normalMatchBtn.SetActive(true);
+                normalMatchSettings.SetActive(false);
+
+                rankedMatchSettings.SetActive(true);
+                rankedMatchBtn.SetActive(false);
+
+                break;
+        }
+    }
+
+    public void ChangePlayStateBtn(int index) => CurrentPlayState = (PlayState) index;
 
     public IEnumerator WaitForReconnectStatus()
     {
@@ -218,8 +299,8 @@ public class ClientMatchmakingController : MonoBehaviour
     {
         if (findingMatch) return;
 
-        changeServerBtn.interactable = false;
-        changeServerBtn1.interactable = false;
+        //changeServerBtn.interactable = false;
+        //changeServerBtn1.interactable = false;
 
         if (userData.GameDetails.energy <= 0)
         {
@@ -234,7 +315,7 @@ public class ClientMatchmakingController : MonoBehaviour
 
     private void Matching()
     {
-        findABattleObj.gameObject.SetActive(false);
+        PlaySettingsOpener();
 
         GameManager.Instance.NoBGLoading.SetActive(true);
 
@@ -253,8 +334,7 @@ public class ClientMatchmakingController : MonoBehaviour
                 }
 
                 matchmakingObj.SetActive(true);
-
-                findABattleObj.SetActive(false);
+                matchBtn.SetActive(false);
 
                 findingMatch = true;
 
@@ -353,8 +433,9 @@ public class ClientMatchmakingController : MonoBehaviour
                 Debug.Log("Not using multiplay, starting photon find match");
 
                 matchmakingObj.SetActive(true);
+                matchBtn.SetActive(false);
 
-                findABattleObj.SetActive(false);
+                //findABattleObj.SetActive(false);
 
                 findingMatch = true;
 
@@ -492,8 +573,9 @@ public class ClientMatchmakingController : MonoBehaviour
         timerTMP.text = "Canceling matchmaking...";
 
         matchmakingObj.SetActive(false);
+        matchBtn.SetActive(true);
 
-        findABattleObj.SetActive(true);
+        //findABattleObj.SetActive(true);
 
         changeServerBtn.interactable = true;
 
@@ -512,6 +594,7 @@ public class ClientMatchmakingController : MonoBehaviour
         if (tempRunner == null)
         {
             matchmakingObj.SetActive(false);
+            matchBtn.SetActive(true);
             return;
         }
 
@@ -560,5 +643,27 @@ public class ClientMatchmakingController : MonoBehaviour
 
             GameManager.Instance.SocketMngr.EmitEvent("removereconnect", null);
         }, null);
+    }
+
+    public void PlaySettingsOpener()
+    {
+        if (playLT != 0) LeanTween.cancel(playLT);
+
+        playSettingIsOn = !playSettingIsOn;
+
+        if (playSettingIsOn)
+        {
+            playLT = LeanTween.value(playSettingsRT.gameObject, playSettingsRT.anchoredPosition.x, 0f, easeDuration).setOnUpdate((float val) =>
+            {
+                playSettingsRT.anchoredPosition = new Vector3(val, playSettingsRT.anchoredPosition.y, 0f);
+            }).setEase(easeType).id;
+        }
+        else
+        {
+            playLT = LeanTween.value(playSettingsRT.gameObject, playSettingsRT.anchoredPosition.x, 621f, easeDuration).setOnUpdate((float val) =>
+            {
+                playSettingsRT.anchoredPosition = new Vector3(val, playSettingsRT.anchoredPosition.y, 0f);
+            }).setEase(easeType).id;
+        }
     }
 }
