@@ -21,6 +21,8 @@ public class KillNotificationItem : MonoBehaviour
 
     private void Update()
     {
+        if (pool == null) return;
+
         timer -= Time.deltaTime;
 
         if (timer <= 0f)

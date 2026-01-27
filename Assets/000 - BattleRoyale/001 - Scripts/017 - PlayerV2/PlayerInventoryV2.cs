@@ -20,10 +20,11 @@ public class PlayerInventoryV2 : NetworkBehaviour
     [SerializeField] private List<SkinnedMeshRenderer> hairMR;
     [SerializeField] private SkinnedMeshRenderer bodyColorMR;
     [SerializeField] private List<SkinnedMeshRenderer> clothingMRList;
+    [SerializeField] private List<SkinnedMeshRenderer> hatMR;
 
     [Header("SKIN COLOR")]
     [SerializeField] private List<Color> hairColor;
-    [SerializeField] private List<Color> clothingColor;
+    [SerializeField] private List<ColorSchemes> clothingColor;
     [SerializeField] private List<Color> skinColor;
 
     [Header("WEAPON EQUIP BUTTONS")]
@@ -163,12 +164,14 @@ public class PlayerInventoryV2 : NetworkBehaviour
         SkinColorIndex = characterSetting.skincolor;
         IsSkinInitialized = true;
 
-
         hairStyles[HairStyle].SetActive(true);
         hairMR[HairStyle].material.SetColor("_BaseColor", hairColor[HairColorIndex]);
 
         for (int a = 0; a < clothingMRList.Count; a++)
-            clothingMRList[a].material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
+            clothingMRList[a].material.SetColor("_BaseColor", clothingColor[ClothingColorIndex].Colors[a]);
+
+        for (int a = 0; a < hatMR.Count; a++)
+            hatMR[a].material.SetColor("_BaseColor", clothingColor[ClothingColorIndex].Colors[1]);
 
         bodyColorMR.material.SetColor("_BaseColor", skinColor[SkinColorIndex]);
 
@@ -183,7 +186,10 @@ public class PlayerInventoryV2 : NetworkBehaviour
         hairMR[HairStyle].material.SetColor("_BaseColor", hairColor[HairColorIndex]);
 
         for (int a = 0; a < clothingMRList.Count; a++)
-            clothingMRList[a].material.SetColor("_BaseColor", clothingColor[ClothingColorIndex]);
+            clothingMRList[a].material.SetColor("_BaseColor", clothingColor[ClothingColorIndex].Colors[a]);
+
+        for (int a = 0; a < hatMR.Count; a++)
+            hatMR[a].material.SetColor("_BaseColor", clothingColor[ClothingColorIndex].Colors[1]);
 
         bodyColorMR.material.SetColor("_BaseColor", skinColor[SkinColorIndex]);
     }

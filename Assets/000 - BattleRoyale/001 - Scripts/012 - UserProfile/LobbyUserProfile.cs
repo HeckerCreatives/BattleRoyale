@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SocialPlatforms.Impl;
@@ -9,6 +10,7 @@ using UnityEngine.SocialPlatforms.Impl;
 public class LobbyUserProfile : MonoBehaviour
 {
     [SerializeField] private UserData userData;
+    [SerializeField] private LobbyController lobbyController;
 
     [Header("LOBBY")]
     [SerializeField] private TextMeshProUGUI usernameTMP;
@@ -28,11 +30,21 @@ public class LobbyUserProfile : MonoBehaviour
     [SerializeField] private TextMeshProUGUI rankProfileTMP;
     [SerializeField] private TextMeshProUGUI coinsProfileTMP;
 
+    [Header("GUEST ACCOUNT")]
+    [SerializeField] private GameObject registerGuestObj;
+    [SerializeField] private GameObject registerGuestBtn;
+    [SerializeField] private TMP_InputField guestUsernameTMP;
+    [SerializeField] private TMP_InputField guestEmailTMP;
+    [SerializeField] private TMP_InputField guestPasswordTMP;
+    [SerializeField] private TMP_InputField guestConfirmPasswordTMP;
+
     [Header("ENERGY")]
     [SerializeField] private TextMeshProUGUI energyTMP;
 
     private void OnEnable()
     {
+        registerGuestBtn.SetActive(userData.IsGuest);
+
         userData.OnLeaderboardPointsChange += LeaderboardPointsChange;
         userData.OnCoinsPointsChange += CoinsPointsChange;
         userData.OnTitleChange += TitleChange;
@@ -102,6 +114,83 @@ public class LobbyUserProfile : MonoBehaviour
         }
         else
             titleTMP.text = "";
+    }
+
+    public void GuestBind()
+    {
+        if (guestUsernameTMP.text == "")
+        {
+            GameManager.Instance.NotificationController.ShowError("Please enter your username first and try again!", null);
+            return;
+        }
+        else if (guestPasswordTMP.text == "")
+        {
+            GameManager.Instance.NotificationController.ShowError("Please enter your password first and try again!", null);
+            return;
+        }
+        else if (guestConfirmPasswordTMP.text == "")
+        {
+            GameManager.Instance.NotificationController.ShowError("Please enter confirm password first and try again!", null);
+            return;
+        }
+        else if (guestPasswordTMP.text != guestConfirmPasswordTMP.text)
+        {
+            GameManager.Instance.NotificationController.ShowError("Password does not match confirm password!", null);
+            return;
+        }
+        else if (guestEmailTMP.text == "")
+        {
+            GameManager.Instance.NotificationController.ShowError("Please enter your email first and try again!", null);
+            return;
+        }
+        else if (guestUsernameTMP.text.Length < 5 || guestUsernameTMP.text.Length > 15)
+        {
+            GameManager.Instance.NotificationController.ShowError("Minimum of 5 and maximum of 15 characters only for username! Please try again.", null);
+            return;
+        }
+        else if (guestPasswordTMP.text.Length < 5 || guestPasswordTMP.text.Length > 20)
+        {
+            GameManager.Instance.NotificationController.ShowError("Minimum of 5 and maximum of 20 characters only for password! Please try again.", null);
+            return;
+        }
+        else if (Regex.IsMatch(guestUsernameTMP.text, @"[^\w]"))
+        {
+            GameManager.Instance.NotificationController.ShowError("Username contains spaces or special characters.", null);
+            return;
+        }
+        else if (Regex.IsMatch(guestPasswordTMP.text, @"[^a-zA-Z0-9\s\[\]@]"))
+        {
+            GameManager.Instance.NotificationController.ShowError("Password contains spaces or special characters (excluding [ ] and @).", null);
+            return;
+        }
+        else if (!Regex.IsMatch(guestEmailTMP.text, @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"))
+        {
+            GameManager.Instance.NotificationController.ShowError("The email is invalid! Please enter a valid email.", null);
+            return;
+        }
+
+        GameManager.Instance.NoBGLoading.SetActive(true);
+
+        StartCoroutine(GameManager.Instance.PostRequest("/auth/guestaccbind", "", new Dictionary<string, object>
+        {
+            { "username", guestUsernameTMP.text },
+            { "password", guestPasswordTMP.text },
+            { "email", guestEmailTMP.text },
+        }, false, (response) =>
+        {
+            GameManager.Instance.NotificationController.ShowCongratsOk("You have successfully registered your guest account! You will now be logged out. Please relogin again using your credentials.", () =>
+            {
+                PlayerPrefs.DeleteKey("guestuname");
+                PlayerPrefs.DeleteKey("guestpword");
+                lobbyController.Logout(false);
+            });
+
+            registerGuestObj.SetActive(false);
+            registerGuestBtn.SetActive(false);
+        }, () =>
+        {
+            GameManager.Instance.NoBGLoading.SetActive(false);
+        }));
     }
 }
 

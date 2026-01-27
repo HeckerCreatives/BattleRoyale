@@ -19,8 +19,10 @@ public class CharacterCreationController : MonoBehaviour
     [Header("HAIR")]
     [SerializeField] private List<GameObject> hairStyles;
     [SerializeField] private List<SkinnedMeshRenderer> hairMR;
+    [SerializeField] private List<SkinnedMeshRenderer> hatMR;
     [SerializeField] private List<GameObject> profileHairStyles;
     [SerializeField] private List<SkinnedMeshRenderer> profileHairMR;
+    [SerializeField] private List<SkinnedMeshRenderer> profileHatMR;
 
     [Header("IMAGES")]
     [SerializeField] private Image hairStyleImg;
@@ -30,7 +32,7 @@ public class CharacterCreationController : MonoBehaviour
 
     [Header("COLOR")]
     [SerializeField] private List<Color> hairColor;
-    [SerializeField] private List<Color> clothingColor;
+    [SerializeField] private List<ColorSchemes> clothingColors;
     [SerializeField] private List<Color> skinColor;
 
     [Header("CHARACTER")]
@@ -73,15 +75,21 @@ public class CharacterCreationController : MonoBehaviour
 
         hairMR[hairStyleIndex].material.SetColor("_BaseColor", hairColor[hairColorIndex]);
 
-        for (int a = 0; a < clothingMRList.Count; a++)
-            clothingMRList[a].material.SetColor("_BaseColor", clothingColor[clothingColorIndex]);
+        for (int a = 0; a < clothingColors[clothingColorIndex].Colors.Count; a++)
+            clothingMRList[a].material.SetColor("_BaseColor", clothingColors[clothingColorIndex].Colors[a]);
+
+        for (int a = 0; a < hatMR.Count; a++)
+            hatMR[a].material.SetColor("_BaseColor", clothingColors[clothingColorIndex].Colors[1]);
 
         bodyColorMR.material.SetColor("_BaseColor", skinColor[skinColorIndex]);
 
         profileHairMR[hairStyleIndex].material.SetColor("_BaseColor", hairColor[hairColorIndex]);
 
-        for (int a = 0; a < profileClothingMRList.Count; a++)
-            profileClothingMRList[a].material.SetColor("_BaseColor", clothingColor[clothingColorIndex]);
+        for (int a = 0; a < clothingColors[clothingColorIndex].Colors.Count; a++)
+            profileClothingMRList[a].material.SetColor("_BaseColor", clothingColors[clothingColorIndex].Colors[a]);
+
+        for (int a = 0; a < profileHatMR.Count; a++)
+            profileHatMR[a].material.SetColor("_BaseColor", clothingColors[clothingColorIndex].Colors[1]);
 
         profileBodyColorMR.material.SetColor("_BaseColor", skinColor[skinColorIndex]);
 
@@ -166,13 +174,19 @@ public class CharacterCreationController : MonoBehaviour
         }
         CheckSettingsForSaveButton();
 
-        for (int a = 0; a < clothingMRList.Count; a++)
-            clothingMRList[a].material.SetColor("_BaseColor", clothingColor[clothingColorIndex]);
+        for (int a = 0; a < clothingColors[clothingColorIndex].Colors.Count; a++)
+            clothingMRList[a].material.SetColor("_BaseColor", clothingColors[clothingColorIndex].Colors[a]);
+
+        for (int a = 0; a < hatMR.Count; a++)
+            hatMR[a].material.SetColor("_BaseColor", clothingColors[clothingColorIndex].Colors[1]);
 
         clothingColorImg.sprite = clothingColorList[clothingColorIndex];
 
-        for (int a = 0; a < profileClothingMRList.Count; a++)
-            profileClothingMRList[a].material.SetColor("_BaseColor", clothingColor[clothingColorIndex]);
+        for (int a = 0; a < clothingColors[clothingColorIndex].Colors.Count; a++)
+            profileClothingMRList[a].material.SetColor("_BaseColor", clothingColors[clothingColorIndex].Colors[a]);
+
+        for (int a = 0; a < profileHatMR.Count; a++)
+            profileHatMR[a].material.SetColor("_BaseColor", clothingColors[clothingColorIndex].Colors[1]);
     }
 
     public void ChangeSkinColor(bool isNext)

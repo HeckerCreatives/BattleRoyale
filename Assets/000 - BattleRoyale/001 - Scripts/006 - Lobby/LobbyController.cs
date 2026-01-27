@@ -560,36 +560,49 @@ public class LobbyController : MonoBehaviour
         GameManager.Instance.SceneController.CurrentScene = "Prototype";
     }
 
-    public void Logout()
+    public void Logout(bool ask = true)
     {
-        GameManager.Instance.NotificationController.ShowConfirmation("Are you sure you want to logout?", async () => 
-        {
-            GameManager.Instance.NoBGLoading.SetActive(true);
-            if (matchmakingController.currentRunnerInstance != null)
-                await matchmakingController.ShutdownServer();
+        if (ask)
+            GameManager.Instance.NotificationController.ShowConfirmation("Are you sure you want to logout?", async () =>
+            {
+                GameManager.Instance.NoBGLoading.SetActive(true);
+                if (matchmakingController.currentRunnerInstance != null)
+                    await matchmakingController.ShutdownServer();
 
-            userData.ResetLogin();
-            GameManager.Instance.SocketMngr.Socket.Disconnect();
-        }, null);
+                userData.ResetLogin();
+                GameManager.Instance.SocketMngr.Socket.Disconnect();
+            }, null);
+        else
+            AwaitLogout();
+    }
+
+    private async void AwaitLogout()
+    {
+        GameManager.Instance.NoBGLoading.SetActive(true);
+        if (matchmakingController.currentRunnerInstance != null)
+            await matchmakingController.ShutdownServer();
+
+        userData.ResetLogin();
+        GameManager.Instance.SocketMngr.Socket.Disconnect();
     }
 
     public void ButtonPress() => GameManager.Instance.AudioController.PlaySFX(buttonClip);
 
     public void TitleChecker()
     {
-        if (userData.PlayerInventory.Count > 0)
-        {
-            var filteredItems = userData.PlayerInventory
-                .Where(kvp => kvp.Value.type == "title" && kvp.Value.isEquipped == true)
-                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        //if (userData.PlayerInventory.Count > 0)
+        //{
+        //    var filteredItems = userData.PlayerInventory
+        //        .Where(kvp => kvp.Value.type == "title" && kvp.Value.isEquipped == true)
+        //        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-            if (filteredItems.Count > 0)
-                titleTMP.text = filteredItems.ElementAt(0).Value.itemname;
-            else
-                titleTMP.text = "";
-        }
-        else
-            titleTMP.text = "";
+        //    if (filteredItems.Count > 0)
+        //        titleTMP.text = filteredItems.ElementAt(0).Value.itemname;
+        //    else
+        //        titleTMP.text = "";
+        //}
+        //else
+        //    titleTMP.text = "";
     }
 }
 

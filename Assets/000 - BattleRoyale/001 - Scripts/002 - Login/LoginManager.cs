@@ -18,6 +18,7 @@ public class LoginManager : MonoBehaviour
     [SerializeField] private UserData userData;
     [SerializeField] private NetworkRunner instanceRunner;
     [SerializeField] private TextMeshProUGUI clientVersionTMP;
+    [SerializeField] private LoginMenuManager loginMenuManager;
 
     [Space]
     [SerializeField] private AudioClip buttonClip;
@@ -328,7 +329,7 @@ public class LoginManager : MonoBehaviour
         GameManager.Instance.AudioController.SetBGMusic(bgMusic);
         GameManager.Instance.SceneController.AddActionLoadinList(CheckRememberMe());
         GameManager.Instance.SceneController.AddActionLoadinList(userData.CheckControlSettingSave());
-        GameManager.Instance.SceneController.AddActionLoadinList(FillUpSignUpCountry());
+        //GameManager.Instance.SceneController.AddActionLoadinList(FillUpSignUpCountry());
         GameManager.Instance.SceneController.ActionPass = true;
 
         GameManager.Instance.SocketMngr.OnPlayerCountServerChange += PlayerCountChange;
@@ -404,16 +405,19 @@ public class LoginManager : MonoBehaviour
         yield return null;
     }
 
-    IEnumerator LoginUser()
+    IEnumerator LoginUser(bool isGuest = false)
     {
         Debug.Log("start login user api");
         GameManager.Instance.NoBGLoading.SetActive(true);
 
         UnityWebRequest apiRquest;
 
+        string tempusername = isGuest ? PlayerPrefs.GetString("guestuname") : username.text;
+        string temppassword = isGuest ? PlayerPrefs.GetString("guestpword") : password.text;
+
         if (env.TryParseEnvironmentVariable("API_URL", out string httpRequest))
         {
-            apiRquest = UnityWebRequest.Get($"{httpRequest}/auth/login?username={username.text}&password={password.text}&appversion={Application.version}");
+            apiRquest = UnityWebRequest.Get($"{httpRequest}/auth/login?username={tempusername}&password={temppassword}&appversion={Application.version}");
         }
         else
         {
@@ -478,20 +482,24 @@ public class LoginManager : MonoBehaviour
                 }
 
                 userData.UserToken = dataresponse["token"].ToString();
-                userData.Username = username.text;
+                userData.Username = tempusername;
+                userData.IsGuest = isGuest;
 
 
-                Debug.Log($"Remember Me login: {rememberMe.isOn}");
-
-                if (rememberMe.isOn)
+                if (!isGuest)
                 {
-                    userData.RememberMe = true;
-                    userData.Password = password.text;
-                    userData.RememberMeSave();
-                }
-                else
-                {
-                    userData.RememberMeDelete();
+                    Debug.Log($"Remember Me login: {rememberMe.isOn}");
+
+                    if (rememberMe.isOn)
+                    {
+                        userData.RememberMe = true;
+                        userData.Password = password.text;
+                        userData.RememberMeSave();
+                    }
+                    else
+                    {
+                        userData.RememberMeDelete();
+                    }
                 }
 
                 CheckSelectedServer();
@@ -640,11 +648,11 @@ public class LoginManager : MonoBehaviour
             GameManager.Instance.NotificationController.ShowError("Please enter your email first and try again!", null);
             return;
         }
-        else if (!countryDictionary.ContainsKey(countryDropdowns.options[countryDropdowns.value].text))
-        {
-            GameManager.Instance.NotificationController.ShowError("Please select your country first!", null);
-            return;
-        }
+        //else if (!countryDictionary.ContainsKey(countryDropdowns.options[countryDropdowns.value].text))
+        //{
+        //    GameManager.Instance.NotificationController.ShowError("Please select your country first!", null);
+        //    return;
+        //}
         else if (usernameRegister.text.Length < 5 || usernameRegister.text.Length > 15)
         {
             GameManager.Instance.NotificationController.ShowError("Minimum of 5 and maximum of 15 characters only for username! Please try again.", null);
@@ -678,17 +686,17 @@ public class LoginManager : MonoBehaviour
             { "username", usernameRegister.text },
             { "password", passwordRegister.text },
             { "email", emailRegister.text },
-            { "country", countryDropdowns.options[countryDropdowns.value].text }
+            { "country", "ET" }
         }, false, (response) =>
         {
             GameManager.Instance.NotificationController.ShowError("You are now registered! You can now login your account.", () =>
-            {
-                loginObj.SetActive(true);
-                registerObj.SetActive(false);
+            { 
                 usernameRegister.text = "";
                 passwordRegister.text = "";
                 confirmPasswordRegister.text = "";
                 emailRegister.text = "";
+
+                loginMenuManager.LoginRegisterChangeState(0);
             });
         }, () => GameManager.Instance.NoBGLoading.SetActive(false), false));
     }
@@ -708,6 +716,120 @@ public class LoginManager : MonoBehaviour
         }
 
         StartCoroutine(LoginUser());
+    }
+
+    IEnumerator GuestRegister(bool isGuest = false)
+    {
+        Debug.Log("start login user api");
+        GameManager.Instance.NoBGLoading.SetActive(true);
+
+        UnityWebRequest apiRquest;
+
+        if (env.TryParseEnvironmentVariable("API_URL", out string httpRequest))
+        {
+            apiRquest = UnityWebRequest.PostWwwForm($"{httpRequest}/auth/guestregister?&appversion={Application.version}", "");
+        }
+        else
+        {
+            //  ERROR PANEL HERE
+            Debug.Log("Error API CALL! Error Code: ENV FAILED TO PARSE");
+            GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later", null);
+            yield break;
+        }
+
+        apiRquest.SetRequestHeader("Content-Type", "application/json");
+
+        yield return apiRquest.SendWebRequest();
+
+        Debug.Log("api response" + "  " + apiRquest.downloadHandler.text);
+
+        if (apiRquest.result == UnityWebRequest.Result.Success)
+        {
+            string response = apiRquest.downloadHandler.text;
+
+            Debug.Log("api response" + "  " + response);
+            if (response[0] == '{' && response[response.Length - 1] == '}')
+            {
+                Dictionary<string, object> apiresponse = JsonConvert.DeserializeObject<Dictionary<string, object>>(response);
+
+                if (!apiresponse.ContainsKey("message"))
+                {
+                    //  ERROR PANEL HERE
+                    Debug.Log("Error API CALL! Error Code: " + response);
+                    GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later.", null);
+                    GameManager.Instance.NoBGLoading.SetActive(false);
+                    yield break;
+                }
+
+                if (apiresponse["message"].ToString() != "success")
+                {
+                    //  ERROR PANEL HERE
+                    Debug.Log("Error API CALL! Error Code: " + apiresponse["data"].ToString());
+                    GameManager.Instance.NotificationController.ShowError($"{apiresponse["data"]}", null);
+                    GameManager.Instance.NoBGLoading.SetActive(false);
+                    yield break;
+                }
+
+                if (!apiresponse.ContainsKey("data"))
+                {
+                    //  ERROR PANEL HERE
+                    Debug.Log("Error API CALL! Error Code: " + apiresponse["message"].ToString());
+                    GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later.", null);
+                    GameManager.Instance.NoBGLoading.SetActive(false);
+                    yield break;
+                }
+
+                Dictionary<string, object> dataresponse = JsonConvert.DeserializeObject<Dictionary<string, object>>(apiresponse["data"].ToString());
+
+                if (!dataresponse.ContainsKey("username") || !dataresponse.ContainsKey("password"))
+                {
+                    //  ERROR PANEL HERE
+                    Debug.Log("Error API CALL! Error Code: " + apiresponse["data"].ToString());
+                    GameManager.Instance.NotificationController.ShowError($"{apiresponse["data"]}", null);
+                    GameManager.Instance.NoBGLoading.SetActive(false);
+                    yield break;
+                }
+
+                PlayerPrefs.SetString("guestuname", dataresponse["username"].ToString());
+                PlayerPrefs.SetString("guestpword", dataresponse["password"].ToString());
+
+                StartCoroutine(LoginUser(true));
+            }
+            else
+            {
+                //  ERROR PANEL HERE
+                Debug.Log("Error API CALL! Error Code: " + response);
+                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please contact customer support for more details.", null);
+                GameManager.Instance.NoBGLoading.SetActive(false);
+            }
+        }
+        else
+        {
+            try
+            {
+                Dictionary<string, object> apiresponse = JsonConvert.DeserializeObject<Dictionary<string, object>>(apiRquest.downloadHandler.text);
+
+                GameManager.Instance.NotificationController.ShowError($"{apiresponse["data"]}", null);
+                GameManager.Instance.NoBGLoading.SetActive(false);
+            }
+            catch (Exception ex)
+            {
+                Debug.Log("Error API CALL! Error Code: " + apiRquest.result + ", " + apiRquest.downloadHandler.text);
+                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please contact customer support for more details.", null);
+                GameManager.Instance.NoBGLoading.SetActive(false);
+            }
+        }
+    }
+
+    public void GuestLogin()
+    {
+        if (PlayerPrefs.HasKey("guestuname") && PlayerPrefs.HasKey("guestpword"))
+        {
+            StartCoroutine(LoginUser(true));
+            return;
+        }
+
+        StartCoroutine(GuestRegister());
     }
 
     public void OpenURL(string url) => Application.OpenURL(url);
@@ -774,8 +896,10 @@ public class LoginManager : MonoBehaviour
 
         //currentRunnerInstance = null;
 
-        loginObj.SetActive(false);
-        selectedServer.SetActive(true);
+        //loginObj.SetActive(false);
+        //selectedServer.SetActive(true);
+
+        loginMenuManager.ChangeMenuState(6);
 
         GameManager.Instance.NoBGLoading.SetActive(false);
     }

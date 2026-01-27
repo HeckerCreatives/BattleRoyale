@@ -97,6 +97,7 @@ public class UserData : ScriptableObject
     [field: SerializeField] public string Password { get; set; }
     [field: SerializeField] public bool RememberMe { get; set; }
     [field: SerializeField] public string SelectedServer { get; set; }
+    [field: SerializeField] public bool IsGuest { get; set; }
 
     [field: Header("CHARACTER")]
     [field: SerializeField] public PlayerCharacterSetting CharacterSetting { get; set; }

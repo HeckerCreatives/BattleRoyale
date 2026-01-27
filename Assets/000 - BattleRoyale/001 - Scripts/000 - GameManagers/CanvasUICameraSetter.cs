@@ -6,7 +6,7 @@ public class CanvasUICameraSetter : MonoBehaviour
 {
     public Canvas canvas;
 
-    private void OnEnable()
+    private void Awake()
     {
         if (GameManager.Instance == null) return;
 

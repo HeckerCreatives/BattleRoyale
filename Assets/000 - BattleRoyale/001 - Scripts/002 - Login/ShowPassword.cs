@@ -8,8 +8,8 @@ public class ShowPassword : MonoBehaviour
 {
     [SerializeField] private TMP_InputField passwordTMP;
     [SerializeField] private Image passwordImg;
-    [SerializeField] private Sprite offShow;
-    [SerializeField] private Sprite onShow;
+    [SerializeField] private Color offShow;
+    [SerializeField] private Color onShow;
 
     [Header("DEBUGGER")]
     [SerializeField] private bool isShowing;
@@ -29,6 +29,6 @@ public class ShowPassword : MonoBehaviour
 
         passwordTMP.ForceLabelUpdate();
 
-        passwordImg.sprite = isShowing ? onShow : offShow;
+        passwordImg.color = isShowing ? onShow : offShow;
     }
 }
