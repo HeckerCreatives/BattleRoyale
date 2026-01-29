@@ -100,6 +100,11 @@ public class ClientMatchmakingController : MonoBehaviour
     [SerializeField] private GameObject serverListContent;
 
     [Space]
+    [SerializeField] private GameObject waitingRoomObj;
+    [SerializeField] private TextMeshProUGUI waitingRoomTimerTMP;
+    [SerializeField] private List<WaitingPlayerItem> waitingPlayerItems;
+
+    [Space]
     [SerializeField] private RectTransform playSettingsRT;
     [SerializeField] private LeanTweenType easeType;
     [SerializeField] private float easeDuration;
@@ -120,6 +125,9 @@ public class ClientMatchmakingController : MonoBehaviour
     [SerializeField] private bool finishCheckingIfCanRecon;
     [SerializeField] private bool playSettingIsOn;
     [SerializeField] private PlayState currentPlayState;
+    [SerializeField] private bool inWaitingRoom;
+    [SerializeField] private bool isBattle;
+    [SerializeField] private float currentWaitingTime;
 
     //  =====================
 
@@ -152,11 +160,15 @@ public class ClientMatchmakingController : MonoBehaviour
             {
                 finishCheckingIfCanRecon = true;
 
-                List<Dictionary<string, string>> tempdata = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(response.ToString());
+                Dictionary<string, string> tempdata = JsonConvert.DeserializeObject<Dictionary<string, string>>(response.ToString());
 
                 if (tempdata.Count <= 0) return;
 
-                roomname = tempdata[0]["roomName"];
+                roomname = tempdata["roomName"];
+
+                isBattle = tempdata["status"] == "BATTLE" ? true : false;
+
+                inWaitingRoom = tempdata["status"] == "WAITING" ? true : false;
 
                 reconObj.SetActive(true);
 
@@ -176,35 +188,66 @@ public class ClientMatchmakingController : MonoBehaviour
             });
         });
 
-        if (usePrivateServer)
+        GameManager.Instance.SocketMngr.Socket.On("matchstatuschanged", (response) =>
         {
-            GameManager.Instance.SocketMngr.Socket.On("matchfound", (response) =>
+            GameManager.Instance.AddJob(() =>
             {
                 Debug.Log(response.ToString());
-                GameManager.Instance.AddJob(() => roomname = response.GetValue<string>());
-                GameManager.Instance.AddJob(StartMatchFinding);
-            });
+                List<WaitingRoomData> tempdata = JsonConvert.DeserializeObject<List<WaitingRoomData>>(response.ToString());
 
-            GameManager.Instance.SocketMngr.Socket.On("matchstatuschanged", (response) =>
-            {
-                string tempresponse = response.ToString();
+                currentWaitingTime = tempdata[0].countdown;
 
-                Debug.Log(tempresponse);
-
-                GameManager.Instance.AddJob(() =>
+                if (!inWaitingRoom)
                 {
-                    if (matchFound) return;
+                    GameManager.Instance.NoBGLoading.SetActive(false);
 
-                    List<Dictionary<string, string>> tempdata = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(tempresponse);
+                    inWaitingRoom = true;
+                    matchFound = true;
 
-                    if (tempdata.Count <= 0) return;
+                    roomname = tempdata[0].roomName;
 
-                    if (tempdata[0]["status"] != "WAITING") return;
+                    waitingRoomObj.SetActive(true);
+                }
 
-                    GameManager.Instance.AddJob(() => roomname = tempdata[0]["roomName"]);
-                    GameManager.Instance.AddJob(StartMatchFinding);
-                });
+                for (int a = 0; a < waitingPlayerItems.Count; a++)
+                {
+                    if (a < tempdata[0].players.Count)
+                        waitingPlayerItems[a].SetData(tempdata[0].players[a], true);
+                    else
+                        waitingPlayerItems[a].SetData("", false);
+                }
             });
+        });
+
+        if (usePrivateServer)
+        {
+            //GameManager.Instance.SocketMngr.Socket.On("matchfound", (response) =>
+            //{
+            //    Debug.Log(response.ToString());
+            //    GameManager.Instance.AddJob(() => roomname = response.GetValue<string>());
+            //    GameManager.Instance.AddJob(StartMatchFinding);
+            //});
+
+            //GameManager.Instance.SocketMngr.Socket.On("matchstatuschanged", (response) =>
+            //{
+            //    string tempresponse = response.ToString();
+
+            //    Debug.Log(tempresponse);
+
+            //    GameManager.Instance.AddJob(() =>
+            //    {
+            //        if (matchFound) return;
+
+            //        List<Dictionary<string, string>> tempdata = JsonConvert.DeserializeObject<List<Dictionary<string, string>>>(tempresponse);
+
+            //        if (tempdata.Count <= 0) return;
+
+            //        if (tempdata[0]["status"] != "WAITING") return;
+
+            //        GameManager.Instance.AddJob(() => roomname = tempdata[0]["roomName"]);
+            //        GameManager.Instance.AddJob(StartMatchFinding);
+            //    });
+            //});
         }
     }
 
@@ -221,6 +264,17 @@ public class ClientMatchmakingController : MonoBehaviour
     private void Update()
     {
         FindMatchTimer();
+
+        if (inWaitingRoom && currentWaitingTime > 0.0f)
+        {
+            currentWaitingTime -= Time.deltaTime;
+
+            float minutes = Mathf.FloorToInt(currentWaitingTime / 60);
+
+            float seconds = Mathf.FloorToInt(currentWaitingTime % 60);
+
+            waitingRoomTimerTMP.text = string.Format("{0:00} : {1:00}", minutes, seconds);
+        }
     }
 
     private void ChangePlayStates()
@@ -319,138 +373,140 @@ public class ClientMatchmakingController : MonoBehaviour
 
         GameManager.Instance.NoBGLoading.SetActive(true);
 
-        StartCoroutine(GameManager.Instance.GetRequest("/usergamedetail/checkingamemaintenance", "", false, async (resposne) =>
-        {
-            if (useMultiplay)
-            {
-                if (UnityServices.State == ServicesInitializationState.Uninitialized)
-                {
-                    await UnityServices.InitializeAsync();
-                }
+        GameManager.Instance.SocketMngr.EmitEvent("findmatch", JsonConvert.SerializeObject(new Dictionary<string, string>()));
 
-                if (!AuthenticationService.Instance.IsSignedIn)
-                {
-                    await AuthenticationService.Instance.SignInAnonymouslyAsync();
-                }
+        //StartCoroutine(GameManager.Instance.GetRequest("/usergamedetail/checkingamemaintenance", "", false, async (resposne) =>
+        //{
+        //    if (useMultiplay)
+        //    {
+        //        if (UnityServices.State == ServicesInitializationState.Uninitialized)
+        //        {
+        //            await UnityServices.InitializeAsync();
+        //        }
 
-                matchmakingObj.SetActive(true);
-                matchBtn.SetActive(false);
+        //        if (!AuthenticationService.Instance.IsSignedIn)
+        //        {
+        //            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        //        }
 
-                findingMatch = true;
+        //        matchmakingObj.SetActive(true);
+        //        matchBtn.SetActive(false);
 
-                cancelBtn.interactable = true;
+        //        findingMatch = true;
 
-                currentRunnerInstance = Instantiate(instanceRunner);
+        //        cancelBtn.interactable = true;
 
-                currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
+        //        currentRunnerInstance = Instantiate(instanceRunner);
 
-                var players = new List<Unity.Services.Matchmaker.Models.Player>
-                {
-                    new Unity.Services.Matchmaker.Models.Player(userData.Username, new Dictionary<string, object>())
-                };
+        //        currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
 
-                var options = new CreateTicketOptions(
-                      "HongKongTest",
-                      //GameManager.GetServerRegionName(userData.SelectedServer), // The name of the queue defined in the previous step,
-                      new Dictionary<string, object>());
+        //        var players = new List<Unity.Services.Matchmaker.Models.Player>
+        //        {
+        //            new Unity.Services.Matchmaker.Models.Player(userData.Username, new Dictionary<string, object>())
+        //        };
 
-                Debug.Log("JOINING LOBBY");
+        //        var options = new CreateTicketOptions(
+        //              "HongKongTest",
+        //              //GameManager.GetServerRegionName(userData.SelectedServer), // The name of the queue defined in the previous step,
+        //              new Dictionary<string, object>());
 
-                await JoinLobby(lobbyName);
+        //        Debug.Log("JOINING LOBBY");
 
-                Debug.Log("DONE JOINING LOBBY, RECEIVING TICKET RESPONSE");
+        //        await JoinLobby(lobbyName);
 
-                ticketResponse = await MatchmakerService.Instance.CreateTicketAsync(players, options);
+        //        Debug.Log("DONE JOINING LOBBY, RECEIVING TICKET RESPONSE");
 
-                Debug.Log($"ticket id: {ticketResponse.Id}");
+        //        ticketResponse = await MatchmakerService.Instance.CreateTicketAsync(players, options);
 
-                MultiplayAssignment assignment = null;
-                bool gotAssignment = false;
-                bool matchfound = false;
+        //        Debug.Log($"ticket id: {ticketResponse.Id}");
 
-                do
-                {
-                    //Rate limit delay
-                    await Task.Delay(TimeSpan.FromSeconds(1f));
+        //        MultiplayAssignment assignment = null;
+        //        bool gotAssignment = false;
+        //        bool matchfound = false;
 
-                    // Poll ticket
-                    var ticketStatus = await MatchmakerService.Instance.GetTicketAsync(ticketResponse.Id);
+        //        do
+        //        {
+        //            //Rate limit delay
+        //            await Task.Delay(TimeSpan.FromSeconds(1f));
 
-                    if (ticketStatus == null)
-                    {
-                        continue;
-                    }
+        //            // Poll ticket
+        //            var ticketStatus = await MatchmakerService.Instance.GetTicketAsync(ticketResponse.Id);
 
-                    //Convert to platform assignment data (IOneOf conversion)
-                    if (ticketStatus.Type == typeof(MultiplayAssignment))
-                    {
-                        assignment = ticketStatus.Value as MultiplayAssignment;
-                    }
+        //            if (ticketStatus == null)
+        //            {
+        //                continue;
+        //            }
 
-                    switch (assignment?.Status)
-                    {
-                        case MultiplayAssignment.StatusOptions.Found:
-                            gotAssignment = true;
-                            matchfound = true;
-                            break;
-                        case MultiplayAssignment.StatusOptions.InProgress:
-                            //...
-                            break;
-                        case MultiplayAssignment.StatusOptions.Failed:
-                            gotAssignment = true;
+        //            //Convert to platform assignment data (IOneOf conversion)
+        //            if (ticketStatus.Type == typeof(MultiplayAssignment))
+        //            {
+        //                assignment = ticketStatus.Value as MultiplayAssignment;
+        //            }
 
-                            if (assignment.Message.Contains("maximum capacity reached"))
-                                GameManager.Instance.NotificationController.ShowError("Due to high number of players, the current map is currently closed. Please try again later", null);
-                            else
-                                GameManager.Instance.NotificationController.ShowError($"There's a problem finding a match! Error: {assignment.Message}", null);
+        //            switch (assignment?.Status)
+        //            {
+        //                case MultiplayAssignment.StatusOptions.Found:
+        //                    gotAssignment = true;
+        //                    matchfound = true;
+        //                    break;
+        //                case MultiplayAssignment.StatusOptions.InProgress:
+        //                    //...
+        //                    break;
+        //                case MultiplayAssignment.StatusOptions.Failed:
+        //                    gotAssignment = true;
 
-                            CancelMatch();
-                            break;
-                        case MultiplayAssignment.StatusOptions.Timeout:
+        //                    if (assignment.Message.Contains("maximum capacity reached"))
+        //                        GameManager.Instance.NotificationController.ShowError("Due to high number of players, the current map is currently closed. Please try again later", null);
+        //                    else
+        //                        GameManager.Instance.NotificationController.ShowError($"There's a problem finding a match! Error: {assignment.Message}", null);
 
-                            CancelMatch();
+        //                    CancelMatch();
+        //                    break;
+        //                case MultiplayAssignment.StatusOptions.Timeout:
 
-                            GameManager.Instance.NotificationController.ShowConfirmation("Due to low number of players, the game couldn't find a match. Would you like to adjust the settings automatically and find a match again?", FindMatch, null);
-                            break;
-                        default:
-                            CancelMatch();
+        //                    CancelMatch();
 
-                            GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later", null);
+        //                    GameManager.Instance.NotificationController.ShowConfirmation("Due to low number of players, the game couldn't find a match. Would you like to adjust the settings automatically and find a match again?", FindMatch, null);
+        //                    break;
+        //                default:
+        //                    CancelMatch();
 
-                            break;
-                    }
-                } while (!gotAssignment && findingMatch);
+        //                    GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later", null);
 
-                if (matchfound)
-                {
-                    Debug.Log($"Server IP: {assignment.Ip}   Port: {(ushort)assignment.Port}");
+        //                    break;
+        //            }
+        //        } while (!gotAssignment && findingMatch);
 
-                    JoinDropballSession();
-                }
-            }
-            else
-            {
-                Debug.Log("Not using multiplay, starting photon find match");
+        //        if (matchfound)
+        //        {
+        //            Debug.Log($"Server IP: {assignment.Ip}   Port: {(ushort)assignment.Port}");
 
-                matchmakingObj.SetActive(true);
-                matchBtn.SetActive(false);
+        //            JoinDropballSession();
+        //        }
+        //    }
+        //    else
+        //    {
+        //        Debug.Log("Not using multiplay, starting photon find match");
 
-                //findABattleObj.SetActive(false);
+        //        matchmakingObj.SetActive(true);
+        //        matchBtn.SetActive(false);
 
-                findingMatch = true;
+        //        //findABattleObj.SetActive(false);
 
-                cancelBtn.interactable = true;
+        //        findingMatch = true;
 
-                currentRunnerInstance = Instantiate(instanceRunner);
+        //        cancelBtn.interactable = true;
 
-                currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
+        //        currentRunnerInstance = Instantiate(instanceRunner);
 
-                if (usePrivateServer)
-                    GameManager.Instance.SocketMngr.EmitEvent("findmatch", JsonConvert.SerializeObject(new Dictionary<string, string>()));
-                else
-                    StartMatchFinding();
-            }
-        }, null));
+        //        currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
+
+        //        if (usePrivateServer)
+        //            GameManager.Instance.SocketMngr.EmitEvent("findmatch", JsonConvert.SerializeObject(new Dictionary<string, string>()));
+        //        else
+        //            StartMatchFinding();
+        //    }
+        //}, null));
     }
 
     private void StartMatchFinding()
@@ -483,28 +539,38 @@ public class ClientMatchmakingController : MonoBehaviour
         if (!findingMatch)
             return;
 
-        if (currentRunnerInstance != null)
+        if (inWaitingRoom)
         {
-            await currentRunnerInstance.Shutdown(true);
 
-            Destroy(currentRunnerInstance.gameObject);
+        }
+        else
+        {
+            if (isBattle)
+            {
+                if (currentRunnerInstance != null)
+                {
+                    await currentRunnerInstance.Shutdown(true);
 
-            currentRunnerInstance = null;
+                    Destroy(currentRunnerInstance.gameObject);
 
-            await Task.Delay(4000);
+                    currentRunnerInstance = null;
 
-            if (!findingMatch)
-                return;
+                    await Task.Delay(4000);
 
-            currentRunnerInstance = Instantiate(instanceRunner);
+                    if (!findingMatch)
+                        return;
 
-            currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
+                    currentRunnerInstance = Instantiate(instanceRunner);
 
-            Debug.Log("REJOINING LOBBY");
+                    currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
 
-            await JoinLobby(lobbyName);
+                    Debug.Log("REJOINING LOBBY");
 
-            JoinDropballSession();
+                    await JoinLobby(lobbyName);
+
+                    JoinDropballSession();
+                }
+            }
         }
     }
 
@@ -561,27 +627,35 @@ public class ClientMatchmakingController : MonoBehaviour
 
     public void CancelMatch()
     {
-        GameManager.Instance.SocketMngr.EmitEvent("quitonmatch", "");
+        GameManager.Instance.NotificationController.ShowConfirmation("Are you sure you want to quit the room? You will lose your energy consumed.", () =>
+        {
+            GameManager.Instance.SocketMngr.EmitEvent("quitonmatch", new Dictionary<string, string>{
+                { "roomname", roomname }
+            });
 
-        currentTime = 0f;
+            currentWaitingTime = 0f;
 
-        findingMatch = false;
-        matchFound = false;
+            findingMatch = false;
+            matchFound = false;
+            inWaitingRoom = false;
 
-        cancelBtn.interactable = false;
+            cancelBtn.interactable = false;
 
-        timerTMP.text = "Canceling matchmaking...";
+            timerTMP.text = "Canceling matchmaking...";
 
-        matchmakingObj.SetActive(false);
-        matchBtn.SetActive(true);
+            matchmakingObj.SetActive(false);
+            matchBtn.SetActive(true);
 
-        //findABattleObj.SetActive(true);
+            //findABattleObj.SetActive(true);
 
-        changeServerBtn.interactable = true;
+            changeServerBtn.interactable = true;
 
-        changeServerBtn1.interactable = true;
+            //changeServerBtn1.interactable = true;
 
-        ShutdownServer();
+            waitingRoomObj.SetActive(false);
+
+            //ShutdownServer();
+        }, null);
     }
 
     public async Task ShutdownServer()
@@ -607,31 +681,38 @@ public class ClientMatchmakingController : MonoBehaviour
 
     public async void ReconnectMatch()
     {
-        GameManager.Instance.NoBGLoading.SetActive(true);
-
-        currentRunnerInstance = Instantiate(instanceRunner);
-
-        var sessionResult = await StartSimulation(currentRunnerInstance, GameMode.Client);
-
-        if (sessionResult.Ok)
+        if (inWaitingRoom)
         {
-            GameManager.Instance.SceneController.MultiplayerScene = true;
 
-            GameManager.Instance.NoBGLoading.SetActive(false);
         }
-        else
+        else if (isBattle)
         {
-            GameManager.Instance.NoBGLoading.SetActive(false);
+            GameManager.Instance.NoBGLoading.SetActive(true);
 
-            roomname = "";
+            currentRunnerInstance = Instantiate(instanceRunner);
 
-            reconObj.SetActive(false);
+            var sessionResult = await StartSimulation(currentRunnerInstance, GameMode.Client);
 
-            matchBtn.SetActive(true);
+            if (sessionResult.Ok)
+            {
+                GameManager.Instance.SceneController.MultiplayerScene = true;
 
-            GameManager.Instance.NotificationController.ShowError("Your current match is not available or already finished the match. Please queue up again!", null);
+                GameManager.Instance.NoBGLoading.SetActive(false);
+            }
+            else
+            {
+                GameManager.Instance.NoBGLoading.SetActive(false);
 
-            ShutdownServer();
+                roomname = "";
+
+                reconObj.SetActive(false);
+
+                matchBtn.SetActive(true);
+
+                GameManager.Instance.NotificationController.ShowError("Your current match is not available or already finished the match. Please queue up again!", null);
+
+                ShutdownServer();
+            }
         }
     }
 
@@ -666,4 +747,14 @@ public class ClientMatchmakingController : MonoBehaviour
             }).setEase(easeType).id;
         }
     }
+}
+
+[System.Serializable]
+public class WaitingRoomData
+{
+    public string roomName;
+    public List<string> players;
+    public int maxPlayers;
+    public string WAITING;
+    public float countdown;
 }

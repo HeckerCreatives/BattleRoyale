@@ -14,8 +14,8 @@ public class MarketplaceTabItem : MonoBehaviour
 
     [Space]
     [SerializeField] private Image tabImg;
-    [SerializeField] private Sprite unselected;
-    [SerializeField] private Sprite selected;
+    [SerializeField] private Color unselected;
+    [SerializeField] private Color selected;
 
     private void OnEnable()
     {
@@ -36,7 +36,7 @@ public class MarketplaceTabItem : MonoBehaviour
 
     private void CheckButton()
     {
-        tabImg.sprite = controller.CurrentMarketplaceTab == tab ? selected : unselected;
+        tabImg.color = controller.CurrentMarketplaceTab == tab ? selected : unselected;
         contentObj.SetActive(controller.CurrentMarketplaceTab == tab);
     }
 

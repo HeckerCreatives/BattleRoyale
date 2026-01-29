@@ -95,7 +95,7 @@ public class GameSettingController : MonoBehaviour
 
     [Header("LOOK SENSITIVITY")]
     [SerializeField] private Slider lookSensitivitySlider;
-    [SerializeField] private Slider lookAdsSensitivitySlider;
+    //[SerializeField] private Slider lookAdsSensitivitySlider;
 
     [Header("LOOK SENSITIVITY TEXT")]
     [SerializeField] private TextMeshProUGUI lookSensitivityTMP;
@@ -105,8 +105,8 @@ public class GameSettingController : MonoBehaviour
     [Header("LOOK SENSITIVITY BUTTON")]
     [SerializeField] private Button lookSensitivityReduce;
     [SerializeField] private Button lookSensitivityAdd;
-    [SerializeField] private Button lookAdsSensitivityReduce;
-    [SerializeField] private Button lookAdsSensitivityAdd;
+    //[SerializeField] private Button lookAdsSensitivityReduce;
+    //[SerializeField] private Button lookAdsSensitivityAdd;
 
     [Header("DEBUGGER")]
     [MyBox.ReadOnly][SerializeField] private SettingsState currentState;
@@ -186,8 +186,8 @@ public class GameSettingController : MonoBehaviour
         lookSensitivitySlider.value = GameManager.Instance.GameSettingManager.CurrentLookSensitivity;
         lookSensitivityTMP.text = $"{lookSensitivitySlider.value * 100:n0}";
 
-        lookAdsSensitivitySlider.value = GameManager.Instance.GameSettingManager.CurrentLookAdsSensitivity;
-        lookAdsSensitivityTMP.text = $"{lookAdsSensitivitySlider.value * 100:n0}";
+        //lookAdsSensitivitySlider.value = GameManager.Instance.GameSettingManager.CurrentLookAdsSensitivity;
+        //lookAdsSensitivityTMP.text = $"{lookAdsSensitivitySlider.value * 100:n0}";
 
         yield return null;
     }
@@ -491,9 +491,9 @@ public class GameSettingController : MonoBehaviour
 
     public void LookAdsSensitivityChange()
     {
-        GameManager.Instance.GameSettingManager.CurrentLookAdsSensitivity = lookAdsSensitivitySlider.value;
-        lookAdsSensitivityTMP.text = $"{lookAdsSensitivitySlider.value * 100:n0}";
-        CheckLookAdsSensitivityButton();
+        //GameManager.Instance.GameSettingManager.CurrentLookAdsSensitivity = lookAdsSensitivitySlider.value;
+        //lookAdsSensitivityTMP.text = $"{lookAdsSensitivitySlider.value * 100:n0}";
+        //CheckLookAdsSensitivityButton();
     }
 
     #region BUTTON
@@ -517,24 +517,24 @@ public class GameSettingController : MonoBehaviour
         }
     }
 
-    private void CheckLookAdsSensitivityButton()
-    {
-        if (lookAdsSensitivitySlider.value <= 0)
-        {
-            lookAdsSensitivityReduce.interactable = false;
-            lookAdsSensitivityAdd.interactable = true;
-        }
-        else if (lookAdsSensitivitySlider.value > 0 && lookAdsSensitivitySlider.value < 1)
-        {
-            lookAdsSensitivityReduce.interactable = true;
-            lookAdsSensitivityAdd.interactable = true;
-        }
-        else if (lookAdsSensitivitySlider.value >= 1)
-        {
-            lookAdsSensitivityReduce.interactable = true;
-            lookAdsSensitivityAdd.interactable = false;
-        }
-    }
+    //private void CheckLookAdsSensitivityButton()
+    //{
+    //    if (lookAdsSensitivitySlider.value <= 0)
+    //    {
+    //        lookAdsSensitivityReduce.interactable = false;
+    //        lookAdsSensitivityAdd.interactable = true;
+    //    }
+    //    else if (lookAdsSensitivitySlider.value > 0 && lookAdsSensitivitySlider.value < 1)
+    //    {
+    //        lookAdsSensitivityReduce.interactable = true;
+    //        lookAdsSensitivityAdd.interactable = true;
+    //    }
+    //    else if (lookAdsSensitivitySlider.value >= 1)
+    //    {
+    //        lookAdsSensitivityReduce.interactable = true;
+    //        lookAdsSensitivityAdd.interactable = false;
+    //    }
+    //}
 
     public void AddReduceLookSensitivityButton(bool isAdd)
     {
@@ -550,19 +550,19 @@ public class GameSettingController : MonoBehaviour
         CheckLookSensitivityButton();
     }
 
-    public void AddReduceLookAdsSensitivityButton(bool isAdd)
-    {
+    //public void AddReduceLookAdsSensitivityButton(bool isAdd)
+    //{
 
-        if (isAdd)
-            GameManager.Instance.GameSettingManager.CurrentLookAdsSensitivity += 0.01f;
-        else
-            GameManager.Instance.GameSettingManager.CurrentLookAdsSensitivity -= 0.01f;
+    //    if (isAdd)
+    //        GameManager.Instance.GameSettingManager.CurrentLookAdsSensitivity += 0.01f;
+    //    else
+    //        GameManager.Instance.GameSettingManager.CurrentLookAdsSensitivity -= 0.01f;
 
-        lookAdsSensitivitySlider.value = GameManager.Instance.GameSettingManager.CurrentLookAdsSensitivity;
-        lookAdsSensitivityTMP.text = $"{lookAdsSensitivitySlider.value * 100:n0}";
+    //    lookAdsSensitivitySlider.value = GameManager.Instance.GameSettingManager.CurrentLookAdsSensitivity;
+    //    lookAdsSensitivityTMP.text = $"{lookAdsSensitivitySlider.value * 100:n0}";
 
-        CheckLookSensitivityButton();
-    }
+    //    CheckLookSensitivityButton();
+    //}
 
     #endregion
 

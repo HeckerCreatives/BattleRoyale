@@ -8,8 +8,8 @@ public class GameSettingButtons : MonoBehaviour
 {
     [SerializeField] private SettingsState state;
     [SerializeField] private GameSettingController controller;
-    [SerializeField] private Sprite selected;
-    [SerializeField] private Sprite unselected;
+    [SerializeField] private Color selected;
+    [SerializeField] private Color unselected;
     [SerializeField] private Image buttonImg;
 
     private void OnEnable()
@@ -30,7 +30,7 @@ public class GameSettingButtons : MonoBehaviour
 
     private void CheckButtons()
     {
-        if (state == controller.CurrentState) buttonImg.sprite = selected;
-        else buttonImg.sprite = unselected;
+        if (state == controller.CurrentState) buttonImg.color = selected;
+        else buttonImg.color = unselected;
     }
 }

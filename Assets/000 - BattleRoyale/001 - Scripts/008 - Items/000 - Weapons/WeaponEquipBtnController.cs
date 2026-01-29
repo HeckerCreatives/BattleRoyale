@@ -8,15 +8,15 @@ using UnityEngine.UI;
 public class WeaponEquipBtnController : MonoBehaviour
 {
     [SerializeField] private WeaponSpawnData weaponSpawnData;
-    [SerializeField] private Sprite onIndicatorSprite;
-    [SerializeField] private Sprite offIndicatorSprite;
+    [SerializeField] private Color onIndicatorSprite;
+    [SerializeField] private Color offIndicatorSprite;
     [SerializeField] private Image btnIndicator;
     [SerializeField] private Image weaponImg;
     [SerializeField] private TextMeshProUGUI ammoTMP;
     
     public void SetIndicator(bool isActivated)
     {
-        btnIndicator.sprite = isActivated ? onIndicatorSprite : offIndicatorSprite;
+        btnIndicator.color = isActivated ? onIndicatorSprite : offIndicatorSprite;
     }
 
     public void ChangeSpriteButton(string itemID, string ammo, bool useAmmoIndicator = false)
@@ -40,7 +40,7 @@ public class WeaponEquipBtnController : MonoBehaviour
 
     public void ResetUI()
     {
-        btnIndicator.sprite = offIndicatorSprite;
+        btnIndicator.color = offIndicatorSprite;
         ammoTMP.text = "";
         weaponImg.sprite = null;
         weaponImg.gameObject.SetActive(false);
