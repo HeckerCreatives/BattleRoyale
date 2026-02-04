@@ -20,7 +20,7 @@ using UnityEngine.SceneManagement;
 
 public enum GameState
 {
-    WAITINGAREA,
+    WAITINGPLAYERS,
     ARENA,
     DONE
 }
@@ -458,20 +458,13 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         switch (CurrentGameState)
         {
-            case GameState.WAITINGAREA:
+            case GameState.WAITINGPLAYERS:
 
-                if (CurrentWaitingAreaTimerState == WaitingAreaTimerState.WAITING)
-                    Socket.Emit("changematchstate", JsonConvert.SerializeObject(new Dictionary<string, string>
-                    {
-                        { "sessioname", sessionname },
-                        { "status", "WAITING" }
-                    }));
-                else
-                    Socket.Emit("changematchstate", JsonConvert.SerializeObject(new Dictionary<string, string>
-                    {
-                        { "sessioname", sessionname },
-                        { "status", "GETTINGREADY" }
-                    }));
+                Socket.Emit("changematchstate", JsonConvert.SerializeObject(new Dictionary<string, string>
+                {
+                    { "sessioname", sessionname },
+                    { "status", "WAITINGPLAYERS" }
+                }));
 
                 break;
             case GameState.ARENA:
@@ -852,7 +845,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     {
         if (!HasStateAuthority) return;
 
-        if (CurrentGameState != GameState.WAITINGAREA) return;
+        //if (CurrentGameState != GameState.WAITINGAREA) return;
 
         if (!CanCountWaitingAreaTimer) return;
 
@@ -1043,7 +1036,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
     private void SpawnBot()
     {
-        if (CurrentGameState != GameState.WAITINGAREA) return;
+        //if (CurrentGameState != GameState.WAITINGAREA) return;
         if (Players.Count <= 0) return;
         if (spawnBotIndex >= maxBot) return;
 
@@ -1292,16 +1285,16 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             RemainingPlayers.Add(player, playerCharacter);
             PlayerCountChange?.Invoke(this, EventArgs.Empty);
 
-            if (Players.Count >= 1 && !CanCountWaitingAreaTimer)
-            {
-                CanCountWaitingAreaTimer = true;
-            }
+            //if (Players.Count >= 1 && !CanCountWaitingAreaTimer)
+            //{
+            //    CanCountWaitingAreaTimer = true;
+            //}
 
-            if (CanCountWaitingAreaTimer && WaitingAreaTimer > 60 && Players.Count >= Players.Capacity && CurrentWaitingAreaTimerState == WaitingAreaTimerState.WAITING)
-            {
-                CurrentWaitingAreaTimerState = WaitingAreaTimerState.GETREADY;
-                WaitingAreaTimer = 30;
-            }
+            //if (CanCountWaitingAreaTimer && WaitingAreaTimer > 60 && Players.Count >= Players.Capacity && CurrentWaitingAreaTimerState == WaitingAreaTimerState.WAITING)
+            //{
+            //    CurrentWaitingAreaTimerState = WaitingAreaTimerState.GETREADY;
+            //    WaitingAreaTimer = 30;
+            //}
         }
     }
 
@@ -1354,17 +1347,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 ConnectedPlayers.Remove(username);
 
                 Debug.Log("activating removing 11");
-                if (Players.Count <= 0 && CanCountWaitingAreaTimer)
+                if (Players.Count <= 0)
                 {
-                    closeServerCount = 600;
-                    canStartCountDownToCloseServer = true;
-                    WaitingAreaTimer = waitingAreaStartTimer;
-                    CanCountWaitingAreaTimer = false;
-                    CurrentWaitingAreaTimerState = WaitingAreaTimerState.WAITING;
-
-                    if (despawnBotsCoroutine != null) StopCoroutine(despawnBotsCoroutine);
-
-                    despawnBotsCoroutine = StartCoroutine(UnspawnedBots());
+                    Application.Quit();
                 }
             }
             else
@@ -1422,17 +1407,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 //Runner.Despawn(clientPlayer);
 
                 Debug.Log("activating removing 11");
-                if (Players.Count <= 0 && CanCountWaitingAreaTimer)
+                if (Players.Count <= 0)
                 {
-                    closeServerCount = 600;
-                    canStartCountDownToCloseServer = true;
-                    WaitingAreaTimer = waitingAreaStartTimer;
-                    CanCountWaitingAreaTimer = false;
-                    CurrentWaitingAreaTimerState = WaitingAreaTimerState.WAITING;
-
-                    if (despawnBotsCoroutine != null) StopCoroutine(despawnBotsCoroutine);
-
-                    despawnBotsCoroutine = StartCoroutine(UnspawnedBots());
+                    Application.Quit();
                 }
             }
         }

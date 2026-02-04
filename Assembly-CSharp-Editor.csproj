@@ -85,11 +85,18 @@
     <Compile Include="Assets\001 - ExternalAssets\Yuponic\YuME\Editor\Utils\YuME_swapTilesets.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\3D Haven\Path Painter II\Editor\Documentation\Version Log.txt" />
     <None Include="Assets\ExternalDependencyManager\Editor\1.2.177\Google.PackageManagerResolver.dll" />
+    <None Include="Assets\3D Haven\Path Painter II\Editor\000\PathPainterEditor.dll" />
     <None Include="Assets\ExternalDependencyManager\Editor\1.2.177\Google.IOSResolver.dll" />
+    <None Include="Assets\3D Haven\Path Painter II\Editor\Resources\3dhpp2_BrushVis.shader" />
+    <None Include="Assets\3D Haven\Path Painter II\Editor\Resources\3dhpp2_BC.shader" />
     <None Include="Assets\ExternalDependencyManager\Editor\Google.VersionHandler.dll" />
+    <None Include="Assets\3D Haven\Path Painter II\Editor\Engine\000\PathPainter.dll" />
     <None Include="Assets\ExternalDependencyManager\Editor\external-dependency-manager_version-1.2.177_manifest.txt" />
     <None Include="Assets\ExternalDependencyManager\Editor\1.2.177\Google.VersionHandlerImpl.dll" />
+    <None Include="Assets\3D Haven\Path Painter II\Editor\Engine\000\PathPainter.xml" />
+    <None Include="Assets\3D Haven\Path Painter II\Editor\Resources\3dhpp2_HBC.shader" />
     <None Include="Assets\ExternalDependencyManager\Editor\1.2.177\Google.JarResolver.dll" />
   </ItemGroup>
   <ItemGroup>
@@ -477,6 +484,10 @@
       <HintPath>Library\PackageCache\org.nuget.system.security.accesscontrol@6.0.0\lib\netstandard2.0\Windows\System.Security.AccessControl.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="PathPainterEditor">
+      <HintPath>Assets\3D Haven\Path Painter II\Editor\000\PathPainterEditor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="unityplastic">
       <HintPath>Library\PackageCache\com.unity.collab-proxy@2.7.1\Lib\Editor\unityplastic.dll</HintPath>
       <Private>False</Private>
@@ -527,6 +538,10 @@
     </Reference>
     <Reference Include="Google.VersionHandler">
       <HintPath>Assets\ExternalDependencyManager\Editor\Google.VersionHandler.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PathPainter">
+      <HintPath>Assets\3D Haven\Path Painter II\Editor\Engine\000\PathPainter.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="log4net">

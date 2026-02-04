@@ -283,9 +283,7 @@ public class PlayerPlayables : NetworkBehaviour
 
     private void ConvertPosition(Vector3 playerPosition)
     {
-        Terrain tempterrain = ownObjectEnabler.ServerManager.CurrentGameState == GameState.WAITINGAREA
-            ? ownObjectEnabler.ServerManager.waitingAreaArena
-            : ownObjectEnabler.ServerManager.battleFieldArena;
+        Terrain tempterrain = ownObjectEnabler.ServerManager.battleFieldArena;
 
         if (tempterrain == null || tempterrain.terrainData == null)
             return;

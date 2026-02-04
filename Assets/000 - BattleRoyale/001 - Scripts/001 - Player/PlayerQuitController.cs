@@ -70,24 +70,12 @@ public class PlayerQuitController : NetworkBehaviour
 
         if (!HasInputAuthority) return;
 
-        if (ServerManager.CurrentGameState == GameState.WAITINGAREA)
+        GameManager.Instance.NotificationController.ShowConfirmation("Are you sure you want to quit the match? You will not gain any xp and points for this match.", () =>
         {
-            GameManager.Instance.NotificationController.ShowConfirmation("Are you sure you want to quit the match?", () => 
-            {
-                isQuit = true;
-                Runner.Shutdown();
-                GameManager.Instance.SceneController.CurrentScene = "Lobby";
-            }, null);
-        }
-        else if (ServerManager.CurrentGameState == GameState.ARENA)
-        {
-            GameManager.Instance.NotificationController.ShowConfirmation("Are you sure you want to quit the match? You will not gain any xp and points for this match.", () =>
-            {
-                isQuit = true;
-                Runner.Shutdown();
-                GameManager.Instance.SceneController.CurrentScene = "Lobby";
-            }, null);
-        }
+            isQuit = true;
+            Runner.Shutdown();
+            GameManager.Instance.SceneController.CurrentScene = "Lobby";
+        }, null);
     }
 
     public void QuitGameConclusion()

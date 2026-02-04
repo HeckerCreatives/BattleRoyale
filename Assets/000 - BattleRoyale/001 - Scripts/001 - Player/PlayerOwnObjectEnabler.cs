@@ -93,8 +93,8 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
                 GameManager.Instance.SceneController.CurrentScene = "Login";
             }));
         }
-        else
-            GameManager.Instance.SceneController.AddActionLoadinList(CheckArena());
+        //else
+        //    GameManager.Instance.SceneController.AddActionLoadinList(CheckArena());
 
         GameManager.Instance.SceneController.AddActionLoadinList(InitializePlayer());
         GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetVolumeSlidersOnStart());
@@ -139,10 +139,10 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
 
     private IEnumerator CheckArena()
     {
-        if (ServerManager.CurrentGameState == GameState.WAITINGAREA)
-            ServerManager.ArenaEnabler(true, false);
-        else
-            ServerManager.ArenaEnabler(false, true);
+        //if (ServerManager.CurrentGameState == GameState.WAITINGAREA)
+        //    ServerManager.ArenaEnabler(true, false);
+        //else
+        //    ServerManager.ArenaEnabler(false, true);
 
         yield return null;
     }
@@ -244,24 +244,12 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
 
         if (!HasInputAuthority) return;
 
-        if (ServerManager.CurrentGameState == GameState.WAITINGAREA)
+        GameManager.Instance.NotificationController.ShowConfirmation("Quit now and lose all XP, points, and 2 energy.", () =>
         {
-            GameManager.Instance.NotificationController.ShowConfirmation("Quit now and lose 2 energy", () =>
-            {
-                RPC_Removeplayer(false);
-                Runner.Shutdown();
-                GameManager.Instance.SceneController.CurrentScene = "Lobby";
-            }, null);
-        }
-        else if (ServerManager.CurrentGameState == GameState.ARENA)
-        {
-            GameManager.Instance.NotificationController.ShowConfirmation("Quit now and lose all XP, points, and 2 energy.", () =>
-            {
-                RPC_Removeplayer(false);
-                Runner.Shutdown();
-                GameManager.Instance.SceneController.CurrentScene = "Lobby";
-            }, null);
-        }
+            RPC_Removeplayer(false);
+            Runner.Shutdown();
+            GameManager.Instance.SceneController.CurrentScene = "Lobby";
+        }, null);
     }
 
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]

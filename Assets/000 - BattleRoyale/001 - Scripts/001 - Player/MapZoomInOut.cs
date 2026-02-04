@@ -55,16 +55,8 @@ public class MapZoomInOut : NetworkBehaviour
     {
         mapSlider.value = 0;
 
-        if (ServerManager.CurrentGameState == GameState.WAITINGAREA)
-        {
-            mapCamera.orthographicSize = waitingAreaMax;
-            mapCamera.transform.position = battleAreaCenter;
-        }
-        else
-        {
-            mapCamera.orthographicSize = battleAreaMax;
-            mapCamera.transform.position = battleAreaCenter;
-        }
+        mapCamera.orthographicSize = battleAreaMax;
+        mapCamera.transform.position = battleAreaCenter;
 
         UpdateZoomInOut();
     }
@@ -73,26 +65,13 @@ public class MapZoomInOut : NetworkBehaviour
     {
         if (ServerManager == null) return;
 
-        if (ServerManager.CurrentGameState == GameState.WAITINGAREA)
-        {
-            mapCamera.orthographicSize = Mathf.Lerp(waitingAreaMax, mapZoomOutMin, mapSlider.value);
-            playerIconTF.transform.localScale = new Vector3(Mathf.Lerp(waitingPlayerMapIcomZoomOutMax, playerMapIcomZoomOutMin, mapSlider.value), Mathf.Lerp(waitingPlayerMapIcomZoomOutMax, playerMapIcomZoomOutMin, mapSlider.value), 1f);
+        mapCamera.orthographicSize = Mathf.Lerp(battleAreaMax, mapZoomOutMin, mapSlider.value);
+        playerIconTF.transform.localScale = new Vector3(Mathf.Lerp(battlePlayerMapIcomZoomOutMax, playerMapIcomZoomOutMin, mapSlider.value), Mathf.Lerp(battlePlayerMapIcomZoomOutMax, playerMapIcomZoomOutMin, mapSlider.value), 1f);
 
-            if (mapSlider.value <= 0)
-                mapCamera.transform.position = waitingAreaCenter;
-            else
-                mapCamera.transform.position = new Vector3(playerTF.position.x, mapCamera.transform.position.y, playerTF.position.z);
-        }
+        if (mapSlider.value <= 0)
+            mapCamera.transform.position = battleAreaCenter;
         else
-        {
-            mapCamera.orthographicSize = Mathf.Lerp(battleAreaMax, mapZoomOutMin, mapSlider.value);
-            playerIconTF.transform.localScale = new Vector3(Mathf.Lerp(battlePlayerMapIcomZoomOutMax, playerMapIcomZoomOutMin, mapSlider.value), Mathf.Lerp(battlePlayerMapIcomZoomOutMax, playerMapIcomZoomOutMin, mapSlider.value), 1f);
-
-            if (mapSlider.value <= 0)
-                mapCamera.transform.position = battleAreaCenter;
-            else
-                mapCamera.transform.position = new Vector3(playerTF.position.x, mapCamera.transform.position.y, playerTF.position.z);
-        }
+            mapCamera.transform.position = new Vector3(playerTF.position.x, mapCamera.transform.position.y, playerTF.position.z);
     }
 
     public void ManualZoomInOut(bool isAdd)

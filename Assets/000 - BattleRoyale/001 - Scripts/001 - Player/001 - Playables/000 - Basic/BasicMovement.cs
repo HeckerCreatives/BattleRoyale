@@ -241,7 +241,7 @@ public class BasicMovement : NetworkBehaviour
 
     private void ConvertPosition(Vector3 playerPosition)
     {
-        Terrain tempterrain = mainCorePlayable.ServerManager.CurrentGameState == GameState.WAITINGAREA ? mainCorePlayable.ServerManager.waitingAreaArena : mainCorePlayable.ServerManager.battleFieldArena;
+        Terrain tempterrain = mainCorePlayable.ServerManager.battleFieldArena;
 
         terrainPosition = playerPosition - tempterrain.transform.position;
         mapPosition = new Vector3(terrainPosition.x / tempterrain.terrainData.size.x, 0,

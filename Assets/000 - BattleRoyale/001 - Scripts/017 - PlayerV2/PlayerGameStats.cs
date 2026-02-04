@@ -86,7 +86,7 @@ public class PlayerGameStats : NetworkBehaviour
         if (ServerManager == null) return;
 
         GameStats();
-        WaitingAreaTimer();
+        //WaitingAreaTimer();
         DeathGameOver();
     }
 
@@ -122,27 +122,27 @@ public class PlayerGameStats : NetworkBehaviour
 
     private void WaitingAreaTimer()
     {
-        if (ServerManager.CurrentGameState != GameState.WAITINGAREA)
-        {
-            Timer.gameObject.SetActive(false);
-            TimerGetReady.SetActive(false);
-            return;
-        }
+        //if (ServerManager.CurrentGameState != GameState.WAITINGAREA)
+        //{
+        //    Timer.gameObject.SetActive(false);
+        //    TimerGetReady.SetActive(false);
+        //    return;
+        //}
 
-        if (ServerManager.CurrentWaitingAreaTimerState == WaitingAreaTimerState.WAITING)
-        {
-            Timer.gameObject.SetActive(true);
-            TimerGetReady.SetActive(false);
+        //if (ServerManager.CurrentWaitingAreaTimerState == WaitingAreaTimerState.WAITING)
+        //{
+        //    Timer.gameObject.SetActive(true);
+        //    TimerGetReady.SetActive(false);
 
-            timerTMP.text = $"{GameManager.Instance.GetMinuteSecondsTime(ServerManager.WaitingAreaTimer)}";
-        }
-        else
-        {
-            TimerGetReady.SetActive(true);
-            Timer.gameObject.SetActive(false);
+        //    timerTMP.text = $"{GameManager.Instance.GetMinuteSecondsTime(ServerManager.WaitingAreaTimer)}";
+        //}
+        //else
+        //{
+        //    TimerGetReady.SetActive(true);
+        //    Timer.gameObject.SetActive(false);
 
-            timerGetReadyTMP.text = $"{GameManager.Instance.GetMinuteSecondsTime(ServerManager.WaitingAreaTimer)}";
-        }
+        //    timerGetReadyTMP.text = $"{GameManager.Instance.GetMinuteSecondsTime(ServerManager.WaitingAreaTimer)}";
+        //}
     }
 
     #region GAME OVER

@@ -21,6 +21,7 @@ public class PlayerMultiplayerEvents : SimulationBehaviour, INetworkRunnerCallba
 
     private void OnDisable()
     {
+        Debug.Log(gameObject.name);
         GameManager.Instance.SocketMngr.Socket.OnDisconnected -= DisconnectPlayer;
     }
 
