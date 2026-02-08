@@ -331,6 +331,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     };
     [SerializeField] private bool canStartCountDownToCloseServer;
     [SerializeField] private float closeServerCount;
+    [SerializeField] private bool canStartCheckingForUnconnectedPlayers;
+    [SerializeField] private float unconnectedPlayersTimer;
 
     [field: Space]
     [field: SerializeField][Networked] public GameState CurrentGameState { get; set; }
@@ -355,6 +357,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
 
     public Dictionary<string, PlayerOwnObjectEnabler> ConnectedPlayers = new Dictionary<string, PlayerOwnObjectEnabler>();
+
+    public Dictionary<string, bool> PlayerDoneLoading = new Dictionary<string, bool>();
 
     public Dictionary<PlayerRef, string> playerIdMap = new Dictionary<PlayerRef, string>();
 
@@ -686,12 +690,26 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         if (usePrivateServer && args.TryGetValue("roomname", out string roomname))
             sessionname = roomname;
         else
-            sessionname = new Guid().ToString();
+            sessionname = "testing";
 
         if (args.TryGetValue("region", out string region))
             appSettings = BuildCustomAppSetting(region);
         else
             appSettings = BuildCustomAppSetting("asia");
+
+        if (args.TryGetValue("playernames", out string playernames))
+        {
+            List<string> tempPlayers = JsonConvert.DeserializeObject<List<string>>(playernames);
+
+            for (int a = 0; a < tempPlayers.Count; a++)
+            {
+                Debug.Log($"INITIALIZING PLAYERS: {tempPlayers[a]}");
+                PlayerDoneLoading.Add(tempPlayers[a], false);
+            }
+
+            canStartCheckingForUnconnectedPlayers = true;
+            unconnectedPlayersTimer = 10;
+        }
 
         Debug.Log($"STARTING REGION: {appSettings.FixedRegion}");
 
@@ -781,7 +799,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             {
                 case nameof(CurrentGameState): 
                     if (CurrentGameState == GameState.ARENA)
-                        ArenaEnabler(false, true);
+                        ArenaEnabler(true, false);
                     else if (CurrentGameState == GameState.DONE)
                     {
                         if (HasStateAuthority)
@@ -812,13 +830,26 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                     break;
             }
         }
+
+        if (canStartCheckingForUnconnectedPlayers)
+        {
+            if (unconnectedPlayersTimer > 0)
+            {
+                unconnectedPlayersTimer -= Time.deltaTime;
+
+                if (unconnectedPlayersTimer <= 0)
+                {
+                    canStartCheckingForUnconnectedPlayers = false;
+                    CurrentGameState = GameState.ARENA;
+                }
+            }
+        }
     }
 
     public override void FixedUpdateNetwork()
     {
-        CountDownWaitingAreaTimer();
         CountDownSafeZoneTimer();
-        SpawnBot();
+        //SpawnBot();
     }
 
     private void Update()
@@ -938,7 +969,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         if (DonePlayerBattlePositions) yield break;
 
-        ArenaEnabler(false, true);
+        ArenaEnabler(true, false);
 
         bool isDone = false;
 
@@ -1031,7 +1062,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     public void ArenaEnabler(bool waitingArea, bool battleField)
     {
         waitingAreaArenaObjects.SetActive(waitingArea);
-        battleFieldArenaObjects.SetActive(battleField);
+        //battleFieldArenaObjects.SetActive(battleField);
     }
 
     private void SpawnBot()
@@ -1275,7 +1306,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             if (!string.IsNullOrEmpty(playerId))
             {
-                Debug.Log($"PLAYER JOINED WOULD ADD TO ID MAP");
                 playerIdMap.Add(player, playerId);
             }
 
@@ -1285,16 +1315,27 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             RemainingPlayers.Add(player, playerCharacter);
             PlayerCountChange?.Invoke(this, EventArgs.Empty);
 
-            //if (Players.Count >= 1 && !CanCountWaitingAreaTimer)
-            //{
-            //    CanCountWaitingAreaTimer = true;
-            //}
+            PlayerDoneLoading[playerId] = true;
 
-            //if (CanCountWaitingAreaTimer && WaitingAreaTimer > 60 && Players.Count >= Players.Capacity && CurrentWaitingAreaTimerState == WaitingAreaTimerState.WAITING)
-            //{
-            //    CurrentWaitingAreaTimerState = WaitingAreaTimerState.GETREADY;
-            //    WaitingAreaTimer = 30;
-            //}
+            bool donePlayerLoadings = true;
+
+            for (int a = 0; a < PlayerDoneLoading.Count; a++)
+            {
+                if (PlayerDoneLoading.ElementAt(a).Value == false)
+                {
+                    donePlayerLoadings = false; 
+                    break;
+                }
+            }
+
+            if (donePlayerLoadings)
+            {
+                canStartCheckingForUnconnectedPlayers = false;
+                CurrentGameState = GameState.ARENA;
+
+                SafeZoneTimer = 85f;
+                CurrentSafeZoneState = SafeZoneState.TIMER;
+            }
         }
     }
 

@@ -446,7 +446,14 @@ public class ClientMatchmakingController : MonoBehaviour
 
         cancelBtn.interactable = true;
 
-        GameManager.Instance.SocketMngr.EmitEvent("findmatch", JsonConvert.SerializeObject(new Dictionary<string, string>()));
+        if (usePrivateServer)
+            GameManager.Instance.SocketMngr.EmitEvent("findmatch", JsonConvert.SerializeObject(new Dictionary<string, string>()));
+        else
+        {
+            currentRunnerInstance = Instantiate(instanceRunner);
+            roomname = "testing";
+            StartMatchFinding();
+        }
 
         //StartCoroutine(GameManager.Instance.GetRequest("/usergamedetail/checkingamemaintenance", "", false, async (resposne) =>
         //{
