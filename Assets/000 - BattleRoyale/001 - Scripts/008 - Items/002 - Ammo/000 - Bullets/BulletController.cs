@@ -105,6 +105,7 @@ public class BulletController : NetworkBehaviour
 
     public void Fire(Vector3 startPos, LagCompensatedHit targetObj, float additionalTimer = 5f)
     {
+        Debug.Log($"START POS BULLET: {startPos}");
         StartPos = startPos;
         TargetPoint = targetObj.Point;
         transform.position = startPos;

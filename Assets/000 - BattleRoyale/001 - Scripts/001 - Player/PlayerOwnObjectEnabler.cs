@@ -213,7 +213,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         {
             if (HasInputAuthority)
             {
-                GameManager.Instance.SceneController.SpawnArenaLoading = true;
+                //GameManager.Instance.SceneController.SpawnArenaLoading = true;
                 GameManager.Instance.SceneController.AddActionLoadinList(ReadyForBattle());
                 GameManager.Instance.SceneController.ActionPass = true;
             }

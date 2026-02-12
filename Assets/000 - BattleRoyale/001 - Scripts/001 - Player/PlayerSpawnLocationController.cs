@@ -46,7 +46,7 @@ public class PlayerSpawnLocationController : NetworkBehaviour
         {
             if (HasInputAuthority)
             {
-                GameManager.Instance.SceneController.SpawnArenaLoading = true;
+                //GameManager.Instance.SceneController.SpawnArenaLoading = true;
                 GameManager.Instance.SceneController.AddActionLoadinList(ResetControllerMovement());
                 GameManager.Instance.SceneController.AddActionLoadinList(DropWeaponOnMoveBattleField());
                 GameManager.Instance.SceneController.AddActionLoadinList(ReadyForBattle());

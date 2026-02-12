@@ -1055,7 +1055,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         DonePlayerBattlePositions = true;
 
-        SafeZoneTimer = 85f;
+        SafeZoneTimer = 30f;
         CurrentSafeZoneState = SafeZoneState.TIMER;
     }
 
@@ -1333,7 +1333,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 canStartCheckingForUnconnectedPlayers = false;
                 CurrentGameState = GameState.ARENA;
 
-                SafeZoneTimer = 85f;
+                SafeZoneTimer = 30f;
                 CurrentSafeZoneState = SafeZoneState.TIMER;
             }
         }

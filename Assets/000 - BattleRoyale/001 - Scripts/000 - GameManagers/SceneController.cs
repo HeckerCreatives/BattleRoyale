@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Remoting;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -78,25 +79,25 @@ public class SceneController : MonoBehaviour
         get => doneLoading;
     }
 
-    private event EventHandler SpawnArenaLoadingChange;
-    public event EventHandler OnSpawnArenaLoadingChange
-    {
-        add
-        {
-            if (SpawnArenaLoadingChange == null || !SpawnArenaLoadingChange.GetInvocationList().Contains(value))
-                SpawnArenaLoadingChange += value;
-        }
-        remove {  SpawnArenaLoadingChange -= value; }
-    }
-    public bool SpawnArenaLoading
-    {
-        get => spawnArenaLoading;
-        set
-        {
-            spawnArenaLoading = value;
-            SpawnArenaLoadingChange?.Invoke(this, EventArgs.Empty);
-        }
-    }
+    //private event EventHandler SpawnArenaLoadingChange;
+    //public event EventHandler OnSpawnArenaLoadingChange
+    //{
+    //    add
+    //    {
+    //        if (SpawnArenaLoadingChange == null || !SpawnArenaLoadingChange.GetInvocationList().Contains(value))
+    //            SpawnArenaLoadingChange += value;
+    //    }
+    //    remove {  SpawnArenaLoadingChange -= value; }
+    //}
+    //public bool SpawnArenaLoading
+    //{
+    //    get => spawnArenaLoading;
+    //    set
+    //    {
+    //        spawnArenaLoading = value;
+    //        SpawnArenaLoadingChange?.Invoke(this, EventArgs.Empty);
+    //    }
+    //}
 
     //  ======================================================
 
@@ -122,6 +123,12 @@ public class SceneController : MonoBehaviour
     [SerializeField] private float speed;
     [SerializeField] private float loadingBarSpeed;
     [SerializeField] private LeanTweenType easeType;
+    [SerializeField] private GameObject loadingMultiplayerImg;
+    [SerializeField] private GameObject loadingMultiplayerMaskObj;
+    [SerializeField] private GameObject loadingMultiplayer;
+    [SerializeField] private Material loadingMultiplayerSR;
+    [SerializeField] private CanvasGroup multiplayerLoadingCG;
+    [SerializeField] private GameObject loadingMultiplayerIndicator;
 
     [Header("DEBUGGER")]
     [ReadOnly][SerializeField] private bool doneLoading;
@@ -147,23 +154,23 @@ public class SceneController : MonoBehaviour
 
         onSceneChange += SceneChange;
         OnMultuplayerSceneChange += MultiplayerChangeScene;
-        OnSpawnArenaLoadingChange += SpawnArenaStateChange;
+        //OnSpawnArenaLoadingChange += SpawnArenaStateChange;
     }
 
     private void OnDisable()
     {
         onSceneChange -= SceneChange;
         OnMultuplayerSceneChange -= MultiplayerChangeScene;
-        OnSpawnArenaLoadingChange -= SpawnArenaStateChange;
+        //OnSpawnArenaLoadingChange -= SpawnArenaStateChange;
     }
 
-    private void SpawnArenaStateChange(object sender, EventArgs e)
-    {
-        if (SpawnArenaLoading)
-        {
-            StartCoroutine(SpawnArenaLoad());
-        }
-    }
+    //private void SpawnArenaStateChange(object sender, EventArgs e)
+    //{
+    //    if (SpawnArenaLoading)
+    //    {
+    //        StartCoroutine(SpawnArenaLoad());
+    //    }
+    //}
 
     private void MultiplayerChangeScene(object sender, EventArgs e)
     {
@@ -187,25 +194,32 @@ public class SceneController : MonoBehaviour
     public IEnumerator SpawnArenaLoad()
     {
         Debug.Log("spawn arena loading");
+
+        loadingMultiplayerIndicator.SetActive(false);
+
         doneLoading = false;
 
-        int random = UnityEngine.Random.Range(0, loadingBGSprite.Count);
+        loadingMultiplayerSR.SetFloat("_MaskAmount", 0f);
 
-        loadingBGImg.sprite = loadingBGSprite[random];
+        loadingMultiplayerMaskObj.SetActive(true);
 
-        loadingScreenBGObj.SetActive(true);
+        loadingMultiplayerImg.SetActive(true);
 
-        loadingScreenBGObj.SetActive(true);
+        LeanTween.value(gameObject, 0f, 1f, 1f).setEase(easeType).setOnUpdate((float val) =>
+        {
+            loadingMultiplayerSR.SetFloat("_MaskAmount", val);
+        }).setOnComplete(() =>
+        {
+            loadingMultiplayer.SetActive(true);
 
-        loadingSlider.value = 0f;
-
-        LeanTween.alphaCanvas(loadingCG, 1f, speed).setEase(easeType);
-
-        yield return new WaitWhile(() => loadingCG.alpha != 1f);
-
-        LeanTween.alphaCanvas(loadingCG, 1f, speed).setEase(easeType);
-
-        yield return new WaitWhile(() => loadingCG.alpha != 1f);
+            LeanTween.value(gameObject, 1f, 0f, 1f).setEase(easeType).setOnUpdate((float val) =>
+            {
+                loadingMultiplayerSR.SetFloat("_MaskAmount", val);
+            }).setDelay(0.5f).setOnComplete(() =>
+            {
+                loadingMultiplayerIndicator.SetActive(true);
+            });
+        });
 
         while (!actionPass) yield return null;
 
@@ -240,7 +254,15 @@ public class SceneController : MonoBehaviour
 
         yield return new WaitWhile(() => loadingCG.alpha != 0f);
 
-        loadingScreenBGObj.SetActive(false);
+        loadingMultiplayerIndicator.SetActive(false);
+
+        loadingMultiplayerSR.SetFloat("_MaskAmount", 0f);
+
+        loadingMultiplayerMaskObj.SetActive(false);
+
+        loadingMultiplayerImg.SetActive(false);
+
+        loadingMultiplayer.SetActive(false);
 
         GetActionLoadingList.Clear();
 
@@ -248,7 +270,7 @@ public class SceneController : MonoBehaviour
 
         totalSceneProgress = 0f;
 
-        SpawnArenaLoading = false;
+        //SpawnArenaLoading = false;
 
         doneLoading = true;
 
@@ -260,21 +282,36 @@ public class SceneController : MonoBehaviour
     public IEnumerator MultiplayerLoading()
     {
         Debug.Log("multiplayer loading");
+        loadingMultiplayerIndicator.SetActive(false);
+
         doneLoading = false;
 
-        int random = UnityEngine.Random.Range(0, loadingBGSprite.Count);
+        loadingMultiplayerSR.SetFloat("_MaskAmount", 0f);
 
-        loadingBGImg.sprite = loadingBGSprite[random];
+        loadingMultiplayerMaskObj.SetActive(true);
 
-        loadingScreenBGObj.SetActive(true);
+        loadingMultiplayerImg.SetActive(true);
 
-        loadingScreenBGObj.SetActive(true);
+        LeanTween.value(gameObject, 0f, 1f, 3f).setEase(easeType).setOnUpdate((float val) =>
+        {
+            loadingMultiplayerSR.SetFloat("_MaskAmount", val);
+        }).setOnComplete(() =>
+        {
+            loadingMultiplayer.SetActive(true);
 
-        loadingSlider.value = 0f;
+            LeanTween.value(gameObject, 1f, 0f, 3f).setEase(easeType).setOnUpdate((float val) =>
+            {
+                loadingMultiplayerSR.SetFloat("_MaskAmount", val);
+            }).setDelay(0.5f).setOnComplete(() =>
+            {
+                loadingMultiplayerIndicator.SetActive(true);
+            }); ;
+        });
 
-        LeanTween.alphaCanvas(loadingCG, 1f, speed).setEase(easeType);
-
-        yield return new WaitWhile(() => loadingCG.alpha != 1f);
+        while (!actionPass)
+        {
+            Debug.Log(GetActionLoadingList.Count); yield return null;
+        }
 
         LastScene = CurrentScene;
         currentScene = SceneManager.GetActiveScene().name;
@@ -282,11 +319,6 @@ public class SceneController : MonoBehaviour
         LeanTween.alphaCanvas(loadingCG, 1f, speed).setEase(easeType);
 
         yield return new WaitWhile(() => loadingCG.alpha != 1f);
-
-        while (!actionPass)
-        {
-            Debug.Log(GetActionLoadingList.Count); yield return null;
-        }
 
         actionPass = false; //  THIS IS FOR RESET
 
@@ -313,16 +345,19 @@ public class SceneController : MonoBehaviour
         else
             totalSceneProgress = 1f;
 
-        LeanTween.value(loadingSlider.gameObject, a => { loadingSlider.value = a; loadingPercentageTMP.text = $"{a * 100:n0}%"; }, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
-
-        yield return new WaitForSecondsRealtime(loadingBarSpeed);
-
-        LeanTween.alphaCanvas(loadingCG, 0f, speed).setEase(easeType);
+        LeanTween.alphaCanvas(multiplayerLoadingCG, 0f, speed).setEase(easeType);
 
         yield return new WaitWhile(() => loadingCG.alpha != 0f);
 
+        loadingMultiplayerIndicator.SetActive(false);
 
-        loadingScreenBGObj.SetActive(false);
+        loadingMultiplayerSR.SetFloat("_MaskAmount", 0f);
+
+        loadingMultiplayerMaskObj.SetActive(false);
+
+        loadingMultiplayerImg.SetActive(false);
+
+        loadingMultiplayer.SetActive(false);
 
         GetActionLoadingList.Clear();
 

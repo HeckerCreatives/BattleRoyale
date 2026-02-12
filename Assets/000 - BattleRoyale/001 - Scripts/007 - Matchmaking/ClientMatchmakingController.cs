@@ -1,25 +1,26 @@
 using Fusion;
+using Fusion.Photon.Realtime;
 using Fusion.Sockets;
+using Newtonsoft.Json;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
+using System.Linq;
+using System.Runtime.Remoting;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
+using Unity.Services.Authentication;
+using Unity.Services.Core;
+using Unity.Services.Matchmaker;
+using Unity.Services.Matchmaker.Models;
+using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using Unity.Services.Matchmaker;
-using System;
-using Unity.Services.Matchmaker.Models;
-using Unity.Services.Core;
-using Unity.Services.Authentication;
-using System.Linq;
-using System.Threading;
-using Unity.VisualScripting.Antlr3.Runtime;
-using System.Drawing;
-using Fusion.Photon.Realtime;
-using Newtonsoft.Json;
-using System.Text;
 
 public class ClientMatchmakingController : MonoBehaviour
 {
@@ -117,6 +118,10 @@ public class ClientMatchmakingController : MonoBehaviour
     [SerializeField] private GameObject enteringMatchObj;
     [SerializeField] private TextMeshProUGUI enteringMatchTimerTMP;
     [SerializeField] private RectTransform enteringMatchTimerRT;
+    [SerializeField] private RectTransform enteringMatchFlashRT;
+    [SerializeField] private UnityEngine.UI.Image enteringMatchFlashImg;
+    [SerializeField] private GameObject lobbyObj;
+    [SerializeField] private GameObject lobbyWaitingObj;
 
     [Header("DEBUGGER")]
     [ReadOnly][SerializeField] public NetworkRunner currentRunnerInstance;
@@ -140,7 +145,7 @@ public class ClientMatchmakingController : MonoBehaviour
 
     CreateTicketResponse ticketResponse;
 
-    int playLT;
+    int playLT, enteringMatchTMPLT, enteringMatchFlash;
 
     //  =====================
 
@@ -316,20 +321,95 @@ public class ClientMatchmakingController : MonoBehaviour
     {
         currentRunnerInstance = Instantiate(instanceRunner);
 
+        lobbyWaitingObj.SetActive(false);
+        lobbyObj.SetActive(false);
+
         //currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
 
-        enteringMatchTimerTMP.text = $"{3:n0}";
-        enteringMatchTimer = 3f;
+        enteringMatchTimerTMP.text = $"{5:n0}";
+        enteringMatchTimer = 5f;
 
         enteringMatchObj.SetActive(true);
 
-        LeanTween.value(enteringMatchTimerRT.gameObject, 1.548f, 0.1f, 1f).setEase(easeType);
+
+        #region TIMER TMP
+
+        enteringMatchTimerTMP.color = UnityEngine.Color.white;
+
+        enteringMatchTMPLT = LeanTween.value(enteringMatchTimerRT.gameObject, 0.1f, 1f, 0.3f).setEase(easeType).setOnUpdate((float val) =>
+        {
+            enteringMatchTimerRT.localScale = new Vector3(val, val);
+        }).setOnComplete(() =>
+        {
+            enteringMatchTMPLT = LeanTween.value(enteringMatchTimerRT.gameObject, 1f, 0f, 0.6f).setEase(easeType).setOnUpdate((float val) =>
+            {
+                enteringMatchTimerTMP.color = new UnityEngine.Color(enteringMatchTimerTMP.color.r, enteringMatchTimerTMP.color.g, enteringMatchTimerTMP.color.b, val);
+            }).id;
+        }).id;
+
+        #endregion
+
+        #region FLASH
+
+        enteringMatchFlashImg.color = new UnityEngine.Color(1f, 1f, 1f, 1f);
+
+        enteringMatchFlashRT.localScale = new Vector3(0f, 0f, 0f);
+
+        enteringMatchFlash = LeanTween.value(enteringMatchFlashRT.gameObject, 0f, 1f, 0.1f).setEase(easeType).setOnUpdate((float val) =>
+        {
+            enteringMatchFlashRT.localScale = new Vector3(val, val, val);
+        }).setOnComplete(() =>
+        {
+            enteringMatchFlash = LeanTween.value(enteringMatchTimerRT.gameObject, 1f, 0f, 0.25f).setEase(easeType).setOnUpdate((float val) =>
+            {
+                enteringMatchFlashImg.color = new UnityEngine.Color(enteringMatchFlashImg.color.r, enteringMatchFlashImg.color.g, enteringMatchFlashImg.color.b, val);
+            }).id;
+        }).id;
+
+        #endregion
 
         yield return new WaitForSecondsRealtime(1f);
 
         while (enteringMatchTimer > 0)
         {
-            LeanTween.value(enteringMatchTimerRT.gameObject, 1.548f, 0.1f, 1f).setEase(easeType);
+            if (enteringMatchTMPLT > 0) LeanTween.cancel(enteringMatchTMPLT);
+            if (enteringMatchFlash > 0) LeanTween.cancel(enteringMatchFlash);
+
+            #region TIMER TMP
+
+            enteringMatchTimerTMP.color = UnityEngine.Color.white;
+
+            enteringMatchTMPLT = LeanTween.value(enteringMatchTimerRT.gameObject, 0.1f, 1f, 0.3f).setEase(easeType).setOnUpdate((float val) =>
+            {
+                enteringMatchTimerRT.localScale = new Vector3(val, val);
+            }).setOnComplete(() =>
+            {
+                enteringMatchTMPLT = LeanTween.value(enteringMatchTimerRT.gameObject, 255f, 0f, 0.6f).setEase(easeType).setOnUpdate((float val) =>
+                {
+                    enteringMatchTimerTMP.color = new UnityEngine.Color(enteringMatchTimerTMP.color.r, enteringMatchTimerTMP.color.g, enteringMatchTimerTMP.color.b, val);
+                }).id;
+            }).id;
+
+            #endregion
+
+            #region FLASH
+
+            enteringMatchFlashImg.color = new UnityEngine.Color(1f, 1f, 1f, 1f);
+
+            enteringMatchFlashRT.localScale = new Vector3(0f, 0f, 0f);
+
+            enteringMatchFlash = LeanTween.value(enteringMatchFlashRT.gameObject, 0f, 1f, 0.1f).setEase(easeType).setOnUpdate((float val) =>
+            {
+                enteringMatchFlashRT.localScale = new Vector3(val, val, val);
+            }).setOnComplete(() =>
+            {
+                enteringMatchFlash = LeanTween.value(enteringMatchTimerRT.gameObject, 1f, 0f, 0.25f).setEase(easeType).setOnUpdate((float val) =>
+                {
+                    enteringMatchFlashImg.color = new UnityEngine.Color(enteringMatchFlashImg.color.r, enteringMatchFlashImg.color.g, enteringMatchFlashImg.color.b, val);
+                }).id;
+            }).id;
+
+            #endregion
 
             enteringMatchTimer -= 1f;
 
@@ -338,9 +418,15 @@ public class ClientMatchmakingController : MonoBehaviour
             yield return new WaitForSecondsRealtime(1f);
         }
 
-        JoinDropballSession();
+        enteringMatchTimerTMP.color = UnityEngine.Color.white;
 
-        enteringMatchTimerTMP.text = "Waiting for match....";
+        enteringMatchTimerTMP.text = "0";
+
+        GameManager.Instance.SceneController.MultiplayerScene = true;
+
+        yield return new WaitForSecondsRealtime(6f);
+
+        JoinDropballSession();
     }
 
     private void ChangePlayStates()
@@ -454,139 +540,6 @@ public class ClientMatchmakingController : MonoBehaviour
             roomname = "testing";
             StartMatchFinding();
         }
-
-        //StartCoroutine(GameManager.Instance.GetRequest("/usergamedetail/checkingamemaintenance", "", false, async (resposne) =>
-        //{
-        //    if (useMultiplay)
-        //    {
-        //        if (UnityServices.State == ServicesInitializationState.Uninitialized)
-        //        {
-        //            await UnityServices.InitializeAsync();
-        //        }
-
-        //        if (!AuthenticationService.Instance.IsSignedIn)
-        //        {
-        //            await AuthenticationService.Instance.SignInAnonymouslyAsync();
-        //        }
-
-        //        matchmakingObj.SetActive(true);
-        //        matchBtn.SetActive(false);
-
-        //        findingMatch = true;
-
-        //        cancelBtn.interactable = true;
-
-        //        currentRunnerInstance = Instantiate(instanceRunner);
-
-        //        currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
-
-        //        var players = new List<Unity.Services.Matchmaker.Models.Player>
-        //        {
-        //            new Unity.Services.Matchmaker.Models.Player(userData.Username, new Dictionary<string, object>())
-        //        };
-
-        //        var options = new CreateTicketOptions(
-        //              "HongKongTest",
-        //              //GameManager.GetServerRegionName(userData.SelectedServer), // The name of the queue defined in the previous step,
-        //              new Dictionary<string, object>());
-
-        //        Debug.Log("JOINING LOBBY");
-
-        //        await JoinLobby(lobbyName);
-
-        //        Debug.Log("DONE JOINING LOBBY, RECEIVING TICKET RESPONSE");
-
-        //        ticketResponse = await MatchmakerService.Instance.CreateTicketAsync(players, options);
-
-        //        Debug.Log($"ticket id: {ticketResponse.Id}");
-
-        //        MultiplayAssignment assignment = null;
-        //        bool gotAssignment = false;
-        //        bool matchfound = false;
-
-        //        do
-        //        {
-        //            //Rate limit delay
-        //            await Task.Delay(TimeSpan.FromSeconds(1f));
-
-        //            // Poll ticket
-        //            var ticketStatus = await MatchmakerService.Instance.GetTicketAsync(ticketResponse.Id);
-
-        //            if (ticketStatus == null)
-        //            {
-        //                continue;
-        //            }
-
-        //            //Convert to platform assignment data (IOneOf conversion)
-        //            if (ticketStatus.Type == typeof(MultiplayAssignment))
-        //            {
-        //                assignment = ticketStatus.Value as MultiplayAssignment;
-        //            }
-
-        //            switch (assignment?.Status)
-        //            {
-        //                case MultiplayAssignment.StatusOptions.Found:
-        //                    gotAssignment = true;
-        //                    matchfound = true;
-        //                    break;
-        //                case MultiplayAssignment.StatusOptions.InProgress:
-        //                    //...
-        //                    break;
-        //                case MultiplayAssignment.StatusOptions.Failed:
-        //                    gotAssignment = true;
-
-        //                    if (assignment.Message.Contains("maximum capacity reached"))
-        //                        GameManager.Instance.NotificationController.ShowError("Due to high number of players, the current map is currently closed. Please try again later", null);
-        //                    else
-        //                        GameManager.Instance.NotificationController.ShowError($"There's a problem finding a match! Error: {assignment.Message}", null);
-
-        //                    CancelMatch();
-        //                    break;
-        //                case MultiplayAssignment.StatusOptions.Timeout:
-
-        //                    CancelMatch();
-
-        //                    GameManager.Instance.NotificationController.ShowConfirmation("Due to low number of players, the game couldn't find a match. Would you like to adjust the settings automatically and find a match again?", FindMatch, null);
-        //                    break;
-        //                default:
-        //                    CancelMatch();
-
-        //                    GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later", null);
-
-        //                    break;
-        //            }
-        //        } while (!gotAssignment && findingMatch);
-
-        //        if (matchfound)
-        //        {
-        //            Debug.Log($"Server IP: {assignment.Ip}   Port: {(ushort)assignment.Port}");
-
-        //            JoinDropballSession();
-        //        }
-        //    }
-        //    else
-        //    {
-        //        Debug.Log("Not using multiplay, starting photon find match");
-
-        //        matchmakingObj.SetActive(true);
-        //        matchBtn.SetActive(false);
-
-        //        //findABattleObj.SetActive(false);
-
-        //        findingMatch = true;
-
-        //        cancelBtn.interactable = true;
-
-        //        currentRunnerInstance = Instantiate(instanceRunner);
-
-        //        currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
-
-        //        if (usePrivateServer)
-        //            GameManager.Instance.SocketMngr.EmitEvent("findmatch", JsonConvert.SerializeObject(new Dictionary<string, string>()));
-        //        else
-        //            StartMatchFinding();
-        //    }
-        //}, null));
     }
 
     private void StartMatchFinding()
@@ -605,7 +558,7 @@ public class ClientMatchmakingController : MonoBehaviour
             //timerTMP.text = "MATCH FOUND!";
             //matchFound = true;
             //findingMatch = false;
-            GameManager.Instance.SceneController.MultiplayerScene = true;
+            //GameManager.Instance.SceneController.MultiplayerScene = true;
         }
         else
         {

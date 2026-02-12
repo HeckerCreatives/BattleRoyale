@@ -216,6 +216,7 @@ public class PlayerPlayables : NetworkBehaviour
 
     public void SpawnBullets(Vector3 startPos, LagCompensatedHit hit, float additionalTimer = 5f)
     {
+        Debug.Log($"SPAWNED BULLET POS: {startPos}");
         Runner.Spawn(bullets, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
         {
             obj.GetComponent<BulletController>().Fire(startPos, hit, additionalTimer);
