@@ -191,97 +191,12 @@ public class SceneController : MonoBehaviour
         LoadingCoroutine = StartCoroutine(Loading());
     }
 
-    public IEnumerator SpawnArenaLoad()
-    {
-        Debug.Log("spawn arena loading");
-
-        loadingMultiplayerIndicator.SetActive(false);
-
-        doneLoading = false;
-
-        loadingMultiplayerSR.SetFloat("_MaskAmount", 0f);
-
-        loadingMultiplayerMaskObj.SetActive(true);
-
-        loadingMultiplayerImg.SetActive(true);
-
-        LeanTween.value(gameObject, 0f, 1f, 1f).setEase(easeType).setOnUpdate((float val) =>
-        {
-            loadingMultiplayerSR.SetFloat("_MaskAmount", val);
-        }).setOnComplete(() =>
-        {
-            loadingMultiplayer.SetActive(true);
-
-            LeanTween.value(gameObject, 1f, 0f, 1f).setEase(easeType).setOnUpdate((float val) =>
-            {
-                loadingMultiplayerSR.SetFloat("_MaskAmount", val);
-            }).setDelay(0.5f).setOnComplete(() =>
-            {
-                loadingMultiplayerIndicator.SetActive(true);
-            });
-        });
-
-        while (!actionPass) yield return null;
-
-        actionPass = false; //  THIS IS FOR RESET
-
-        for (int a = 0; a < GetActionLoadingList.Count; a++)
-        {
-            yield return StartCoroutine(GetActionLoadingList[a]);
-
-            int index = a + 1;
-
-            totalSceneProgress = (float)index / (1 + GetActionLoadingList.Count);
-
-            LeanTween.value(loadingPercentageTMP.gameObject, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setOnUpdate((float val) =>
-            {
-                loadingPercentageTMP.text = $"{val * 100:n0}%";
-            }).setEase(easeType);
-            LeanTween.value(loadingSlider.gameObject, a => { loadingSlider.value = a; loadingPercentageTMP.text = $"{a * 100:n0}%"; }, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
-
-            yield return new WaitWhile(() => loadingSlider.value != totalSceneProgress);
-
-            yield return null;
-        }
-
-        totalSceneProgress = scenesLoading.progress;
-
-        LeanTween.value(loadingSlider.gameObject, a => { loadingSlider.value = a; loadingPercentageTMP.text = $"{a * 100:n0}%"; }, loadingSlider.value, totalSceneProgress, loadingBarSpeed).setEase(easeType);
-
-        yield return new WaitForSecondsRealtime(loadingBarSpeed);
-
-        LeanTween.alphaCanvas(loadingCG, 0f, speed).setEase(easeType);
-
-        yield return new WaitWhile(() => loadingCG.alpha != 0f);
-
-        loadingMultiplayerIndicator.SetActive(false);
-
-        loadingMultiplayerSR.SetFloat("_MaskAmount", 0f);
-
-        loadingMultiplayerMaskObj.SetActive(false);
-
-        loadingMultiplayerImg.SetActive(false);
-
-        loadingMultiplayer.SetActive(false);
-
-        GetActionLoadingList.Clear();
-
-        loadingSlider.value = 0f;
-
-        totalSceneProgress = 0f;
-
-        //SpawnArenaLoading = false;
-
-        doneLoading = true;
-
-        loadingPercentageTMP.text = "0%";
-
-        MultiplayerLoadingCoroutine = null;
-    }
-
     public IEnumerator MultiplayerLoading()
     {
         Debug.Log("multiplayer loading");
+
+        multiplayerLoadingCG.alpha = 1f;
+
         loadingMultiplayerIndicator.SetActive(false);
 
         doneLoading = false;
@@ -310,15 +225,11 @@ public class SceneController : MonoBehaviour
 
         while (!actionPass)
         {
-            Debug.Log(GetActionLoadingList.Count); yield return null;
+            yield return null;
         }
 
         LastScene = CurrentScene;
         currentScene = SceneManager.GetActiveScene().name;
-
-        LeanTween.alphaCanvas(loadingCG, 1f, speed).setEase(easeType);
-
-        yield return new WaitWhile(() => loadingCG.alpha != 1f);
 
         actionPass = false; //  THIS IS FOR RESET
 
@@ -347,7 +258,7 @@ public class SceneController : MonoBehaviour
 
         LeanTween.alphaCanvas(multiplayerLoadingCG, 0f, speed).setEase(easeType);
 
-        yield return new WaitWhile(() => loadingCG.alpha != 0f);
+        yield return new WaitWhile(() => multiplayerLoadingCG.alpha > 0f);
 
         loadingMultiplayerIndicator.SetActive(false);
 
@@ -355,10 +266,13 @@ public class SceneController : MonoBehaviour
 
         loadingMultiplayerMaskObj.SetActive(false);
 
+        Debug.Log($"loading panel active: {loadingMultiplayerImg.activeInHierarchy}");
         loadingMultiplayerImg.SetActive(false);
 
+        Debug.Log($"loading panel active: {loadingMultiplayerImg.activeInHierarchy}");
         loadingMultiplayer.SetActive(false);
 
+        Debug.Log($"loading panel active: {loadingMultiplayerImg.activeInHierarchy}");
         GetActionLoadingList.Clear();
 
         loadingSlider.value = 0f;

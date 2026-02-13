@@ -243,7 +243,7 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
 
         if (validTargetFound)
         {
-            PlayerCore.CurrentPlayerPlayables.SpawnBullets(impactPoint.transform.position, hit, WeaponID == "003" ? 5f : 2.5f);
+            PlayerCore.CurrentPlayerPlayables.SpawnBullets(hit, WeaponID == "003" ? 5f : 2.5f);
 
             //Debug.Log($"raycast hit: {hit.GameObject.name}");
 

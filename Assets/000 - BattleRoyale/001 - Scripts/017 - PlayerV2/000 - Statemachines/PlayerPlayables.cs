@@ -28,6 +28,7 @@ public class PlayerPlayables : NetworkBehaviour
     public PlayerBasicMovement lowerBodyMovement;
     public NetworkObject bullets;
     public NetworkObject arrows;
+    public Transform muzzlePointRifle;
 
     [Space]
     [SerializeField] private AvatarMask upperBodyMask;
@@ -214,13 +215,11 @@ public class PlayerPlayables : NetworkBehaviour
 
     public void SetAnimationLowerTick() => PlayableLowerBodyAnimationTick = Runner.Tick;
 
-    public void SpawnBullets(Vector3 startPos, LagCompensatedHit hit, float additionalTimer = 5f)
+    public void SpawnBullets(LagCompensatedHit hit, float additionalTimer = 5f)
     {
-        Debug.Log($"SPAWNED BULLET POS: {startPos}");
-        Runner.Spawn(bullets, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
-        {
-            obj.GetComponent<BulletController>().Fire(startPos, hit, additionalTimer);
-        });
+        Debug.Log($"SPAWNED BULLET POS: {muzzlePointRifle.position}");
+        NetworkObject tempbullet = Runner.Spawn(bullets);
+        tempbullet.GetComponent<BulletController>().Fire(muzzlePointRifle.position, hit, additionalTimer);
     }
 
     public void SpawnArrows() => Runner.Spawn(arrows);
@@ -331,6 +330,15 @@ public class PlayerPlayables : NetworkBehaviour
 
         for (int i = 0; i < numTextures; i++)
             textureValues[i] = aMap[0, 0, i];
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (muzzlePointRifle == null) return;
+
+        Gizmos.color = Color.blue;
+        Gizmos.DrawSphere(muzzlePointRifle.position, 0.05f); // small sphere at start
+        Gizmos.DrawLine(muzzlePointRifle.position, muzzlePointRifle.position + transform.forward * 1f); // forward ray
     }
 }
 
