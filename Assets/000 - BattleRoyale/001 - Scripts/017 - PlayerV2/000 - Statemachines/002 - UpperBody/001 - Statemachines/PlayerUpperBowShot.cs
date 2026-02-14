@@ -23,10 +23,10 @@ public class PlayerUpperBowShot : UpperWithAimState
         if (playerPlayables.HasStateAuthority)
             playerPlayables.inventory.SecondaryWeapon.SpawnBullet(playerMovement.CameraHitOrigin, playerMovement.CameraHitDirection, animationLength);
 
-        if (playerPlayables.inventory.SecondaryWeapon.Supplies > 0)
-            playerPlayables.inventory.SecondaryWeapon.Supplies -= 1;
-        else if (playerPlayables.inventory.BowMagazine > 0)
-            playerPlayables.inventory.BowMagazine -= 1;
+        //if (playerPlayables.inventory.SecondaryWeapon.Supplies > 0)
+        //    playerPlayables.inventory.SecondaryWeapon.Supplies -= 1;
+        //else if (playerPlayables.inventory.BowMagazine > 0)
+        //    playerPlayables.inventory.BowMagazine -= 1;
     }
 
     public override void NetworkUpdate()

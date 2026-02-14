@@ -31,6 +31,7 @@ public class BowRun : PlayerOnGround
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
+
         WeaponsChecker();
         Animation();
         playerPlayables.stamina.RecoverStamina(5f);

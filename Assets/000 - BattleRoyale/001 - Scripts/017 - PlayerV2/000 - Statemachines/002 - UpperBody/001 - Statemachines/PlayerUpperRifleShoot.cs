@@ -21,9 +21,12 @@ public class PlayerUpperRifleShoot : UpperWithAimState
         playerPlayables.inventory.SecondaryWeapon.SoundController.PlayGunshot();
 
         if (playerPlayables.HasStateAuthority)
+        {
+            playerPlayables.cameraRotation.SetMuzzlePosition();
             playerPlayables.inventory.SecondaryWeapon.SpawnBullet(playerMovement.CameraHitOrigin, playerMovement.CameraHitDirection, animationLength);
+        }
 
-        playerPlayables.inventory.SecondaryWeapon.Supplies -= 1;
+        //playerPlayables.inventory.SecondaryWeapon.Supplies -= 1;
     }
 
     public override void NetworkUpdate()

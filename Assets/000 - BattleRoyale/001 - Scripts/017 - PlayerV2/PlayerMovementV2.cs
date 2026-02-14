@@ -31,6 +31,9 @@ public class PlayerMovementV2 : NetworkBehaviour
     [SerializeField] private PlayerPlayables playerplayables;
 
     [Space]
+    [SerializeField] private Transform mainCharObj;
+
+    [Space]
     [SerializeField] private float moveSpeed;
     [SerializeField] private float sprintSpeed;
     [SerializeField] private float jumpHeight;
@@ -385,7 +388,8 @@ public class PlayerMovementV2 : NetworkBehaviour
 
             // Optional: Smooth rotation
             Quaternion targetRotation = Quaternion.LookRotation(MoveDir);
-            characterController.SetLookRotation(Quaternion.Slerp(characterController.TransformRotation, targetRotation, Runner.DeltaTime * 10f));
+            //characterController.SetLookRotation(Quaternion.Slerp(characterController.TransformRotation, targetRotation, Runner.DeltaTime * 10f));
+            mainCharObj.rotation = targetRotation;
         }
 
 
@@ -398,16 +402,13 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     public void MoveWithAim()
     {
-        XMovement = controllerInput.MovementDirection.x;
-        YMovement = controllerInput.MovementDirection.y;
+        MoveDir = PlayerLookDirection();
 
-        MoveDirection = characterController.TransformRotation * new Vector3(controllerInput.MovementDirection.x, 0f, controllerInput.MovementDirection.y) * (IsSprint ? SprintSpeed : MoveSpeed) * Runner.DeltaTime;
+        float moveSpeedValue = IsSprint ? SprintSpeed : MoveSpeed;
+        MoveDirection = MoveDir * moveSpeedValue * Runner.DeltaTime;
 
-        MoveDirection.Normalize();
-
-
-        // Apply the movement
         characterController.Move(MoveDirection, JumpImpulse);
+        playerplayables.CheckGround();
     }
 
     public void RotatePlayer()
@@ -421,7 +422,7 @@ public class PlayerMovementV2 : NetworkBehaviour
 
             // Optional: Smooth rotation
             Quaternion targetRotation = Quaternion.LookRotation(MoveDir);
-            characterController.SetLookRotation(targetRotation);
+            mainCharObj.rotation = targetRotation;
         }
 
     }

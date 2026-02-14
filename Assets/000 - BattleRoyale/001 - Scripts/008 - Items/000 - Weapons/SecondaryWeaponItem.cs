@@ -25,8 +25,10 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
 
     [SerializeField] private GunSoundController meleeSoundController;
 
+    [Space]
     [SerializeField] private string weaponID;
     [SerializeField] private string weaponName;
+    [SerializeField] private bool isRifle;
 
     [Space]
     [SerializeField] private LayerMask enemyLayerMask;
@@ -47,7 +49,7 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
     [Networked][field: SerializeField] public float Forearm { get; set; }
 
     [field: Header("NETWORK")]
-    
+
     [Networked][field: SerializeField] public int Supplies { get; set; }
     [Networked][field: SerializeField] public bool IsPickedUp { get; set; }
     [Networked][field: SerializeField] public bool IsEquipped { get; set; }
@@ -116,7 +118,7 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
         }
     }
 
-    public void InitializeItem(NetworkObject player, int supplies,  bool isBot = false, Action finalAction = null)
+    public void InitializeItem(NetworkObject player, int supplies, bool isBot = false, Action finalAction = null)
     {
         BotInventory tempBotinventory = null;
         PlayerInventoryV2 tempPlayerinventory = null;
@@ -243,7 +245,7 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
 
         if (validTargetFound)
         {
-            PlayerCore.CurrentPlayerPlayables.SpawnBullets(hit, WeaponID == "003" ? 5f : 2.5f);
+            PlayerCore.CurrentPlayerPlayables.SpawnBullets(impactPoint.transform.position, hit, isRifle, WeaponID == "003" ? 5f : 2.5f);
 
             //Debug.Log($"raycast hit: {hit.GameObject.name}");
 

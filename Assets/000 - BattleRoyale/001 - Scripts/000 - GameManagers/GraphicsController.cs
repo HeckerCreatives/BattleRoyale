@@ -274,10 +274,10 @@ public class GraphicsController : MonoBehaviour
 
         float renderScale = CurrentResolutionIndex switch
         {
-            0 => 0.5f,
+            0 => 0.6f,
             1 => 0.7f,
-            2 => 1f,
-            _ => 1f,
+            2 => 0.85f,
+            _ => 0.85f,
         };
 
         switch (CurrentGraphicsQualityIndex)
@@ -315,6 +315,9 @@ public class GraphicsController : MonoBehaviour
             default:
                 break;
         }
+
+        QualitySettings.vSyncCount = 0;
+        UnityEngine.Rendering.OnDemandRendering.renderFrameInterval = 1;
     }
 
     private void ChangeShadow()
@@ -324,9 +327,9 @@ public class GraphicsController : MonoBehaviour
         float shadowAvailability = CurrentShadowIndex switch
         {
             0 => 0,
-            1 => 50,
-            2 => 100,
-            3 => 150,
+            1 => 15,
+            2 => 25,
+            3 => 35,
             _ => 0,
         };
 
@@ -335,7 +338,7 @@ public class GraphicsController : MonoBehaviour
             0 => 1,
             1 => 1,
             2 => 2,
-            3 => 4,
+            3 => 2,
             _ => 1,
         };
 
@@ -367,9 +370,9 @@ public class GraphicsController : MonoBehaviour
         int antiAliasingValue = CurrentShadowIndex switch
         {
             0 => 0,
-            1 => 2,
-            2 => 4,
-            3 => 8,
+            1 => 0,
+            2 => 0,
+            3 => 0,
             _ => 0,
         };
 

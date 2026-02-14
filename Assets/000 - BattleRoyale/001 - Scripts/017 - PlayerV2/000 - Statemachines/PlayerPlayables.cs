@@ -28,7 +28,7 @@ public class PlayerPlayables : NetworkBehaviour
     public PlayerBasicMovement lowerBodyMovement;
     public NetworkObject bullets;
     public NetworkObject arrows;
-    public Transform muzzlePointRifle;
+    public Transform muzzlePoint;
 
     [Space]
     [SerializeField] private AvatarMask upperBodyMask;
@@ -83,7 +83,7 @@ public class PlayerPlayables : NetworkBehaviour
     public PlayablesChanger lowerBodyChanger;
     public AnimationLayerMixerPlayable finalMixer;
     public AnimationScriptPlayable lookAtPlayable;
-    public LookAtJobBoneIK job;
+    public LookAtJobBoneIK job { get; set; }
     LagCompensatedHit hit = new LagCompensatedHit();
 
     private ChangeDetector _changeDetector;
@@ -103,6 +103,20 @@ public class PlayerPlayables : NetworkBehaviour
     private void OnDisable()
     {
         playableGraph.Destroy();
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyUp(KeyCode.V))
+        {
+            Debug.Log("DESTROY");
+            playableGraph.Destroy();
+        }
+        else if (Input.GetKeyUp(KeyCode.B))
+        {
+            Debug.Log("RE INIT");
+            InitializePlayables();
+        }
     }
 
     public override void Render()
@@ -166,7 +180,7 @@ public class PlayerPlayables : NetworkBehaviour
         // Connect animation playables into the mixer
         playableGraph.Connect(lowerBodyMovement.Initialize(), 0, finalMixer, 0);
         finalMixer.SetInputWeight(0, 1f);
-        finalMixer.SetLayerMaskFromAvatarMask(0, lowerBodyMask);
+        //finalMixer.SetLayerMaskFromAvatarMask(0, lowerBodyMask);
         lowerBodyChanger.Initialize(lowerBodyMovement.IdlePlayable);
 
         playableGraph.Connect(upperBodyMovement.Initialize(), 0, finalMixer, 1);
@@ -174,13 +188,44 @@ public class PlayerPlayables : NetworkBehaviour
         finalMixer.SetLayerMaskFromAvatarMask(1, upperBodyMask);
         upperBodyChanger.Initialize(upperBodyMovement.IdlePlayables);
 
-        // Setup constraint job
+        // ---------- LOOK AT JOB SETUP ----------
+        Transform boneT = bone;
+        Transform parentT = boneT != null ? boneT.parent : null;
+
+        if (boneT == null || parentT == null)
+        {
+            Debug.LogError("Bone is not assigned or has no parent. Assign Chest/UpperChest from the character rig.");
+            return;
+        }
+
+        if (target == null)
+        {
+            Debug.LogError("Target is not assigned.");
+            return;
+        }
+
+        // STEP 2: Compute axis correction ONCE (local-space)
+        // Align the bone's current world forward to the character's forward
+        Vector3 boneForwardWorld = boneT.rotation * Vector3.forward;
+        Vector3 desiredForwardWorld = playerAnimator.transform.forward;
+
+        Quaternion worldCorrection = Quaternion.FromToRotation(boneForwardWorld, desiredForwardWorld);
+
+        Quaternion parentWorldRot = parentT.rotation;
+        Quaternion localAxisCorrection =
+        Quaternion.Inverse(parentWorldRot) * worldCorrection * parentWorldRot;
+
+        // 🔧 Fix: flip forward/back
+        localAxisCorrection = localAxisCorrection * Quaternion.Euler(0f, 180f, 0f);
+
+        // Create job
         job = new LookAtJobBoneIK
         {
-            bone = playerAnimator.BindStreamTransform(bone),
+            bone = playerAnimator.BindStreamTransform(boneT),
+            parent = playerAnimator.BindStreamTransform(parentT),
             target = playerAnimator.BindSceneTransform(target),
             weight = 0f,
-            restRotation = bone.rotation
+            axisOffset = localAxisCorrection
         };
 
         // Create script playable with input slot
@@ -215,11 +260,12 @@ public class PlayerPlayables : NetworkBehaviour
 
     public void SetAnimationLowerTick() => PlayableLowerBodyAnimationTick = Runner.Tick;
 
-    public void SpawnBullets(LagCompensatedHit hit, float additionalTimer = 5f)
+    public void SpawnBullets(Vector3 startPos, LagCompensatedHit hit, bool isRifle, float additionalTimer = 5f)
     {
-        Debug.Log($"SPAWNED BULLET POS: {muzzlePointRifle.position}");
-        NetworkObject tempbullet = Runner.Spawn(bullets);
-        tempbullet.GetComponent<BulletController>().Fire(muzzlePointRifle.position, hit, additionalTimer);
+        Runner.Spawn(bullets, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+        {
+            obj.GetComponent<BulletController>().Fire((isRifle ? muzzlePoint.position : startPos), hit, additionalTimer);
+        });
     }
 
     public void SpawnArrows() => Runner.Spawn(arrows);
@@ -331,45 +377,52 @@ public class PlayerPlayables : NetworkBehaviour
         for (int i = 0; i < numTextures; i++)
             textureValues[i] = aMap[0, 0, i];
     }
-
-    private void OnDrawGizmos()
-    {
-        if (muzzlePointRifle == null) return;
-
-        Gizmos.color = Color.blue;
-        Gizmos.DrawSphere(muzzlePointRifle.position, 0.05f); // small sphere at start
-        Gizmos.DrawLine(muzzlePointRifle.position, muzzlePointRifle.position + transform.forward * 1f); // forward ray
-    }
 }
 
 public struct LookAtJobBoneIK : IAnimationJob
 {
-    public TransformStreamHandle bone; // The bone to rotate
-    public TransformSceneHandle target; // The target to look at
+    public TransformStreamHandle bone;     // rotated bone (Chest/UpperChest recommended)
+    public TransformStreamHandle parent;   // bone parent (for world->local conversion)
+    public TransformSceneHandle target;    // world target
     public float weight;
-    public Quaternion restRotation;
+
+    // Local-space correction so "bone forward" matches Unity's +Z lookrotation expectation
+    public Quaternion axisOffset;
 
     public void ProcessRootMotion(AnimationStream stream) { }
 
     public void ProcessAnimation(AnimationStream stream)
     {
-        if (!bone.IsValid(stream) || !target.IsValid(stream))
+        if (weight <= 0f) return;
+
+        if (!bone.IsValid(stream) || !parent.IsValid(stream) || !target.IsValid(stream))
             return;
 
-        Quaternion baseRotation = bone.GetRotation(stream);
+        // Current local rotation (already includes blended animation)
+        Quaternion baseLocal = bone.GetRotation(stream);
 
-        if (weight <= 0f)
-        {
-            bone.SetRotation(stream, baseRotation);
+        Vector3 bonePos = bone.GetPosition(stream);
+        Vector3 targetPos = target.GetPosition(stream);
+
+        Vector3 dirW = targetPos - bonePos;
+        if (dirW.sqrMagnitude < 1e-6f)
             return;
-        }
 
-        Vector3 forward = target.GetRotation(stream) * Vector3.forward;
-        Vector3 up = Vector3.up; // bone's current up in local space
+        dirW.Normalize();
 
-        Quaternion lookRotation = Quaternion.LookRotation(forward, up);
-        Quaternion finalRot = Quaternion.Slerp(baseRotation, lookRotation, weight);
+        // World desired look rotation (+Z forward)
+        Quaternion worldLook = Quaternion.LookRotation(dirW, Vector3.up);
 
-        bone.SetRotation(stream, finalRot);
+        // Convert world -> local (parent space)
+        Quaternion parentWorld = parent.GetRotation(stream);
+        Quaternion localLook = Quaternion.Inverse(parentWorld) * worldLook;
+
+        // Apply correction for rigs where bone's forward axis isn't +Z
+        Quaternion desiredLocal = localLook * axisOffset;
+
+        // Blend from current animation pose to IK pose
+        Quaternion finalLocal = Quaternion.Slerp(baseLocal, desiredLocal, weight);
+
+        bone.SetRotation(stream, finalLocal);
     }
 }

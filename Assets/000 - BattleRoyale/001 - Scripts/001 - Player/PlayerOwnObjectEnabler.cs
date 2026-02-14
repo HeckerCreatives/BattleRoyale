@@ -29,6 +29,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     [SerializeField] private PlayerMovementV2 movementV2;
     [SerializeField] private GameSettingController gameSettingController;
     [SerializeField] private PlayerInventoryV2 inventory;
+    [SerializeField] private Transform target;
 
     [Space]
     [SerializeField] private GameObject canvasPlayer;
@@ -68,6 +69,8 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         while (!Runner) await Task.Yield();
 
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+
+        target.parent = null;
 
         if (HasStateAuthority)
         {

@@ -1,15 +1,16 @@
 using CandyCoded.env;
+using Fusion;
 using MyBox;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
-using Newtonsoft.Json;
-using System.Text;
-using Fusion;
-using System.Threading.Tasks;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
@@ -48,8 +49,6 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
-        Application.targetFrameRate = 60;
-
         //if (env.TryParseEnvironmentVariable("APP_VERSION", out string version))
         //    currentVersion.text = $"v{version}";
 
@@ -63,7 +62,26 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        StartCoroutine(FPSTruth());
+
         userData.ResetLogin();
+    }
+
+    IEnumerator FPSTruth()
+    {
+        while (true)
+        {
+            var refresh = Screen.currentResolution.refreshRateRatio.value; // Unity 2022+
+            Debug.Log(
+                $"[FPS] fps~{(1f / Time.unscaledDeltaTime):F1} | " +
+                $"targetFrameRate={Application.targetFrameRate} | " +
+                $"vSyncCount={QualitySettings.vSyncCount} | " +
+                $"renderInterval={OnDemandRendering.renderFrameInterval} | " +
+                $"refreshHz={refresh:F1} | " +
+                $"quality={QualitySettings.names[QualitySettings.GetQualityLevel()]}"
+            );
+            yield return new WaitForSecondsRealtime(1f);
+        }
     }
 
     private void Update()

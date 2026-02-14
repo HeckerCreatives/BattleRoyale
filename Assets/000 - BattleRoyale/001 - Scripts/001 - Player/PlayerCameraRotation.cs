@@ -16,7 +16,8 @@ public class PlayerCameraRotation : NetworkBehaviour
 {
     //  ==================
 
-    [SerializeField] private SimpleKCC playerObj;
+    [SerializeField] private Transform playerObj;
+    [SerializeField] private Transform impactPoint;
 
     [Header("References")]
     [SerializeField] private PlayerMovementV2 movement;
@@ -36,6 +37,8 @@ public class PlayerCameraRotation : NetworkBehaviour
     [SerializeField] private float aimAssistAngleRadius = 5f;
     [SerializeField] private float aimAssistStrength = 5f;       // Pull speed
     [SerializeField] private float magnetismDuration = 0.5f;     // Seconds aim assist lasts
+    [SerializeField] private float impactDistance;
+    [SerializeField] private Vector3 originalImpactOffset;
 
     [field: Header("Parameters")]
     [field: SerializeField][Networked] public float Sensitivity { get; private set; }
@@ -60,6 +63,16 @@ public class PlayerCameraRotation : NetworkBehaviour
         target.transform.parent = null;
         GameManager.Instance.GameSettingManager.OnLookSensitivityChanged += LookSensitivityChanged;
         GameManager.Instance.GameSettingManager.OnLookAdsSensitivityChanged += LookAdsSensitivityChanged;
+    }
+
+    private void OnEnable()
+    {
+        impactDistance = Vector3.Distance(
+            playerObj.position,
+            impactPoint.position
+        );
+
+        originalImpactOffset = impactPoint.position - playerObj.position;
     }
 
     private void OnDisable()
@@ -139,7 +152,7 @@ public class PlayerCameraRotation : NetworkBehaviour
         bool hasInput = input.LookDirection.sqrMagnitude >= _threshold;
 
         // Only check for target if aiming and not strongly moving the camera
-        if (movement.Aiming && !hasInput)
+        if (movement.Attacking)
         {
             if (magnetismTimer <= 0f) // Only refresh target if no active assist
             {
@@ -151,6 +164,8 @@ public class PlayerCameraRotation : NetworkBehaviour
                 }
             }
         }
+        else
+            magnetismTarget = null;
 
         // Apply look input
         _cinemachineTargetYaw += input.LookDirection.x * Runner.DeltaTime * (movement.Aiming ? CurrentAdsSensitivity : CurrentSensitivity);
@@ -174,14 +189,27 @@ public class PlayerCameraRotation : NetworkBehaviour
         _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
         _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
 
+        Quaternion targetRotation = Quaternion.LookRotation(new Vector3(_cinemachineTargetPitch, 0, _cinemachineTargetYaw));
         // Apply rotation to player + aim transform
-        playerObj.SetLookRotation(_cinemachineTargetPitch, _cinemachineTargetYaw);
+        playerObj.rotation = targetRotation;
         target.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch, _cinemachineTargetYaw, 0.0f);
 
         Vector3 origin = target.transform.position;
         Vector3 direction = target.transform.forward;
         aimTF.position = origin + direction * AimDistance;
         aimTF.rotation = Quaternion.Euler(_cinemachineTargetPitch, _cinemachineTargetYaw + CameraAngleOverride, 0.0f);
+
+    }
+
+    public void SetMuzzlePosition()
+    {
+        Quaternion camRotation = Quaternion.Euler(_cinemachineTargetPitch, _cinemachineTargetYaw, 0f);
+        // Rotate original offset
+        Vector3 rotatedOffset = camRotation * originalImpactOffset;
+
+        // Apply
+        impactPoint.position = playerObj.position + rotatedOffset;
+        impactPoint.rotation = camRotation;
     }
 
 

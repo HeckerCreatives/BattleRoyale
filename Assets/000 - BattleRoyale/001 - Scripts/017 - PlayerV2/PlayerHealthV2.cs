@@ -96,6 +96,8 @@ public class PlayerHealthV2 : NetworkBehaviour
                     break;
                 case nameof(Hitted):
 
+                    Debug.Log("HITTED DAMAGED");
+
                     DamageIndicator();
 
                     HitSoundEffects();
@@ -105,15 +107,21 @@ public class PlayerHealthV2 : NetworkBehaviour
 
                     if (!IsStagger) return;
 
+                    Debug.Log("STAGGER DAMAGED");
+
                     DamageIndicator();
 
                     break;
                 case nameof(SafeZoneDamaged):
 
+                    if (SafeZoneDamaged <= 0) return;
+
                     DamageIndicatorWithoutBlood();
 
                     break;
                 case nameof(FallDamage):
+
+                    Debug.Log("FALL DAMAGED");
 
                     DamageIndicatorWithoutBlood();
                     FallSoundEffects();
