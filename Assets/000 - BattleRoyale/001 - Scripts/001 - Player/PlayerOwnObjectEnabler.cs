@@ -19,6 +19,11 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         get => inventory;
     }
 
+    public PlayerCameraRotation CameraRotation
+    {
+        get => cameraRotation;
+    }
+
     //  ==============
 
     [SerializeField] private UserData userData;

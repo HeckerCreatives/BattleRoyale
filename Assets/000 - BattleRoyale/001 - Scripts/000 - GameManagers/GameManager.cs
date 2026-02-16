@@ -62,8 +62,6 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        StartCoroutine(FPSTruth());
-
         userData.ResetLogin();
     }
 

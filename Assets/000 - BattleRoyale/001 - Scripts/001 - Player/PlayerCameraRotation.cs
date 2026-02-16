@@ -14,6 +14,11 @@ using UnityEngine.UIElements;
 
 public class PlayerCameraRotation : NetworkBehaviour
 {
+    public Transform Target
+    {
+        get => target.transform;
+    }
+
     //  ==================
 
     [SerializeField] private Transform playerObj;
@@ -22,6 +27,8 @@ public class PlayerCameraRotation : NetworkBehaviour
     [Header("References")]
     [SerializeField] private PlayerMovementV2 movement;
     [SerializeField] private GameObject target;
+    [SerializeField] private float targetDistance = 10f;
+    [SerializeField] private float targetHeight = 1.568005f; // your head height offset
 
     [Header("CAMERA HEIGHT")]
     [SerializeField] private float standCamHeight;
@@ -60,7 +67,7 @@ public class PlayerCameraRotation : NetworkBehaviour
         if (!HasInputAuthority) return;
 
         _threshold = 0.01f;
-        target.transform.parent = null;
+        //target.transform.parent = null;
         GameManager.Instance.GameSettingManager.OnLookSensitivityChanged += LookSensitivityChanged;
         GameManager.Instance.GameSettingManager.OnLookAdsSensitivityChanged += LookAdsSensitivityChanged;
     }
@@ -91,13 +98,6 @@ public class PlayerCameraRotation : NetworkBehaviour
 
         GameManager.Instance.GameSettingManager.OnLookSensitivityChanged -= LookSensitivityChanged;
         GameManager.Instance.GameSettingManager.OnLookAdsSensitivityChanged -= LookAdsSensitivityChanged;
-    }
-
-    private void LateUpdate()
-    {
-        if (!HasInputAuthority) return;
-
-        target.transform.position = new Vector3(transform.position.x, transform.position.y + 1.568005f, transform.position.z);
     }
 
     private void LookSensitivityChanged(object sender, EventArgs e)
@@ -189,14 +189,22 @@ public class PlayerCameraRotation : NetworkBehaviour
         _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
         _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
 
-        Quaternion targetRotation = Quaternion.LookRotation(new Vector3(_cinemachineTargetPitch, 0, _cinemachineTargetYaw));
-        // Apply rotation to player + aim transform
-        playerObj.rotation = targetRotation;
-        target.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch, _cinemachineTargetYaw, 0.0f);
+        Quaternion targetRotation = Quaternion.Euler(
+            _cinemachineTargetPitch,
+            _cinemachineTargetYaw,
+            0f
+        );
 
-        Vector3 origin = target.transform.position;
-        Vector3 direction = target.transform.forward;
-        aimTF.position = origin + direction * AimDistance;
+        if (movement.Attacking)
+            playerObj.rotation = Quaternion.Euler(0f, _cinemachineTargetYaw, 0f);
+        //target.transform.rotation = targetRotation;
+
+        // Direction from yaw/pitch (this is the important part)
+        Vector3 aimDir = Quaternion.Euler(_cinemachineTargetPitch, _cinemachineTargetYaw, 0f) * Vector3.forward;
+        // Origin the server knows (player position + height)
+        Vector3 cameraorigin = transform.position + Vector3.up * targetHeight;
+
+        aimTF.position = cameraorigin + aimDir * targetDistance;
         aimTF.rotation = Quaternion.Euler(_cinemachineTargetPitch, _cinemachineTargetYaw + CameraAngleOverride, 0.0f);
 
     }

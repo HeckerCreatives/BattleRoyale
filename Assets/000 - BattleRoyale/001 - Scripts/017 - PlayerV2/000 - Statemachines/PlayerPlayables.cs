@@ -2,10 +2,12 @@
 using Fusion.Addons.SimpleKCC;
 using System;
 using System.Linq;
+using Unity.Jobs;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Animations.Rigging;
 using UnityEngine.Playables;
+using UnityEngine.Rendering.PostProcessing;
 using static MainCorePlayable;
 
 public class PlayerPlayables : NetworkBehaviour
@@ -19,8 +21,14 @@ public class PlayerPlayables : NetworkBehaviour
 
     [Space]
     [SerializeField] private Animator playerAnimator;
+    [SerializeField] private Transform playerObj;
     [SerializeField] private Transform bone;
     [SerializeField] private Transform target;
+    public float maxPitchUp = 25f;
+    public float maxPitchDown = 20f;
+    public bool enableRoll = false;
+    public float rollDeg = 0f;   // set this from your input / leaning logic
+    public float maxRoll = 12f;
 
     [Space]
     public PlayerHealthV2 healthV2;
@@ -87,6 +95,8 @@ public class PlayerPlayables : NetworkBehaviour
     LagCompensatedHit hit = new LagCompensatedHit();
 
     private ChangeDetector _changeDetector;
+
+    private Vector3 rollAxisLocal;
 
     //  =======================
 
@@ -188,44 +198,19 @@ public class PlayerPlayables : NetworkBehaviour
         finalMixer.SetLayerMaskFromAvatarMask(1, upperBodyMask);
         upperBodyChanger.Initialize(upperBodyMovement.IdlePlayables);
 
-        // ---------- LOOK AT JOB SETUP ----------
-        Transform boneT = bone;
-        Transform parentT = boneT != null ? boneT.parent : null;
+        Transform parentT = bone.parent; // Spine1
+        // Auto-pick axes ONCE using current bind pose (good enough for Mixamo):
+        // Pitch axis should align with the bone axis most similar to the parent's RIGHT in world.
+        // Roll axis should align with bone axis most similar to the parent's FORWARD in world.
+        rollAxisLocal = PickLocalAxisClosestToWorldDir(bone, parentT.forward);
 
-        if (boneT == null || parentT == null)
-        {
-            Debug.LogError("Bone is not assigned or has no parent. Assign Chest/UpperChest from the character rig.");
-            return;
-        }
-
-        if (target == null)
-        {
-            Debug.LogError("Target is not assigned.");
-            return;
-        }
-
-        // STEP 2: Compute axis correction ONCE (local-space)
-        // Align the bone's current world forward to the character's forward
-        Vector3 boneForwardWorld = boneT.rotation * Vector3.forward;
-        Vector3 desiredForwardWorld = playerAnimator.transform.forward;
-
-        Quaternion worldCorrection = Quaternion.FromToRotation(boneForwardWorld, desiredForwardWorld);
-
-        Quaternion parentWorldRot = parentT.rotation;
-        Quaternion localAxisCorrection =
-        Quaternion.Inverse(parentWorldRot) * worldCorrection * parentWorldRot;
-
-        // 🔧 Fix: flip forward/back
-        localAxisCorrection = localAxisCorrection * Quaternion.Euler(0f, 180f, 0f);
-
-        // Create job
         job = new LookAtJobBoneIK
         {
-            bone = playerAnimator.BindStreamTransform(boneT),
-            parent = playerAnimator.BindStreamTransform(parentT),
-            target = playerAnimator.BindSceneTransform(target),
+            bone = playerAnimator.BindStreamTransform(bone),
             weight = 0f,
-            axisOffset = localAxisCorrection
+            pitchAxisLocal = Vector3.forward,
+            pitchAxisSign = -1,
+            pitchDeg = 0f
         };
 
         // Create script playable with input slot
@@ -243,6 +228,32 @@ public class PlayerPlayables : NetworkBehaviour
         playableGraph.Play();
     }
 
+    static Vector3 PickLocalAxisClosestToWorldDir(Transform bone, Vector3 desiredWorldDir)
+    {
+        Vector3[] axes =
+        {
+            Vector3.right, Vector3.up, Vector3.forward,
+            -Vector3.right, -Vector3.up, -Vector3.forward
+        };
+
+        desiredWorldDir.Normalize();
+
+        float best = -999f;
+        Vector3 bestAxis = Vector3.forward;
+
+        foreach (var a in axes)
+        {
+            Vector3 worldA = bone.TransformDirection(a).normalized;
+            float d = Mathf.Abs(Vector3.Dot(worldA, desiredWorldDir));
+            if (d > best)
+            {
+                best = d;
+                bestAxis = a;
+            }
+        }
+        return bestAxis;
+    }
+
     public void SetLookAtWeight(float newWeight)
     {
         if (!lookAtPlayable.IsValid())
@@ -251,8 +262,13 @@ public class PlayerPlayables : NetworkBehaviour
             return;
         }
 
+        if (Runner == null) return;
+
         var currentJob = lookAtPlayable.GetJobData<LookAtJobBoneIK>();
         currentJob.weight = newWeight; // Smooth transition
+        currentJob.pitchAxisLocal = Vector3.forward;
+        currentJob.pitchAxisSign = -1;
+        currentJob.pitchDeg = -cameraRotation._cinemachineTargetPitch;
         lookAtPlayable.SetJobData(currentJob);
     }
 
@@ -377,52 +393,73 @@ public class PlayerPlayables : NetworkBehaviour
         for (int i = 0; i < numTextures; i++)
             textureValues[i] = aMap[0, 0, i];
     }
+
+    public void OnDrawGizmos()
+    {
+        Debug.DrawLine(bone.position, target.position, Color.cyan);
+    }
 }
 
 public struct LookAtJobBoneIK : IAnimationJob
 {
-    public TransformStreamHandle bone;     // rotated bone (Chest/UpperChest recommended)
-    public TransformStreamHandle parent;   // bone parent (for world->local conversion)
-    public TransformSceneHandle target;    // world target
+    public TransformStreamHandle bone;
     public float weight;
 
-    // Local-space correction so "bone forward" matches Unity's +Z lookrotation expectation
-    public Quaternion axisOffset;
+    public float pitchDeg;         // feed from _cinemachineTargetPitch
+    public Vector3 pitchAxisLocal; // Vector3.forward or Vector3.right
+    public float pitchAxisSign;    // +1 or -1
 
     public void ProcessRootMotion(AnimationStream stream) { }
 
     public void ProcessAnimation(AnimationStream stream)
     {
         if (weight <= 0f) return;
+        if (!bone.IsValid(stream)) return;
 
-        if (!bone.IsValid(stream) || !parent.IsValid(stream) || !target.IsValid(stream))
-            return;
-
-        // Current local rotation (already includes blended animation)
         Quaternion baseLocal = bone.GetRotation(stream);
 
-        Vector3 bonePos = bone.GetPosition(stream);
-        Vector3 targetPos = target.GetPosition(stream);
+        Quaternion pitchDelta = Quaternion.AngleAxis(pitchDeg * pitchAxisSign, pitchAxisLocal);
+        bone.SetRotation(stream, baseLocal * Quaternion.Slerp(Quaternion.identity, pitchDelta, weight));
+    }
+}
 
-        Vector3 dirW = targetPos - bonePos;
-        if (dirW.sqrMagnitude < 1e-6f)
-            return;
 
-        dirW.Normalize();
+public static class MixamoAxisUtil
+{
+    // Finds which local axis is "forward" for this bone (Mixamo varies)
+    public static Vector3 PickBoneForwardAxisLocal(Transform bone, Vector3 desiredForwardWorld)
+    {
+        Vector3[] axes =
+        {
+            Vector3.forward, Vector3.back,
+            Vector3.right,   Vector3.left,
+            Vector3.up,      Vector3.down
+        };
 
-        // World desired look rotation (+Z forward)
-        Quaternion worldLook = Quaternion.LookRotation(dirW, Vector3.up);
+        desiredForwardWorld.Normalize();
 
-        // Convert world -> local (parent space)
-        Quaternion parentWorld = parent.GetRotation(stream);
-        Quaternion localLook = Quaternion.Inverse(parentWorld) * worldLook;
+        float best = -999f;
+        Vector3 bestAxis = Vector3.forward;
 
-        // Apply correction for rigs where bone's forward axis isn't +Z
-        Quaternion desiredLocal = localLook * axisOffset;
+        foreach (var a in axes)
+        {
+            Vector3 worldA = bone.TransformDirection(a).normalized;
+            float d = Vector3.Dot(worldA, desiredForwardWorld);
+            if (d > best)
+            {
+                best = d;
+                bestAxis = a;
+            }
+        }
 
-        // Blend from current animation pose to IK pose
-        Quaternion finalLocal = Quaternion.Slerp(baseLocal, desiredLocal, weight);
+        return bestAxis;
+    }
 
-        bone.SetRotation(stream, finalLocal);
+    // axisOffset maps the bone's "real forward axis" -> Vector3.forward (+Z)
+    public static Quaternion ComputeAxisOffset(Transform bone, Transform mainCharObj)
+    {
+        Vector3 desiredForwardWorld = mainCharObj.forward; // MainCharObj is your true facing
+        Vector3 boneForwardAxisLocal = PickBoneForwardAxisLocal(bone, desiredForwardWorld);
+        return Quaternion.FromToRotation(boneForwardAxisLocal, Vector3.forward);
     }
 }

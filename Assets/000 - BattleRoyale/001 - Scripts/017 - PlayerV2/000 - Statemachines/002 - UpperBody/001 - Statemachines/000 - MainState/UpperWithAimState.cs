@@ -14,22 +14,20 @@ public class UpperWithAimState : UpperBodyAnimations
     public override void Enter()
     {
         base.Enter();
-        //playerPlayables.aimWeights.RigBuilderSetter(true);
+
         playerPlayables.SetLookAtWeight(1f);
     }
 
     public override void NetworkLocalUpdate()
     {
         base.NetworkLocalUpdate();
-        //playerPlayables.aimWeights.HipsWeight(1f);
+
         playerPlayables.SetLookAtWeight(1f);
     }
 
     public override void NetworkUpdate()
     {
         base.NetworkUpdate();
-
-        //playerPlayables.aimWeights.HipsWeight(1f);
         playerPlayables.cameraRotation.HandleCameraAimInput();
         playerPlayables.SetLookAtWeight(1f);
     }

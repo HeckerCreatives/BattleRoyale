@@ -381,15 +381,14 @@ public class PlayerMovementV2 : NetworkBehaviour
     {
         MoveDir = PlayerLookDirection();
 
-        if (MoveDir.sqrMagnitude > 0.01f && !IsRoll)
+        if (MoveDir.sqrMagnitude > 0.01f && !IsRoll && !Attacking)
         {
             // Normalize to prevent sprinting from affecting rotation
             MoveDir.Normalize();
 
             // Optional: Smooth rotation
             Quaternion targetRotation = Quaternion.LookRotation(MoveDir);
-            //characterController.SetLookRotation(Quaternion.Slerp(characterController.TransformRotation, targetRotation, Runner.DeltaTime * 10f));
-            mainCharObj.rotation = targetRotation;
+            mainCharObj.rotation = Quaternion.Slerp(mainCharObj.rotation, targetRotation, Runner.DeltaTime * 10f);
         }
 
 
