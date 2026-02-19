@@ -36,7 +36,7 @@ public class StaggerHit : PlayerOnGround
         if (canAction)
         {
             if (playerPlayables.TickRateAnimation < moveTimer)
-                characterController.Move(characterController.TransformDirection * -5f, 0f);
+                characterController.Move(playerMovement.MainCharObj.forward * -5f, 0f);
         }
 
         Animation();

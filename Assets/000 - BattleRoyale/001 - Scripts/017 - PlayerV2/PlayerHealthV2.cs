@@ -19,6 +19,7 @@ public class PlayerHealthV2 : NetworkBehaviour
 
     [Space]
     [SerializeField] private float startingHealth;
+    [SerializeField] private float shaker;
 
     [Space]
     [SerializeField] private Slider healthSlider;
@@ -102,6 +103,12 @@ public class PlayerHealthV2 : NetworkBehaviour
 
                     HitSoundEffects();
 
+                    if (HasInputAuthority && !HasStateAuthority)
+                    {
+                        ShakerCamera();
+
+                        Invoke(nameof(OffCameraShaker), 0.15f);
+                    }
                     break;
                 case nameof(IsStagger):
 
@@ -175,6 +182,18 @@ public class PlayerHealthV2 : NetworkBehaviour
         base.FixedUpdateNetwork();
 
         CircleDamage();
+    }
+
+    private void ShakerCamera()
+    {
+
+        playerPlayables.CameraShaker(shaker);
+    }
+
+    private void OffCameraShaker()
+    {
+
+        playerPlayables.CameraShaker(0f);
     }
 
     private void HitSoundEffects()
@@ -314,37 +333,37 @@ public class PlayerHealthV2 : NetworkBehaviour
         float remainingDamage = damage;
 
         //  Block
-        if (playerPlayables.PlayableLowerBoddyAnimationIndex == 12)
-        {
-            remainingDamage -= (remainingDamage * .15f);
-        }
+        //if (playerPlayables.PlayableLowerBoddyAnimationIndex == 12)
+        //{
+        //    remainingDamage -= (remainingDamage * .15f);
+        //}
 
-        // Apply damage to the shield first
-        if (inventory.Armor != null)
-        {
-            if (inventory.Armor.Supplies > 0)
-            {
-                if (inventory.Armor.Supplies >= remainingDamage)
-                {
-                    inventory.Armor.Supplies -= Convert.ToInt32(remainingDamage);
-                    remainingDamage = 0; // Shield absorbed all damage
-                }
-                else
-                {
-                    remainingDamage -= inventory.Armor.Supplies;
-                    inventory.Armor.Supplies = 0; // Shield fully depleted
-                }
-            }
-        }
+        //// Apply damage to the shield first
+        //if (inventory.Armor != null)
+        //{
+        //    if (inventory.Armor.Supplies > 0)
+        //    {
+        //        if (inventory.Armor.Supplies >= remainingDamage)
+        //        {
+        //            inventory.Armor.Supplies -= Convert.ToInt32(remainingDamage);
+        //            remainingDamage = 0; // Shield absorbed all damage
+        //        }
+        //        else
+        //        {
+        //            remainingDamage -= inventory.Armor.Supplies;
+        //            inventory.Armor.Supplies = 0; // Shield fully depleted
+        //        }
+        //    }
+        //}
 
-        // Apply remaining damage to health
-        if (remainingDamage > 0)
-        {
-            CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - remainingDamage);
+        //// Apply remaining damage to health
+        //if (remainingDamage > 0)
+        //{
+        //    CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - remainingDamage);
 
-            if (nobject.tag == "Player")
-                nobject.GetComponent<PlayerGameStats>().HitPoints += remainingDamage;
-        }
+        //    if (nobject.tag == "Player")
+        //        nobject.GetComponent<PlayerGameStats>().HitPoints += remainingDamage;
+        //}
 
         // Check if player is dead
         if (CurrentHealth <= 0)

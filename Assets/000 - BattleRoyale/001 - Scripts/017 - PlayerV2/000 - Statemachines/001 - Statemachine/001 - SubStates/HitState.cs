@@ -8,6 +8,7 @@ public class HitState : PlayerOnGround
 {
     float timer;
     bool canAction;
+    float moveTimer;
 
     public HitState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
@@ -17,9 +18,7 @@ public class HitState : PlayerOnGround
     {
         base.Enter();
 
-        //if (playerPlayables.HasStateAuthority || playerPlayables.HasInputAuthority)
-        //    playerPlayables.healthV2.IsHit = false;
-
+        moveTimer = playerPlayables.TickRateAnimation + 0.15f;
         timer = playerPlayables.TickRateAnimation + animationLength;
         canAction = true;
     }
@@ -34,6 +33,12 @@ public class HitState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
+        if (canAction)
+        {
+            if (playerPlayables.TickRateAnimation < moveTimer)
+                characterController.Move(playerMovement.MainCharObj.forward * -5f, 0f);
+        }
+
         Animation();
 
         playerPlayables.stamina.RecoverStamina(5f);

@@ -15,6 +15,8 @@ public class UpperWithAimState : UpperBodyAnimations
     {
         base.Enter();
 
+        playerMovement.CurrentAttackingEnabler(true);
+
         playerPlayables.SetLookAtWeight(1f);
     }
 

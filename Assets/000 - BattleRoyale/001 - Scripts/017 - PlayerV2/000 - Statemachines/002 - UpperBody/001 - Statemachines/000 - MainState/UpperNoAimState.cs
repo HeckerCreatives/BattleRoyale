@@ -15,6 +15,9 @@ public class UpperNoAimState : UpperBodyAnimations
     {
         base.Enter();
         //playerPlayables.aimWeights.RigBuilderSetter(false);
+
+        playerMovement.CurrentAttackingEnabler(false);
+
         playerPlayables.SetLookAtWeight(0f);
     }
 

@@ -370,8 +370,10 @@ public class ClientMatchmakingController : MonoBehaviour
 
         yield return new WaitForSecondsRealtime(1f);
 
-        while (enteringMatchTimer > 0)
+        while (enteringMatchTimer > 0f)
         {
+            if (enteringMatchTimer <= 0f) break;
+
             if (enteringMatchTMPLT > 0) LeanTween.cancel(enteringMatchTMPLT);
             if (enteringMatchFlash > 0) LeanTween.cancel(enteringMatchFlash);
 

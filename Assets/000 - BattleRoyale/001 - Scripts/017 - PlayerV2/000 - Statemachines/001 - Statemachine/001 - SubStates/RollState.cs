@@ -42,7 +42,7 @@ public class RollState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
-        characterController.Move(characterController.TransformDirection * 8f, 0f);
+        characterController.Move(playerMovement.MainCharObj.forward * 8f, 0f);
 
         Animation();
 

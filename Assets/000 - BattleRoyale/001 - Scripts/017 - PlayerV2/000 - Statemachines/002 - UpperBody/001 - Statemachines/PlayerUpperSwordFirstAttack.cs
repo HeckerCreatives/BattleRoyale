@@ -23,6 +23,7 @@ public class PlayerUpperSwordFirstAttack : UpperNoAimState
     {
         base.Enter();
 
+        playerPlayables.SlashSwordParticles(0);
 
         playerPlayables.inventory.PrimaryWeapon.SoundController.PlayAttackOne();
 

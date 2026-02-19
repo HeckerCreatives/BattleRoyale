@@ -32,7 +32,6 @@ public class PlayerUpperRoll : UpperNoAimState
     {
         base.NetworkUpdate();
 
-        playerPlayables.aimWeights.HipsOffset(0f, 0f, 0f);
         Animation();
     }
 

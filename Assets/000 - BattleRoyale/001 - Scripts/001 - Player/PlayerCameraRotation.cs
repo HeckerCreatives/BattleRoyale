@@ -152,7 +152,7 @@ public class PlayerCameraRotation : NetworkBehaviour
         bool hasInput = input.LookDirection.sqrMagnitude >= _threshold;
 
         // Only check for target if aiming and not strongly moving the camera
-        if (movement.Attacking)
+        if (movement.CurrentlyAttacking)
         {
             if (magnetismTimer <= 0f) // Only refresh target if no active assist
             {
@@ -195,9 +195,10 @@ public class PlayerCameraRotation : NetworkBehaviour
             0f
         );
 
-        if (movement.Attacking)
+        if (movement.CurrentlyAttacking)
             playerObj.rotation = Quaternion.Euler(0f, _cinemachineTargetYaw, 0f);
-        //target.transform.rotation = targetRotation;
+
+        target.transform.rotation = targetRotation;
 
         // Direction from yaw/pitch (this is the important part)
         Vector3 aimDir = Quaternion.Euler(_cinemachineTargetPitch, _cinemachineTargetYaw, 0f) * Vector3.forward;

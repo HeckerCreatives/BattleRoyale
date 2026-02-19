@@ -1,5 +1,7 @@
-﻿using Fusion;
+﻿using Cinemachine;
+using Fusion;
 using Fusion.Addons.SimpleKCC;
+using NUnit.Framework;
 using System;
 using System.Linq;
 using Unity.Jobs;
@@ -18,6 +20,10 @@ public class PlayerPlayables : NetworkBehaviour
     public PlayerCameraRotation cameraRotation;
     public PlayerAim aimWeights;
     public MeleeSoundController fistSoundController;
+
+    [Space]
+    [SerializeField] private CinemachineVirtualCamera vCam;
+    [SerializeField] private CinemachineBasicMultiChannelPerlin vcamShaker;
 
     [Space]
     [SerializeField] private Animator playerAnimator;
@@ -45,6 +51,9 @@ public class PlayerPlayables : NetworkBehaviour
     [Space]
     public float enterSpeed;
     public float exitSpeed;
+
+    [Space]
+    [SerializeField] private ParticleSystem[] swordSlashList;
 
     [Space]
     [SerializeField] private SimpleKCC characterController;
@@ -103,6 +112,9 @@ public class PlayerPlayables : NetworkBehaviour
     public override void Spawned()
     {
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+
+
+        vcamShaker = vCam.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
     }
 
     public void OnEnable()
@@ -228,6 +240,11 @@ public class PlayerPlayables : NetworkBehaviour
         playableGraph.Play();
     }
 
+    public void SlashSwordParticles(int index)
+    {
+        swordSlashList[index].Play();
+    }
+
     static Vector3 PickLocalAxisClosestToWorldDir(Transform bone, Vector3 desiredWorldDir)
     {
         Vector3[] axes =
@@ -284,6 +301,11 @@ public class PlayerPlayables : NetworkBehaviour
         });
     }
 
+    public void CameraShaker(float amplitude)
+    {
+        vcamShaker.m_AmplitudeGain = amplitude;
+    }
+
     public void SpawnArrows() => Runner.Spawn(arrows);
 
     public void PlayJumpSoundEffect() => footstepSource.PlayOneShot(jumpClip);
@@ -300,30 +322,34 @@ public class PlayerPlayables : NetworkBehaviour
             else if (hit.GameObject.tag == "Stone") CurrentGround = Ground.STONE;
             else if (hit.GameObject.tag == "Dirt") CurrentGround = Ground.DIRT;
             else if (hit.GameObject.tag == "Wood") CurrentGround = Ground.WOOD;
+            else if (hit.GameObject.tag == "Grass") CurrentGround = Ground.GRASS;
         }
     }
 
     public void PlayFootstepSound()
     {
-        GetTerrainTexture();
+        if (HasStateAuthority) return;
+        //GetTerrainTexture();
 
-        if (CurrentGround == MainCorePlayable.Ground.TERRAIN)
-        {
-            if (textureValues[0] > 0)
-            {
-                footstepSource.PlayOneShot(GetClip(grassClip));
-            }
-            if (textureValues[1] > 0)
-            {
-                footstepSource.PlayOneShot(GetClip(dirtClip));
-            }
-        }
-        else if (CurrentGround == MainCorePlayable.Ground.DIRT)
+        //if (CurrentGround == MainCorePlayable.Ground.TERRAIN)
+        //{
+        //    if (textureValues[0] > 0)
+        //    {
+        //        footstepSource.PlayOneShot(GetClip(grassClip));
+        //    }
+        //    if (textureValues[1] > 0)
+        //    {
+        //        footstepSource.PlayOneShot(GetClip(dirtClip));
+        //    }
+        //}
+        if (CurrentGround == MainCorePlayable.Ground.DIRT)
             footstepSource.PlayOneShot(GetClip(dirtClip));
         else if (CurrentGround == MainCorePlayable.Ground.STONE)
             footstepSource.PlayOneShot(GetClip(stoneClip));
         else if (CurrentGround == MainCorePlayable.Ground.WOOD)
             footstepSource.PlayOneShot(GetClip(woodClip));
+        else if (CurrentGround == MainCorePlayable.Ground.GRASS)
+            footstepSource.PlayOneShot(GetClip(grassClip));
     }
 
     AudioClip GetClip(AudioClip[] clipArray)
@@ -338,61 +364,61 @@ public class PlayerPlayables : NetworkBehaviour
     }
 
 
-    public void GetTerrainTexture()
-    {
-        ConvertPosition(transform.position);
-    }
+    //public void GetTerrainTexture()
+    //{
+    //    ConvertPosition(transform.position);
+    //}
 
-    private void ConvertPosition(Vector3 playerPosition)
-    {
-        Terrain tempterrain = ownObjectEnabler.ServerManager.battleFieldArena;
+    //private void ConvertPosition(Vector3 playerPosition)
+    //{
+    //    Terrain tempterrain = ownObjectEnabler.ServerManager.battleFieldArena;
 
-        if (tempterrain == null || tempterrain.terrainData == null)
-            return;
+    //    if (tempterrain == null || tempterrain.terrainData == null)
+    //        return;
 
-        // Get terrain dimensions
-        TerrainData terrainData = tempterrain.terrainData;
-        Vector3 terrainSize = terrainData.size;
-        int alphamapWidth = terrainData.alphamapWidth;
-        int alphamapHeight = terrainData.alphamapHeight;
+    //    // Get terrain dimensions
+    //    TerrainData terrainData = tempterrain.terrainData;
+    //    Vector3 terrainSize = terrainData.size;
+    //    int alphamapWidth = terrainData.alphamapWidth;
+    //    int alphamapHeight = terrainData.alphamapHeight;
 
-        // Convert world position to normalized [0,1] terrain coordinates
-        Vector3 relativePos = playerPosition - tempterrain.transform.position;
-        Vector3 normalizedPos = new Vector3(
-            relativePos.x / terrainSize.x,
-            0,
-            relativePos.z / terrainSize.z
-        );
+    //    // Convert world position to normalized [0,1] terrain coordinates
+    //    Vector3 relativePos = playerPosition - tempterrain.transform.position;
+    //    Vector3 normalizedPos = new Vector3(
+    //        relativePos.x / terrainSize.x,
+    //        0,
+    //        relativePos.z / terrainSize.z
+    //    );
 
-        // Clamp and convert to alphamap coordinates
-        normalizedPos.x = Mathf.Clamp01(normalizedPos.x);
-        normalizedPos.z = Mathf.Clamp01(normalizedPos.z);
+    //    // Clamp and convert to alphamap coordinates
+    //    normalizedPos.x = Mathf.Clamp01(normalizedPos.x);
+    //    normalizedPos.z = Mathf.Clamp01(normalizedPos.z);
 
-        posX = Mathf.FloorToInt(normalizedPos.x * (alphamapWidth - 1));
-        posZ = Mathf.FloorToInt(normalizedPos.z * (alphamapHeight - 1));
+    //    posX = Mathf.FloorToInt(normalizedPos.x * (alphamapWidth - 1));
+    //    posZ = Mathf.FloorToInt(normalizedPos.z * (alphamapHeight - 1));
 
-        CheckTexture(tempterrain);
-    }
+    //    CheckTexture(tempterrain);
+    //}
 
-    private void CheckTexture(Terrain terrain)
-    {
-        TerrainData terrainData = terrain.terrainData;
+    //private void CheckTexture(Terrain terrain)
+    //{
+    //    TerrainData terrainData = terrain.terrainData;
 
-        // Verify array bounds
-        if (posX < 0 || posX >= terrainData.alphamapWidth ||
-            posZ < 0 || posZ >= terrainData.alphamapHeight)
-            return;
+    //    // Verify array bounds
+    //    if (posX < 0 || posX >= terrainData.alphamapWidth ||
+    //        posZ < 0 || posZ >= terrainData.alphamapHeight)
+    //        return;
 
-        float[,,] aMap = terrainData.GetAlphamaps(posX, posZ, 1, 1);
-        int numTextures = aMap.GetLength(2);
+    //    float[,,] aMap = terrainData.GetAlphamaps(posX, posZ, 1, 1);
+    //    int numTextures = aMap.GetLength(2);
 
-        // Ensure textureValues array matches available textures
-        if (textureValues.Length < numTextures)
-            Array.Resize(ref textureValues, numTextures);
+    //    // Ensure textureValues array matches available textures
+    //    if (textureValues.Length < numTextures)
+    //        Array.Resize(ref textureValues, numTextures);
 
-        for (int i = 0; i < numTextures; i++)
-            textureValues[i] = aMap[0, 0, i];
-    }
+    //    for (int i = 0; i < numTextures; i++)
+    //        textureValues[i] = aMap[0, 0, i];
+    //}
 
     public void OnDrawGizmos()
     {
@@ -420,46 +446,5 @@ public struct LookAtJobBoneIK : IAnimationJob
 
         Quaternion pitchDelta = Quaternion.AngleAxis(pitchDeg * pitchAxisSign, pitchAxisLocal);
         bone.SetRotation(stream, baseLocal * Quaternion.Slerp(Quaternion.identity, pitchDelta, weight));
-    }
-}
-
-
-public static class MixamoAxisUtil
-{
-    // Finds which local axis is "forward" for this bone (Mixamo varies)
-    public static Vector3 PickBoneForwardAxisLocal(Transform bone, Vector3 desiredForwardWorld)
-    {
-        Vector3[] axes =
-        {
-            Vector3.forward, Vector3.back,
-            Vector3.right,   Vector3.left,
-            Vector3.up,      Vector3.down
-        };
-
-        desiredForwardWorld.Normalize();
-
-        float best = -999f;
-        Vector3 bestAxis = Vector3.forward;
-
-        foreach (var a in axes)
-        {
-            Vector3 worldA = bone.TransformDirection(a).normalized;
-            float d = Vector3.Dot(worldA, desiredForwardWorld);
-            if (d > best)
-            {
-                best = d;
-                bestAxis = a;
-            }
-        }
-
-        return bestAxis;
-    }
-
-    // axisOffset maps the bone's "real forward axis" -> Vector3.forward (+Z)
-    public static Quaternion ComputeAxisOffset(Transform bone, Transform mainCharObj)
-    {
-        Vector3 desiredForwardWorld = mainCharObj.forward; // MainCharObj is your true facing
-        Vector3 boneForwardAxisLocal = PickBoneForwardAxisLocal(bone, desiredForwardWorld);
-        return Quaternion.FromToRotation(boneForwardAxisLocal, Vector3.forward);
     }
 }

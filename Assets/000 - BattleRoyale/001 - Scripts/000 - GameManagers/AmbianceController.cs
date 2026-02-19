@@ -25,7 +25,7 @@ public class AmbianceController : MonoBehaviour
         {
             foreach (var ambience in ambienceSources)
             {
-                ambience.enabled = false;
+                ambience.gameObject.SetActive(false);
             }
         }
     }

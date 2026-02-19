@@ -207,29 +207,29 @@ public class Botdata : NetworkBehaviour
         float remainingDamage = damage;
 
         // Apply damage to the shield first
-        if (inventory.Armor != null)
-        {
-            if (inventory.Armor.Supplies > 0)
-            {
-                if (inventory.Armor.Supplies >= remainingDamage)
-                {
-                    inventory.Armor.Supplies -= Convert.ToInt32(remainingDamage);
-                    remainingDamage = 0; // Shield absorbed all damage
-                }
-                else
-                {
-                    remainingDamage -= inventory.Armor.Supplies;
-                    inventory.Armor.Supplies = 0; // Shield fully depleted
-                }
-            }
-        }
+        //if (inventory.Armor != null)
+        //{
+        //    if (inventory.Armor.Supplies > 0)
+        //    {
+        //        if (inventory.Armor.Supplies >= remainingDamage)
+        //        {
+        //            inventory.Armor.Supplies -= Convert.ToInt32(remainingDamage);
+        //            remainingDamage = 0; // Shield absorbed all damage
+        //        }
+        //        else
+        //        {
+        //            remainingDamage -= inventory.Armor.Supplies;
+        //            inventory.Armor.Supplies = 0; // Shield fully depleted
+        //        }
+        //    }
+        //}
 
-        // Apply remaining damage to health
-        if (remainingDamage > 0)
-        {
-            CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - remainingDamage);
-            //nobject.GetComponent<PlayerGameStats>().HitPoints += remainingDamage;
-        }
+        //// Apply remaining damage to health
+        //if (remainingDamage > 0)
+        //{
+        //    CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - remainingDamage);
+        //    //nobject.GetComponent<PlayerGameStats>().HitPoints += remainingDamage;
+        //}
 
         // Check if player is dead
         if (CurrentHealth <= 0)

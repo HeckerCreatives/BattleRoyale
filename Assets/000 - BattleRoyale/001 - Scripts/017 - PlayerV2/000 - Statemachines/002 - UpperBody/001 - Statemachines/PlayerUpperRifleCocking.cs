@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class PlayerUpperRifleCocking : UpperNoAimState
+public class PlayerUpperRifleCocking : UpperWithAimState
 {
     float timer;
     bool canAction;

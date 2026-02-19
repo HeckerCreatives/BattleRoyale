@@ -1,6 +1,7 @@
 ﻿using Fusion;
 using Fusion.Addons.SimpleKCC;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -19,6 +20,11 @@ public class PlayerMovementV2 : NetworkBehaviour
     public float MoveSpeed
     {
         get => moveSpeed;
+    }
+
+    public Transform MainCharObj
+    {
+        get => mainCharObj;
     }
 
     //  ====================
@@ -57,6 +63,7 @@ public class PlayerMovementV2 : NetworkBehaviour
     [field: SerializeField][Networked] public bool IsSprint { get; set; }
     [field: SerializeField][Networked] public bool IsRoll { get; set; }
     [field: SerializeField][Networked] public bool Attacking { get; set; }
+    [field: SerializeField][Networked] public bool CurrentlyAttacking { get; set; }
     [field: SerializeField][Networked] public float JumpImpulse { get; set; }
     [field: SerializeField][Networked] public bool IsJumping { get; set; }
     [field: SerializeField][Networked] public bool IsBlocking { get; set; }
@@ -381,7 +388,7 @@ public class PlayerMovementV2 : NetworkBehaviour
     {
         MoveDir = PlayerLookDirection();
 
-        if (MoveDir.sqrMagnitude > 0.01f && !IsRoll && !Attacking)
+        if (MoveDir.sqrMagnitude > 0.01f && !IsRoll && !CurrentlyAttacking)
         {
             // Normalize to prevent sprinting from affecting rotation
             MoveDir.Normalize();
@@ -488,6 +495,13 @@ public class PlayerMovementV2 : NetworkBehaviour
                 IsJumping = false;
             }
         }
+    }
+
+    public void CurrentAttackingEnabler(bool value)
+    {
+        if (Runner == null) return;
+
+        CurrentlyAttacking = value;
     }
 
     private void Roll()

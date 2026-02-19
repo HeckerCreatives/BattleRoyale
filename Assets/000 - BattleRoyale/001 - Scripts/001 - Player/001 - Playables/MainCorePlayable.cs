@@ -14,7 +14,8 @@ public class MainCorePlayable : NetworkBehaviour
         WOOD,
         STONE,
         WATER,
-        TERRAIN
+        TERRAIN,
+        GRASS
     }
 
     [SerializeField] private PlayerInventory inventory;

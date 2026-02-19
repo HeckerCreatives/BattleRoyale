@@ -31,6 +31,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
     [Space]
     [SerializeField] private string weaponID;
     [SerializeField] private string weaponName;
+    [SerializeField] private float shaker;
 
     [Space]
     [SerializeField] private Transform impactPoint;
@@ -56,6 +57,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
     [Networked][field: SerializeField] public bool IsPickedUp { get; set; }
     [Networked][field: SerializeField] public bool IsEquipped { get; set; }
     [Networked][field: SerializeField] public bool IsBot { get; set; }
+    [Networked][field: SerializeField] public int Hitted { get; set; }
     [Networked][field: SerializeField] public NetworkObject CurrentPlayer { get; set; }
     [Networked][field: SerializeField] public PlayerOwnObjectEnabler PlayerCore { get; set; }
     [Networked][field: SerializeField] public Botdata BotData { get; set; }
@@ -65,37 +67,53 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
     private readonly HashSet<NetworkObject> hitEnemies = new();
     private readonly List<LagCompensatedHit> hits = new List<LagCompensatedHit>();
 
+
+    private ChangeDetector _changeDetector;
+
+    public override void Spawned()
+    {
+        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+    }
+
     public override void Render()
     {
         if (HasStateAuthority) return;
 
-        // Only the simulation should update the authoritative state
-        if (IsPickedUp)
+        ChangeDetectorUpdate();
+        PickupPositionClients();
+    }
+
+    private void ChangeDetectorUpdate()
+    {
+        if (!HasInputAuthority || HasStateAuthority) return;
+
+
+        foreach (var change in _changeDetector.DetectChanges(this))
         {
-            if (IsEquipped)
+            switch (change)
             {
-                if (IsBot && BotData == null) return;
-
-                transform.parent = !IsBot ? WeaponID == "001" ? PlayerCore.Inventory.SwordHand : PlayerCore.Inventory.SpearHand : WeaponID == "001" ? BotData.Inventory.SwordHand : BotData.Inventory.SpearHand;
-                transform.localPosition = Vector3.zero;
-                transform.localRotation = Quaternion.identity;
-            }
-            else
-            {
-                if (IsBot && BotData == null) return;
-
-                transform.parent = !IsBot ? WeaponID == "001" ? PlayerCore.Inventory.SwordBack : PlayerCore.Inventory.SpearBack : WeaponID == "001" ? BotData.Inventory.SwordBack : BotData.Inventory.SpearHand;
-                transform.localPosition = Vector3.zero;
-                transform.localRotation = Quaternion.identity;
+                case nameof(Hitted):
+                    ShakerCamera();
+                    Invoke(nameof(OffCameraShaker), 0.15f);
+                    break;
             }
         }
-        else
-        {
-            // If dropped, keep the position/rotation as-is (or update if needed)
-            transform.parent = null;
-            transform.position = Position;
-            transform.rotation = Quaternion.Euler(dropRotation);
-        }
+    }
+
+    private void ShakerCamera()
+    {
+        if (PlayerCore == null)
+            return;
+
+        PlayerCore.CurrentPlayerPlayables.CameraShaker(shaker);
+    }
+
+    private void OffCameraShaker()
+    {
+        if (PlayerCore == null)
+            return;
+
+        PlayerCore.CurrentPlayerPlayables.CameraShaker(0f);
     }
 
     public override void FixedUpdateNetwork()
@@ -111,6 +129,37 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
             }
             else
             {
+                transform.parent = !IsBot ? WeaponID == "001" ? PlayerCore.Inventory.SwordBack : PlayerCore.Inventory.SpearBack : WeaponID == "001" ? BotData.Inventory.SwordBack : BotData.Inventory.SpearHand;
+                transform.localPosition = Vector3.zero;
+                transform.localRotation = Quaternion.identity;
+            }
+        }
+        else
+        {
+            // If dropped, keep the position/rotation as-is (or update if needed)
+            transform.parent = null;
+            transform.position = Position;
+            transform.rotation = Quaternion.Euler(dropRotation);
+        }
+    }
+
+    private void PickupPositionClients()
+    {
+        // Only the simulation should update the authoritative state
+        if (IsPickedUp)
+        {
+            if (IsEquipped)
+            {
+                if (IsBot && BotData == null) return;
+
+                transform.parent = !IsBot ? WeaponID == "001" ? PlayerCore.Inventory.SwordHand : PlayerCore.Inventory.SpearHand : WeaponID == "001" ? BotData.Inventory.SwordHand : BotData.Inventory.SpearHand;
+                transform.localPosition = Vector3.zero;
+                transform.localRotation = Quaternion.identity;
+            }
+            else
+            {
+                if (IsBot && BotData == null) return;
+
                 transform.parent = !IsBot ? WeaponID == "001" ? PlayerCore.Inventory.SwordBack : PlayerCore.Inventory.SpearBack : WeaponID == "001" ? BotData.Inventory.SwordBack : BotData.Inventory.SpearHand;
                 transform.localPosition = Vector3.zero;
                 transform.localRotation = Quaternion.identity;
@@ -265,7 +314,9 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                     if (isFinalHit) tempdata.IsStagger = true;
                     else tempdata.IsHit = true;
 
-                    tempdata.ApplyDamage(tempdamage, isBot? BotData.BotName : PlayerCore.Username, CurrentPlayer);
+                    tempdata.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username, CurrentPlayer);
+
+                    Hitted++;
                 }
             }
             else
@@ -300,6 +351,8 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                         healthV2.IsStagger = true;
 
                     healthV2.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username, CurrentPlayer);
+
+                    Hitted++;
                 }
             }
         }
