@@ -107,15 +107,17 @@ public class PlayerInventoryV2 : NetworkBehaviour
     {
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
 
-        if (HasInputAuthority)
-        {
-            if (!playerOwnObjectEnabler.DoneInit)
-                RPC_SendPlayerDataToServer(JsonConvert.SerializeObject(userData.CharacterSetting));
+        InitializeSkinOnStart();
 
-            InitializeSkinOnStart();
-        }
-        else if (!HasInputAuthority && !HasStateAuthority)
-            InitializeSkinOnStart();
+        //if (HasInputAuthority)
+        //{
+        //    //if (!playerOwnObjectEnabler.DoneInit)
+        //    //    RPC_SendPlayerDataToServer(JsonConvert.SerializeObject(userData.CharacterSetting));
+
+        //    InitializeSkinOnStart();
+        //}
+        //else if (!HasInputAuthority && !HasStateAuthority)
+        //    InitializeSkinOnStart();
     }
 
     public override void Render()
@@ -153,30 +155,6 @@ public class PlayerInventoryV2 : NetworkBehaviour
     
 
     #region SKINS
-
-    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    private void RPC_SendPlayerDataToServer(string data)
-    {
-        var characterSetting = JsonConvert.DeserializeObject<PlayerCharacterSetting>(data);
-        HairStyle = characterSetting.hairstyle;
-        HairColorIndex = characterSetting.haircolor;
-        ClothingColorIndex = characterSetting.clothingcolor;
-        SkinColorIndex = characterSetting.skincolor;
-        IsSkinInitialized = true;
-
-        hairStyles[HairStyle].SetActive(true);
-        hairMR[HairStyle].material.SetColor("_BaseColor", hairColor[HairColorIndex]);
-
-        for (int a = 0; a < clothingMRList.Count; a++)
-            clothingMRList[a].material.SetColor("_BaseColor", clothingColor[ClothingColorIndex].Colors[a]);
-
-        for (int a = 0; a < hatMR.Count; a++)
-            hatMR[a].material.SetColor("_BaseColor", clothingColor[ClothingColorIndex].Colors[1]);
-
-        bodyColorMR.material.SetColor("_BaseColor", skinColor[SkinColorIndex]);
-
-        WeaponIndex = 1;
-    }
 
     private async void InitializeSkinOnStart()
     {

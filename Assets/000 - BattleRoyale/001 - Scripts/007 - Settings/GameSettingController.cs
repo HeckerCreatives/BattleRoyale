@@ -99,7 +99,7 @@ public class GameSettingController : MonoBehaviour
 
     [Header("LOOK SENSITIVITY TEXT")]
     [SerializeField] private TextMeshProUGUI lookSensitivityTMP;
-    [SerializeField] private TextMeshProUGUI lookAdsSensitivityTMP;
+    //[SerializeField] private TextMeshProUGUI lookAdsSensitivityTMP;
 
 
     [Header("LOOK SENSITIVITY BUTTON")]

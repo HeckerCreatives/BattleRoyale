@@ -137,8 +137,6 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     {
         RPC_ChangeDoneInit();
 
-        yield return new WaitWhile(() => ServerManager.CurrentGameState != GameState.ARENA);
-
         yield return null;
     }
 

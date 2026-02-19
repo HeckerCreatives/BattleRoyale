@@ -180,6 +180,8 @@ public class ClientMatchmakingController : MonoBehaviour
 
                 roomname = tempdata[0].roomName;
 
+                Debug.Log($"status: {tempdata[0].status}");
+
                 isBattle = tempdata[0].status == "BATTLE" ? true : false;
 
                 inWaitingRoom = tempdata[0].status == "WAITING" ? true : false;
@@ -233,6 +235,8 @@ public class ClientMatchmakingController : MonoBehaviour
                 timerTMP.text = "MATCH FOUND";
 
                 cancelBtn.interactable = false;
+
+                isBattle = tempdata[0].status == "BATTLE" ? true : false;
 
                 if (!inWaitingRoom)
                 {
@@ -654,10 +658,6 @@ public class ClientMatchmakingController : MonoBehaviour
     {
         GameManager.Instance.NotificationController.ShowConfirmation("Are you sure you want to quit the room? You will lose your energy consumed.", () =>
         {
-            GameManager.Instance.SocketMngr.EmitEvent("quitonmatch", new Dictionary<string, string>{
-                { "roomname", roomname }
-            });
-
             currentWaitingTime = 0f;
 
             findingMatch = false;
@@ -671,6 +671,8 @@ public class ClientMatchmakingController : MonoBehaviour
             matchmakingObj.SetActive(false);
             matchBtn.SetActive(true);
 
+            reconObj.SetActive(false);
+
             //findABattleObj.SetActive(true);
 
             changeServerBtn.interactable = true;
@@ -680,6 +682,10 @@ public class ClientMatchmakingController : MonoBehaviour
             waitingRoomObj.SetActive(false);
 
             //ShutdownServer();
+
+            GameManager.Instance.SocketMngr.EmitEvent("quitonmatch", new Dictionary<string, string>{
+                { "roomname", roomname }
+            });
         }, null);
     }
 

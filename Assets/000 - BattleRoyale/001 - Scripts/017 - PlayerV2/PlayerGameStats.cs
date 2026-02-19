@@ -10,9 +10,11 @@ using static Fusion.NetworkBehaviour;
 public class PlayerGameStats : NetworkBehaviour
 {
     [SerializeField] private UserData userData;
+    [SerializeField] private PlayerHealthV2 playerhealth;
 
     [Header("GAME STATUS")]
     [SerializeField] public TextMeshProUGUI pingTMP;
+    [SerializeField] public TextMeshProUGUI playtimeTMP;
 
     [Header("WAITING AREA")]
     [SerializeField] public GameObject Timer;
@@ -61,6 +63,7 @@ public class PlayerGameStats : NetworkBehaviour
     [field: SerializeField][Networked] public int KillCount { get; set; }
     [field: SerializeField][Networked] public float HitPoints { get; set; }
     [field: SerializeField][Networked] public int PlayerPlacement { get; set; }
+    [field: SerializeField][Networked] public float playtime {get; set;}
 
     //  ======================
 
@@ -88,6 +91,14 @@ public class PlayerGameStats : NetworkBehaviour
         GameStats();
         //WaitingAreaTimer();
         DeathGameOver();
+    }
+
+    public override void FixedUpdateNetwork()
+    {
+        if (!HasStateAuthority) return;
+
+        if (!playerhealth.IsDead)
+            playtime += Runner.DeltaTime;
     }
 
     private void Update()
@@ -118,6 +129,7 @@ public class PlayerGameStats : NetworkBehaviour
 
         PlayerCount.text = $"{(ServerManager.RemainingPlayers.Count + ServerManager.Bots.Count):n0} / {(tempCapacity - 2):n0}";
         killCountTMP.text = $"{KillCount:n0}";
+        playtimeTMP.text = $"{GameManager.Instance.GetMinuteSecondsTime(playtime)}";
     }
 
     private void WaitingAreaTimer()
@@ -207,7 +219,10 @@ public class PlayerGameStats : NetworkBehaviour
                     {
                         { "kill", KillCount },
                         { "death", PlayerPlacement != 1 ? 1 : 0 },
-                        { "rank", rank }
+                        { "rank", rank },
+                        { "win", 0},
+                        { "lose", 1},
+                        { "playtime", playtime}
                     }, true, (response) =>
                     {
                         StartCoroutine(GameManager.Instance.PostRequest("/leaderboard/updateuserleaderboard", "", new Dictionary<string, object>

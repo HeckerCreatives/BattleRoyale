@@ -155,6 +155,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [SerializeField] private bool doneSpawnCrates;
     [SerializeField] private bool doneSetupBattlePos;
     [SerializeField] private bool doneSetupSafeZone;
+    [SerializeField] private bool doneSetupPlayers;
     [SerializeField] private bool doneValidatingPlayerCount;
     [SerializeField] private int battleSpawnPosIndex;
     [SerializeField] private NetworkRunner networkRunner;
@@ -331,7 +332,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     };
     [SerializeField] private bool canStartCountDownToCloseServer;
     [SerializeField] private float closeServerCount;
-    [SerializeField] private bool canStartCheckingForUnconnectedPlayers;
     [SerializeField] private float unconnectedPlayersTimer;
 
     [field: Space]
@@ -347,8 +347,8 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
 
     private ChangeDetector _changeDetector;
-    [Networked, Capacity(50)] public NetworkDictionary<PlayerRef, NetworkObject> Players => default;
-    [Networked, Capacity(50)] public NetworkDictionary<PlayerRef, NetworkObject> RemainingPlayers => default;
+    [Networked, Capacity(50)] public NetworkDictionary<string, NetworkObject> Players => default;
+    [Networked, Capacity(50)] public NetworkDictionary<string, NetworkObject> RemainingPlayers => default;
     [Networked, Capacity(50)] public NetworkDictionary<int, NetworkObject> Bots => default;
 
     //  =================
@@ -357,8 +357,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
 
     public Dictionary<string, PlayerOwnObjectEnabler> ConnectedPlayers = new Dictionary<string, PlayerOwnObjectEnabler>();
-
-    public Dictionary<string, bool> PlayerDoneLoading = new Dictionary<string, bool>();
 
     public Dictionary<PlayerRef, string> playerIdMap = new Dictionary<PlayerRef, string>();
 
@@ -629,6 +627,57 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         doneSetupSafeZone = true;
     }
 
+    private async void SpawnPlayers(string playerdata)
+    {
+        while (!Runner)
+            await Task.Yield();
+
+        List<PlayerSpawnData> tempdata = JsonConvert.DeserializeObject<List<PlayerSpawnData>>(playerdata);
+
+        int spawnpos = 0;
+
+        foreach (var data in tempdata)
+        {
+            NetworkObject playerCharacter = Runner.Spawn(playerObj, spawnWaitingAreaPositions[spawnpos].position, Quaternion.identity, null, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+            {
+                obj.GetComponent<SimpleKCC>().SetPosition(spawnWaitingAreaPositions[spawnpos].position);
+
+                PlayerOwnObjectEnabler core = obj.GetComponent<PlayerOwnObjectEnabler>();
+
+                core.ServerManager = this;
+                obj.GetComponent<PlayerHealthV2>().ServerManager = this;
+                obj.GetComponent<PlayerGameStats>().ServerManager = this;
+                obj.GetComponent<MapZoomInOut>().ServerManager = this;
+                obj.GetComponent<PlayerShrinkZoneTimer>().ServerManager = this;
+            });
+
+            Debug.Log("hello 5");
+            PlayerInventoryV2 tempinventory = playerCharacter.GetComponent<PlayerInventoryV2>();
+
+            tempinventory.HairStyle = data.hairstyle;
+            tempinventory.HairColorIndex = data.haircolor;
+            tempinventory.ClothingColorIndex = data.clothingcolor;
+            tempinventory.SkinColorIndex = data.skincolor;
+
+            tempinventory.WeaponIndex = 1;
+
+            tempinventory.IsSkinInitialized = true;
+
+            if (!string.IsNullOrEmpty(data.username))
+                ConnectedPlayers[data.username] = playerCharacter.GetComponent<PlayerOwnObjectEnabler>();
+
+            Players.Add(data.username, playerCharacter);
+            RemainingPlayers.Add(data.username, playerCharacter);
+
+            spawnpos++;
+
+            PlayerCountChange?.Invoke(this, EventArgs.Empty);
+
+            await Task.Yield();
+        }
+        doneSetupPlayers = true;
+    }
+
     #endregion
 
     #region SERVER INITIALIZE
@@ -697,18 +746,9 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         else
             appSettings = BuildCustomAppSetting("asia");
 
-        if (args.TryGetValue("playernames", out string playernames))
+        if (args.TryGetValue("playercostumedata", out string playercostumedata))
         {
-            List<string> tempPlayers = JsonConvert.DeserializeObject<List<string>>(playernames);
-
-            for (int a = 0; a < tempPlayers.Count; a++)
-            {
-                Debug.Log($"INITIALIZING PLAYERS: {tempPlayers[a]}");
-                PlayerDoneLoading.Add(tempPlayers[a], false);
-            }
-
-            canStartCheckingForUnconnectedPlayers = true;
-            unconnectedPlayersTimer = 10;
+            Debug.Log(playercostumedata);
         }
 
         Debug.Log($"STARTING REGION: {appSettings.FixedRegion}");
@@ -745,31 +785,13 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
             Debug.Log($"Set Safe Zone");
             SetSafeZoneArea();
 
-            while (!doneSetupBattlePos || !doneSpawnCrates || !doneSetupSafeZone)
+            Debug.Log($"SpawningPLayers");
+            SpawnPlayers(playercostumedata);
+
+            while (!doneSetupBattlePos || !doneSpawnCrates || !doneSetupSafeZone || !doneSetupPlayers)
             {
-                Debug.Log($"Done setup battle pos init: {doneSetupBattlePos} : Done spawn crates init: {doneSpawnCrates}  :  Done Safe Zone Init: {doneSetupSafeZone}");
                 await Task.Yield();
             }
-
-            Debug.Log("Adding waiting Area Timer");
-
-            WaitingAreaTimer = waitingAreaStartTimer;
-
-            Debug.Log("Done adding waiting Area Timer");
-
-
-
-#if !UNITY_ANDROID && !UNITY_IOS
-            //if (useMultiplay)
-            //{
-            //    Debug.Log("Initializing Multiplay");
-            //    await multiplayController.InitializeUnityAuthentication();
-            //}
-#endif
-
-            canStartCountDownToCloseServer = true;
-
-            closeServerCount = 600;
 
             networkRunner.SessionInfo.IsOpen = true;
             networkRunner.SessionInfo.IsVisible = true;
@@ -830,26 +852,11 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                     break;
             }
         }
-
-        if (canStartCheckingForUnconnectedPlayers)
-        {
-            if (unconnectedPlayersTimer > 0)
-            {
-                unconnectedPlayersTimer -= Time.deltaTime;
-
-                if (unconnectedPlayersTimer <= 0)
-                {
-                    canStartCheckingForUnconnectedPlayers = false;
-                    CurrentGameState = GameState.ARENA;
-                }
-            }
-        }
     }
 
     public override void FixedUpdateNetwork()
     {
         CountDownSafeZoneTimer();
-        //SpawnBot();
     }
 
     private void Update()
@@ -871,193 +878,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     }
 
     #region GAME LOGIC
-
-    private void CountDownWaitingAreaTimer()
-    {
-        if (!HasStateAuthority) return;
-
-        //if (CurrentGameState != GameState.WAITINGAREA) return;
-
-        if (!CanCountWaitingAreaTimer) return;
-
-        WaitingAreaTimer -= Runner.DeltaTime;
-
-        if (CurrentWaitingAreaTimerState == WaitingAreaTimerState.WAITING)
-        {
-            if (WaitingAreaTimer <= 0f && !doneValidatingPlayerCount)
-            {
-                if (maxBot <= 0 && Players.Count < playerRequired)
-                {
-                    ForceQuitPlayers();
-
-                    return;
-                }
-
-                WaitingAreaTimer = readyForBattleStartTimer;
-                CurrentWaitingAreaTimerState = WaitingAreaTimerState.GETREADY;
-
-                if (usePrivateServer)
-                    ChangeServerStatus();
-
-                doneValidatingPlayerCount = true;
-            }
-        }
-        else if (CurrentWaitingAreaTimerState == WaitingAreaTimerState.GETREADY)
-        {
-            //if (WaitingAreaTimer <= 30f && networkRunner.SessionInfo.IsOpen)
-            //{
-            //    networkRunner.SessionInfo.IsOpen = false;
-            //    networkRunner.SessionInfo.IsVisible = false;
-            //}
-
-            if (WaitingAreaTimer <= 0f)
-            {
-                if (maxBot <= 0 && Players.Count < playerRequired)
-                {
-                    ForceQuitPlayers();
-
-                    return;
-                }
-
-                StartBattleRoyale = true;
-                CurrentGameState = GameState.ARENA;
-                CanCountWaitingAreaTimer = false;
-                CurrentStateChange?.Invoke(this, EventArgs.Empty);
-
-                if (usePrivateServer)
-                    ChangeServerStatus();
-
-                StartCoroutine(BattlePosition());
-            }
-        }
-    }
-
-    private void ForceQuitPlayers()
-    {
-        for (int a = 0; a < Players.Count; a++)
-        {
-            // Set player position
-
-            if (Players.ElementAt(a).Value.transform.position.x != spawnBattleAreaPositions[a].position.x && Players.ElementAt(a).Value.transform.position.z != spawnBattleAreaPositions[a].position.z)
-            {
-                Players.ElementAt(a).Value.GetComponent<PlayerOwnObjectEnabler>().NotEnoughPlayer = true;
-            }
-        }
-
-        doneValidatingPlayerCount = true;
-    }
-
-    private void CountDownSafeZoneTimer()
-    {
-        if (!HasStateAuthority) return;
-
-        if (CurrentSafeZoneState != SafeZoneState.TIMER) return;
-
-        SafeZoneTimer -= Runner.DeltaTime;
-
-        if (SafeZoneTimer <= 0f)
-        {
-            CurrentSafeZoneState = SafeZoneState.SHRINK;
-        }
-    }
-
-    private IEnumerator BattlePosition()
-    {
-        if (!HasStateAuthority) yield break;
-
-        if (CurrentGameState != GameState.ARENA) yield break;
-
-        if (DonePlayerBattlePositions) yield break;
-
-        ArenaEnabler(true, false);
-
-        bool isDone = false;
-
-        while (!isDone)
-        {
-            for (int a = 0; a < Players.Count; a++)
-            {
-                // Set player position
-
-                if (Players.ElementAt(a).Value.transform.position.x != spawnBattleAreaPositions[battleSpawnPosIndex].position.x && Players.ElementAt(a).Value.transform.position.z != spawnBattleAreaPositions[battleSpawnPosIndex].position.z)
-                {
-                    PlayerInventoryV2 tempinventory = Players.ElementAt(a).Value.GetComponent<PlayerInventoryV2>();
-
-                    tempinventory.HealCount = 0;
-                    tempinventory.TrapCount = 0;
-                    tempinventory.ArmorRepairCount = 0;
-                    tempinventory.RifleMagazine = 0;
-                    tempinventory.BowMagazine = 0;
-
-                    if (tempinventory.Armor != null)
-                    {
-                        Runner.Despawn(tempinventory.Armor.Object);
-                        tempinventory.Armor = null;
-                    }
-
-                    if (tempinventory.PrimaryWeapon != null)
-                    {
-                        Runner.Despawn(tempinventory.PrimaryWeapon.Object);
-                        tempinventory.PrimaryWeapon = null;
-                    }
-
-                    if (tempinventory.SecondaryWeapon != null)
-                    {
-                        Runner.Despawn(tempinventory.SecondaryWeapon.Object);
-                        tempinventory.SecondaryWeapon = null;
-                    }
-
-                    if (tempinventory.MagazineContainer != null)
-                    {
-                        Runner.Despawn(tempinventory.MagazineContainer.Object);
-                        tempinventory.MagazineContainer = null;
-                    }
-
-                    tempinventory.WeaponIndex = 1;
-
-                    Players.ElementAt(a).Value.GetComponent<PlayerHealthV2>().CurrentHealth = 100f;
-
-                    Players.ElementAt(a).Value.GetComponent<SimpleKCC>().SetPosition(spawnBattleAreaPositions[battleSpawnPosIndex].position, true);
-
-                    battleSpawnPosIndex++;
-                }
-
-            }
-
-            for (int a = 0; a < Bots.Count; a++)
-            {
-                Bots.ElementAt(a).Value.GetComponent<SimpleKCC>().SetPosition(spawnBattleAreaPositions[battleSpawnPosIndex].position, true);
-
-                SpawnItems(Bots.ElementAt(a).Value);
-
-                battleSpawnPosIndex++;
-            }
-
-            if (battleSpawnPosIndex >= (Bots.Count + Players.Count)) isDone = true;
-        }
-
-        yield return new WaitForSeconds(5f);
-
-        //  WAIT 5 SECONDS HERE
-
-        for (int a = 0; a < Players.Count; a++)
-        {
-            // Set player position
-
-            if (Players.ElementAt(a).Value.transform.position.x != spawnBattleAreaPositions[battleSpawnPosIndex].position.x && Players.ElementAt(a).Value.transform.position.z != spawnBattleAreaPositions[battleSpawnPosIndex].position.z)
-            {
-                Players.ElementAt(a).Value.GetComponent<PlayerHealthV2>().CurrentHealth = 100f;
-            }
-        }
-
-        yield return new WaitForSeconds(1f);
-
-
-        DonePlayerBattlePositions = true;
-
-        SafeZoneTimer = 30f;
-        CurrentSafeZoneState = SafeZoneState.TIMER;
-    }
 
     public void ArenaEnabler(bool waitingArea, bool battleField)
     {
@@ -1192,15 +1012,19 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         inventory.TrapCount = randTrap;
     }
 
-    //public GridManager CurrentGridManager()
-    //{
-    //    if (CurrentGameState == GameState.WAITINGAREA)
-    //        return waitingAreaGridManager;
-    //    else if (CurrentGameState == GameState.ARENA)
-    //        return battleAreaGridManager;
+    private void CountDownSafeZoneTimer()
+    {
+        if (!HasStateAuthority) return;
 
-    //    return null;
-    //}
+        if (CurrentSafeZoneState != SafeZoneState.TIMER) return;
+
+        SafeZoneTimer -= Runner.DeltaTime;
+
+        if (SafeZoneTimer <= 0f)
+        {
+            CurrentSafeZoneState = SafeZoneState.SHRINK;
+        }
+    }
 
     #endregion
 
@@ -1226,7 +1050,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         Debug.Log($"[Kick/Quit] Removing player: {username}");
 
-        if (Players.TryGet(playerRef, out NetworkObject remainingPlayer))
+        if (Players.TryGet(username, out NetworkObject remainingPlayer))
         {
             Debug.Log("trying get network object in players");
 
@@ -1256,7 +1080,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         return false;
     }
 
-
     public void PlayerJoined(PlayerRef player)
     {
         if (HasStateAuthority)
@@ -1276,66 +1099,29 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 //PlayerDisconnected = false;
 
                 if (!string.IsNullOrEmpty(playerId))
-                    playerIdMap[player] = playerId;
+                {
+                    if (playerIdMap.ContainsValue(playerId))
+                        playerIdMap[player] = playerId;
+                    else
+                        playerIdMap.Add(player, playerId);
+                }
 
                 // Restore their PlayerRef
                 existingCore.Object.AssignInputAuthority(player);
 
                 Debug.Log($"♻️ Player {playerId} reconnected, reassigned authority.");
-                return;
-            }
 
-            canStartCountDownToCloseServer = false;
 
-            int tempspawnpos = UnityEngine.Random.Range(0, spawnWaitingAreaPositions.Count);
-
-            NetworkObject playerCharacter = Runner.Spawn(playerObj, Vector3.up, Quaternion.identity, player, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
-            {
-                PlayerOwnObjectEnabler core = obj.GetComponent<PlayerOwnObjectEnabler>();
-
-                obj.GetComponent<SimpleKCC>().SetPosition(spawnWaitingAreaPositions[tempspawnpos].position);
-                core.ServerManager = this;
-                obj.GetComponent<PlayerHealthV2>().ServerManager = this;
-                obj.GetComponent<PlayerGameStats>().ServerManager = this;
-                obj.GetComponent<MapZoomInOut>().ServerManager = this;
-                obj.GetComponent<PlayerShrinkZoneTimer>().ServerManager = this;
-            });
-
-            if (!string.IsNullOrEmpty(playerId))
-                ConnectedPlayers[playerId] = playerCharacter.GetComponent<PlayerOwnObjectEnabler>();
-
-            if (!string.IsNullOrEmpty(playerId))
-            {
-                playerIdMap.Add(player, playerId);
-            }
-
-            Runner.SetPlayerObject(player, playerCharacter);
-
-            Players.Add(player, playerCharacter);
-            RemainingPlayers.Add(player, playerCharacter);
-            PlayerCountChange?.Invoke(this, EventArgs.Empty);
-
-            PlayerDoneLoading[playerId] = true;
-
-            bool donePlayerLoadings = true;
-
-            for (int a = 0; a < PlayerDoneLoading.Count; a++)
-            {
-                if (PlayerDoneLoading.ElementAt(a).Value == false)
+                if (CurrentGameState != GameState.ARENA)
                 {
-                    donePlayerLoadings = false; 
-                    break;
+                    CurrentGameState = GameState.ARENA;
+
+                    DonePlayerBattlePositions = true;
+                    SafeZoneTimer = 30f;
+                    CurrentSafeZoneState = SafeZoneState.TIMER;
                 }
-            }
 
-            if (donePlayerLoadings)
-            {
-                canStartCheckingForUnconnectedPlayers = false;
-                CurrentGameState = GameState.ARENA;
-
-                DonePlayerBattlePositions = true;
-                SafeZoneTimer = 30f;
-                CurrentSafeZoneState = SafeZoneState.TIMER;
+                return;
             }
         }
     }
@@ -1344,43 +1130,33 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     {
         if (!HasStateAuthority) return;
 
-        if (Players.TryGet(player, out NetworkObject remainingPlayer))
+        if (Players.TryGet(username, out NetworkObject remainingPlayer))
         {
             PlayerOwnObjectEnabler core = remainingPlayer.GetComponent<PlayerOwnObjectEnabler>();
 
             if (core.Removing)
-                RemainingPlayers.Remove(player);
+                RemainingPlayers.Remove(username);
         }
 
-        if (Players.TryGet(player, out NetworkObject clientPlayer))
+        if (Players.TryGet(username, out NetworkObject clientPlayer))
         {
-
-            Debug.Log("activating removing 1");
             PlayerOwnObjectEnabler core = remainingPlayer.GetComponent<PlayerOwnObjectEnabler>();
 
-            Debug.Log("activating removing 2");
             if (core.Removing)
             {
-                Debug.Log("activating removing 3");
-                RemainingPlayers.Remove(player);
+                RemainingPlayers.Remove(username);
 
-                Debug.Log("activating removing 4");
                 var playerinventory = remainingPlayer.GetComponent<PlayerInventoryV2>();
 
-                Debug.Log("activating removing 5");
                 if (playerinventory.PrimaryWeapon != null) playerinventory.PrimaryWeapon.DropWeapon();
 
-                Debug.Log("activating removing6");
                 if (playerinventory.SecondaryWeapon != null) playerinventory.SecondaryWeapon.DropWeapon();
 
-                Debug.Log("activating removing 7");
                 if (playerinventory.Armor != null) playerinventory.Armor.DropArmor();
 
-                Debug.Log("activating removing 8");
                 if (playerinventory.MagazineContainer != null) playerinventory.MagazineContainer.DropWeapon();
 
-                Debug.Log("activating removing 9");
-                Players.Remove(player);
+                Players.Remove(username);
                 //Debug.Log($"activating removing 10   player obj null? {remainingPlayer == null}");
                 Runner.Despawn(clientPlayer);
 
@@ -1388,7 +1164,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 playerIdMap.Remove(player);
                 ConnectedPlayers.Remove(username);
 
-                Debug.Log("activating removing 11");
                 if (Players.Count <= 0)
                 {
                     Application.Quit();
@@ -1408,53 +1183,43 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
     {
         if (!HasStateAuthority) return;
 
-        if (Players.TryGet(player, out NetworkObject remainingPlayer))
+        //string playerId = GetPlayerId(Runner, player);
+
+        playerIdMap.TryGetValue(player, out var playerId);
+
+        Debug.Log($"left player: {playerId}");
+
+        if (Players.TryGet(playerId, out NetworkObject remainingPlayer))
         {
             PlayerOwnObjectEnabler core = remainingPlayer.GetComponent<PlayerOwnObjectEnabler>();
 
             if (core.Removing)
-                RemainingPlayers.Remove(player);
+                RemainingPlayers.Remove(playerId);
         }
 
-        if (Players.TryGet(player, out NetworkObject clientPlayer))
+        if (Players.TryGet(playerId, out NetworkObject clientPlayer))
         {
-
-            Debug.Log("activating removing 1");
-            PlayerOwnObjectEnabler core = remainingPlayer.GetComponent<PlayerOwnObjectEnabler>();
-
-            Debug.Log("activating removing 2");
-            if (core.Removing)
+            PlayerOwnObjectEnabler core = clientPlayer.GetComponent<PlayerOwnObjectEnabler>();
+            if (core != null && core.Removing)
             {
-                Debug.Log("activating removing 3");
-                RemainingPlayers.Remove(player);
+                RemainingPlayers.Remove(playerId);
 
-                Debug.Log("activating removing 4");
-                var playerinventory = remainingPlayer.GetComponent<PlayerInventoryV2>();
-
-                Debug.Log("activating removing 5");
-                if (playerinventory.PrimaryWeapon != null) playerinventory.PrimaryWeapon.DropWeapon();
-
-                Debug.Log("activating removing6");
-                if (playerinventory.SecondaryWeapon != null) playerinventory.SecondaryWeapon.DropWeapon();
-
-                Debug.Log("activating removing 7");
-                if (playerinventory.Armor != null) playerinventory.Armor.DropArmor();
-
-                Debug.Log("activating removing 8");
-                if (playerinventory.MagazineContainer != null) playerinventory.MagazineContainer.DropWeapon();
-
-                Debug.Log("activating removing 9");
-                Players.Remove(player);
-                //Debug.Log($"activating removing 10   player obj null? {remainingPlayer == null}");
-                //Runner.Despawn(clientPlayer);
-
-                Debug.Log("activating removing 11");
-                if (Players.Count <= 0)
+                var inv = clientPlayer.GetComponent<PlayerInventoryV2>();
+                if (inv != null)
                 {
-                    Application.Quit();
+                    if (inv.PrimaryWeapon != null) inv.PrimaryWeapon.DropWeapon();
+                    if (inv.SecondaryWeapon != null) inv.SecondaryWeapon.DropWeapon();
+                    if (inv.Armor != null) inv.Armor.DropArmor();
+                    if (inv.MagazineContainer != null) inv.MagazineContainer.DropWeapon();
                 }
+
+                Players.Remove(playerId);
+
+                if (Players.Count <= 0)
+                    Application.Quit();
             }
         }
+
 
         if ((CurrentGameState == GameState.DONE || CurrentGameState == GameState.ARENA) && Players.Count <= 0)
             Application.Quit();
@@ -1474,4 +1239,16 @@ public class ShrinkSizeList
 public class RemovePlayerData
 {
     public string username { get; set; }
+}
+
+[System.Serializable]
+public class PlayerSpawnData
+{
+    public string _id;
+    public string username;
+    public string ownerid;
+    public int hairstyle;
+    public int haircolor;
+    public int clothingcolor;
+    public int skincolor;
 }

@@ -210,7 +210,7 @@ public class PlayerHealth : NetworkBehaviour
             {
                 deathMovement.MakePlayerDead();
                 gameOverScreen.PlayerPlacement = ServerManager.RemainingPlayers.Count;
-                ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
+                //ServerManager.RemainingPlayers.Remove(core);
                 RPC_ReceiveKillNotification($"{loader.Username} DEATH BY FALL");
 
                 if (playerInventory.PrimaryWeapon != null)
@@ -258,7 +258,7 @@ public class PlayerHealth : NetworkBehaviour
         {
             deathMovement.MakePlayerDead();
             gameOverScreen.PlayerPlacement = ServerManager.RemainingPlayers.Count;
-            ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
+            //ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
             RPC_ReceiveKillNotification($"{loader.Username} WAS KILLED OUTSIDE SAFE ZONE");
 
             if (playerInventory.PrimaryWeapon != null)
@@ -328,7 +328,7 @@ public class PlayerHealth : NetworkBehaviour
             deathMovement.MakePlayerDead();
             nobject.GetComponent<KillCountCounterController>().KillCount++;
             gameOverScreen.PlayerPlacement = ServerManager.RemainingPlayers.Count;
-            ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
+            //ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
 
             string statustext = killer == loader.Username ? $"{loader.Username} Killed themself" : $"{killer} KILLED { loader.Username}";
 

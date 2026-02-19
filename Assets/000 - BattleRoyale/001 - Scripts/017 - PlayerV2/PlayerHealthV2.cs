@@ -123,6 +123,8 @@ public class PlayerHealthV2 : NetworkBehaviour
 
                     if (SafeZoneDamaged <= 0) return;
 
+                    Debug.Log("SAFE ZONE DAMAGE");
+
                     DamageIndicatorWithoutBlood();
 
                     break;
@@ -313,7 +315,7 @@ public class PlayerHealthV2 : NetworkBehaviour
             if (IsDead)
             {
                 playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
-                ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
+                ServerManager.RemainingPlayers.Remove(playerOwnObjectEnabler.Username);
 
                 ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} was killed outside safe area");
             }
@@ -333,37 +335,37 @@ public class PlayerHealthV2 : NetworkBehaviour
         float remainingDamage = damage;
 
         //  Block
-        //if (playerPlayables.PlayableLowerBoddyAnimationIndex == 12)
-        //{
-        //    remainingDamage -= (remainingDamage * .15f);
-        //}
+        if (playerPlayables.PlayableLowerBoddyAnimationIndex == 12)
+        {
+            remainingDamage -= (remainingDamage * .15f);
+        }
 
-        //// Apply damage to the shield first
-        //if (inventory.Armor != null)
-        //{
-        //    if (inventory.Armor.Supplies > 0)
-        //    {
-        //        if (inventory.Armor.Supplies >= remainingDamage)
-        //        {
-        //            inventory.Armor.Supplies -= Convert.ToInt32(remainingDamage);
-        //            remainingDamage = 0; // Shield absorbed all damage
-        //        }
-        //        else
-        //        {
-        //            remainingDamage -= inventory.Armor.Supplies;
-        //            inventory.Armor.Supplies = 0; // Shield fully depleted
-        //        }
-        //    }
-        //}
+        // Apply damage to the shield first
+        if (inventory.Armor != null)
+        {
+            if (inventory.Armor.Supplies > 0)
+            {
+                if (inventory.Armor.Supplies >= remainingDamage)
+                {
+                    inventory.Armor.Supplies -= Convert.ToInt32(remainingDamage);
+                    remainingDamage = 0; // Shield absorbed all damage
+                }
+                else
+                {
+                    remainingDamage -= inventory.Armor.Supplies;
+                    inventory.Armor.Supplies = 0; // Shield fully depleted
+                }
+            }
+        }
 
-        //// Apply remaining damage to health
-        //if (remainingDamage > 0)
-        //{
-        //    CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - remainingDamage);
+        // Apply remaining damage to health
+        if (remainingDamage > 0)
+        {
+            CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - remainingDamage);
 
-        //    if (nobject.tag == "Player")
-        //        nobject.GetComponent<PlayerGameStats>().HitPoints += remainingDamage;
-        //}
+            if (nobject.tag == "Player")
+                nobject.GetComponent<PlayerGameStats>().HitPoints += remainingDamage;
+        }
 
         // Check if player is dead
         if (CurrentHealth <= 0)
@@ -377,7 +379,7 @@ public class PlayerHealthV2 : NetworkBehaviour
                     nobject.GetComponent<PlayerGameStats>().KillCount++;
 
                 playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
-                ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
+                ServerManager.RemainingPlayers.Remove(playerOwnObjectEnabler.Username);
 
                 playerOwnObjectEnabler.ServerManager.Socket.Emit("serverremovereconnect", JsonConvert.SerializeObject(new Dictionary<string, string>()
                 {
@@ -424,7 +426,7 @@ public class PlayerHealthV2 : NetworkBehaviour
             if (IsDead)
             {
                 playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
-                ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
+                ServerManager.RemainingPlayers.Remove(playerOwnObjectEnabler.Username);
                 ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} killed by fall damage");
             }
         }
