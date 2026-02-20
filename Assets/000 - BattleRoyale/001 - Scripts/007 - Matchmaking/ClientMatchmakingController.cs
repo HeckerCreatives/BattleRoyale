@@ -145,6 +145,8 @@ public class ClientMatchmakingController : MonoBehaviour
 
     CreateTicketResponse ticketResponse;
 
+    Coroutine matching;
+
     int playLT, enteringMatchTMPLT, enteringMatchFlash;
 
     //  =====================
@@ -240,15 +242,25 @@ public class ClientMatchmakingController : MonoBehaviour
 
                 if (!inWaitingRoom)
                 {
-                    GameManager.Instance.NoBGLoading.SetActive(false);
+                    GameManager.Instance.NoBGLoading.SetActive(true);
 
-                    inWaitingRoom = true;
-                    matchFound = true;
+                    StartCoroutine(GameManager.Instance.PostRequest("/usergamedetail/useenergy", "", new Dictionary<string, object>(), false, (response) =>
+                    {
+                        if (userData.GameDetails.energy > 0)
+                        {
+                            userData.GameDetails.energy -= 2;
+                            userData.EnergyChangeFireEvent();
+                        }
 
-                    roomname = tempdata[0].roomName;
+                        inWaitingRoom = true;
+                        matchFound = true;
 
-                    if (!reconToWaiting)
-                        waitingRoomObj.SetActive(true);
+                        roomname = tempdata[0].roomName;
+
+                        if (!reconToWaiting)
+                            waitingRoomObj.SetActive(true);
+
+                    }, null));
                 }
 
                 for (int a = 0; a < waitingPlayerItems.Count; a++)
@@ -332,6 +344,10 @@ public class ClientMatchmakingController : MonoBehaviour
 
         enteringMatchTimerTMP.text = $"{5:n0}";
         enteringMatchTimer = 5f;
+
+        GameManager.Instance.NotificationController.CloseConfirmationAction(false);
+        GameManager.Instance.NotificationController.CloseErrorAction(false);
+        GameManager.Instance.NotificationController.CloseCongratsOkAction(false);
 
         enteringMatchObj.SetActive(true);
 
@@ -518,14 +534,14 @@ public class ClientMatchmakingController : MonoBehaviour
         {
             GameManager.Instance.NotificationController.ShowConfirmation("Your energy is empty! You can still queue for the game but you won't gain any xp and points. Would you like to continue?", () => 
             {
-                Matching();
+                matching = StartCoroutine(Matching());
             }, null);
         }
         else
-            Matching();
+            matching = StartCoroutine(Matching());
     }
 
-    private void Matching()
+    IEnumerator Matching()
     {
         PlaySettingsOpener();
 
@@ -539,7 +555,13 @@ public class ClientMatchmakingController : MonoBehaviour
         cancelBtn.interactable = true;
 
         if (usePrivateServer)
+        {
+            float rand = UnityEngine.Random.Range(3, 20);
+
+            yield return new WaitForSecondsRealtime(rand);
+
             GameManager.Instance.SocketMngr.EmitEvent("findmatch", JsonConvert.SerializeObject(new Dictionary<string, string>()));
+        }
         else
         {
             currentRunnerInstance = Instantiate(instanceRunner);
@@ -654,11 +676,34 @@ public class ClientMatchmakingController : MonoBehaviour
         return null;
     }
 
+    public void CancelFindingMatch()
+    {
+        if (matching != null) StopCoroutine(matching);
+
+        currentTime = 0;
+
+        findingMatch = false;
+        matchFound = false;
+        inWaitingRoom = false;
+
+        cancelBtn.interactable = false;
+
+        reconObj.SetActive(false);
+
+        changeServerBtn.interactable = true;
+
+        matchmakingObj.SetActive(false);
+        matchBtn.SetActive(true);
+
+        waitingRoomObj.SetActive(false);
+    }
+
     public void CancelMatch()
     {
         GameManager.Instance.NotificationController.ShowConfirmation("Are you sure you want to quit the room? You will lose your energy consumed.", () =>
         {
             currentWaitingTime = 0f;
+            currentTime = 0f;
 
             findingMatch = false;
             matchFound = false;

@@ -539,10 +539,7 @@ public class GameManager : MonoBehaviour
         int hours = seconds / 3600;
         int minutes = (seconds % 3600) / 60;
 
-        if (hours <= 0)
-            return $"{minutes}min";
-
-        return $"{hours}:{minutes:D2}hr";
+        return $"{hours}:{minutes}";
     }
 
     public string GetUTCExpirationTimestamp(long expirationTimestamp)

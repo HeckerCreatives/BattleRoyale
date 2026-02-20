@@ -53,11 +53,13 @@ public class NotificationController : MonoBehaviour
         }
     }
 
-    public void CloseConfirmationAction()
+    public void CloseConfirmationAction(bool useSound = true)
     {
         //GameManager.Instance.Sound.SetSFXAudio(backClip);
         //GameManager.Instance.AudioManager.PlaySFX(buttonClip);
-        GameManager.Instance.AudioController.PlaySFX(btnClip);
+
+        if (useSound)
+            GameManager.Instance.AudioController.PlaySFX(btnClip);
 
         //statesList.canChange = true;
         confirmationPanelObj.SetActive(false);
@@ -87,11 +89,13 @@ public class NotificationController : MonoBehaviour
         closeAction = closeConfirmationAction;
     }
 
-    public void CloseErrorAction()
+    public void CloseErrorAction(bool useSound = true)
     {
         //GameManager.Instance.Sound.SetSFXAudio(backClip);
         //GameManager.Instance.AudioManager.PlaySFX(buttonClip);
-        GameManager.Instance.AudioController.PlaySFX(btnClip);
+
+        if (useSound)
+            GameManager.Instance.AudioController.PlaySFX(btnClip);
 
         errorPanelObj.SetActive(false);
         errorTMP.text = "";
@@ -115,11 +119,12 @@ public class NotificationController : MonoBehaviour
         closeAction = closeConfirmationAction;
     }
 
-    public void CloseCongratsOkAction()
+    public void CloseCongratsOkAction(bool useSound = true)
     {
         //GameManager.Instance.Sound.SetSFXAudio(backClip);
         //GameManager.Instance.AudioManager.PlaySFX(buttonClip);
-        GameManager.Instance.AudioController.PlaySFX(btnClip);
+        if (useSound)
+            GameManager.Instance.AudioController.PlaySFX(btnClip);
 
         congratsOkObj.SetActive(false);
         congratsOkTMP.text = "";
@@ -164,11 +169,13 @@ public class NotificationController : MonoBehaviour
         }
     }
 
-    public void CloseCongratsOkCancelAction()
+    public void CloseCongratsOkCancelAction(bool useSound = true)
     {
         //GameManager.Instance.Sound.SetSFXAudio(backClip);
         //GameManager.Instance.AudioManager.PlaySFX(buttonClip);
-        GameManager.Instance.AudioController.PlaySFX(btnClip);
+
+        if (useSound)
+            GameManager.Instance.AudioController.PlaySFX(btnClip);
 
         //statesList.canChange = true;
         congratsOkCancelObj.SetActive(false);
