@@ -183,7 +183,7 @@ public class PlayerInventoryV2 : NetworkBehaviour
         if (!HasStateAuthority) return;
 
         Runner.Spawn(trapObj, transform.position, Quaternion.identity, Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) => {
-            obj.GetComponent<TrapWeaponController>().Initialize(playerOwnObjectEnabler.Username, transform.position, Vector3.zero);
+            obj.GetComponent<TrapWeaponController>().Initialize(playerOwnObjectEnabler.Username.ToString(), transform.position, Vector3.zero);
         });
     }
 

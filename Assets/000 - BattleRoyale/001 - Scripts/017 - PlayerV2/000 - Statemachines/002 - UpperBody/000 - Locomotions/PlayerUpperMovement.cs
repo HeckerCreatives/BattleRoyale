@@ -381,7 +381,7 @@ public class PlayerUpperMovement : NetworkBehaviour
                     if (isFinal) tempdata.IsStagger = true;
                     else tempdata.IsHit = true;
 
-                    tempdata.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
+                    tempdata.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username.ToString(), Object);
                 }
             }
             else
@@ -415,7 +415,7 @@ public class PlayerUpperMovement : NetworkBehaviour
 
                     if (isFinal) healthV2.IsStagger = true;
 
-                    healthV2.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
+                    healthV2.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username.ToString(), Object);
                 }
             }
         }
@@ -475,7 +475,7 @@ public class PlayerUpperMovement : NetworkBehaviour
 
                     tempdata.IsHit = true;
 
-                    tempdata.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
+                    tempdata.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username.ToString(), Object);
                 }
             }
             else
@@ -509,7 +509,7 @@ public class PlayerUpperMovement : NetworkBehaviour
 
                     PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
 
-                    healthV2.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username, Object);
+                    healthV2.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username.ToString(), Object);
                 }
             }
         }

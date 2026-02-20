@@ -313,11 +313,11 @@ public class LobbyController : MonoBehaviour
                 {
                     if (a < tempdata.Count)
                     {
-                        profileHistoryItems[a].InitializeHistory(tempdata[a.ToString()].kill, tempdata[a.ToString()].placement, tempdata[a.ToString()].date);
+                        profileHistoryItems[a].InitializeHistory(tempdata[a.ToString()].kill, tempdata[a.ToString()].placement, GameManager.Instance.GetHourMinuteSecondsTime(tempdata[a.ToString()].playtime), tempdata[a.ToString()].date);
                     }
                     else
                     {
-                        profileHistoryItems[a].InitializeHistory("-", "-", "-");
+                        profileHistoryItems[a].InitializeHistory("-", "-", "-", "-");
                     }
                 }
             }
@@ -619,4 +619,5 @@ public class MatchHistory
     public string kill;
     public string placement;
     public string date;
+    public float playtime;
 }

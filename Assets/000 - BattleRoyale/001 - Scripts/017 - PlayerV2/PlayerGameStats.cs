@@ -1,4 +1,5 @@
 using Fusion;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ public class PlayerGameStats : NetworkBehaviour
 {
     [SerializeField] private UserData userData;
     [SerializeField] private PlayerHealthV2 playerhealth;
+    [SerializeField] private PlayerOwnObjectEnabler ownObjectEnabler;
 
     [Header("GAME STATUS")]
     [SerializeField] public TextMeshProUGUI pingTMP;
@@ -89,12 +91,13 @@ public class PlayerGameStats : NetworkBehaviour
         if (ServerManager == null) return;
 
         GameStats();
-        //WaitingAreaTimer();
         DeathGameOver();
     }
 
     public override void FixedUpdateNetwork()
     {
+        ServerSendScoreOnDeath();
+
         if (!HasStateAuthority) return;
 
         if (!playerhealth.IsDead)
@@ -129,32 +132,7 @@ public class PlayerGameStats : NetworkBehaviour
 
         PlayerCount.text = $"{(ServerManager.RemainingPlayers.Count + ServerManager.Bots.Count):n0} / {(tempCapacity - 2):n0}";
         killCountTMP.text = $"{KillCount:n0}";
-        playtimeTMP.text = $"{GameManager.Instance.GetMinuteSecondsTime(playtime)}";
-    }
-
-    private void WaitingAreaTimer()
-    {
-        //if (ServerManager.CurrentGameState != GameState.WAITINGAREA)
-        //{
-        //    Timer.gameObject.SetActive(false);
-        //    TimerGetReady.SetActive(false);
-        //    return;
-        //}
-
-        //if (ServerManager.CurrentWaitingAreaTimerState == WaitingAreaTimerState.WAITING)
-        //{
-        //    Timer.gameObject.SetActive(true);
-        //    TimerGetReady.SetActive(false);
-
-        //    timerTMP.text = $"{GameManager.Instance.GetMinuteSecondsTime(ServerManager.WaitingAreaTimer)}";
-        //}
-        //else
-        //{
-        //    TimerGetReady.SetActive(true);
-        //    Timer.gameObject.SetActive(false);
-
-        //    timerGetReadyTMP.text = $"{GameManager.Instance.GetMinuteSecondsTime(ServerManager.WaitingAreaTimer)}";
-        //}
+        playtimeTMP.text = $"Playtime: {GameManager.Instance.GetMinuteSecondsTime(playtime)}";
     }
 
     #region GAME OVER
@@ -213,41 +191,76 @@ public class PlayerGameStats : NetworkBehaviour
                     winMessageObj.SetActive(false);
                     loseMessageObj.SetActive(true);
                     gameOverPanelObj.SetActive(true);
-
-                    GameManager.Instance.NoBGLoading.SetActive(true);
-                    StartCoroutine(GameManager.Instance.PostRequest("/usergamedetail/updateusergamedetails", "", new Dictionary<string, object>
-                    {
-                        { "kill", KillCount },
-                        { "death", PlayerPlacement != 1 ? 1 : 0 },
-                        { "rank", rank },
-                        { "win", 0},
-                        { "lose", 1},
-                        { "playtime", playtime}
-                    }, true, (response) =>
-                    {
-                        StartCoroutine(GameManager.Instance.PostRequest("/leaderboard/updateuserleaderboard", "", new Dictionary<string, object>
-                        {
-                            { "amount", finalresultpointLB }
-                        }, true, (tempresponse) =>
-                        {
-                            GameManager.Instance.NoBGLoading.SetActive(false);
-                            canQuit = true;
-                        }, () => GameManager.Instance.NoBGLoading.SetActive(false)));
-                    }, () => GameManager.Instance.NoBGLoading.SetActive(false)));
-
+                    canQuit = true;
                     break;
             }
         }
     }
 
+    private void ServerSendScoreOnDeath()
+    {
+        if (!HasStateAuthority) return;
+
+        foreach (var change in _changeDetector.DetectChanges(this))
+        {
+            switch (change)
+            {
+                case nameof(PlayerPlacement):
+
+                    int botsCount = ServerManager.Bots.Count;
+                    int rank = PlayerPlacement + botsCount;
+
+                    float rankpointLB = ((100 - (PlayerPlacement + botsCount) + 1) / 100f) * 20;
+                    rankpointLB = (float)Math.Truncate(rankpointLB);
+                    float killpointLB = KillCount * 100f;
+                    killpointLB = (float)Math.Truncate(killpointLB);
+                    float finalresultpointLB = rankpointLB + killpointLB + HitPoints;
+                    finalresultpointLB = (float)Math.Truncate(finalresultpointLB);
+
+                    Debug.Log($"SENDING POINTS BY DEATH FOR {ownObjectEnabler.Username}");
+
+                    StartCoroutine(ServerManager.PostRequest("/usergamedetail/updatebyserverusergamedetails", "", new Dictionary<string, object>
+                    {
+                        { "kill", KillCount },
+                        { "death", PlayerPlacement != 1 ? 1 : 0 },
+                        { "rank", rank },
+                        { "win", 0},
+                        { "loss", 1},
+                        { "playtime", playtime},
+                        { "username", ownObjectEnabler.Username },
+                        { "id", ownObjectEnabler.UserID }
+                    }, true, (response) =>
+                    {
+                        StartCoroutine(ServerManager.PostRequest("/leaderboard/updateuserleaderboard", "", new Dictionary<string, object>
+                        {
+                            { "amount", finalresultpointLB },
+                        { "username", ownObjectEnabler.Username },
+                        { "id", ownObjectEnabler.UserID }
+                        }, true, (tempresponse) =>
+                        {
+                            ServerManager.Socket.Emit("serverremovereconnect", JsonConvert.SerializeObject(new Dictionary<string, string>()
+                            {
+                                { "username", ownObjectEnabler.Username.Value }
+                            }));
+                        }, null));
+                    }, null));
+                    break;
+            }
+        }
+
+            
+    }
+
     private void PlayerCountChange(object sender, EventArgs e)
     {
         ShowWinnerOnAllPlayerQuit();
+        ShowWinnerOnAllQuitServer();
     }
 
     private void GameStateChange(object sender, EventArgs e)
     {
         ShowWinner();
+        WinnerSendPointsByServer();
     }
 
     private void ShowWinner()
@@ -301,24 +314,51 @@ public class PlayerGameStats : NetworkBehaviour
             loseMessageObj.SetActive(false);
             gameOverPanelObj.SetActive(true);
 
-
-            GameManager.Instance.NoBGLoading.SetActive(true);
-            StartCoroutine(GameManager.Instance.PostRequest("/usergamedetail/updateusergamedetails", "", new Dictionary<string, object>
-            {
-                { "kill", KillCount },
-                { "death", PlayerPlacement != 1 ? 1 : 0 },
-                { "rank", 1 }
-            }, true, (response) =>
-            {
-                StartCoroutine(GameManager.Instance.PostRequest("/leaderboard/updateuserleaderboard", "", new Dictionary<string, object>
-                {
-                    { "amount", finalresultpointLB }
-                }, true, (tempresponse) => {
-                    GameManager.Instance.NoBGLoading.SetActive(false);
-                    canQuit = true;
-                }, () => GameManager.Instance.NoBGLoading.SetActive(false)));
-            }, () => GameManager.Instance.NoBGLoading.SetActive(false)));
+            canQuit = true;
         }
+    }
+
+    private void WinnerSendPointsByServer()
+    {
+        if (!HasStateAuthority) return;
+
+        if (ServerManager.CurrentGameState != GameState.DONE) return;
+
+        if (playerhealth.IsDead) return;
+
+        float rankpointLB = ((100 - (PlayerPlacement + ServerManager.Bots.Count) + 1) / 100) * 20;
+        float killpointLB = KillCount * 100;
+        float finalresultpointLB = rankpointLB + killpointLB + HitPoints;
+        finalresultpointLB = (float)Math.Truncate(finalresultpointLB);
+
+        Debug.Log($"SENDING POINTS BY WINNER FOR {ownObjectEnabler.Username}");
+
+        StartCoroutine(ServerManager.PostRequest("/usergamedetail/updatebyserverusergamedetails", "", new Dictionary<string, object>
+        {
+            { "kill", KillCount },
+            { "death", PlayerPlacement != 1 ? 1 : 0 },
+            { "rank", 1 },
+            { "win", 1},
+            { "loss", 1},
+            { "playtime", playtime},
+            { "username", ownObjectEnabler.Username },
+            { "id", ownObjectEnabler.UserID }
+        }, true, (response) =>
+        {
+            StartCoroutine(ServerManager.PostRequest("/leaderboard/updateuserleaderboard", "", new Dictionary<string, object>
+            {
+                { "amount", finalresultpointLB },
+                { "username", ownObjectEnabler.Username },
+                { "id", ownObjectEnabler.UserID }
+            }, true, (tempresponse) => {
+
+                ServerManager.Socket.Emit("serverremovereconnect", JsonConvert.SerializeObject(new Dictionary<string, string>()
+                {
+                    { "username", ownObjectEnabler.Username.Value }
+                }));
+
+            }, null));
+        }, null));
     }
 
     private void ShowWinnerOnAllPlayerQuit()
@@ -374,23 +414,50 @@ public class PlayerGameStats : NetworkBehaviour
         loseMessageObj.SetActive(false);
         gameOverPanelObj.SetActive(true);
 
+        canQuit = true;        
+    }
 
-        GameManager.Instance.NoBGLoading.SetActive(true);
-        StartCoroutine(GameManager.Instance.PostRequest("/usergamedetail/updateusergamedetails", "", new Dictionary<string, object>
+    private void ShowWinnerOnAllQuitServer()
+    {
+        if (!HasStateAuthority) return;
+
+        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+
+        if (ServerManager.RemainingPlayers.Count > 1 || ServerManager.Bots.Count > 0) return;
+
+        float rankpointLB = ((100 - (PlayerPlacement + ServerManager.Bots.Count) + 1) / 100) * 20;
+        float killpointLB = KillCount * 100;
+        float finalresultpointLB = rankpointLB + killpointLB + HitPoints;
+        finalresultpointLB = (float)Math.Truncate(finalresultpointLB);
+
+        Debug.Log($"SENDING POINTS BY SHOW WINNER ON ALL QUIT FOR {ownObjectEnabler.Username}");
+
+        StartCoroutine(ServerManager.PostRequest("/usergamedetail/updatebyserverusergamedetails", "", new Dictionary<string, object>
         {
             { "kill", KillCount },
             { "death", PlayerPlacement != 1 ? 1 : 0 },
-            { "rank", 1 }
+            { "rank", 1 },
+            { "win", 1},
+            { "loss", 1},
+            { "playtime", playtime},
+            { "username", ownObjectEnabler.Username },
+            { "id", ownObjectEnabler.UserID }
         }, true, (response) =>
         {
-            StartCoroutine(GameManager.Instance.PostRequest("/leaderboard/updateuserleaderboard", "", new Dictionary<string, object>
+            StartCoroutine(ServerManager.PostRequest("/leaderboard/updateuserleaderboard", "", new Dictionary<string, object>
             {
-                { "amount", finalresultpointLB  }
+                { "amount", finalresultpointLB  },
+                { "username", ownObjectEnabler.Username },
+                { "id", ownObjectEnabler.UserID }
             }, true, (tempresponse) => {
-                GameManager.Instance.NoBGLoading.SetActive(false);
-                canQuit = true;
-            }, () => GameManager.Instance.NoBGLoading.SetActive(false)));
-        }, () => GameManager.Instance.NoBGLoading.SetActive(false)));
+
+                ServerManager.Socket.Emit("serverremovereconnect", JsonConvert.SerializeObject(new Dictionary<string, string>()
+                {
+                    { "username", ownObjectEnabler.Username.Value }
+                }));
+
+            }, null));
+        }, null));
     }
 
     private void QuitOnShowStatusCountdown()

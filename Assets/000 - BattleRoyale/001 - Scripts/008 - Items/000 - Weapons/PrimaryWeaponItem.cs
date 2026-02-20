@@ -314,7 +314,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                     if (isFinalHit) tempdata.IsStagger = true;
                     else tempdata.IsHit = true;
 
-                    tempdata.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username, CurrentPlayer);
+                    tempdata.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username.ToString(), CurrentPlayer);
 
                     Hitted++;
                 }
@@ -350,7 +350,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                     if (isFinalHit)
                         healthV2.IsStagger = true;
 
-                    healthV2.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username, CurrentPlayer);
+                    healthV2.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username.ToString(), CurrentPlayer);
 
                     Hitted++;
                 }

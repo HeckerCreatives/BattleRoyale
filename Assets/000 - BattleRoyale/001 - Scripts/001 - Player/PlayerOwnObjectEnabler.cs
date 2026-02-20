@@ -24,6 +24,11 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         get => cameraRotation;
     }
 
+    public PlayerHealthV2 PlayerHealth
+    {
+        get => health;
+    }
+
     //  ==============
 
     [SerializeField] private UserData userData;
@@ -34,6 +39,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     [SerializeField] private PlayerMovementV2 movementV2;
     [SerializeField] private GameSettingController gameSettingController;
     [SerializeField] private PlayerInventoryV2 inventory;
+    [SerializeField] private PlayerHealthV2 health;
     [SerializeField] private Transform target;
 
     [Space]
@@ -54,7 +60,8 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     [field: Header("DEBUGGER")]
     [Networked][field: SerializeField] public DedicatedServerManager ServerManager { get; set; }
     [Networked][field: SerializeField] public bool NotEnoughPlayer { get; set; }
-    [Networked][field: SerializeField] public string Username { get; set; }
+    [Networked][field: SerializeField] public NetworkString<_64> Username { get; set; }
+    [Networked][field: SerializeField] public NetworkString<_64> UserID { get; set; }
     [Networked][field: SerializeField] public bool Removing { get; set; }
     [Networked][field: SerializeField] public bool DoneInit { get; set; }
 
@@ -110,8 +117,6 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetLookSensitivityOnStart());
         GameManager.Instance.SceneController.AddActionLoadinList(ChangeDoneInitialize());
         GameManager.Instance.SceneController.ActionPass = true;
-
-        RPC_SetUsername(userData.Username);
 
         canvasPlayer.SetActive(true);
         playerVcam.SetActive(true);
@@ -224,12 +229,6 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
                 GameManager.Instance.SceneController.ActionPass = true;
             }
         }
-    }
-
-    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    public void RPC_SetUsername(string uname)
-    {
-        Username = uname;
     }
 
     IEnumerator ReadyForBattle()

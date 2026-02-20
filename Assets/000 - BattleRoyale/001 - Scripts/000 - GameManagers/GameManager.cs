@@ -222,10 +222,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public IEnumerator PostRequest(string route, string query, Dictionary<string, object> paramsBody, bool loaderEndState, System.Action<System.Object> callback, System.Action errorAction, bool useUserToken = true)
+    public IEnumerator PostRequest(string route, string query, Dictionary<string, object> paramsBody, bool loaderEndState, System.Action<System.Object> callback, System.Action errorAction, bool useUserToken = true, bool useServerUserToken = false, string serverUserToken = "")
     {
         if (useUserToken)
-            while (userData.UserToken == "") yield return null;
+        {
+            if (!useServerUserToken) while (userData.UserToken == "") yield return null;
+        }
 
         UnityWebRequest apiRquest;
 
@@ -261,7 +263,7 @@ public class GameManager : MonoBehaviour
         apiRquest.uploadHandler = uploadHandler;
 
         apiRquest.SetRequestHeader("Content-Type", "application/json");
-        apiRquest.SetRequestHeader("Authorization", "Bearer " + userData.UserToken);
+        apiRquest.SetRequestHeader("Authorization", "Bearer " + (!useServerUserToken ? userData.UserToken : serverUserToken));
 
         yield return apiRquest.SendWebRequest();
 
@@ -521,6 +523,26 @@ public class GameManager : MonoBehaviour
         int seconds = (int)(time % 60);
 
         return $"{minutes:D2} : {seconds:D2}";
+    }
+
+    public string GetHourMinuteSecondsTime(float time)
+    {
+        int hours = (int)(time / 3600);
+        int minutes = (int)((time % 3600) / 60);
+        int seconds = (int)(time % 60);
+
+        return $"{hours:D2} : {minutes:D2} : {seconds:D2}";
+    }
+
+    public string GetHourDecimal(int seconds)
+    {
+        int hours = seconds / 3600;
+        int minutes = (seconds % 3600) / 60;
+
+        if (hours <= 0)
+            return $"{minutes}min";
+
+        return $"{hours}:{minutes:D2}hr";
     }
 
     public string GetUTCExpirationTimestamp(long expirationTimestamp)

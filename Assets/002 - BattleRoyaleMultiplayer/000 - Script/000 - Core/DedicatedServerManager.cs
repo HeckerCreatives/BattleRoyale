@@ -1,6 +1,8 @@
 ﻿#if !UNITY_ANDROID && !UNITY_IOS
 using Aws.GameLift.Server;
+
 #endif
+using CandyCoded.env;
 using Fusion;
 using Fusion.Addons.SimpleKCC;
 using Fusion.Photon.Realtime;
@@ -13,9 +15,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.SceneManagement;
 
 public enum GameState
@@ -481,6 +485,131 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         }
     }
 
+    public IEnumerator PostRequest(string route, string query, Dictionary<string, object> paramsBody, bool loaderEndState, System.Action<System.Object> callback, System.Action errorAction)
+    {
+        UnityWebRequest apiRquest;
+
+        if (env.TryParseEnvironmentVariable("API_URL", out string httpRequest))
+        {
+
+            string finalQuery;
+
+            // If query is empty or only "?", just use appversion
+            if (string.IsNullOrEmpty(query) || query == "?")
+            {
+                finalQuery = "?appversion=" + Application.version;
+            }
+            else
+            {
+                finalQuery = "?appversion=" + Application.version + "&" + query.TrimStart('?');
+            }
+
+            apiRquest = UnityWebRequest.PostWwwForm(httpRequest + route + finalQuery, UnityWebRequest.kHttpVerbPOST);
+        }
+        else
+        {
+            //  ERROR PANEL HERE
+            Debug.Log("Error API CALL! Error Code: ENV FAILED TO PARSE");
+            errorAction?.Invoke();
+            yield break;
+        }
+
+        byte[] credBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(paramsBody));
+        UploadHandler uploadHandler = new UploadHandlerRaw(credBytes);
+
+        apiRquest.uploadHandler = uploadHandler;
+
+        apiRquest.SetRequestHeader("Content-Type", "application/json");
+
+        yield return apiRquest.SendWebRequest();
+
+        if (apiRquest.result == UnityWebRequest.Result.Success)
+        {
+            string response = apiRquest.downloadHandler.text;
+
+            if (response[0] == '{' && response[response.Length - 1] == '}')
+            {
+                try
+                {
+                    Dictionary<string, object> apiresponse = JsonConvert.DeserializeObject<Dictionary<string, object>>(response);
+
+                    if (!apiresponse.ContainsKey("message"))
+                    {
+                        //  ERROR PANEL HERE
+                        Debug.Log("Error API CALL! Error Code: " + response);
+
+                        errorAction?.Invoke();
+                        yield break;
+                    }
+
+                    if (apiresponse["message"].ToString() != "success")
+                    {
+                        //  ERROR PANEL HERE
+                        if (!apiresponse.ContainsKey("data"))
+                        {
+                            Debug.Log("Error API CALL! Error Code: " + response);
+
+                            yield break;
+                        }
+                        Debug.Log($"Error API CALL! Error Code: {apiresponse["data"]}");
+                        yield break;
+                    }
+
+                    if (apiresponse.ContainsKey("data"))
+                        callback?.Invoke(apiresponse["data"].ToString());
+                    else
+                        callback?.Invoke("");
+
+                    Debug.Log("SUCCESS API CALL");
+                }
+                catch (Exception ex)
+                {
+                    //  ERROR PANEL HERE
+                    Debug.Log("Error API CALL! Error Code: " + ex.Message);
+                    errorAction?.Invoke();
+                }
+            }
+            else
+            {
+                //  ERROR PANEL HERE
+                Debug.Log("Error API CALL! Error Code: " + response);
+                errorAction?.Invoke();
+            }
+        }
+
+        else
+        {
+            try
+            {
+                errorAction?.Invoke();
+
+                Dictionary<string, object> apiresponse = JsonConvert.DeserializeObject<Dictionary<string, object>>(apiRquest.downloadHandler.text);
+
+
+                switch (apiRquest.responseCode)
+                {
+                    case 400:
+                        Debug.Log($"{apiresponse["data"]}");
+                        break;
+                    case 300:
+                        Debug.Log($"{apiresponse["data"]}");
+                        break;
+                    case 301:
+                        Debug.Log($"{apiresponse["data"]}");
+                        break;
+                    case 405:
+                        Debug.Log($"{apiresponse["data"]}");
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Log("Error API CALL! Error Code: " + apiRquest.result + ", " + apiRquest.downloadHandler.text);
+                errorAction?.Invoke();
+            }
+        }
+    }
+
     #endregion
 
     #region GAME INITIALIZE
@@ -638,20 +767,23 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         foreach (var data in tempdata)
         {
-            NetworkObject playerCharacter = Runner.Spawn(playerObj, spawnWaitingAreaPositions[spawnpos].position, Quaternion.identity, null, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+            NetworkObject playerCharacter = Runner.Spawn(playerObj, spawnWaitingAreaPositions[spawnpos].position, Quaternion.identity, PlayerRef.None, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
             {
                 obj.GetComponent<SimpleKCC>().SetPosition(spawnWaitingAreaPositions[spawnpos].position);
 
                 PlayerOwnObjectEnabler core = obj.GetComponent<PlayerOwnObjectEnabler>();
 
                 core.ServerManager = this;
+                core.Username = data.username;
+                core.UserID = data.ownerid;
                 obj.GetComponent<PlayerHealthV2>().ServerManager = this;
                 obj.GetComponent<PlayerGameStats>().ServerManager = this;
                 obj.GetComponent<MapZoomInOut>().ServerManager = this;
                 obj.GetComponent<PlayerShrinkZoneTimer>().ServerManager = this;
             });
 
-            Debug.Log("hello 5");
+            Debug.Log($"Does server have input authority to {data.username}? {playerCharacter.HasInputAuthority}");
+
             PlayerInventoryV2 tempinventory = playerCharacter.GetComponent<PlayerInventoryV2>();
 
             tempinventory.HairStyle = data.hairstyle;
@@ -795,6 +927,15 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             networkRunner.SessionInfo.IsOpen = true;
             networkRunner.SessionInfo.IsVisible = true;
+
+            if (CurrentGameState != GameState.ARENA)
+            {
+                CurrentGameState = GameState.ARENA;
+
+                DonePlayerBattlePositions = true;
+                SafeZoneTimer = 10f;
+                CurrentSafeZoneState = SafeZoneState.TIMER;
+            }
 
             if (usePrivateServer)
                 ChangeServerStatus();
@@ -1111,16 +1252,6 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
                 Debug.Log($"♻️ Player {playerId} reconnected, reassigned authority.");
 
-
-                if (CurrentGameState != GameState.ARENA)
-                {
-                    CurrentGameState = GameState.ARENA;
-
-                    DonePlayerBattlePositions = true;
-                    SafeZoneTimer = 30f;
-                    CurrentSafeZoneState = SafeZoneState.TIMER;
-                }
-
                 return;
             }
         }
@@ -1157,8 +1288,11 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 if (playerinventory.MagazineContainer != null) playerinventory.MagazineContainer.DropWeapon();
 
                 Players.Remove(username);
+
                 //Debug.Log($"activating removing 10   player obj null? {remainingPlayer == null}");
-                Runner.Despawn(clientPlayer);
+
+                if (core.Object.InputAuthority == PlayerRef.None)
+                    Runner.Despawn(clientPlayer);
 
                 PlayerIDs.Remove(username);
                 playerIdMap.Remove(player);
@@ -1193,14 +1327,16 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         {
             PlayerOwnObjectEnabler core = remainingPlayer.GetComponent<PlayerOwnObjectEnabler>();
 
-            if (core.Removing)
+            if (core.Removing || core.PlayerHealth.IsDead)
                 RemainingPlayers.Remove(playerId);
+            else
+                core.Object.AssignInputAuthority(PlayerRef.None);
         }
 
         if (Players.TryGet(playerId, out NetworkObject clientPlayer))
         {
             PlayerOwnObjectEnabler core = clientPlayer.GetComponent<PlayerOwnObjectEnabler>();
-            if (core != null && core.Removing)
+            if (core != null && (core.Removing || core.PlayerHealth.IsDead))
             {
                 RemainingPlayers.Remove(playerId);
 
@@ -1221,7 +1357,7 @@ public class DedicatedServerManager : NetworkBehaviour, IPlayerJoined, IPlayerLe
         }
 
 
-        if ((CurrentGameState == GameState.DONE || CurrentGameState == GameState.ARENA) && Players.Count <= 0)
+        if (Players.Count <= 0)
             Application.Quit();
 
         PlayerCountChange?.Invoke(this, EventArgs.Empty);

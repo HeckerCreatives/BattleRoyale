@@ -315,7 +315,7 @@ public class PlayerHealthV2 : NetworkBehaviour
             if (IsDead)
             {
                 playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
-                ServerManager.RemainingPlayers.Remove(playerOwnObjectEnabler.Username);
+                ServerManager.RemainingPlayers.Remove(playerOwnObjectEnabler.Username.ToString());
 
                 ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} was killed outside safe area");
             }
@@ -379,12 +379,7 @@ public class PlayerHealthV2 : NetworkBehaviour
                     nobject.GetComponent<PlayerGameStats>().KillCount++;
 
                 playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
-                ServerManager.RemainingPlayers.Remove(playerOwnObjectEnabler.Username);
-
-                playerOwnObjectEnabler.ServerManager.Socket.Emit("serverremovereconnect", JsonConvert.SerializeObject(new Dictionary<string, string>()
-                {
-                    { "username", playerOwnObjectEnabler.Username }
-                }));
+                ServerManager.RemainingPlayers.Remove(playerOwnObjectEnabler.Username.ToString());
 
                 ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{killer} KILLED {playerOwnObjectEnabler.Username}");
             }
@@ -426,7 +421,7 @@ public class PlayerHealthV2 : NetworkBehaviour
             if (IsDead)
             {
                 playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
-                ServerManager.RemainingPlayers.Remove(playerOwnObjectEnabler.Username);
+                ServerManager.RemainingPlayers.Remove(playerOwnObjectEnabler.Username.ToString());
                 ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} killed by fall damage");
             }
         }

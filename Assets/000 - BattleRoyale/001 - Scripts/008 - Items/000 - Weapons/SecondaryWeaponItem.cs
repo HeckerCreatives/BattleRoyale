@@ -274,7 +274,7 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
                         _ => 0f
                     };
 
-                    tempdata.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username, CurrentPlayer);
+                    tempdata.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username.ToString(), CurrentPlayer);
                 }
 
                 else
@@ -300,7 +300,7 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
                         _ => 0f
                     };
 
-                    playerHealth.ApplyDamage(tempdamage, PlayerCore.Username, PlayerCore.Object);
+                    playerHealth.ApplyDamage(tempdamage, PlayerCore.Username.ToString(), PlayerCore.Object);
                 }
             }
 

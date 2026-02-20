@@ -29,6 +29,9 @@ public class LobbyUserProfile : MonoBehaviour
     [SerializeField] private TextMeshProUGUI deathProfileTMP;
     [SerializeField] private TextMeshProUGUI rankProfileTMP;
     [SerializeField] private TextMeshProUGUI coinsProfileTMP;
+    [SerializeField] private TextMeshProUGUI winProfileTMP;
+    [SerializeField] private TextMeshProUGUI lossProfileTMP;
+    [SerializeField] private TextMeshProUGUI playtimeProfileTMP;
 
     [Header("GUEST ACCOUNT")]
     [SerializeField] private GameObject registerGuestObj;
@@ -95,6 +98,9 @@ public class LobbyUserProfile : MonoBehaviour
         deathProfileTMP.text = $"{userData.GameDetails.death:n0}";
         rankProfileTMP.text = $"{userData.GameDetails.userrank:n0}";
         coinsProfileTMP.text = $"{userData.GameDetails.coins:n4}";
+        playtimeProfileTMP.text = $"{GameManager.Instance.GetHourDecimal(userData.GameDetails.playtime)}";
+        winProfileTMP.text = $"{userData.GameDetails.win:n0}";
+        lossProfileTMP.text = $"{userData.GameDetails.loss:n0}";
 
         energyTMP.text = $"{userData.GameDetails.energy:n0} / 20";
     }
@@ -206,4 +212,7 @@ public class GameUserDetails
     public float energyresettime;
     public int leaderboard;
     public float coins;
+    public int win;
+    public int loss;
+    public int playtime;
 }
