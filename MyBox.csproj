@@ -171,8 +171,8 @@
     <Compile Include="Assets\001 - ExternalAssets\MyBox-master\Attributes\ConditionalFieldAttribute.cs" />
     <Compile Include="Assets\001 - ExternalAssets\MyBox-master\Extensions\EditorExtensions\MyIconPresets.cs" />
     <Compile Include="Assets\001 - ExternalAssets\MyBox-master\Types\EditorTypes\ScrollViewBlock.cs" />
-    <Compile Include="Assets\001 - ExternalAssets\MyBox-master\Types\EditorTypes\EditorPrefsInt.cs" />
     <Compile Include="Assets\001 - ExternalAssets\MyBox-master\Tools\Internal\MyBoxWindow.cs" />
+    <Compile Include="Assets\001 - ExternalAssets\MyBox-master\Types\EditorTypes\EditorPrefsInt.cs" />
     <Compile Include="Assets\001 - ExternalAssets\MyBox-master\Extensions\MyLayers.cs" />
     <Compile Include="Assets\001 - ExternalAssets\MyBox-master\Tools\Features\SelectionHistoryHotkeys.cs" />
     <Compile Include="Assets\001 - ExternalAssets\MyBox-master\Types\AssetFolderPath.cs" />
@@ -572,6 +572,10 @@
       <HintPath>Assets\ExternalDependencyManager\Editor\1.2.177\Google.PackageManagerResolver.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Unity.Collections.LowLevel.ILSupport">
+      <HintPath>Library\PackageCache\com.unity.collections@1.2.4\Unity.Collections.LowLevel.ILSupport\Unity.Collections.LowLevel.ILSupport.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>Library\PackageCache\com.unity.ext.nunit@2.0.3\net40\unity-custom\nunit.framework.dll</HintPath>
       <Private>False</Private>
@@ -718,10 +722,6 @@
     </Reference>
     <Reference Include="Google.JarResolver">
       <HintPath>Assets\ExternalDependencyManager\Editor\1.2.177\Google.JarResolver.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Unity.Collections.LowLevel.ILSupport">
-      <HintPath>Library\PackageCache\com.unity.collections@1.2.4\Unity.Collections.LowLevel.ILSupport\Unity.Collections.LowLevel.ILSupport.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="log4netPlastic">
