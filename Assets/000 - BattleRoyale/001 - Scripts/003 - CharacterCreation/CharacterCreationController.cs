@@ -118,6 +118,17 @@ public class CharacterCreationController : MonoBehaviour
             canSaveCustomization = true;
         else
             canSaveCustomization = false;
+
+        saveBtn.interactable = canSaveCustomization;
+    }
+
+    public void ResetCharacterCreationForOpen()
+    {
+        canSaveCustomization = false;
+        CheckSettingsForSaveButton();
+
+        profileContainer.SetActive(false);
+        colorSchemeContainer.SetActive(true);
     }
 
     public void CloseCustomization()
@@ -125,16 +136,10 @@ public class CharacterCreationController : MonoBehaviour
         CheckSettingsForSaveButton();
 
         if (canSaveCustomization)
-        {
-            SaveCharacterSettings();
-        }
-        else
-        {
             ResetCustomization();
 
-            profileContainer.SetActive(true);
-            colorSchemeContainer.SetActive(false);
-        }
+        profileContainer.SetActive(true);
+        colorSchemeContainer.SetActive(false);
     }
 
     private void ResetCustomization()
@@ -314,7 +319,7 @@ public class CharacterCreationController : MonoBehaviour
 
     public void SaveCharacterSettings()
     {
-        GameManager.Instance.NotificationController.ShowConfirmation("You have unsaved customization, would you like to save?", () =>
+        GameManager.Instance.NotificationController.ShowConfirmation("Would you like to save your character settings?", () =>
         {
             GameManager.Instance.NoBGLoading.SetActive(true);
 
@@ -331,19 +336,13 @@ public class CharacterCreationController : MonoBehaviour
                 userData.CharacterSetting.clothingcolor = clothingColorIndex;
                 userData.CharacterSetting.skincolor = skinColorIndex;
 
-                profileContainer.SetActive(true);
-                colorSchemeContainer.SetActive(false);
+                canSaveCustomization = false;
+                CheckSettingsForSaveButton();
             }, () =>
             {
                 GameManager.Instance.NoBGLoading.SetActive(false);
             }));
-        }, () =>
-        {
-            ResetCustomization();
-
-            profileContainer.SetActive(true);
-            colorSchemeContainer.SetActive(false);
-        });
+        }, null);
     }
 
     public void CustomizerOpener()

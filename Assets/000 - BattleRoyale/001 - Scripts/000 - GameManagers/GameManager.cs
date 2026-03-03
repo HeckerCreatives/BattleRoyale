@@ -317,7 +317,7 @@ public class GameManager : MonoBehaviour
                 catch (Exception ex)
                 {
                     //  ERROR PANEL HERE
-                    Debug.Log("Error API CALL! Error Code: " + ex.Message);
+                    Debug.Log($"Error API CALL: {route}! Error Code: {response}\n\n{ex.Message} ");
                     NotificationController.ShowError("There's a problem with the server! Please try again later.", null);
                     NoBGLoading.SetActive(false);
                     errorAction?.Invoke();
@@ -539,7 +539,7 @@ public class GameManager : MonoBehaviour
         int hours = seconds / 3600;
         int minutes = (seconds % 3600) / 60;
 
-        return $"{hours}:{minutes}";
+        return $"{hours:D2} : {minutes:D2}";
     }
 
     public string GetUTCExpirationTimestamp(long expirationTimestamp)

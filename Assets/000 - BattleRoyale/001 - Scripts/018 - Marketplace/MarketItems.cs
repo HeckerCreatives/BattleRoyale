@@ -15,4 +15,5 @@ public class MarketItems : ScriptableObject
     [field: SerializeField] public string ItemType { get; private set; }
     [field: SerializeField] public string Rarity { get; private set; }
     [field: SerializeField] public Sprite ItemIcon { get; private set; }
+    [field: SerializeField] public RuntimeAnimatorController ItemAnimator { get; private set; }
 }

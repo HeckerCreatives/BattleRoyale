@@ -59,7 +59,10 @@ public class LobbyController : MonoBehaviour
     [SerializeField] private TextMeshProUGUI totalPlayersOnlineTMP; 
     [SerializeField] private TextMeshProUGUI seasonTMP;
     [SerializeField] private TextMeshProUGUI potionMultiplier;
-    [SerializeField] private TextMeshProUGUI titleTMP;
+
+    [Space]
+    [SerializeField] private List<string> titlesName;
+    [SerializeField] private List<GameObject> titles;
 
     [Space]
     [SerializeField] private List<LeaderboardItem> leaderboardItems;
@@ -308,16 +311,17 @@ public class LobbyController : MonoBehaviour
             {
                 Dictionary<string, MatchHistory> tempdata = JsonConvert.DeserializeObject<Dictionary<string, MatchHistory>>(response.ToString());
 
+                for (int a = 0; a < profileHistoryItems.Count; a++)
+                {
+                    profileHistoryItems[a].InitializeHistory("-", "-", "-", "-", "-");
+                }
+
                 //  KILL
                 for (int a = 0; a < profileHistoryItems.Count; a++)
                 {
                     if (a < tempdata.Count)
                     {
                         profileHistoryItems[a].InitializeHistory("NORMAL", tempdata[a.ToString()].kill, tempdata[a.ToString()].placement, GameManager.Instance.GetMinuteSecondsTime(tempdata[a.ToString()].playtime), tempdata[a.ToString()].date);
-                    }
-                    else
-                    {
-                        profileHistoryItems[a].InitializeHistory("-", "-", "-", "-", "-");
                     }
                 }
             }
@@ -340,6 +344,7 @@ public class LobbyController : MonoBehaviour
         {
             try
             {
+                Debug.Log("INITIALIZE WALLET");
                 Dictionary<string, float> tempdata = JsonConvert.DeserializeObject<Dictionary<string, float>>(response.ToString());
 
                 userData.GameDetails.coins = tempdata["coins"];
@@ -366,6 +371,7 @@ public class LobbyController : MonoBehaviour
         {
             try
             {
+                Debug.Log("INITIALIZE SEASONS");
                 seasonTMP.text = response.ToString();
             }
             catch (Exception ex)
@@ -387,6 +393,7 @@ public class LobbyController : MonoBehaviour
         {
             try
             {
+                Debug.Log("INITIALIZE EFFECTS");
                 Dictionary<string, ItemEffects> tempeffects = JsonConvert.DeserializeObject<Dictionary<string, ItemEffects>>(response.ToString());
 
                 userData.PlayerItemEffects = tempeffects;
@@ -492,7 +499,7 @@ public class LobbyController : MonoBehaviour
     {
         if (PlayerPrefs.HasKey("firstdownload")) yield break;
 
-        GameManager.Instance.NotificationController.ShowError("You're currently on the lowest graphics settings. You can change your graphics by going to settings");
+        //GameManager.Instance.NotificationController.ShowError("You're currently on the lowest graphics settings. You can change your graphics by going to settings");
 
         PlayerPrefs.SetInt("firstdownload", 1);
 
@@ -590,19 +597,25 @@ public class LobbyController : MonoBehaviour
 
     public void TitleChecker()
     {
-        //if (userData.PlayerInventory.Count > 0)
-        //{
-        //    var filteredItems = userData.PlayerInventory
-        //        .Where(kvp => kvp.Value.type == "title" && kvp.Value.isEquipped == true)
-        //        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        for (int a = 0; a < titles.Count; a++)
+            titles[a].SetActive(false);
 
-        //    if (filteredItems.Count > 0)
-        //        titleTMP.text = filteredItems.ElementAt(0).Value.itemname;
-        //    else
-        //        titleTMP.text = "";
-        //}
-        //else
-        //    titleTMP.text = "";
+        //Debug.Log("fck 2");
+        if (userData.PlayerInventory.Count > 0)
+        {
+            var filteredItems = userData.PlayerInventory
+                .Where(kvp => kvp.Value.type == "title" && kvp.Value.isEquipped == true)
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+
+            if (filteredItems.Count > 0)
+            {
+                Debug.Log(filteredItems.ElementAt(0).Value.itemname);
+                int index = titlesName.IndexOf(filteredItems.ElementAt(0).Value.itemname);
+
+                Debug.Log(index);
+                titles[index].SetActive(true);
+            }
+        }
     }
 }
 

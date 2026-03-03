@@ -167,7 +167,6 @@ public class ClientMatchmakingController : MonoBehaviour
             });
         });
 
-
         GameManager.Instance.SocketMngr.Socket.On("reconnectexist", (response) =>
         {
             GameManager.Instance.AddJob(() =>
@@ -228,7 +227,11 @@ public class ClientMatchmakingController : MonoBehaviour
         {
             GameManager.Instance.AddJob(() =>
             {
+                Debug.Log(response);
+
                 List<WaitingRoomData> tempdata = JsonConvert.DeserializeObject<List<WaitingRoomData>>(response.ToString());
+
+                GameManager.Instance.SocketMngr.EmitEvent("ack", new { eventName = "matchstatuschanged", messageId = tempdata[0].messageId });
 
                 Debug.Log($"Match Status: {response}");
 
@@ -828,6 +831,7 @@ public class ClientMatchmakingController : MonoBehaviour
 [System.Serializable]
 public class WaitingRoomData
 {
+    public string messageId;
     public string roomName;
     public List<string> players;
     public int maxPlayers;

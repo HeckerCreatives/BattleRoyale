@@ -11,10 +11,15 @@ public class MarketplaceItems : MonoBehaviour
     [SerializeField] private UserData userData;
 
     [Space]
+    [SerializeField] private float imageSizeIcon = 0.2f;
+    [SerializeField] private bool useItemResize; 
+
+    [Space]
     [SerializeField] private TextMeshProUGUI itemName;
     [SerializeField] private TextMeshProUGUI itemDescription;
     [SerializeField] private TextMeshProUGUI itemPrice;
     [SerializeField] private Image itemImage;
+    [SerializeField] private Animator itemAnimator;
     [SerializeField] private GameObject pointsCurrency;
     [SerializeField] private GameObject coinsCurrency;
 
@@ -23,6 +28,7 @@ public class MarketplaceItems : MonoBehaviour
     [SerializeField] private TextMeshProUGUI descriptionItemDescription;
     [SerializeField] private TextMeshProUGUI descriptionItemPrice;
     [SerializeField] private Image descriptionItemImage;
+    [SerializeField] private Animator descriptionItemAnimator;
     [SerializeField] private GameObject descriptionPointsCurrency;
     [SerializeField] private GameObject descriptionCoinsCurrency;
     [SerializeField] private Button descriptionBuyBtn;
@@ -38,17 +44,25 @@ public class MarketplaceItems : MonoBehaviour
         if (items.ItemIcon != null)
         {
             itemImage.gameObject.SetActive(true);
-            Vector2 originalSize = items.ItemIcon.rect.size;
-            Vector2 newSize = originalSize * 0.2f;
-            itemImage.rectTransform.sizeDelta = newSize;
+
+            if (useItemResize)
+            {
+                Vector2 originalSize = items.ItemIcon.rect.size;
+                Vector2 newSize = originalSize * imageSizeIcon;
+                itemImage.rectTransform.sizeDelta = newSize;
+            }
 
             itemImage.sprite = items.ItemIcon;
+
+            if (items.ItemAnimator != null) itemAnimator.runtimeAnimatorController = items.ItemAnimator;
         }
         else
         {
             if (itemImage != null)
                 itemImage.gameObject.SetActive(false);
         }
+
+        if (items.ItemAnimator == null && itemAnimator != null) itemAnimator.runtimeAnimatorController = null;
 
         pointsCurrency.SetActive(items.Currency == "Points");
         coinsCurrency.SetActive(items.Currency == "Coins");
@@ -68,6 +82,12 @@ public class MarketplaceItems : MonoBehaviour
             Vector2 newSize = originalSize * 0.7f;
             descriptionItemImage.rectTransform.sizeDelta = newSize;
             descriptionItemImage.sprite = items.ItemIcon;
+        }
+
+        if (items.ItemAnimator != null) descriptionItemAnimator.runtimeAnimatorController = items.ItemAnimator;
+        else
+        {
+            if (descriptionItemAnimator != null) descriptionItemAnimator.runtimeAnimatorController = null;
         }
 
         descriptionPointsCurrency.SetActive(items.Currency == "Points");
