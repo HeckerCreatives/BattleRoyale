@@ -15,21 +15,14 @@ public class PlayerSpawnLocationController : NetworkBehaviour
     [SerializeField] private AudioClip buttonClick;
 
     [field: Header("DEBUGGER")]
-    [field: MyBox.ReadOnly][field: SerializeField] [Networked] public DedicatedServerManager ServerManager { get; set; }
     [MyBox.ReadOnly][SerializeField] private bool isSpawned; 
 
     private async void OnEnable()
     {
         while (!Runner) await Task.Delay(100);
 
-        while (ServerManager == null)
-        {
-            Debug.Log("Waiting for server manager PlayerSpawnLoactaionController");
-            await Task.Delay(100);
-        }
-
         Debug.Log("Server Manager Detected Spawn Location Controller");
-        ServerManager.OnCurrentStateChange += StateChange;
+        MultiplayerServerManager.Instance.OnCurrentStateChange += StateChange;
 
         isSpawned = true;
     }
@@ -37,12 +30,12 @@ public class PlayerSpawnLocationController : NetworkBehaviour
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
         if (hasState && isSpawned)
-            ServerManager.OnCurrentStateChange -= StateChange;
+            MultiplayerServerManager.Instance.OnCurrentStateChange -= StateChange;
     }
 
     private void StateChange(object sender, EventArgs e)
     {
-        if (ServerManager.CurrentGameState == GameState.ARENA)
+        if (MultiplayerServerManager.Instance.CurrentGameState == GameState.ARENA)
         {
             if (HasInputAuthority)
             {
@@ -77,7 +70,7 @@ public class PlayerSpawnLocationController : NetworkBehaviour
 
     IEnumerator ReadyForBattle()
     {
-        while (!ServerManager.DonePlayerBattlePositions || inventory.PrimaryWeapon != null || inventory.SecondaryWeapon != null || inventory.Shield != null) yield return null;
+        while (!MultiplayerServerManager.Instance.DonePlayerBattlePositions || inventory.PrimaryWeapon != null || inventory.SecondaryWeapon != null || inventory.Shield != null) yield return null;
     }
 
     public void PlayBtnSound() => GameManager.Instance.AudioController.PlaySFX(buttonClick);

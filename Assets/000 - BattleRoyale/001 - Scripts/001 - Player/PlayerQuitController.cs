@@ -15,9 +15,6 @@ public class PlayerQuitController : NetworkBehaviour
     [Header("DEBUGGER LOCAL")]
     [SerializeField] private float gameConclusionCountdown;
 
-    [field: Header("DEBUGGER")]
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
-
     private async void Awake()
     {
         if (!Runner) await Task.Yield();
@@ -65,8 +62,6 @@ public class PlayerQuitController : NetworkBehaviour
     public void QuitBtn()
     {
         if (!Runner) return;
-
-        if (ServerManager == null) return;
 
         if (!HasInputAuthority) return;
 

@@ -18,7 +18,6 @@ public class SafeZoneController : NetworkBehaviour
     [field: SerializeField][Networked] public Vector3 CurrentShrinkSize { get; set; }
     [field: SerializeField][Networked] public Vector3 CurrentShrink { get; set; }
     [field: SerializeField][Networked] public Vector3 StartShrinkSize { get; set; }
-    [field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
 
     public void InitializeSafeZone()
     {
@@ -34,8 +33,6 @@ public class SafeZoneController : NetworkBehaviour
     {
         if (HasStateAuthority) return;
 
-        if (ServerManager == null) return;
-
         transform.position = SpawnPosition;
         transform.localScale = CurrentShrinkSize;
     }
@@ -44,26 +41,24 @@ public class SafeZoneController : NetworkBehaviour
     {
         if (!HasStateAuthority) return;
 
-        if (ServerManager == null) return;
+        if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;
 
-        if (ServerManager.CurrentGameState != GameState.ARENA) return;
-
-        if (ServerManager.CurrentSafeZoneState == SafeZoneState.SHRINK)
+        if (SafeZoneServerController.Instance.CurrentSafeZoneState == SafeZoneState.SHRINK)
         {
             if (Vector3.Distance(transform.localScale, safeZoneShrinkSize[ShrinkSizeIndex]) <= 30f)
-            { 
-                ServerManager.SafeZoneTimer = 30f;
+            {
+                SafeZoneServerController.Instance.SafeZoneTimer = 30f;
 
                 if (ShrinkSizeIndex < safeZoneShrinkSize.Count - 1)
                 {
-                    ServerManager.CurrentSafeZoneState = SafeZoneState.TIMER;
+                    SafeZoneServerController.Instance.CurrentSafeZoneState = SafeZoneState.TIMER;
                     StartShrinkSize = safeZoneShrinkSize[ShrinkSizeIndex];
                     ShrinkSizeIndex++;
                     CurrentShrink = safeZoneShrinkSize[ShrinkSizeIndex];
                 }
                 else
                 {
-                    ServerManager.CurrentSafeZoneState = SafeZoneState.NONE;
+                    SafeZoneServerController.Instance.CurrentSafeZoneState = SafeZoneState.NONE;
                 }
             }
             else

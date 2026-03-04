@@ -55,7 +55,6 @@ public class PlayerHealth : NetworkBehaviour
 
 
     [field: Space]
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float PlayerFallDamage { get; set; }
 
     public NetworkDictionary<int, string> Items { get; } = new NetworkDictionary<int, string>();
@@ -189,7 +188,7 @@ public class PlayerHealth : NetworkBehaviour
 
         if (characterController.RealVelocity.y <= -20f)
         {
-            if (ServerManager.CurrentGameState == GameState.ARENA && ServerManager.CurrentSafeZoneState != SafeZoneState.NONE && ServerManager.DonePlayerBattlePositions)
+            if (MultiplayerServerManager.Instance.CurrentGameState == GameState.ARENA && SafeZoneServerController.Instance.CurrentSafeZoneState != SafeZoneState.NONE)
                 PlayerFallDamage = Mathf.Abs(characterController.RealVelocity.y) - 5;
         }
 
@@ -197,11 +196,9 @@ public class PlayerHealth : NetworkBehaviour
         {
             FallDamageHit++;
 
-            if (ServerManager.CurrentGameState != GameState.ARENA) return;
+            if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;
 
-            if (ServerManager.CurrentSafeZoneState == SafeZoneState.NONE) return;
-
-            if (!ServerManager.DonePlayerBattlePositions) return;
+            if (SafeZoneServerController.Instance.CurrentSafeZoneState == SafeZoneState.NONE) return;
 
             CurrentHealth -= PlayerFallDamage;
             PlayerFallDamage = 0f;
@@ -209,7 +206,7 @@ public class PlayerHealth : NetworkBehaviour
             if (CurrentHealth <= 0)
             {
                 deathMovement.MakePlayerDead();
-                gameOverScreen.PlayerPlacement = ServerManager.RemainingPlayers.Count;
+                gameOverScreen.PlayerPlacement = PlayerJoinedController.Instance.RemainingPlayers.Count;
                 //ServerManager.RemainingPlayers.Remove(core);
                 RPC_ReceiveKillNotification($"{loader.Username} DEATH BY FALL");
 
@@ -232,14 +229,12 @@ public class PlayerHealth : NetworkBehaviour
     {
         if (!HasStateAuthority) return;
 
-        if (ServerManager.CurrentGameState != GameState.ARENA) return;
-
-        if (!ServerManager.DonePlayerBattlePositions) return;
+        if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;
 
         if (CurrentHealth <= 0) return;
 
-        float distanceFromCenter = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(ServerManager.SafeZone.transform.position.x, 0, ServerManager.SafeZone.transform.position.z));
-        float radius = ServerManager.SafeZone.CurrentShrinkSize.x / 2; // Adjust based on your implementation
+        float distanceFromCenter = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(SafeZoneServerController.Instance.SafeZone.transform.position.x, 0, SafeZoneServerController.Instance.SafeZone.transform.position.z));
+        float radius = SafeZoneServerController.Instance.SafeZone.CurrentShrinkSize.x / 2; // Adjust based on your implementation
 
         if (distanceFromCenter > radius)
         {
@@ -247,7 +242,7 @@ public class PlayerHealth : NetworkBehaviour
 
             DamagedSafeZone = true;
 
-            CurrentHealth -= Runner.DeltaTime * ((ServerManager.SafeZone.ShrinkSizeIndex + 1) / 2);
+            CurrentHealth -= Runner.DeltaTime * ((SafeZoneServerController.Instance.SafeZone.ShrinkSizeIndex + 1) / 2);
         }
         else
         {
@@ -257,7 +252,7 @@ public class PlayerHealth : NetworkBehaviour
         if (CurrentHealth <= 0)
         {
             deathMovement.MakePlayerDead();
-            gameOverScreen.PlayerPlacement = ServerManager.RemainingPlayers.Count;
+            gameOverScreen.PlayerPlacement = PlayerJoinedController.Instance.RemainingPlayers.Count;
             //ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
             RPC_ReceiveKillNotification($"{loader.Username} WAS KILLED OUTSIDE SAFE ZONE");
 
@@ -296,7 +291,7 @@ public class PlayerHealth : NetworkBehaviour
 
         DamagedHit++;
 
-        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+        if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;
 
         float remainingDamage = damage;
 
@@ -327,7 +322,7 @@ public class PlayerHealth : NetworkBehaviour
         {
             deathMovement.MakePlayerDead();
             nobject.GetComponent<KillCountCounterController>().KillCount++;
-            gameOverScreen.PlayerPlacement = ServerManager.RemainingPlayers.Count;
+            gameOverScreen.PlayerPlacement = PlayerJoinedController.Instance.RemainingPlayers.Count;
             //ServerManager.RemainingPlayers.Remove(Object.InputAuthority);
 
             string statustext = killer == loader.Username ? $"{loader.Username} Killed themself" : $"{killer} KILLED { loader.Username}";

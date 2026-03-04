@@ -58,7 +58,6 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     [SerializeField] private GameObject reconnectObj;
 
     [field: Header("DEBUGGER")]
-    [Networked][field: SerializeField] public DedicatedServerManager ServerManager { get; set; }
     [Networked][field: SerializeField] public bool NotEnoughPlayer { get; set; }
     [Networked][field: SerializeField] public NetworkString<_64> Username { get; set; }
     [Networked][field: SerializeField] public NetworkString<_64> UserID { get; set; }
@@ -133,9 +132,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
 
         NetworkRunner.CloudConnectionLost += OnCloudConnectionLost;
 
-        while (ServerManager == null) await Task.Yield();
-
-        ServerManager.OnCurrentStateChange += StateChange;
+        MultiplayerServerManager.Instance.OnCurrentStateChange += StateChange;
     }
 
     private IEnumerator ChangeDoneInitialize()
@@ -220,7 +217,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
 
     private void StateChange(object sender, EventArgs e)
     {
-        if (ServerManager.CurrentGameState == GameState.ARENA)
+        if (MultiplayerServerManager.Instance.CurrentGameState == GameState.ARENA)
         {
             if (HasInputAuthority)
             {
@@ -233,12 +230,14 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
 
     IEnumerator ReadyForBattle()
     {
-        while (!ServerManager.DonePlayerBattlePositions) yield return null;
+        while (!MultiplayerServerManager.Instance.DonePlayerBattlePositions) yield return null;
     }
 
 
     IEnumerator InitializePlayer()
     {
+        PlayerPhotonReconnect.Instance.SetMatchInfo(Runner, Runner.SessionInfo.Name, GameMode.Client);
+
         cameraRotation.InitializeCameraRotationSensitivity();
         movementV2.PlayerMovementInitialize();
         yield return null;
@@ -247,8 +246,6 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     public void QuitBtn()
     {
         if (!Runner) return;
-
-        if (ServerManager == null) return;
 
         if (!HasInputAuthority) return;
 

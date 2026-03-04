@@ -18,7 +18,6 @@ public class KillCountCounterController : NetworkBehaviour
     [SerializeField] public TextMeshProUGUI pingTMP;
 
     [field: Header("DEBUGGER")]
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public int KillCount { get; set; }
     [field: MyBox.ReadOnly][field: SerializeField] public float pingChange;
 
@@ -26,11 +25,9 @@ public class KillCountCounterController : NetworkBehaviour
     {
         if (!HasInputAuthority) return;
 
-        if (ServerManager == null) return;
+        int tempCapacity = PlayerJoinedController.Instance.RemainingPlayers.Capacity;
 
-        int tempCapacity = ServerManager.RemainingPlayers.Capacity;
-
-        PlayerCount.text = $"{ServerManager.RemainingPlayers.Count:n0} / {(tempCapacity - 2):n0}";
+        PlayerCount.text = $"{PlayerJoinedController.Instance.RemainingPlayers.Count:n0} / {(tempCapacity - 2):n0}";
         killCountTMP.text = $"{KillCount:n0}";
     }
 

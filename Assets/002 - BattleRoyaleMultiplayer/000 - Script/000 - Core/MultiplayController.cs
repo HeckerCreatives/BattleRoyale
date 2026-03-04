@@ -11,9 +11,6 @@ using UnityEngine;
 
 public class MultiplayController : MonoBehaviour
 {
-
-    [SerializeField] private DedicatedServerManager serverManager;
-
 #if !UNITY_ANDROID && !UNITY_IOS
 
     //  =====================

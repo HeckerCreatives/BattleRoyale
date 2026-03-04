@@ -176,13 +176,11 @@ public class BasicMovement : NetworkBehaviour
     }
     private void PlayFootstepSound()
     {
-        if (!movementMixer.IsValid() || HasStateAuthority || !characterController.IsGrounded || mainCorePlayable.ServerManager == null || playerController.IsProne || playerController.IsCrouch) return;
+        if (!movementMixer.IsValid() || HasStateAuthority || !characterController.IsGrounded || playerController.IsProne || playerController.IsCrouch) return;
         if (playerInventory.WeaponIndex != weaponIndex) return;
 
         if (!IsValidWeapon(playerInventory.WeaponIndex)) return;
         if (playerController.XMovement == 0 && playerController.YMovement == 0) return;
-
-        GetTerrainTexture();
 
         float currentTime = (float)clipPlayables[4].GetTime() % sprintClip.length;
 
@@ -232,47 +230,6 @@ public class BasicMovement : NetworkBehaviour
             3 => playerInventory.SecondaryWeapon.WeaponID == weaponid,
             _ => true
         };
-    }
-
-    public void GetTerrainTexture()
-    {
-        ConvertPosition(transform.position);
-    }
-
-    private void ConvertPosition(Vector3 playerPosition)
-    {
-        Terrain tempterrain = mainCorePlayable.ServerManager.battleFieldArena;
-
-        terrainPosition = playerPosition - tempterrain.transform.position;
-        mapPosition = new Vector3(terrainPosition.x / tempterrain.terrainData.size.x, 0,
-        terrainPosition.z / tempterrain.terrainData.size.z);
-
-        xCoord = mapPosition.x * tempterrain.terrainData.alphamapWidth;
-        zCoord = mapPosition.z * tempterrain.terrainData.alphamapHeight;
-
-        posX = (int)xCoord;
-        posZ = (int)zCoord;
-
-        CheckTexture(tempterrain);
-    }
-    private void CheckTexture(Terrain terrain)
-    {
-        float[,,] aMap = terrain.terrainData.GetAlphamaps(posX, posZ, 1, 1);
-
-        int numTextures = aMap.GetLength(2); // Get the number of available textures
-
-        if (numTextures < 2)
-        {
-            Debug.LogError($"Expected at least 2 terrain textures, but found {numTextures}");
-            return;
-        }
-
-        textureValues[0] = aMap[0, 0, 0];
-
-        if (numTextures > 1)
-        {
-            textureValues[1] = aMap[0, 0, 1];
-        }
     }
 
 

@@ -27,20 +27,15 @@ public class MapZoomInOut : NetworkBehaviour
     [SerializeField] private float battleAreaMax;
     [SerializeField] private float battlePlayerMapIcomZoomOutMax;
 
-    [field: Space]
-    [field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
-
     public async override void Spawned()
     {
         while (!Runner) await Task.Yield();
 
         if (!HasInputAuthority) return;
 
-        while(!ServerManager) await Task.Yield();
-
         mapCamera.transform.parent = null;
 
-        ServerManager.OnCurrentStateChange += CheckPosition;
+        MultiplayerServerManager.Instance.OnCurrentStateChange += CheckPosition;
 
         UpdateZoomInOut();
     }
@@ -48,7 +43,7 @@ public class MapZoomInOut : NetworkBehaviour
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
         if (hasState)
-            ServerManager.OnCurrentStateChange -= CheckPosition;
+            MultiplayerServerManager.Instance.OnCurrentStateChange -= CheckPosition;
     }
 
     private void CheckPosition(object sender, EventArgs e)
@@ -63,7 +58,7 @@ public class MapZoomInOut : NetworkBehaviour
 
     public void UpdateZoomInOut()
     {
-        if (ServerManager == null) return;
+        if (MultiplayerServerManager.Instance == null) return;
 
         mapCamera.orthographicSize = Mathf.Lerp(battleAreaMax, mapZoomOutMin, mapSlider.value);
         playerIconTF.transform.localScale = new Vector3(Mathf.Lerp(battlePlayerMapIcomZoomOutMax, playerMapIcomZoomOutMin, mapSlider.value), Mathf.Lerp(battlePlayerMapIcomZoomOutMax, playerMapIcomZoomOutMin, mapSlider.value), 1f);

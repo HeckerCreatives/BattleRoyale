@@ -73,7 +73,6 @@ public class MainCorePlayable : NetworkBehaviour
 
     [field: Space]
     [Networked][field: SerializeField] public float TickRateAnimation { get; set; }
-    [Networked][field: SerializeField] public DedicatedServerManager ServerManager { get; set; }
     [Networked][field: SerializeField] public Ground CurrentGround { get; set; }
 
     //  =========================

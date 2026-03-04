@@ -1,0 +1,514 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4720992259611821993
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8550622215217596309}
+  - component: {fileID: 7014124911713045437}
+  - component: {fileID: 7278675189095258335}
+  - component: {fileID: 4478443141726677364}
+  - component: {fileID: 4812494338444341753}
+  - component: {fileID: 7863920190444468710}
+  - component: {fileID: 2046543979837632740}
+  - component: {fileID: 7547791150730725687}
+  - component: {fileID: 6931032213872811362}
+  - component: {fileID: 1955493956064559302}
+  m_Layer: 0
+  m_Name: ServerManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8550622215217596309
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4720992259611821993}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 985.96857, y: 613.8135, z: -6.1381564}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7014124911713045437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4720992259611821993}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3ac0e352c8466343b7c7bb0a09feb19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  doShow: 1
+--- !u!114 &7278675189095258335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4720992259611821993}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8540426b40792f44d94ed126ce727690, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  developerConsole: {fileID: 7014124911713045437}
+  weaponCratesSpawner: {fileID: 4478443141726677364}
+  safeZoneServerController: {fileID: 4812494338444341753}
+  playerJoinedController: {fileID: 7863920190444468710}
+  socketServer: {fileID: 2046543979837632740}
+  botSpawnerController: {fileID: 7547791150730725687}
+  killNotifServerController: {fileID: 6931032213872811362}
+  spawnBattleAreaPositions:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  soundsObjs: []
+  sessionname: 
+  canStartCountDownToCloseServer: 0
+  closeServerCount: 0
+  doneSetupBattlePos: 0
+  _CurrentGameState: 0
+  _DonePlayerBattlePositions: 0
+--- !u!114 &4478443141726677364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4720992259611821993}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ea93f2500ba46e45873738bb22f88ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  createNO: {fileID: 5692795387059461451, guid: e9fed6ded1692e54c9773aa98fa82ac9,
+    type: 3}
+  doneSpawnCrates: 0
+  createSpawnLocations:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+--- !u!114 &4812494338444341753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4720992259611821993}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94f6740e14dee124b88c4f6f645dd66f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  safeZoneNO: {fileID: 7230061636402373790, guid: 7036fa97a42265747aa18fa9ff7c411c,
+    type: 3}
+  safeZonePosition:
+  - {x: -8, y: 63.6, z: 37453.2}
+  safeZoneShrink:
+  - shrinksizes:
+    - {x: 413.418, y: 291.9279, z: 413.418}
+    - {x: 249.89, y: 291.9279, z: 249.89}
+    - {x: 172.5415, y: 291.9279, z: 172.5415}
+    - {x: 76.4152, y: 291.9279, z: 76.4152}
+    - {x: 20.33179, y: 291.9279, z: 20.33179}
+  doneSetupSafeZone: 0
+  _CurrentSafeZoneState: 0
+  _SafeZoneTimer: 0
+  _SafeZone: {fileID: 0}
+--- !u!114 &7863920190444468710
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4720992259611821993}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c316df97e63f10241b7103fba20f7445, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerObj: {fileID: 419389618843496134, guid: 8f78109711541f44389d30c55cbb53c2,
+    type: 3}
+  spawnWaitingAreaPositions:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  doneSetupPlayers: 0
+  PlayerIDs: []
+--- !u!114 &2046543979837632740
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4720992259611821993}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dddef8347cfd21940b31d77a4f09c320, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &7547791150730725687
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4720992259611821993}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e444c6fb9e7a16a4b950b860ed237576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxBot: 0
+  botPrefab: {fileID: 3158526975555532608, guid: 2b70214474ae41d4fad0262d11ff401e,
+    type: 3}
+  botSpawnPoints:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  swordItem: {fileID: 1251601267454481847, guid: 7fe4a221ff2f2d64181e56c9913c850c,
+    type: 3}
+  spearItem: {fileID: 8190455501384522856, guid: 796b17788ddec0e4995ac5a523ff0d95,
+    type: 3}
+  armorItem: {fileID: 4096039779875312679, guid: da592623b76ee774aa4085ef781ca09b,
+    type: 3}
+  cbsbotnames:
+  - kelboogle
+  - Boomboomyehey
+  - Joe Mama
+  - The Real
+  - Alex
+  - Darilyo
+  - Alexanderrr
+  - ganielleDOTexe
+  - Hebe Handsome
+  - crazychixx
+  - bellemona
+  botnames:
+  - BitBuddie
+  - SirTalksALot
+  - BlipBlop
+  - MissExecute
+  - CaptainQuirk
+  - BotlyMcBotface
+  - ChatChum
+  - NannyByte
+  - GlitchyWitch
+  - TaskToto
+  - MechaMilo
+  - ProntoPal
+  - WobbleBot
+  - Zapsterino
+  - ByteyBoi
+  - ClippyBot3000
+  - CircuitSis
+  - Dude.exe
+  - DottieBot
+  - CodeSnacc
+  - FunkyFirmware
+  - BuddyBoot
+  - ChatNugget
+  - Quirk.exe
+  - SnarkBot
+  - AutoBoi
+  - RoboChatter
+  - CaffeinateMe
+  - Pesto.exe
+  - HiccupBot
+  - Dorkatron
+  - SassCircuit
+  - GiggleLoop
+  - Spamuel
+  - BanterBot
+  - CaptainClick
+  - BinaryBabe
+  - BotOnTheRocks
+  - FrydayBot
+  - NibletBot
+  - Sassynator
+  - MechMimi
+  - Peppy.exe
+  - BoopBeep
+  - ByteSnax
+  - LazyLoop
+  - MuffinBot
+  - Yawn.exe
+  - CheekyBits
+  - RoboNoob
+  - BugsyBot
+  - LiloBot
+  - ToastyCore
+  - NekoNode
+  - GooberBot
+  - CrashPal
+  - SillyChip
+  - DonutBot
+  - Drifty.exe
+  - Perky.exe
+  - CuddleBit
+  - NapsterBot
+  - HappySudo
+  - MechaMocha
+  - QuirkyByte
+  - SnipSnip.exe
+  - DotDotBot
+  - RoboTeehee
+  - CodeSprout
+  - PeekoBot
+  - Wink.exe
+  - BashBuddy
+  - TinkerTock
+  - Botwink
+  - Purrtocol
+  - FrankieFirmware
+  - LolaLogic
+  - ElBotto
+  - QuinnBot
+  - JazzyBytes
+  - Tobi.exe
+  - Buglet
+  - RebootRicky
+  - MechaMittens
+  - GrinBot
+  - MoeBot
+  - PixelPunk
+  - TaterBot
+  - TwinkleChip
+  - ChuckleUnit
+  - FuzzyLogic
+  - ByteBella
+  - AutoAmy
+  - NannyNode
+  - FlipScript
+  - PingPongBot
+  - LolliBot
+  - Bloopette
+  - RikkaBot
+  - DitzBot
+  - ZappyZoe
+  - KikiKernel
+  - HappyCrank
+  - BlinkieBot
+  - ToastBot
+  - Nibble.exe
+  - RollyBot
+  - Chill.exe
+  - MintyBot
+  - SassyBoot
+  - HonkBot
+  - CooCoo.exe
+  - Chipette
+  - NuggieBot
+  - FroyoBot
+  - BeepBae
+  - Clunkie
+  - PikaBot
+  - PopPopBot
+  - BananaBot
+  - SudoSis
+  - Gloop.exe
+  - OllieBot
+  - WidgetWoo
+  - DotFace
+  - MechaWink
+  - SparkNeko
+  - CrankyBot
+  - SprinkleBit
+  - ByteBopper
+  - Cookie.exe
+  - FluffyBot
+  - RoboSniff
+  - ScootBot
+  - BlinkyBelle
+  - MrScrambles
+  - PoppyProtocol
+  - JellyBot
+  - ZuzuBot
+  - Fizz.exe
+  - GiddyCore
+  - BunnyBytes
+  - MechaToast
+  - DashieBot
+  - QuokkaBot
+  - HappyPatch
+  - Cheek.exe
+  - CuppyBot
+  - FloofCircuit
+  - Meowdule
+  spawnBotIndex: 0
+  botNameIndex: 0
+  doneCBSBotNames: 0
+--- !u!114 &6931032213872811362
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4720992259611821993}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1218d1cd026797c41a06dc401ea1621a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  killNotifObj: {fileID: 8208427090230967597, guid: 40416c95c92f7324ea80ed84b21f7ee9,
+    type: 3}
+  _KillNotifController: {fileID: 0}
+--- !u!114 &1955493956064559302
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4720992259611821993}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SortKey: 1344059386
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 7278675189095258335}
+  - {fileID: 4478443141726677364}
+  - {fileID: 4812494338444341753}
+  - {fileID: 7863920190444468710}
+  - {fileID: 7547791150730725687}
+  - {fileID: 6931032213872811362}
+  ForceRemoteRenderTimeframe: 0

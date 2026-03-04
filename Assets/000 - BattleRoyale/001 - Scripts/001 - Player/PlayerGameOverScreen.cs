@@ -41,7 +41,6 @@ public class PlayerGameOverScreen : NetworkBehaviour
     [field: Header("DEBUGGER")]
     [field: SerializeField][Networked] public float HitPoints { get; set; }
     [field: SerializeField][Networked] public int PlayerPlacement { get; set; }
-    [field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
     [SerializeField] private bool IsDoneShowingGameOver;
 
     //  ======================
@@ -73,7 +72,7 @@ public class PlayerGameOverScreen : NetworkBehaviour
 
                     Debug.Log($"Player lose, player placement: {PlayerPlacement}");
                     usernameResultTMP.text = userData.Username;
-                    playerCountResultTMP.text = $"<color=yellow><size=\"55\">#{PlayerPlacement}</size></color> <size=\"50\"> / {ServerManager.RemainingPlayers.Capacity - 2}</size>";
+                    playerCountResultTMP.text = $"<color=yellow><size=\"55\">#{PlayerPlacement}</size></color> <size=\"50\"> / {PlayerJoinedController.Instance.RemainingPlayers.Capacity - 2}</size>";
                     rankResultTMP.text = PlayerPlacement.ToString();
                     killCountResultTMP.text = killCountCounterController.KillCount.ToString();
 
@@ -142,14 +141,8 @@ public class PlayerGameOverScreen : NetworkBehaviour
 
         if (HasInputAuthority)
         {
-            while (!ServerManager)
-            {
-                Debug.Log("waiting on server manager kill count counter");
-                await Task.Yield();
-            }
-
-            ServerManager.OnPlayerCountChange += PlayerCountChange;
-            ServerManager.OnCurrentStateChange += GameStateChange;
+            PlayerJoinedController.Instance.OnPlayerCountChange += PlayerCountChange;
+            MultiplayerServerManager.Instance.OnCurrentStateChange += GameStateChange;
             Debug.Log("done initialize server manager player change event on kill count counter");
         }
     }
@@ -158,11 +151,8 @@ public class PlayerGameOverScreen : NetworkBehaviour
     {
         if (HasInputAuthority)
         {
-            if (ServerManager != null)
-            {
-                ServerManager.OnPlayerCountChange -= PlayerCountChange;
-                ServerManager.OnCurrentStateChange -= GameStateChange;
-            }
+            PlayerJoinedController.Instance.OnPlayerCountChange -= PlayerCountChange;
+            MultiplayerServerManager.Instance.OnCurrentStateChange -= GameStateChange;
         }
     }
 
@@ -188,12 +178,12 @@ public class PlayerGameOverScreen : NetworkBehaviour
 
         if (IsDoneShowingGameOver) return;
 
-        if (ServerManager.CurrentGameState == GameState.DONE)
+        if (MultiplayerServerManager.Instance.CurrentGameState == GameState.DONE)
         {
             IsDoneShowingGameOver = true;
 
             usernameResultTMP.text = userData.Username;
-            playerCountResultTMP.text = $"<color=yellow><size=\"55\">#1</size></color> <size=\"50\"> / {ServerManager.RemainingPlayers.Capacity - 2}</size>";
+            playerCountResultTMP.text = $"<color=yellow><size=\"55\">#1</size></color> <size=\"50\"> / {PlayerJoinedController.Instance.RemainingPlayers.Capacity - 2}</size>";
             rankResultTMP.text = "1";
             killCountResultTMP.text = killCountCounterController.KillCount.ToString();
 
@@ -252,9 +242,9 @@ public class PlayerGameOverScreen : NetworkBehaviour
     {
         if (!HasInputAuthority) return;
 
-        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+        if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;
 
-        if (ServerManager.RemainingPlayers.Count > 1) return;
+        if (PlayerJoinedController.Instance.RemainingPlayers.Count > 1) return;
 
         await Task.Delay(1500);
 
@@ -265,7 +255,7 @@ public class PlayerGameOverScreen : NetworkBehaviour
         IsDoneShowingGameOver = true;
 
         usernameResultTMP.text = userData.Username;
-        playerCountResultTMP.text = $"<color=yellow><size=\"55\">#1</size></color> <size=\"50\"> / {ServerManager.RemainingPlayers.Capacity - 2}</size>";
+        playerCountResultTMP.text = $"<color=yellow><size=\"55\">#1</size></color> <size=\"50\"> / {PlayerJoinedController.Instance.RemainingPlayers.Capacity - 2}</size>";
         rankResultTMP.text = "1";
         killCountResultTMP.text = killCountCounterController.KillCount.ToString();
 

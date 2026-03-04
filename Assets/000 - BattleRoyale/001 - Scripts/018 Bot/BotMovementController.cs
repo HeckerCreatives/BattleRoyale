@@ -268,9 +268,9 @@ public class BotMovementController : NetworkBehaviour
         }
 
         // 3. Safe zone correction
-        if (IsOutsideSafeZone(transform.position, botData.ServerManager.SafeZone.transform) && botData.ServerManager.CurrentGameState == GameState.ARENA)
+        if (IsOutsideSafeZone(transform.position, SafeZoneServerController.Instance.SafeZone.transform) && MultiplayerServerManager.Instance.CurrentGameState == GameState.ARENA)
         {
-            Vector3 toSafeZone = GetSafeZoneDirection(transform.position, botData.ServerManager.SafeZone.transform);
+            Vector3 toSafeZone = GetSafeZoneDirection(transform.position, SafeZoneServerController.Instance.SafeZone.transform);
 
             // Blend wander/avoid with safe zone direction
             direction = Vector3.Lerp(direction, toSafeZone, 0.6f).normalized;

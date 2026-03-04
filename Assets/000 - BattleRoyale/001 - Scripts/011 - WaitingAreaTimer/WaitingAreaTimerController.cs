@@ -13,14 +13,10 @@ public class WaitingAreaTimerController : NetworkBehaviour
     [SerializeField] private TextMeshProUGUI timerTMP;
     [SerializeField] private TextMeshProUGUI timerGetReadyTMP;
 
-    [field: Header("DEBUGGER")]
-    [field: MyBox.ReadOnly][field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
-
     public override void Render()
     {
         if (HasInputAuthority)
         {
-            if (ServerManager == null) return;
 
             //if (ServerManager.CurrentGameState != GameState.WAITINGAREA)
             //{

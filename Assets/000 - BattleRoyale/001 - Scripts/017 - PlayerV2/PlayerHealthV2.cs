@@ -45,7 +45,6 @@ public class PlayerHealthV2 : NetworkBehaviour
     [SerializeField] AudioClip previousClip;
 
     [field: Header("DEBUGGER")]
-    [Networked][field: SerializeField] public DedicatedServerManager ServerManager { get; set; }
     [Networked][field: SerializeField] public float CurrentHealth { get; set; }
     //[Networked][field: SerializeField] public bool IsHit { get; set; }
     //[Networked][field: SerializeField] public bool IsHitUpper { get; set; }
@@ -289,20 +288,22 @@ public class PlayerHealthV2 : NetworkBehaviour
 
     private void CircleDamage()
     {
-        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+        if (!Runner) return;
 
-        if (!ServerManager.DonePlayerBattlePositions) return;
+        if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;
+
+        if (!MultiplayerServerManager.Instance.DonePlayerBattlePositions) return;
 
         if (IsDead) return;
 
-        float distanceFromCenter = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(ServerManager.SafeZone.transform.position.x, 0, ServerManager.SafeZone.transform.position.z));
-        float radius = ServerManager.SafeZone.CurrentShrinkSize.x / 2; // Adjust based on your implementation
+        float distanceFromCenter = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(SafeZoneServerController.Instance.SafeZone.transform.position.x, 0, SafeZoneServerController.Instance.SafeZone.transform.position.z));
+        float radius = SafeZoneServerController.Instance.SafeZone.CurrentShrinkSize.x / 2; // Adjust based on your implementation
 
         if (distanceFromCenter > radius)
         {
             DamagedSafeZone = true;
             SafeZoneDamaged++;
-            CurrentHealth -= Runner.DeltaTime * ((ServerManager.SafeZone.ShrinkSizeIndex + 1) / 2);
+            CurrentHealth -= Runner.DeltaTime * ((SafeZoneServerController.Instance.SafeZone.ShrinkSizeIndex + 1) / 2);
         }
         else
             DamagedSafeZone = false;
@@ -314,10 +315,10 @@ public class PlayerHealthV2 : NetworkBehaviour
 
             if (IsDead)
             {
-                playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
-                ServerManager.RemainingPlayers.Remove(playerOwnObjectEnabler.Username.ToString());
+                playerGameStats.PlayerPlacement = PlayerJoinedController.Instance.RemainingPlayers.Count;
+                PlayerJoinedController.Instance.RemainingPlayers.Remove(playerOwnObjectEnabler.Username.ToString());
 
-                ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} was killed outside safe area");
+                KillNotifServerController.Instance.KillNotifController.RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} was killed outside safe area");
             }
         }
     }
@@ -328,7 +329,7 @@ public class PlayerHealthV2 : NetworkBehaviour
 
         Hitted++;
 
-        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+        if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;
 
         //DamagedHit++;
 
@@ -378,10 +379,10 @@ public class PlayerHealthV2 : NetworkBehaviour
                 if (nobject.tag == "Player")
                     nobject.GetComponent<PlayerGameStats>().KillCount++;
 
-                playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
-                ServerManager.RemainingPlayers.Remove(playerOwnObjectEnabler.Username.ToString());
+                playerGameStats.PlayerPlacement = PlayerJoinedController.Instance.RemainingPlayers.Count;
+                PlayerJoinedController.Instance.RemainingPlayers.Remove(playerOwnObjectEnabler.Username.ToString());
 
-                ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{killer} KILLED {playerOwnObjectEnabler.Username}");
+                KillNotifServerController.Instance.KillNotifController.RPC_ReceiveKillNotification($"{killer} KILLED {playerOwnObjectEnabler.Username}");
             }
             //string statustext = killer == loader.Username ? $"{loader.Username} Killed themself" : $"{killer} KILLED {loader.Username}";
 
@@ -407,7 +408,7 @@ public class PlayerHealthV2 : NetworkBehaviour
 
         FallDamage++;
 
-        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+        if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;
 
         CurrentHealth -= FallDamageValue;
 
@@ -420,9 +421,9 @@ public class PlayerHealthV2 : NetworkBehaviour
 
             if (IsDead)
             {
-                playerGameStats.PlayerPlacement = ServerManager.RemainingPlayers.Count;
-                ServerManager.RemainingPlayers.Remove(playerOwnObjectEnabler.Username.ToString());
-                ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} killed by fall damage");
+                playerGameStats.PlayerPlacement = PlayerJoinedController.Instance.RemainingPlayers.Count;
+                PlayerJoinedController.Instance.RemainingPlayers.Remove(playerOwnObjectEnabler.Username.ToString());
+                KillNotifServerController.Instance.KillNotifController.RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} killed by fall damage");
             }
         }
     }

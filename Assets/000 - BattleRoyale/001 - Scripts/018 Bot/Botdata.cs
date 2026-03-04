@@ -38,7 +38,6 @@ public class Botdata : NetworkBehaviour
     [SerializeField] private int bloodIndex;
 
     [field: Header("DEBUGGER")]
-    [field: SerializeField][Networked] public DedicatedServerManager ServerManager { get; set; }
     [field: SerializeField][Networked] public int BotIndex { get; set; }
     [field: SerializeField][Networked] public string BotName { get; set; }
     [field: SerializeField][Networked] public float CurrentHealth { get; set; }
@@ -128,17 +127,17 @@ public class Botdata : NetworkBehaviour
 
     private void CircleDamage()
     {
-        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+        if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;
 
-        if (!ServerManager.DonePlayerBattlePositions) return;
+        if (!MultiplayerServerManager.Instance.DonePlayerBattlePositions) return;
 
         if (IsDead) return;
 
-        float distanceFromCenter = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(ServerManager.SafeZone.transform.position.x, 0, ServerManager.SafeZone.transform.position.z));
-        float radius = ServerManager.SafeZone.CurrentShrinkSize.x / 2; // Adjust based on your implementation
+        float distanceFromCenter = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(SafeZoneServerController.Instance.SafeZone.transform.position.x, 0, SafeZoneServerController.Instance.SafeZone.transform.position.z));
+        float radius = SafeZoneServerController.Instance.SafeZone.CurrentShrinkSize.x / 2; // Adjust based on your implementation
 
         if (distanceFromCenter > radius)
-            CurrentHealth -= Runner.DeltaTime * ((ServerManager.SafeZone.ShrinkSizeIndex + 1) / 2);
+            CurrentHealth -= Runner.DeltaTime * ((SafeZoneServerController.Instance.SafeZone.ShrinkSizeIndex + 1) / 2);
 
         if (CurrentHealth <= 0)
         {
@@ -147,9 +146,9 @@ public class Botdata : NetworkBehaviour
 
             if (IsDead)
             {
-                ServerManager.Bots.Remove(BotIndex);
+                BotSpawnerController.Instance.Bots.Remove(BotIndex);
 
-                ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{BotName} was killed outside safe area");
+                KillNotifServerController.Instance.KillNotifController.RPC_ReceiveKillNotification($"{BotName} was killed outside safe area");
 
                 if (Inventory.PrimaryWeapon != null) Inventory.PrimaryWeapon.DropWeapon();
 
@@ -162,9 +161,9 @@ public class Botdata : NetworkBehaviour
 
     public void FallDamage(float damage)
     {
-        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+        if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;
 
-        if (!ServerManager.DonePlayerBattlePositions) return;
+        if (!MultiplayerServerManager.Instance.DonePlayerBattlePositions) return;
 
         if (IsDead) return;
 
@@ -177,9 +176,9 @@ public class Botdata : NetworkBehaviour
 
             if (IsDead)
             {
-                ServerManager.Bots.Remove(BotIndex);
+                BotSpawnerController.Instance.Bots.Remove(BotIndex);
 
-                ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{BotName} killed themselves");
+                KillNotifServerController.Instance.KillNotifController.RPC_ReceiveKillNotification($"{BotName} killed themselves");
 
                 if (Inventory.PrimaryWeapon != null) Inventory.PrimaryWeapon.DropWeapon();
 
@@ -200,7 +199,7 @@ public class Botdata : NetworkBehaviour
 
         DamageAwareness = TickTimer.CreateFromSeconds(Runner, 10f);
 
-        if (ServerManager.CurrentGameState != GameState.ARENA) return;
+        if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;
 
         //DamagedHit++;
 
@@ -242,9 +241,9 @@ public class Botdata : NetworkBehaviour
                 if (nobject.tag == "Player")
                     nobject.GetComponent<PlayerGameStats>().KillCount++;
 
-                ServerManager.Bots.Remove(BotIndex);
+                BotSpawnerController.Instance.Bots.Remove(BotIndex);
 
-                ServerManager.KillNotifController.RPC_ReceiveKillNotification($"{killer} KILLED {BotName}");
+                KillNotifServerController.Instance.KillNotifController.RPC_ReceiveKillNotification($"{killer} KILLED {BotName}");
 
                 if (Inventory.PrimaryWeapon != null) Inventory.PrimaryWeapon.DropWeapon();
 
