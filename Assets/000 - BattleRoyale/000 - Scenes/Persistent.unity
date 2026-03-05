@@ -96,7 +96,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 20201, guid: 0000000000000000f000000000000000, type: 0}
+  m_LightingDataAsset: {fileID: 0}
   m_LightingSettings: {fileID: 0}
 --- !u!196 &4
 NavMeshSettings:
@@ -1082,6 +1082,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   userData: {fileID: 11400000, guid: 572330783343c064898434363e9b4af6, type: 2}
+  reconObj: {fileID: 0}
   notificationController: {fileID: 425614882}
   sceneController: {fileID: 425614883}
   errorPanelObj: {fileID: 1971114350}
@@ -1096,6 +1097,7 @@ MonoBehaviour:
   playerAmericaEastCountServer: 0
   playerAmericaWestCountServer: 0
   isOnGame: 0
+  retryReconnect: 0
 --- !u!1 &432989998
 GameObject:
   m_ObjectHideFlags: 0
@@ -4983,8 +4985,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2008200656}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.032258704, y: 0.8680373, z: -0.05689419, w: 0.49217254}
-  m_LocalPosition: {x: 256.83, y: 27.02, z: 186.56}
+  m_LocalRotation: {x: 0.012083344, y: -0.48220962, z: 0.006651889, w: 0.8759473}
+  m_LocalPosition: {x: 53.28398, y: 11.427272, z: 37392.844}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5122,11 +5124,11 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.5
-  far clip plane: 1000
-  field of view: 60
+  near clip plane: 0.1
+  far clip plane: 5000
+  field of view: 60.000004
   orthographic: 0
-  orthographic size: 5
+  orthographic size: 10
   m_Depth: 1
   m_CullingMask:
     serializedVersion: 2

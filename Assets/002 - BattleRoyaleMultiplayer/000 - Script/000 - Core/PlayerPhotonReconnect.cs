@@ -1,4 +1,6 @@
 using Fusion;
+using Fusion.Sockets;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -10,14 +12,16 @@ public class PlayerPhotonReconnect : MonoBehaviour
 {
     public static PlayerPhotonReconnect Instance;
 
-    //  ===============
+    //  =======================
 
     [SerializeField] private NetworkRunner runnerPrefab;
     [SerializeField] private UserData userData;
-
-    [Space]
     [SerializeField] private GameObject reconnectObject;
 
+    [Header("DEBUGGER")]
+    [SerializeField] private float lastOutOfFocusTime;
+
+    bool isPlayer;
     private NetworkRunner _runner;
     private string _sessionName;
     private GameMode _mode;
@@ -25,12 +29,18 @@ public class PlayerPhotonReconnect : MonoBehaviour
     private bool _reconnecting;
     private CancellationTokenSource _cts;
 
-    private void OnApplicationFocus(bool focus)
+    public void OnApplicationFocus(bool focus)
     {
-        Debug.Log($"APPLICATION FOCUS LOST: {focus}    GameManager null? {GameManager.Instance == null} ");
-        if (focus && GameManager.Instance != null)
+        if (!isPlayer) return;
+
+        if (focus)
         {
-            StartReconnect();
+            if (lastOutOfFocusTime > 0f && (Time.time - lastOutOfFocusTime) < 60f)
+                StartReconnect();
+        }
+        else
+        {
+            lastOutOfFocusTime = Time.time;
         }
     }
 
@@ -39,11 +49,12 @@ public class PlayerPhotonReconnect : MonoBehaviour
         Instance = this;
     }
 
-    public void SetMatchInfo(NetworkRunner runner, string sessionName, GameMode mode)
+    public void SetMatchInfo(NetworkRunner runner, string sessionName, GameMode mode, bool player = false)
     {
         _runner = runner;
         _sessionName = sessionName;
         _mode = mode;
+        isPlayer = player;
     }
 
     public async void StartReconnect()

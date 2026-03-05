@@ -43,6 +43,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     [SerializeField] private Transform target;
 
     [Space]
+    [SerializeField] private GameObject reconObj;
     [SerializeField] private GameObject canvasPlayer;
     [SerializeField] private GameObject playerVcam;
     [SerializeField] private GameObject playerAimVCam;
@@ -53,9 +54,6 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     [SerializeField] private GameObject playerSpawnLocCam;
     [SerializeField] private GameObject footstepSFX;
     [SerializeField] private GameObject punchSFX;
-
-    [Space]
-    [SerializeField] private GameObject reconnectObj;
 
     [field: Header("DEBUGGER")]
     [Networked][field: SerializeField] public bool NotEnoughPlayer { get; set; }
@@ -73,6 +71,16 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     private void OnDisable()
     {
         GameManager.Instance.SocketMngr.IsOnGame = false;
+    }
+
+    private void OnDestroy()
+    {
+        Destroy(canvasPlayer);
+        Destroy(playerVcam);
+        Destroy(playerAimVCam);
+        Destroy(playerMinimapCam);
+        Destroy(playerSpawnLocCam);
+        Destroy(target.gameObject);
     }
 
     public async override void Spawned()
@@ -130,8 +138,6 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         playerVcam.transform.parent = null;
         playerAimVCam.transform.parent = null;
 
-        NetworkRunner.CloudConnectionLost += OnCloudConnectionLost;
-
         MultiplayerServerManager.Instance.OnCurrentStateChange += StateChange;
     }
 
@@ -146,44 +152,6 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     public void RPC_ChangeDoneInit()
     {
         DoneInit = true;
-    }
-
-    private IEnumerator CheckArena()
-    {
-        //if (ServerManager.CurrentGameState == GameState.WAITINGAREA)
-        //    ServerManager.ArenaEnabler(true, false);
-        //else
-        //    ServerManager.ArenaEnabler(false, true);
-
-        yield return null;
-    }
-
-    private void OnCloudConnectionLost(NetworkRunner networkRunner, ShutdownReason shutdownReason, bool reconnecting)
-    {
-        Debug.Log($"Cloud Connection Lost: {shutdownReason} (Reconnecting: {reconnecting})");
-
-        if (!reconnecting) 
-        {
-            Debug.Log($"Server error: {shutdownReason}");
-
-            GameManager.Instance.NotificationController.ShowError($"There's a problem with the game server! Please queue up and try again. Error: {(shutdownReason == ShutdownReason.DisconnectedByPluginLogic ? "Server Shutdown due to unexpected error." : shutdownReason)}");
-
-            Runner.Shutdown();
-
-            GameManager.Instance.SceneController.CurrentScene = "Lobby";
-        }
-        else
-        {
-            StartCoroutine(WaitForReconnection(networkRunner));
-        }
-    }
-
-    private IEnumerator WaitForReconnection(NetworkRunner runner)
-    {
-        reconnectObj.SetActive(true);
-        yield return new WaitUntil(() => runner.IsInSession);
-        Debug.Log("Reconnected to the Cloud!");
-        reconnectObj.SetActive(false);
     }
 
     public override void Render()
@@ -236,7 +204,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
 
     IEnumerator InitializePlayer()
     {
-        PlayerPhotonReconnect.Instance.SetMatchInfo(Runner, Runner.SessionInfo.Name, GameMode.Client);
+        PlayerPhotonReconnect.Instance.SetMatchInfo(Runner, Runner.SessionInfo.Name, GameMode.Client, true);
 
         cameraRotation.InitializeCameraRotationSensitivity();
         movementV2.PlayerMovementInitialize();

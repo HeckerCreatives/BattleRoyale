@@ -150,6 +150,7 @@ public class SocketManager : MonoBehaviour
     // ============================
 
     [SerializeField] private UserData userData;
+    [SerializeField] private GameObject reconObj;
 
     [Space]
     [SerializeField] private NotificationController notificationController;
@@ -170,6 +171,7 @@ public class SocketManager : MonoBehaviour
     [SerializeField] private int playerAmericaEastCountServer;
     [SerializeField] private int playerAmericaWestCountServer;
     [SerializeField] private bool isOnGame;
+    [SerializeField] private int retryReconnect;
 
     //  ===========================
 
@@ -179,7 +181,18 @@ public class SocketManager : MonoBehaviour
 
     private const int MaxMissedPings = 3;
 
+    public Action DisconnectAction;
+
     //  ===========================
+
+    private void OnApplicationFocus(bool focus)
+    {
+        if (focus)
+        {
+            if (ConnectionStatus == "Disconnected")
+                Reconnect();
+        }
+    }
 
     public void InitializeSocket()
     {
@@ -374,13 +387,24 @@ public class SocketManager : MonoBehaviour
                 EmitEvent("disconnect", null);
                 GameManager.Instance.NoBGLoading.SetActive(false);
                 ConnectionStatus = "Disconnected";
+                DisconnectAction?.Invoke();
                 sceneController.CurrentScene = "Login";
+                userData.ResetLogin();
+                Socket = null;
+            });
+        }
+        else
+        {
+            GameManager.Instance.AddJob(() =>
+            {
+                EmitEvent("disconnect", null);
+                ConnectionStatus = "Disconnected";
                 Socket = null;
             });
         }
     }
 
-    private void Reconnect()
+    private async void Reconnect()
     {
         try
         {
@@ -389,6 +413,9 @@ public class SocketManager : MonoBehaviour
         catch(Exception e)
         {
             Debug.Log($"ERROR RECONNECTING: {e.ToString()}");
+
+            await Task.Delay(1000);
+
             Reconnect();
         }
     }

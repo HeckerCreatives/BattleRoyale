@@ -533,6 +533,11 @@ public class ClientMatchmakingController : MonoBehaviour
         //changeServerBtn.interactable = false;
         //changeServerBtn1.interactable = false;
 
+        GameManager.Instance.SocketMngr.DisconnectAction = () =>
+        {
+            ShutdownServer();
+        };
+
         if (userData.GameDetails.energy <= 0)
         {
             GameManager.Instance.NotificationController.ShowConfirmation("Your energy is empty! You can still queue for the game but you won't gain any xp and points. Would you like to continue?", () => 
@@ -698,6 +703,8 @@ public class ClientMatchmakingController : MonoBehaviour
         matchmakingObj.SetActive(false);
         matchBtn.SetActive(true);
 
+        ShutdownServer();
+
         waitingRoomObj.SetActive(false);
     }
 
@@ -729,7 +736,7 @@ public class ClientMatchmakingController : MonoBehaviour
 
             waitingRoomObj.SetActive(false);
 
-            //ShutdownServer();
+            ShutdownServer();
 
             GameManager.Instance.SocketMngr.EmitEvent("quitonmatch", new Dictionary<string, string>{
                 { "roomname", roomname }
@@ -739,6 +746,8 @@ public class ClientMatchmakingController : MonoBehaviour
 
     public async Task ShutdownServer()
     {
+        if (currentRunnerInstance == null) return;
+
         var tempRunner = currentRunnerInstance;
 
         if (ticketResponse != null)
