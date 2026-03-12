@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations;
+using UnityEngine.Playables;
 
 public class UpperBodyChanger
 {
@@ -14,8 +16,13 @@ public class UpperBodyChanger
 
     public void ChangeState(UpperBodyAnimations nextState)
     {
+        if (CurrentState == nextState)
+            return;
+
         CurrentState.Exit();
+
         nextState.Enter();
+
         CurrentState = nextState;
     }
 }

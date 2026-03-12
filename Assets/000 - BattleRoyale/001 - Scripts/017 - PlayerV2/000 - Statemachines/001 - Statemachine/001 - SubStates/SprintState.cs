@@ -15,125 +15,157 @@ public class SprintState : PlayerOnGround
     {
         base.Enter();
 
-        playerPlayables.CancelInvoke();
+        if (playerPlayables.HasInputAuthority)
+        {
+            playerPlayables.CancelInvoke();
 
-        playerPlayables.InvokeRepeating(nameof(playerPlayables.PlayFootstepSound), (animationLength * 0.20f), animationLength);
-        playerPlayables.InvokeRepeating(nameof(playerPlayables.PlayFootstepSound), (animationLength * 0.80f), animationLength);
+            playerPlayables.InvokeRepeating(nameof(playerPlayables.PlayFootstepSound), animationLength * 0.20f, animationLength);
+            playerPlayables.InvokeRepeating(nameof(playerPlayables.PlayFootstepSound), animationLength * 0.80f, animationLength);
+        }
     }
 
     public override void Exit()
     {
         base.Exit();
 
-        playerPlayables.CancelInvoke();
+        if (playerPlayables.HasInputAuthority)
+            playerPlayables.CancelInvoke();
     }
 
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
-        WeaponsChecker();
-        Animation();
-        playerPlayables.stamina.DecreaseStamina(20f);
+
+
+        if (playerPlayables.HasInputAuthority)
+        {
+            var predictedState = GetNextLowerSprintState();
+
+            if (predictedState != null && playablesChanger.CurrentState != predictedState)
+            {
+                playablesChanger.ChangeState(predictedState);
+            }
+        }
+
+        if (playerPlayables.HasStateAuthority)
+        {
+            var nextState = GetNextLowerSprintState();
+
+            if (nextState != null && playablesChanger.CurrentState != nextState)
+            {
+                playablesChanger.ChangeState(nextState);
+            }
+            playerPlayables.stamina.DecreaseStamina(20f);
+        }
     }
 
-    private void Animation()
+    private AnimationPlayable GetNextLowerSprintState()
     {
-        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RollPlayable);
+        var lower = playerPlayables.lowerBodyMovement;
+        var health = playerPlayables.healthV2;
 
-        if (playerPlayables.healthV2.IsDead)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
+        // action / override priority first
+        if (health.IsDead)
+            return lower.DeathPlayable;
 
-        if (!characterController.IsGrounded)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
+        if (health.IsStagger)
+            return lower.StaggerHitPlayable;
 
         if (playerMovement.IsJumping)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.JumpPlayable);
+            return lower.JumpPlayable;
+
+        if (!characterController.IsGrounded)
+            return lower.FallingPlayable;
 
         if (playerMovement.IsBlocking)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BlockPlayable);
+            return lower.BlockPlayable;
 
         if (playerMovement.Attacking)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.Punch1Playable);
+            return lower.Punch1Playable;
 
         if (playerMovement.IsHealing)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HealPlayable);
+            return lower.HealPlayable;
 
         if (playerMovement.IsRepairing)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RepairPlayable);
+            return lower.RepairPlayable;
 
         if (playerMovement.IsTrapping)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.TrappingPlayable);
-        }
+            return lower.TrappingPlayable;
 
-        //if (playerPlayables.healthV2.IsHit)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-        //}
+        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
+            return lower.RollPlayable;
 
-        if (playerPlayables.healthV2.IsStagger)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
-        }
+        return GetLowerSprintLocomotionState();
     }
 
-    private void WeaponsChecker()
+    private AnimationPlayable GetLowerSprintLocomotionState()
     {
-        if (playerPlayables.stamina.Stamina > 0f)
+        var lower = playerPlayables.lowerBodyMovement;
+        var inventory = playerPlayables.inventory;
+
+        bool isMoving = playerMovement.XMovement != 0f || playerMovement.YMovement != 0f;
+        bool canSprint = playerMovement.IsSprint && playerPlayables.stamina.Stamina > 0f;
+
+        if (!isMoving)
         {
-            if (playerPlayables.inventory.WeaponIndex == 2)
+            switch (inventory.WeaponIndex)
             {
-                if (playerPlayables.inventory.PrimaryWeaponID() == "001")
-                {
-                    if (playerMovement.MoveDirection != Vector3.zero)
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordSprintPlayable);
+                case 2:
+                    {
+                        string primaryId = inventory.PrimaryWeaponID();
+                        if (primaryId == "001") return lower.SwordIdlePlayable;
+                        if (primaryId == "002") return lower.SpearIdlePlayable;
+                        break;
+                    }
 
-                    return;
-                }
-
-                else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
-                {
-                    if (playerMovement.MoveDirection != Vector3.zero)
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearSprintPlayable);
-
-                    return;
-                }
-            }
-            else if (playerPlayables.inventory.WeaponIndex == 3)
-            {
-                if (playerPlayables.inventory.SecondaryWeaponID() == "003")
-                {
-                    if (playerMovement.MoveDirection != Vector3.zero)
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleSprintPlayable);
-
-                    return;
-                }
-                else if (playerPlayables.inventory.SecondaryWeaponID() == "004")
-                {
-                    if (playerMovement.MoveDirection != Vector3.zero)
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowSprintPlayable);
-                }
+                case 3:
+                    {
+                        string secondaryId = inventory.SecondaryWeaponID();
+                        if (secondaryId == "003") return lower.RifleIdlePlayable;
+                        if (secondaryId == "004") return lower.BowIdlePlayable;
+                        break;
+                    }
             }
 
-            if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
-            {
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.IdlePlayable);
-            }
-            else if (!playerMovement.IsSprint)
-            {
-                if (playerMovement.MoveDirection != Vector3.zero)
-                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RunPlayable);
-            }
+            return lower.IdlePlayable;
         }
-        else
+
+        switch (inventory.WeaponIndex)
         {
-            if (playerMovement.MoveDirection == Vector3.zero)
-            {
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.IdlePlayable);
-            }
-            else
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RunPlayable);
+            case 2:
+                {
+                    string primaryId = inventory.PrimaryWeaponID();
+
+                    if (canSprint)
+                    {
+                        if (primaryId == "001") return lower.SwordSprintPlayable;
+                        if (primaryId == "002") return lower.SpearSprintPlayable;
+                    }
+
+                    if (primaryId == "001") return lower.SwordRunPlayable;
+                    if (primaryId == "002") return lower.SpearRunPlayable;
+                    break;
+                }
+
+            case 3:
+                {
+                    string secondaryId = inventory.SecondaryWeaponID();
+
+                    if (canSprint)
+                    {
+                        if (secondaryId == "003") return lower.RifleSprintPlayable;
+                        if (secondaryId == "004") return lower.BowSprintPlayable;
+                    }
+
+                    if (secondaryId == "003") return lower.RifleRunPlayable;
+                    if (secondaryId == "004") return lower.BowRunPlayable;
+                    break;
+                }
         }
+
+        if (canSprint)
+            return lower.SprintPlayable;
+
+        return lower.RunPlayable;
     }
 }

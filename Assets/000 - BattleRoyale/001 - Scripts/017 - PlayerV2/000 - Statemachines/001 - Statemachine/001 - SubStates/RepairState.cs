@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class RepairState : AnimationPlayable
+public class RepairState : PlayerOnGround
 {
     float healtimer;
     float timer;

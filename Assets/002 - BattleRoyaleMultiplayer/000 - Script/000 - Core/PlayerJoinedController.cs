@@ -275,6 +275,19 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 // Restore their PlayerRef
                 existingCore.Object.AssignInputAuthority(player);
 
+                if (MultiplayerServerManager.Instance.CurrentGameState == GameState.WAITINGPLAYERS)
+                {
+                    MultiplayerServerManager.Instance.CurrentGameState = GameState.ARENA;
+
+                    MultiplayerServerManager.Instance.DonePlayerBattlePositions = true;
+                    SafeZoneServerController.Instance.SafeZoneTimer = DedicatedServerManager.Instance.SafeZoneTimeToShrink;
+                    SafeZoneServerController.Instance.CurrentSafeZoneState = SafeZoneState.TIMER;
+
+                    if (DedicatedServerManager.Instance.PrivateServer)
+                        MultiplayerServerManager.Instance.ChangeServerStatus();
+                }
+
+
                 Debug.Log($"?? Player {playerId} reconnected, reassigned authority.");
 
                 return;

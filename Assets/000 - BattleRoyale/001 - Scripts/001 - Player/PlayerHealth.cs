@@ -120,6 +120,8 @@ public class PlayerHealth : NetworkBehaviour
                 case nameof(DamagedNoHit):
                     if (!HasInputAuthority) return;
 
+                    if (DamagedNoHit <= 0) return;
+
                     if (damageIndicatorLT != 0) LeanTween.cancel(damageIndicatorLT);
 
                     damageIndicatorLT = LeanTween.color(damageIndicator.rectTransform, new Color(255f, 255f, 255f, 255f), 0.12f).setEase(LeanTweenType.easeInOutSine).setOnComplete(() =>

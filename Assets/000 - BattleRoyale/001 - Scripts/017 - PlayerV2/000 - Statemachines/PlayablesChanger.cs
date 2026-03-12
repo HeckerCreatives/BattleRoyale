@@ -1,6 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Animations;
+using UnityEngine.InputSystem.LowLevel;
+using UnityEngine.Playables;
 
 public class PlayablesChanger
 {
@@ -14,15 +18,13 @@ public class PlayablesChanger
 
     public void ChangeState(AnimationPlayable nextState)
     {
-        CurrentState.Exit();
-        nextState.Enter();
-        CurrentState = nextState;
-    }
+        if (CurrentState == nextState)
+            return;
 
-    private IEnumerator DelayedEnter(AnimationPlayable nextState)
-    {
-        yield return null; // wait 1 frame
+        CurrentState.Exit();
+
         nextState.Enter();
+
         CurrentState = nextState;
     }
 }

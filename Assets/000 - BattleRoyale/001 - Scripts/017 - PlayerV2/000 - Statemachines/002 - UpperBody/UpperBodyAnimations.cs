@@ -9,10 +9,10 @@ public class UpperBodyAnimations
 {
     public float animationLength;
 
-    string animationname;
+    public string animationname;
     string mixername;
 
-    List<string> animations;
+    public List<string> animations;
     List<string> mixers;
 
     int ltEnter;
@@ -25,8 +25,8 @@ public class UpperBodyAnimations
     public UpperBodyChanger playablesChanger;
     public PlayerPlayables playerPlayables;
     public SimpleKCC characterController;
-    AnimationClipPlayable animationClipPlayable;
-    bool oncePlay;
+    public AnimationClipPlayable animationClipPlayable;
+    public bool oncePlay;
 
     //  ======================
 
@@ -51,20 +51,15 @@ public class UpperBodyAnimations
         this.animationLength = animationLength;
         this.animationClipPlayable = animationClipPlayable;
         this.oncePlay = oncePlay;
-
-        if (oncePlay)
-        {
-            animationClipPlayable.SetTime(0f);
-            animationClipPlayable.Pause();
-        }
     }
 
     public virtual void Enter()
     {
-        animationClipPlayable.SetTime(0f);
-
         if (oncePlay)
+        {
+            animationClipPlayable.SetTime(0f);
             animationClipPlayable.Play();
+        }
 
         int mixerIndex = mixers.IndexOf(mixername);
         int animIndex = animations.IndexOf(animationname);
@@ -72,18 +67,17 @@ public class UpperBodyAnimations
         if (ltExit != 0) LeanTween.cancel(ltExit);
 
         ltEnter = LeanTween.value(playerPlayables.gameObject, mixerPlayable.GetInputWeight(animIndex), 1f, playerPlayables.enterSpeed)
-        .setOnUpdate((float weight) => {
+        .setOnUpdate((float weight) =>
+        {
             mixerPlayable.SetInputWeight(animIndex, weight);
         }).setOnComplete(() => mixerPlayable.SetInputWeight(animIndex, 1f)).setEase(LeanTweenType.linear).id;
 
-        if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority)
-        {
-            playerPlayables.PlayableState = mixername;
-            playerPlayables.PlayableUpperBoddyAnimationIndex = animIndex;
-        }
+        //mixerPlayable.SetInputWeight(animIndex, 1f);
 
         if (playerPlayables.HasStateAuthority)
         {
+            playerPlayables.PlayableState = mixername;
+            playerPlayables.PlayableUpperBoddyAnimationIndex = animIndex;
             playerPlayables.SetAnimationUpperTick();
         }
     }
@@ -96,15 +90,11 @@ public class UpperBodyAnimations
         if (ltEnter != 0) LeanTween.cancel(ltEnter);
 
         ltExit = LeanTween.value(playerPlayables.gameObject, mixerPlayable.GetInputWeight(animIndex), 0f, playerPlayables.exitSpeed)
-        .setOnUpdate((float weight) => {
+        .setOnUpdate((float weight) =>
+        {
             mixerPlayable.SetInputWeight(animIndex, weight);
         }).setOnComplete(() => mixerPlayable.SetInputWeight(animIndex, 0f)).setEase(LeanTweenType.linear).id;
     }
-
-    //public virtual void LogicUpdate()
-    //{
-    //    if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority) return;
-    //}
 
     public virtual void NetworkUpdate() { }
 

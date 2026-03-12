@@ -345,8 +345,8 @@ public class ClientMatchmakingController : MonoBehaviour
 
         //currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
 
-        enteringMatchTimerTMP.text = $"{5:n0}";
-        enteringMatchTimer = 5f;
+        enteringMatchTimerTMP.text = $"{10:n0}";
+        enteringMatchTimer = 10f;
 
         GameManager.Instance.NotificationController.CloseConfirmationAction(false);
         GameManager.Instance.NotificationController.CloseErrorAction(false);

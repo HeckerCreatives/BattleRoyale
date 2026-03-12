@@ -143,9 +143,9 @@ public class PlayerPlayables : NetworkBehaviour
 
     public override void Render()
     {
-        if (HasStateAuthority || HasInputAuthority) return;
-
         if (lowerBodyChanger.CurrentState == null || upperBodyChanger.CurrentState == null) return;
+
+        if (HasStateAuthority || HasInputAuthority) return;
 
         upperBodyChanger.CurrentState.NetworkLocalUpdate();
 
@@ -179,10 +179,6 @@ public class PlayerPlayables : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
-        if (!HasStateAuthority && !HasInputAuthority) return;
-
-        TickRateAnimation = Runner.Tick * Runner.DeltaTime;
-
         if (lowerBodyChanger.CurrentState == null || upperBodyChanger.CurrentState == null) return;
 
         upperBodyChanger.CurrentState.NetworkUpdate();
@@ -191,6 +187,7 @@ public class PlayerPlayables : NetworkBehaviour
 
     public void InitializePlayables()
     {
+        // NOW create changers after mixers are valid
         lowerBodyChanger = new PlayablesChanger();
         upperBodyChanger = new UpperBodyChanger();
 
@@ -199,21 +196,22 @@ public class PlayerPlayables : NetworkBehaviour
         // Build your animation graph
         finalMixer = AnimationLayerMixerPlayable.Create(playableGraph, 2);
 
-        // Connect animation playables into the mixer
-        playableGraph.Connect(lowerBodyMovement.Initialize(), 0, finalMixer, 0);
-        finalMixer.SetInputWeight(0, 1f);
-        //finalMixer.SetLayerMaskFromAvatarMask(0, lowerBodyMask);
+        // Initialize movement first so their mixers get created
+        var lowerPlayable = lowerBodyMovement.Initialize();
         lowerBodyChanger.Initialize(lowerBodyMovement.IdlePlayable);
-
-        playableGraph.Connect(upperBodyMovement.Initialize(), 0, finalMixer, 1);
-        finalMixer.SetInputWeight(1, 1f);
-        finalMixer.SetLayerMaskFromAvatarMask(1, upperBodyMask);
+        var upperPlayable = upperBodyMovement.Initialize();
         upperBodyChanger.Initialize(upperBodyMovement.IdlePlayables);
 
-        Transform parentT = bone.parent; // Spine1
-        // Auto-pick axes ONCE using current bind pose (good enough for Mixamo):
-        // Pitch axis should align with the bone axis most similar to the parent's RIGHT in world.
-        // Roll axis should align with bone axis most similar to the parent's FORWARD in world.
+        // Connect animation playables into the mixer
+        playableGraph.Connect(lowerPlayable, 0, finalMixer, 0);
+        finalMixer.SetInputWeight(0, 1f);
+
+        playableGraph.Connect(upperPlayable, 0, finalMixer, 1);
+        finalMixer.SetInputWeight(1, 1f);
+        finalMixer.SetLayerMaskFromAvatarMask(1, upperBodyMask);
+
+        Transform parentT = bone.parent;
+
         rollAxisLocal = PickLocalAxisClosestToWorldDir(bone, parentT.forward);
 
         job = new LookAtJobBoneIK
@@ -225,18 +223,14 @@ public class PlayerPlayables : NetworkBehaviour
             pitchDeg = 0f
         };
 
-        // Create script playable with input slot
         lookAtPlayable = AnimationScriptPlayable.Create(playableGraph, job);
         lookAtPlayable.SetInputCount(1);
-        // Connect finalMixer ➜ lookAtPlayable
         lookAtPlayable.ConnectInput(0, finalMixer, 0);
         lookAtPlayable.SetInputWeight(0, 1f);
 
-        // Output
         var playableOutput = AnimationPlayableOutput.Create(playableGraph, "Animation", playerAnimator);
         playableOutput.SetSourcePlayable(lookAtPlayable);
 
-        // Play!
         playableGraph.Play();
     }
 
@@ -308,9 +302,19 @@ public class PlayerPlayables : NetworkBehaviour
 
     public void SpawnArrows() => Runner.Spawn(arrows);
 
-    public void PlayJumpSoundEffect() => footstepSource.PlayOneShot(jumpClip);
+    public void PlayJumpSoundEffect()
+    {
+        if (HasStateAuthority) return;
 
-    public void PlayRollSoundEffect() => footstepSource.PlayOneShot(rollClip);
+        footstepSource.PlayOneShot(jumpClip);
+    }
+
+    public void PlayRollSoundEffect()
+    {
+        if (HasStateAuthority) return;
+
+        footstepSource.PlayOneShot(rollClip);
+    }
 
     public void CheckGround()
     {

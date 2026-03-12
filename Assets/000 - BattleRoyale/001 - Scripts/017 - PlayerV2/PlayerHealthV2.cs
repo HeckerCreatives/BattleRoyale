@@ -52,7 +52,7 @@ public class PlayerHealthV2 : NetworkBehaviour
     [Networked][field: SerializeField] public bool IsStagger { get; set; }
     [Networked][field: SerializeField] public bool IsGettingUp { get; set; }
     [Networked][field: SerializeField] public bool DamagedSafeZone { get; set; }
-    [Networked][field: SerializeField] public int SafeZoneDamaged { get; set; }
+    [Networked][field: SerializeField] public float SafeZoneDamaged { get; set; }
     [Networked][field: SerializeField] public float FallDamageValue { get; set; }
     [Networked][field: SerializeField] public int FallDamage { get; set; }
     [Networked][field: SerializeField] public bool IsDead { get; set; }
@@ -95,6 +95,7 @@ public class PlayerHealthV2 : NetworkBehaviour
                     healthSlider.value = CurrentHealth / 100;
                     break;
                 case nameof(Hitted):
+                    if (!HasInputAuthority) return;
 
                     Debug.Log("HITTED DAMAGED");
 
@@ -102,14 +103,12 @@ public class PlayerHealthV2 : NetworkBehaviour
 
                     HitSoundEffects();
 
-                    if (HasInputAuthority && !HasStateAuthority)
-                    {
-                        ShakerCamera();
+                    ShakerCamera();
 
-                        Invoke(nameof(OffCameraShaker), 0.15f);
-                    }
+                    Invoke(nameof(OffCameraShaker), 0.15f);
                     break;
                 case nameof(IsStagger):
+                    if (!HasInputAuthority) return;
 
                     if (!IsStagger) return;
 
@@ -119,15 +118,13 @@ public class PlayerHealthV2 : NetworkBehaviour
 
                     break;
                 case nameof(SafeZoneDamaged):
-
-                    if (SafeZoneDamaged <= 0) return;
-
-                    Debug.Log("SAFE ZONE DAMAGE");
+                    if (!HasInputAuthority) return;
 
                     DamageIndicatorWithoutBlood();
 
                     break;
                 case nameof(FallDamage):
+                    if (!HasInputAuthority) return;
 
                     Debug.Log("FALL DAMAGED");
 
@@ -136,18 +133,19 @@ public class PlayerHealthV2 : NetworkBehaviour
 
                     break;
                 case nameof(IsDead):
+                    if (!HasInputAuthority) return;
                     DeathSoundEffect();
                     break;
                 case nameof(Healed):
 
-                    if (HasStateAuthority || HasInputAuthority) return;
+                    if (HasStateAuthority) return;
 
                     healParticles.Play();
 
                     break;
                 case nameof(Repaired):
 
-                    if (HasStateAuthority || HasInputAuthority) return;
+                    if (HasStateAuthority) return;
 
                     repairParticles.Play();
 
@@ -290,6 +288,8 @@ public class PlayerHealthV2 : NetworkBehaviour
     {
         if (!Runner) return;
 
+        if (!HasStateAuthority) return;
+
         if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;
 
         if (!MultiplayerServerManager.Instance.DonePlayerBattlePositions) return;
@@ -302,7 +302,7 @@ public class PlayerHealthV2 : NetworkBehaviour
         if (distanceFromCenter > radius)
         {
             DamagedSafeZone = true;
-            SafeZoneDamaged++;
+            SafeZoneDamaged = Runner.Tick;
             CurrentHealth -= Runner.DeltaTime * ((SafeZoneServerController.Instance.SafeZone.ShrinkSizeIndex + 1) / 2);
         }
         else
@@ -325,6 +325,8 @@ public class PlayerHealthV2 : NetworkBehaviour
 
     public void ApplyDamage(float damage, string killer, NetworkObject nobject)
     {
+        if (!HasStateAuthority) return;
+
         if (IsDead) return;
 
         Hitted++;
@@ -404,6 +406,8 @@ public class PlayerHealthV2 : NetworkBehaviour
 
     public void FallDamae()
     {
+        if (!HasStateAuthority) return;
+
         if (IsDead) return;
 
         FallDamage++;

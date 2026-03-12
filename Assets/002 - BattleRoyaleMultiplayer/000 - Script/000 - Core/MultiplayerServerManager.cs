@@ -118,6 +118,10 @@ public class MultiplayerServerManager : NetworkBehaviour
 
         if (GameManager.Instance != null)
             GameManager.Instance.AudioController.StopBGMusic();
+        else
+        {
+            StartServer();
+        }
     }
 
     public async void StartServer()
@@ -170,8 +174,6 @@ public class MultiplayerServerManager : NetworkBehaviour
         }
     }
 
-    
-
     public async void SetSpawnPositionPlayers()
     {
         await Shuffler.Shuffle(spawnBattleAreaPositions);
@@ -206,8 +208,6 @@ public class MultiplayerServerManager : NetworkBehaviour
                 break;
         }
     }
-
-    
 
     public IEnumerator PostRequest(string route, string query, Dictionary<string, object> paramsBody, bool loaderEndState, System.Action<System.Object> callback, System.Action errorAction)
     {

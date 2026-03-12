@@ -34,11 +34,10 @@ public class PlayerShrinkZoneTimer : NetworkBehaviour
             //distanceSlider.value = 0;
         }
 
-
         float percentage = Mathf.InverseLerp(
-            SafeZoneServerController.Instance.SafeZone.StartShrinkSize.magnitude,
-            SafeZoneServerController.Instance.SafeZone.CurrentShrink.magnitude,
-            SafeZoneServerController.Instance.SafeZone.CurrentShrinkSize.magnitude
+            SafeZoneServerController.Instance.SafeZone.CurrentShrink.x,
+            SafeZoneServerController.Instance.SafeZone.StartShrinkSize.x,
+            SafeZoneServerController.Instance.SafeZone.CurrentShrinkSize.x
         );
 
         safeZoneSlider.value = percentage;

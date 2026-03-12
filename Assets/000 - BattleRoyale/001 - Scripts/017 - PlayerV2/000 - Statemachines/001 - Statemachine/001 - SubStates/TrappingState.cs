@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 
-public class TrappingState : AnimationPlayable
+public class TrappingState : PlayerOnGround
 {
     float timer;
     bool canAction;

@@ -26,6 +26,8 @@ public class PlayerStamina : NetworkBehaviour
 
     public void RecoverStamina(float speed)
     {
+        if (!HasStateAuthority) return;
+
         if (Stamina >= startingStamina) return;
 
         Stamina += speed * Runner.DeltaTime;
@@ -33,6 +35,8 @@ public class PlayerStamina : NetworkBehaviour
 
     public void DecreaseStamina(float speed)
     {
+        if (!HasStateAuthority) return;
+
         if (Stamina <= 0f) return;
 
         Stamina -= speed * Runner.DeltaTime;
@@ -40,6 +44,8 @@ public class PlayerStamina : NetworkBehaviour
 
     public void ReduceStamina(float reduceAmount)
     {
+        if (!HasStateAuthority) return;
+
         Stamina -= reduceAmount;
     }
 }

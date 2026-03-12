@@ -3,88 +3,125 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Playables;
 
 public class PlayerBlockPlayable : UpperNoAimState
 {
-    float timer;
-    bool canAction;
     public PlayerBlockPlayable(SimpleKCC characterController, UpperBodyChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
     {
     }
-
-    public override void Enter()
-    {
-        base.Enter();
-
-        //blockwindowend = playerPlayables.TickRateAnimation + 0.25f;
-        timer = playerPlayables.TickRateAnimation + animationLength;
-        canAction = true;
-    }
-
-
-    public override void Exit()
-    {
-        base.Exit();
-
-        canAction = false;
-    }
-
 
     public override void NetworkUpdate()
     {
         base.NetworkUpdate();
 
-        playerPlayables.healthV2.IsStagger = false;
+        // Be careful with this. Only keep it if it is truly intended gameplay logic.
+        //playerPlayables.healthV2.IsStagger = false;
 
-        Animation();
+        TryExitBlock();
     }
 
-    private void Animation()
+    private void TryExitBlock()
     {
-        if (playerPlayables.TickRateAnimation >= timer && canAction)
+        if (animationClipPlayable.GetTime() < animationLength - 0.025f)
+            return;
+
+
+        if (playerPlayables.HasInputAuthority)
         {
-            if (playerMovement.MoveDirection != Vector3.zero)
+            var predictedState = GetPostBlockUpperState();
+
+            if (predictedState != null && playablesChanger.CurrentState != predictedState)
             {
-                if (playerPlayables.inventory.WeaponIndex == 1)
-                {
-                    if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SprintPlayables);
-
-                    else
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RunPlayables);
-                }
-                else if (playerPlayables.inventory.WeaponIndex == 2)
-                {
-                    if (playerPlayables.inventory.PrimaryWeaponID() == "001")
-                    {
-                        if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordSprint);
-
-                        else
-                            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordRunPlayable);
-                    }
-                    else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
-                    {
-                        if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearSprintPlayable);
-
-                        else
-                            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearRunPlayable);
-                    }
-                }
-            }
-            else
-            {
-                if (playerPlayables.inventory.WeaponIndex == 1)
-                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.IdlePlayables);
-                else if (playerPlayables.inventory.WeaponIndex == 2)
-                {
-                    if (playerPlayables.inventory.PrimaryWeaponID() == "001")
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordIdlePlayable);
-                    else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearIdle);
-                }
+                playablesChanger.ChangeState(predictedState);
             }
         }
+
+        if (playerPlayables.HasStateAuthority)
+        {
+            var nextState = GetPostBlockUpperState();
+
+            if (nextState != null && playablesChanger.CurrentState != nextState)
+            {
+                playablesChanger.ChangeState(nextState);
+            }
+        }
+    }
+
+    private UpperBodyAnimations GetPostBlockUpperState()
+    {
+        var upper = playerPlayables.upperBodyMovement;
+        var inventory = playerPlayables.inventory;
+
+        if (!characterController.IsGrounded)
+            return upper.FallingPlayables;
+
+        bool isMoving = playerMovement.XMovement != 0f || playerMovement.YMovement != 0f;
+        bool canSprint = playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f;
+
+        switch (inventory.WeaponIndex)
+        {
+            case 1:
+                {
+                    //if (!isMoving)
+                    //    return upper.IdlePlayables;
+
+                    if (canSprint)
+                        return upper.SprintPlayables;
+
+                    //return upper.RunPlayables;
+                    return upper.IdlePlayables;
+                }
+
+            case 2:
+                {
+                    string primaryId = inventory.PrimaryWeaponID();
+
+                    if (!isMoving)
+                    {
+                        if (primaryId == "001") return upper.SwordIdlePlayable;
+                        if (primaryId == "002") return upper.SpearIdle;
+                    }
+                    else
+                    {
+                        if (canSprint)
+                        {
+                            if (primaryId == "001") return upper.SwordSprint;
+                            if (primaryId == "002") return upper.SpearSprintPlayable;
+                        }
+
+                        if (primaryId == "001") return upper.SwordRunPlayable;
+                        if (primaryId == "002") return upper.SpearRunPlayable;
+                    }
+
+                    break;
+                }
+
+            case 3:
+                {
+                    string secondaryId = inventory.SecondaryWeaponID();
+
+                    if (!isMoving)
+                    {
+                        if (secondaryId == "003") return upper.RifleIdle;
+                        if (secondaryId == "004") return upper.BowIdlePlayable;
+                    }
+                    else
+                    {
+                        if (canSprint)
+                        {
+                            if (secondaryId == "003") return upper.RifleSprintPlayable;
+                            if (secondaryId == "004") return upper.BowSprintPlayable;
+                        }
+
+                        if (secondaryId == "003") return upper.RifleRunPlayable;
+                        if (secondaryId == "004") return upper.BowRunPlayable;
+                    }
+
+                    break;
+                }
+        }
+
+        return upper.IdlePlayables;
     }
 }

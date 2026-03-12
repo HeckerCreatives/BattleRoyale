@@ -42,7 +42,8 @@ public class PlayerMovementV2 : NetworkBehaviour
     [Space]
     [SerializeField] private float moveSpeed;
     [SerializeField] private float sprintSpeed;
-    [SerializeField] private float jumpHeight;
+    [SerializeField] private float jumpHeight; 
+    [SerializeField] private float blockResumeDuration = 0.08f;
 
     [Space]
     public RectTransform joystickArea;
@@ -52,6 +53,7 @@ public class PlayerMovementV2 : NetworkBehaviour
     [SerializeField] private GameplayController gameplayController;
     [SerializeField] private Vector3 inputVector;
     [SerializeField] private float sprintCooldown;
+    [SerializeField] private float BlockResumeTimer;
 
     [field: Header("DEBUGGER NETWORK")]
     [field: SerializeField][Networked] public Vector3 MoveDirection { get; set; }
@@ -384,6 +386,11 @@ public class PlayerMovementV2 : NetworkBehaviour
         //if (playerHealth.CurrentHealth <= 0) return;
     }
 
+    public void StartBlockResumeBuffer()
+    {
+        BlockResumeTimer = blockResumeDuration;
+    }
+
     public void MoveCharacter()
     {
         MoveDir = PlayerLookDirection();
@@ -405,6 +412,35 @@ public class PlayerMovementV2 : NetworkBehaviour
         characterController.Move(MoveDirection, JumpImpulse);
         playerplayables.CheckGround();
     }
+
+    //public void MoveCharacter()
+    //{
+    //    if (BlockResumeTimer > 0f)
+    //        BlockResumeTimer -= Runner.DeltaTime;
+
+    //    MoveDir = PlayerLookDirection();
+
+    //    if (MoveDir.sqrMagnitude > 0.01f && !IsRoll && !CurrentlyAttacking)
+    //    {
+    //        MoveDir.Normalize();
+
+    //        Quaternion targetRotation = Quaternion.LookRotation(MoveDir);
+    //        mainCharObj.rotation = Quaternion.Slerp(mainCharObj.rotation, targetRotation, Runner.DeltaTime * 10f);
+    //    }
+
+    //    float moveSpeedValue = IsSprint ? SprintSpeed : MoveSpeed;
+
+    //    float resumeMultiplier = 1f;
+    //    if (BlockResumeTimer > 0f)
+    //    {
+    //        resumeMultiplier = 1f - (BlockResumeTimer / blockResumeDuration);
+    //    }
+
+    //    MoveDirection = MoveDir * moveSpeedValue * resumeMultiplier * Runner.DeltaTime;
+
+    //    characterController.Move(MoveDirection, JumpImpulse);
+    //    playerplayables.CheckGround();
+    //}
 
     public void MoveWithAim()
     {
@@ -480,6 +516,10 @@ public class PlayerMovementV2 : NetworkBehaviour
         {
             IsJumping = true;
             JumpImpulse = jumpHeight;
+        }
+        else
+        {
+            IsJumping = false;
         }
     }
 

@@ -8,6 +8,16 @@ using UnityEngine.SceneManagement;
 
 public class DedicatedServerManager : MonoBehaviour
 {
+    public static DedicatedServerManager Instance;
+
+    //  ==========================
+
+    public float SafeZoneTimeToShrink { get => safeZoneTimeToShrink; }
+
+    public bool PrivateServer { get => usePrivateServer; }
+
+    //  ==========================
+
     public NetworkObject serverManager;
 
     [Space]
@@ -22,6 +32,9 @@ public class DedicatedServerManager : MonoBehaviour
     [SerializeField] private int maxPlayers;
 
     [Space]
+    [SerializeField] private float safeZoneTimeToShrink;
+
+    [Space]
     [SerializeField] private List<Transform> spawnWaitingAreaPositions;
     [SerializeField] private List<Transform> createSpawnLocations;
 
@@ -29,13 +42,17 @@ public class DedicatedServerManager : MonoBehaviour
     [SerializeField] private NetworkRunner networkRunner;
     [SerializeField] private string sessionname;
 
-    public void Awake()
+    public async void Awake()
     {
+        Instance = this;
+
         if (GameManager.Instance == null)
         {
             Debug.Log("THIS IS A SERVER INSTANTIATING SERVER MANAGER");
 
-            StartGame();
+            await spawnWaitingAreaPositions.Shuffle();
+
+            await StartGame();
 
             Debug.Log("DONE SERVER INSTANTIATING");
         }
@@ -175,7 +192,7 @@ public class DedicatedServerManager : MonoBehaviour
                 tempmanager.CurrentGameState = GameState.ARENA;
 
                 tempmanager.DonePlayerBattlePositions = true;
-                tempzone.SafeZoneTimer = 60f;
+                tempzone.SafeZoneTimer = safeZoneTimeToShrink;
                 tempzone.CurrentSafeZoneState = SafeZoneState.TIMER;
             }
 

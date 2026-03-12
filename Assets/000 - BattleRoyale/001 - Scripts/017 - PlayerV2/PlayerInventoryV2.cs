@@ -122,29 +122,28 @@ public class PlayerInventoryV2 : NetworkBehaviour
 
     public override void Render()
     {
-        if (HasInputAuthority)
-        {
-            CrateCache();
+        if (!HasInputAuthority) return;
 
-            HandBtn.SetIndicator(WeaponIndex == 1 ? true : false);
-            PrimaryBtn.SetIndicator(WeaponIndex == 2 ? true : false);
-            SecondaryBtn.SetIndicator(WeaponIndex == 3 ? true : false);
-            healCountIndicator.fillAmount = 1 - (float)HealCount / 4;
-            repairCountIndicator.fillAmount = 1 - (float)ArmorRepairCount / 4;
-            trapCountTMP.text = $"{TrapCount} / 4";
+        CrateCache();
 
-            //aimBtn.SetActive(WeaponIndex == 3);
-            aimBtn.SetActive(false);
-            blockBtn.SetActive(WeaponIndex != 3);
+        HandBtn.SetIndicator(WeaponIndex == 1 ? true : false);
+        PrimaryBtn.SetIndicator(WeaponIndex == 2 ? true : false);
+        SecondaryBtn.SetIndicator(WeaponIndex == 3 ? true : false);
+        healCountIndicator.fillAmount = (float)HealCount / 4;
+        repairCountIndicator.fillAmount = (float)ArmorRepairCount / 4;
+        trapCountTMP.text = $"{TrapCount} / 4";
 
-            if (PrimaryWeapon != null)
-                PrimaryBtn.ChangeSpriteButton(PrimaryWeapon.WeaponID, PrimaryWeapon.Supplies.ToString(), false);
-            else PrimaryBtn.ResetUI();
+        //aimBtn.SetActive(WeaponIndex == 3);
+        aimBtn.SetActive(false);
+        blockBtn.SetActive(WeaponIndex != 3);
 
-            if (SecondaryWeapon != null)
-                SecondaryBtn.ChangeSpriteButton(SecondaryWeapon.WeaponID, $"{(SecondaryWeaponID() == "004" ? (SecondaryWeapon.Supplies + BowMagazine) : SecondaryWeapon.Supplies)}{(SecondaryWeaponID() == "003" ? $" / {RifleMagazine}" : "")}", true);
-            else SecondaryBtn.ResetUI();
-        }
+        if (PrimaryWeapon != null)
+            PrimaryBtn.ChangeSpriteButton(PrimaryWeapon.WeaponID, PrimaryWeapon.Supplies.ToString(), false);
+        else PrimaryBtn.ResetUI();
+
+        if (SecondaryWeapon != null)
+            SecondaryBtn.ChangeSpriteButton(SecondaryWeapon.WeaponID, $"{(SecondaryWeaponID() == "004" ? (SecondaryWeapon.Supplies + BowMagazine) : SecondaryWeapon.Supplies)}{(SecondaryWeaponID() == "003" ? $" / {RifleMagazine}" : "")}", true);
+        else SecondaryBtn.ResetUI();
     }
 
     private void FixedUpdate()
