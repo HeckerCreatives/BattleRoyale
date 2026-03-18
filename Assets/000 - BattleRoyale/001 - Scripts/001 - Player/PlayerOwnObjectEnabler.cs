@@ -101,23 +101,6 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
 
         GameManager.Instance.SocketMngr.IsOnGame = true;
 
-        if (!DoneInit)
-        {
-            GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.PostRequest("/usergamedetail/useenergy", "", new Dictionary<string, object> { }, false, (response) =>
-            {
-                userData.GameDetails.energy -= userData.GameDetails.energy > 0 ? 1 : 0;
-            }, () =>
-            {
-                Runner.Shutdown(true);
-                GameManager.Instance.SceneController.StopLoading();
-                GameManager.Instance.SocketMngr.Socket.Disconnect();
-                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later.", null);
-                GameManager.Instance.SceneController.CurrentScene = "Login";
-            }));
-        }
-        //else
-        //    GameManager.Instance.SceneController.AddActionLoadinList(CheckArena());
-
         GameManager.Instance.SceneController.AddActionLoadinList(InitializePlayer());
         GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetVolumeSlidersOnStart());
         GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetGraphicsOnStart());

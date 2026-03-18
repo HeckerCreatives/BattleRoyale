@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
+using static Unity.Collections.Unicode;
 
 public class RollState : PlayerOnGround
 {
@@ -23,6 +24,10 @@ public class RollState : PlayerOnGround
 
         playerPlayables.PlayRollSoundEffect();
 
+        if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority) playerMovement.IsRoll = false;
+
+        if (!playerPlayables.HasStateAuthority) return;
+
         canReduce = true;
     }
 
@@ -33,30 +38,25 @@ public class RollState : PlayerOnGround
         if (playerPlayables.HasInputAuthority)
             playerPlayables.CancelInvoke();
 
+        if (!playerPlayables.HasStateAuthority) return;
+
         canReduce = false;
     }
 
     public override void NetworkUpdate()
     {
         float currentTime = (float)animationClipPlayable.GetTime();
-        float remaining = animationLength - currentTime;
 
-        float rollSpeed = 400f;
+        if (currentTime <= animationLength * 0.8f)
+            characterController.Move(
+                playerMovement.MainCharObj.forward * 400f * playerPlayables.Runner.DeltaTime,
+                0f
+            );
 
-        if (remaining < 0.1f)
-        {
-            float t = remaining / 0.1f;
-            rollSpeed *= Mathf.Clamp01(t);
-        }
-
-        characterController.Move(
-            playerMovement.MainCharObj.forward * rollSpeed * playerMovement.Runner.DeltaTime,
-            0f
-        );
 
         TryExitRoll(currentTime);
 
-        if (canReduce)
+        if (canReduce && playerPlayables.HasStateAuthority)
         {
             playerPlayables.stamina.ReduceStamina(35f);
             canReduce = false;
@@ -65,28 +65,11 @@ public class RollState : PlayerOnGround
 
     private void TryExitRoll(float currentTime)
     {
-        if (currentTime < animationLength - 0.025f)
-            return;
+        var nextState = GetPostRollState();
 
-
-        if (playerPlayables.HasInputAuthority)
+        if (nextState != null && playablesChanger.CurrentState != nextState)
         {
-            var predictedState = GetPostRollState();
-
-            if (predictedState != null && playablesChanger.CurrentState != predictedState)
-            {
-                playablesChanger.ChangeState(predictedState);
-            }
-        }
-
-        if (playerPlayables.HasStateAuthority)
-        {
-            var nextState = GetPostRollState();
-
-            if (nextState != null && playablesChanger.CurrentState != nextState)
-            {
-                playablesChanger.ChangeState(nextState);
-            }
+            playablesChanger.ChangeState(nextState);
         }
     }
 
@@ -95,9 +78,6 @@ public class RollState : PlayerOnGround
         var lower = playerPlayables.lowerBodyMovement;
         var inventory = playerPlayables.inventory;
 
-        if (!characterController.IsGrounded)
-            return lower.FallingPlayable;
-
         bool isMoving = playerMovement.XMovement != 0f || playerMovement.YMovement != 0f;
         bool canSprint = playerMovement.IsSprint && playerPlayables.stamina.Stamina > 0f;
 
@@ -105,13 +85,20 @@ public class RollState : PlayerOnGround
         {
             case 1:
                 {
-                    //if (!isMoving)
-                    //    return lower.IdlePlayable;
+                    if (animationClipPlayable.GetTime() < animationLength * 0.25f) return null;
 
-                    if (canSprint)
-                        return lower.SprintPlayable;
+                    //if (isMoving)
+                    //    return lower.RunPlayable;
 
-                    return lower.RunPlayable;
+                    //if (canSprint && isMoving)
+                    //    return lower.SprintPlayable;
+
+                    if (playerMovement.IsJumping) return lower.JumpPlayable;
+
+                    if (animationClipPlayable.GetTime() < animationLength - 0.025f)
+                        return null;
+
+                    return lower.IdlePlayable;
                 }
 
             case 2:
@@ -162,6 +149,9 @@ public class RollState : PlayerOnGround
                     break;
                 }
         }
+
+        if (!characterController.IsGrounded)
+            return lower.FallingPlayable;
 
         return lower.IdlePlayable;
     }

@@ -6,7 +6,7 @@ using UnityEngine.Animations;
 
 public class PlayerUpperSprint : UpperNoAimState
 {
-    public PlayerUpperSprint(SimpleKCC characterController, UpperBodyChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public PlayerUpperSprint(SimpleKCC characterController, UpperBodyChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool canAnimateUpper) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, canAnimateUpper)
     {
     }
 
@@ -14,27 +14,11 @@ public class PlayerUpperSprint : UpperNoAimState
     {
         base.NetworkUpdate();
 
+        var nextState = GetNextUpperSprintState();
 
-        if (playerPlayables.HasInputAuthority)
+        if (nextState != null && playablesChanger.CurrentState != nextState)
         {
-            var predictedState = GetNextUpperSprintState();
-
-            if (predictedState != null && playablesChanger.CurrentState != predictedState)
-            {
-                playablesChanger.ChangeState(predictedState);
-            }
-        }
-
-        if (playerPlayables.HasStateAuthority)
-        {
-            var nextState = GetNextUpperSprintState();
-
-            if (nextState != null && playablesChanger.CurrentState != nextState)
-            {
-                playablesChanger.ChangeState(nextState);
-            }
-
-            playerPlayables.stamina.RecoverStamina(5f);
+            playablesChanger.ChangeState(nextState);
         }
     }
 

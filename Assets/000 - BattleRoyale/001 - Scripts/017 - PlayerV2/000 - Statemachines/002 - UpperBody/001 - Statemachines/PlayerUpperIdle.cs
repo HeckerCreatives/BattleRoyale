@@ -6,7 +6,7 @@ using UnityEngine.Animations;
 
 public class PlayerUpperIdle : UpperNoAimState
 {
-    public PlayerUpperIdle(SimpleKCC characterController, UpperBodyChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public PlayerUpperIdle(SimpleKCC characterController, UpperBodyChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool canAnimateUpper) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, canAnimateUpper)
     {
     }
 
@@ -16,24 +16,12 @@ public class PlayerUpperIdle : UpperNoAimState
 
         playerMovement.WeaponSwitcher();
 
-        if (playerPlayables.HasInputAuthority)
+
+        var nextState = GetNextUpperBodyState();
+
+        if (nextState != null && playablesChanger.CurrentState != nextState)
         {
-            var predictedState = GetNextUpperBodyState();
-
-            if (predictedState != null && playablesChanger.CurrentState != predictedState)
-            {
-                playablesChanger.ChangeState(predictedState);
-            }
-        }
-
-        if (playerPlayables.HasStateAuthority)
-        {
-            var nextState = GetNextUpperBodyState();
-
-            if (nextState != null && playablesChanger.CurrentState != nextState)
-            {
-                playablesChanger.ChangeState(nextState);
-            }
+            playablesChanger.ChangeState(nextState);
         }
     }
 

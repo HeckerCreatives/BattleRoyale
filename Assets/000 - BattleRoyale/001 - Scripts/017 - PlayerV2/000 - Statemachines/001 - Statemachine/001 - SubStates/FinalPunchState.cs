@@ -3,78 +3,83 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Playables;
 
 public class FinalPunchState : PlayerOnGround
 {
-    float timer;
-    float moveTimer;
-    float stopMoveTimer;
-    bool canAction;
-
     public FinalPunchState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
     }
 
-    public override void Enter()
-    {
-        base.Enter();
-
-        timer = playerPlayables.TickRateAnimation + animationLength;
-        moveTimer = playerPlayables.TickRateAnimation + 0.30f;
-        stopMoveTimer = playerPlayables.TickRateAnimation + 0.50f;
-        canAction = true;
-    }
-
-    public override void Exit()
-    {
-        base.Exit();
-        canAction = false;
-    }
-
-
     public override void NetworkUpdate()
     {
-        if (playerPlayables.TickRateAnimation >= moveTimer && playerPlayables.TickRateAnimation <= stopMoveTimer)
+        //HandleMoveWindow();
+
+
+        var nextState = GetNextState();
+
+        if (nextState != null && playablesChanger.CurrentState != nextState)
         {
-            characterController.Move(characterController.TransformDirection * 1.25f, 0f);
+            playablesChanger.ChangeState(nextState);
         }
 
-        Animation();
-
-        playerPlayables.stamina.RecoverStamina(5f);
+        if (playerPlayables.HasStateAuthority)
+            playerPlayables.stamina.RecoverStamina(5f);
     }
 
-    private void Animation()
+    //private void HandleMoveWindow()
+    //{
+    //    double animTime = animationClipPlayable.GetTime();
+
+    //    bool moveWindow = animTime >= 0.30f && animTime <= 0.50f;
+
+    //    if (moveWindow)
+    //    {
+    //        characterController.Move(characterController.TransformDirection * 1.25f, 0f);
+    //    }
+    //}
+
+    private AnimationPlayable GetNextState()
+    {
+        var interruptState = GetInterruptState();
+        if (interruptState != null)
+            return interruptState;
+
+        return GetRecoveryState();
+    }
+
+    private AnimationPlayable GetInterruptState()
     {
         if (playerPlayables.healthV2.IsDead)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
-
-
-        //if (playerPlayables.healthV2.IsHit)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-        //    return;
-        //}
+            return playerPlayables.lowerBodyMovement.DeathPlayable;
 
         if (playerPlayables.healthV2.IsStagger)
+            return playerPlayables.lowerBodyMovement.StaggerHitPlayable;
+
+        return null;
+    }
+
+    private AnimationPlayable GetRecoveryState()
+    {
+        double animTime = animationClipPlayable.GetTime();
+
+        bool finishedPunch = animTime >= animationLength;
+        bool isMoving = playerMovement.XMovement != 0 || playerMovement.YMovement != 0;
+        bool canRoll = playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f;
+
+        if (canRoll)
+            return playerPlayables.lowerBodyMovement.RollPlayable;
+
+        if (isMoving)
         {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
-            return;
+            return playerMovement.IsSprint
+                ? playerPlayables.lowerBodyMovement.SprintPlayable
+                : playerPlayables.lowerBodyMovement.RunPlayable;
         }
 
-        if (playerPlayables.TickRateAnimation >= timer && canAction)
-        {
-            if (playerMovement.MoveDirection != Vector3.zero)
-            {
-                if (playerMovement.IsSprint)
-                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SprintPlayable);
+        if (!finishedPunch)
+            return null;
 
-                else
-                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RunPlayable);
-            }
-            else
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.IdlePlayable);
-
-        }
+        return playerPlayables.lowerBodyMovement.IdlePlayable;
     }
 }

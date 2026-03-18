@@ -121,7 +121,7 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
-        FallingAfterJump();
+        //FallingAfterJump();
         InputControlls();
     }
 
@@ -517,10 +517,8 @@ public class PlayerMovementV2 : NetworkBehaviour
             IsJumping = true;
             JumpImpulse = jumpHeight;
         }
-        else
-        {
-            IsJumping = false;
-        }
+
+        //if (HasInputAuthority && IsJumping) Debug.Log($"was pressed? {controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Jump)}     on ground? {characterController.IsGrounded}       not jumping? {!IsJumping} ");
     }
 
     public void FallingAfterJump()
@@ -547,17 +545,18 @@ public class PlayerMovementV2 : NetworkBehaviour
     private void Roll()
     {
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Roll))
+        {
+            if (stamina.Stamina < 35f) return;
+
             IsRoll = true;
-        else
-            IsRoll = false;
+        }
+        else IsRoll = false;
     }
 
     private void Block()
     {
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Block))
             IsBlocking = true;
-        else
-            IsBlocking = false;
     }
 
     private void Shoot()
@@ -588,8 +587,7 @@ public class PlayerMovementV2 : NetworkBehaviour
 
             IsHealing = true;
         }
-        else
-            IsHealing = false;
+        else IsHealing = false;
     }
 
     private void Repairing()
@@ -606,8 +604,7 @@ public class PlayerMovementV2 : NetworkBehaviour
 
             IsRepairing = true;
         }
-        else
-            IsRepairing = false;
+        else IsRepairing = false;
     }
 
     private void Trapping()
@@ -618,40 +615,35 @@ public class PlayerMovementV2 : NetworkBehaviour
 
             IsTrapping = true;
         }
-        else
-            IsTrapping = false;
+        else IsTrapping = false;
     }
 
     private void SwitchToHand()
     {
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchHands))
             SwitchingHands = true;
-        else
-            SwitchingHands = false;
+        else SwitchingHands = false;
     }
     
     private void SwitchToPrimary()
     {
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchPrimary))
             SwitchingPrimary = true;
-        else
-            SwitchingPrimary = false;
+        else SwitchingPrimary = false;
     }
 
     private void SwitchToSecondary()
     {
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchSecondary))
             SwitchingSecondary = true;
-        else
-            SwitchingSecondary = false;
+        else SwitchingSecondary = false;
     }
 
     private void Reload()
     {
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Reload))
             Reloading = true;
-        else
-            Reloading = false;
+        else Reloading = false;
     }
 
     public void WeaponSwitcher()

@@ -351,6 +351,17 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         myInput.HoldInputButtons.Set(HoldInputButtons.Shoot, Shoot);
         myInput.HoldInputButtons.Set(HoldInputButtons.Shoot, Shoot);
         myInput.HoldInputButtons.Set(HoldInputButtons.Sprint, Sprint);
+
+        JumpTurnOff();
+        RollStop();
+        BlockStop();
+        SwitchTrapStop();
+        SwitchSecondaryStop();
+        SwitchPrimaryStop();
+        SwitchHandsStop();
+        HealStop();
+        ArmorRepairStop();
+        ReloadStop();
     }
 
     public void OnObjectExitAOI(NetworkRunner runner, NetworkObject obj, PlayerRef player)

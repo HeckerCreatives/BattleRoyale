@@ -102,7 +102,7 @@ public class PlayerCameraRotation : NetworkBehaviour
 
     private void LookSensitivityChanged(object sender, EventArgs e)
     {
-        Rpc_HandleSensitivity(GameManager.Instance.GameSettingManager.CurrentLookSensitivity);
+        Rpc_HandleSensitivity(GameManager.Instance.GameSettingManager.CurrentLookSensitivity / 0.3f);
     }
 
     private void LookAdsSensitivityChanged(object sender, EventArgs e)

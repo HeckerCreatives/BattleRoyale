@@ -69,17 +69,23 @@ public class AnimationPlayable
         {
             animationClipPlayable.SetTime(0f);
             animationClipPlayable.Play();
+
+            //Debug.Log($"once play by {animationname}");
         }
 
         int mixerIndex = mixers.IndexOf(mixername);
         int animIndex = animations.IndexOf(animationname);
 
+        //mixerPlayable.SetInputWeight(animIndex, 1f);
 
         if (playerPlayables.HasStateAuthority)
         {
+            mixerPlayable.SetInputWeight(animIndex, 1f);
             playerPlayables.PlayableState = mixername;
             playerPlayables.PlayableLowerBoddyAnimationIndex = animIndex;
             playerPlayables.SetAnimationLowerTick();
+
+            return;
         }
 
         if (ltExit != 0) LeanTween.cancel(ltExit);
@@ -88,7 +94,8 @@ public class AnimationPlayable
         .setOnUpdate((float weight) =>
         {
             mixerPlayable.SetInputWeight(animIndex, weight);
-        }).setOnComplete(() => mixerPlayable.SetInputWeight(animIndex, 1f)).setEase(LeanTweenType.linear).id;
+        }).setOnComplete(() => mixerPlayable.SetInputWeight(animIndex, 1f)).setEase(LeanTweenType.easeInSine).id;
+
     }
 
     public virtual void Exit()
@@ -96,20 +103,22 @@ public class AnimationPlayable
         int mixerIndex = mixers.IndexOf(mixername);
         int animIndex = animations.IndexOf(animationname);
 
+        if (playerPlayables.HasStateAuthority)
+        {
+            mixerPlayable.SetInputWeight(animIndex, 0f);
+            return;
+        }
+
         if (ltEnter != 0) LeanTween.cancel(ltEnter);
 
         ltExit = LeanTween.value(playerPlayables.gameObject, mixerPlayable.GetInputWeight(animIndex), 0f, playerPlayables.exitSpeed)
         .setOnUpdate((float weight) =>
         {
             mixerPlayable.SetInputWeight(animIndex, weight);
-        }).setOnComplete(() => mixerPlayable.SetInputWeight(animIndex, 0f)).setEase(LeanTweenType.linear).id;
+        }).setOnComplete(() => mixerPlayable.SetInputWeight(animIndex, 0f)).setEase(LeanTweenType.easeOutSine).id;
 
+        //mixerPlayable.SetInputWeight(animIndex, 0f);
     }
-
-    //public virtual void LogicUpdate()
-    //{
-    //    if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority) return;
-    //}
 
     public virtual void NetworkUpdate() { }
 }

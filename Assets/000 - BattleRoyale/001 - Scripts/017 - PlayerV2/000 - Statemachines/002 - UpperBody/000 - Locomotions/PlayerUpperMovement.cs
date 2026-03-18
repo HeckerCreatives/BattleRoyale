@@ -245,81 +245,81 @@ public class PlayerUpperMovement : NetworkBehaviour
 
         #region GLOBAL
 
-        FallingPlayables = new PlayerUpperFalling(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "falling", "basic", falling.length, fallingClip, false);
-        RollPlayables = new PlayerUpperRoll(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "roll", "basic", roll.length, rollClip, true);
-        DeathPlayable = new PlayerUpperDeath(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "death", "basic", death.length, deathClip, true);
-        HitPlayable = new PlayerUpperHit(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "hit", "basic", hit.length, hitClip, true);
-        StaggerHitPlayable = new PlayerUpperStagger(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "staggerhit", "basic", staggerHit.length, staggerHitClip, true);
-        GettingUpPlayable = new PlayerUpperGettingUp(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "gettingup", "basic", gettingUp.length, gettingUpClip, true);
-        HealPlayable = new PlayerHealPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "heal", "basic", heal.length, healClip, true);
-        RepairPlayable = new PlayerUpperRepair(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "repair", "basic", heal.length, repairClip, true);
-        TrapPlayable = new PlayerUpperTrap(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "trapping", "basic", trapping.length, trappingClip, true);
-        MiddleHitPlayable = new PlayerMiddleHit(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "middlehit", "basic", hit.length, hitClip, true);
+        FallingPlayables = new PlayerUpperFalling(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "falling", "basic", falling.length, fallingClip, true, false);
+        RollPlayables = new PlayerUpperRoll(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "roll", "basic", roll.length, rollClip, true, false);
+        DeathPlayable = new PlayerUpperDeath(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "death", "basic", death.length, deathClip, true, false);
+        HitPlayable = new PlayerUpperHit(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "hit", "basic", hit.length, hitClip, true, true);
+        StaggerHitPlayable = new PlayerUpperStagger(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "staggerhit", "basic", staggerHit.length, staggerHitClip, true, false);
+        GettingUpPlayable = new PlayerUpperGettingUp(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "gettingup", "basic", gettingUp.length, gettingUpClip, true, false);
+        HealPlayable = new PlayerHealPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "heal", "basic", heal.length, healClip, true, false);
+        RepairPlayable = new PlayerUpperRepair(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "repair", "basic", heal.length, repairClip, true, false);
+        TrapPlayable = new PlayerUpperTrap(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "trapping", "basic", trapping.length, trappingClip, true, false);
+        MiddleHitPlayable = new PlayerMiddleHit(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "middlehit", "basic", hit.length, hitClip, true, true);
 
         #endregion
 
         #region BASIC
 
-        IdlePlayables = new PlayerUpperIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "idle", "basic", idle.length, idleClip, false);
-        RunPlayables = new PlayerUpperRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "run", "basic", run.length, runClip, false);
-        FirstPunch = new PlayerFistFirstPunch(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch1", "basic", punch1.length, punch1Clip, true);
-        SecondPunch = new PlayerFistSecondPunch(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch2", "basic", punch2.length, punch2Clip, true);
-        FinalPunch = new PlayerFistFinalPunch(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch3", "basic", punch3.length, punch3Clip, true);
-        SprintPlayables = new PlayerUpperSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "sprint", "basic", sprint.length, sprintClip, false);
-        JumpPlayable = new PlayerUpperJump(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumpidle", "basic", jumpidle.length, jumpClip, false);
-        BlockPlayable = new PlayerBlockPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "block", "basic", block.length, blockClip, true);
-        JumpPunchPlayable = new PlayerJumpPunchPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumppunch", "basic", jumpPunch.length, jumpPunchClip, true);
+        IdlePlayables = new PlayerUpperIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "idle", "basic", idle.length, idleClip, false, false);
+        RunPlayables = new PlayerUpperRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "run", "basic", run.length, runClip, false, false);
+        FirstPunch = new PlayerFistFirstPunch(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch1", "basic", punch1.length, punch1Clip, true, true);
+        SecondPunch = new PlayerFistSecondPunch(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch2", "basic", punch2.length, punch2Clip, true, true);
+        FinalPunch = new PlayerFistFinalPunch(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch3", "basic", punch3.length, punch3Clip, true, true);
+        SprintPlayables = new PlayerUpperSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "sprint", "basic", sprint.length, sprintClip, false, false);
+        JumpPlayable = new PlayerUpperJump(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumpidle", "basic", startJump.length, jumpClip, true, false);
+        BlockPlayable = new PlayerBlockPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "block", "basic", block.length, blockClip, true, false);
+        JumpPunchPlayable = new PlayerJumpPunchPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumppunch", "basic", jumpPunch.length, jumpPunchClip, true, true);
 
         #endregion
 
         #region SWORD
 
-        SwordIdlePlayable = new PlayerUpperSwordIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordidle", "basic", swordIdle.length, swordIdleClip, false);
-        SwordRunPlayable = new PlayerUpperSwordRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordrun", "basic", swordRun.length, swordRunClip, false);
-        SwordAttackFirstPlayable = new PlayerUpperSwordFirstAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfirstattack", "basic", swordFirstAttack.length, swordFirstAttackClip, true);
-        SwordAttackSecondPlayable = new PlayerUpperSwordMiddleAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsecondattack", "basic", swordSecondAttack.length, swordSecondAttackClip, true);
-        SwordFinalAttackPlayable = new PlayerUpperSwordFinalAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfinalattack", "basic", swordFinalAttack.length, swordFinalAttackClip, true);
-        SwordSprint = new PlayerUpperSwordSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsprint", "basic", swordSprint.length, swordSprintClip, false);
-        SwordBlockPlayable = new PlayerBlockPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordblock", "basic", swordBlock.length, swordBlockClip, true);
-        SwordJumpAttackPlayable = new PlayerUpperSwordJumpAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordjumpattack", "basic", swordJumpSlash.length, swordJumpAttackClip, true);
+        SwordIdlePlayable = new PlayerUpperSwordIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordidle", "basic", swordIdle.length, swordIdleClip, false, false);
+        SwordRunPlayable = new PlayerUpperSwordRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordrun", "basic", swordRun.length, swordRunClip, false, false);
+        SwordAttackFirstPlayable = new PlayerUpperSwordFirstAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfirstattack", "basic", swordFirstAttack.length, swordFirstAttackClip, true, false);
+        SwordAttackSecondPlayable = new PlayerUpperSwordMiddleAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsecondattack", "basic", swordSecondAttack.length, swordSecondAttackClip, true, false);
+        SwordFinalAttackPlayable = new PlayerUpperSwordFinalAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfinalattack", "basic", swordFinalAttack.length, swordFinalAttackClip, true, false);
+        SwordSprint = new PlayerUpperSwordSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsprint", "basic", swordSprint.length, swordSprintClip, false, false);
+        SwordBlockPlayable = new PlayerBlockPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordblock", "basic", swordBlock.length, swordBlockClip, true, false);
+        SwordJumpAttackPlayable = new PlayerUpperSwordJumpAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordjumpattack", "basic", swordJumpSlash.length, swordJumpAttackClip, true, false);
 
         #endregion
 
         #region SPEAR
 
-        SpearIdle = new PlayerUpperSpearIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearidle", "basic", spearIdle.length, spearIdleClip, false);
-        SpearRunPlayable = new PlayerUpperSpearRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearrun", "basic", swordRun.length, spearRunClip, false);
-        SpearSprintPlayable = new PlayerUpperSpearSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearsprint", "basic", swordSprint.length, spearSprintClip, false);
-        SpearFirstAttackPlayable = new PlayerUpperSpearFirstAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfirstattack", "basic", spearFirstAttack.length, spearFirstAattackClip, true);
-        SpearFinalAttackPlayable = new PlayerUpperSpearFinalAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfinalattack", "basic", spearFinalAttack.length, spearFinalAattackClip, true);
-        SpearBlockPlayable = new PlayerBlockPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearblock", "basic", swordBlock.length, spearBlockClip, true);
-        SpearJumpAttackPlayable = new PlayerUpperSpearJumpAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearjumpattack", "basic", spearJumpAttack.length, spearJumpAttackClip, true);
+        SpearIdle = new PlayerUpperSpearIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearidle", "basic", spearIdle.length, spearIdleClip, false, false);
+        SpearRunPlayable = new PlayerUpperSpearRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearrun", "basic", swordRun.length, spearRunClip, false, false);
+        SpearSprintPlayable = new PlayerUpperSpearSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearsprint", "basic", swordSprint.length, spearSprintClip, false, false);
+        SpearFirstAttackPlayable = new PlayerUpperSpearFirstAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfirstattack", "basic", spearFirstAttack.length, spearFirstAattackClip, true, false);
+        SpearFinalAttackPlayable = new PlayerUpperSpearFinalAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfinalattack", "basic", spearFinalAttack.length, spearFinalAattackClip, true, false);
+        SpearBlockPlayable = new PlayerBlockPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearblock", "basic", swordBlock.length, spearBlockClip, true, false);
+        SpearJumpAttackPlayable = new PlayerUpperSpearJumpAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearjumpattack", "basic", spearJumpAttack.length, spearJumpAttackClip, true, false);
 
         #endregion
 
         #region RIFLE
 
-        RifleIdle = new PlayerUpperRifleIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "rifleidle", "basic", rifleIdle.length, rifleIdleClip, false);
-        RifleRunPlayable = new PlayerUpperRifleRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "rifleRun", "basic", rifleRun.length, rifleRunClip, false);
-        RifleSprintPlayable = new PlayerUpperRifleSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "rifleSprint", "basic", rifleSprint.length, rifleSprintClip, false);
-        RifleShootPlayable = new PlayerUpperRifleShoot(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "rifleshoot", "basic", rifleShoot.length, rifleShootClip, true);
-        RifleCockingPlayable = new PlayerUpperRifleCocking(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "riflecocking", "basic", rifleCocking.length, rifleCockingClip, true);
-        RifleReloadPlayable = new PlayerUpperRifleReload(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "riflereload", "basic", rifleReload.length, rifleReloadClip, true);
-        RifleJumpPlayable = new PlayerUpperJumpRange(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "riflejump", "basic", rifleRun.length, rifleJumpClip, false);
-        RifleFallingPlayable = new PlayerUpperFallingRange(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "riflefalling", "basic", rifleRun.length, rifleFallingClip, false);
+        RifleIdle = new PlayerUpperRifleIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "rifleidle", "basic", rifleIdle.length, rifleIdleClip, false, false);
+        RifleRunPlayable = new PlayerUpperRifleRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "rifleRun", "basic", rifleRun.length, rifleRunClip, false, false);
+        RifleSprintPlayable = new PlayerUpperRifleSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "rifleSprint", "basic", rifleSprint.length, rifleSprintClip, false, false);
+        RifleShootPlayable = new PlayerUpperRifleShoot(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "rifleshoot", "basic", rifleShoot.length, rifleShootClip, true, false);
+        RifleCockingPlayable = new PlayerUpperRifleCocking(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "riflecocking", "basic", rifleCocking.length, rifleCockingClip, true, false);
+        RifleReloadPlayable = new PlayerUpperRifleReload(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "riflereload", "basic", rifleReload.length, rifleReloadClip, true, false);
+        RifleJumpPlayable = new PlayerUpperJumpRange(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "riflejump", "basic", rifleRun.length, rifleJumpClip, false, false);
+        RifleFallingPlayable = new PlayerUpperFallingRange(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "riflefalling", "basic", rifleRun.length, rifleFallingClip, false, false);
 
         #endregion
 
         #region BOW
 
-        BowIdlePlayable = new PlayerUpperBowIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowidle", "basic", bowIdle.length, bowIdleClip, false);
-        BowRunPlayable = new PlayerUpperBowRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowrun", "basic", bowRun.length, bowRunClip, false);
-        BowSprintPlayable = new PlayerUpperBowSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowsprint", "basic", bowSprint.length, bowSprintClip, false);
-        BowDrawArrowPlayable = new PlayerUpperBowDrawArrow(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowdrawarrow", "basic", bowDrawArrow.length, bowDrawArrowClip, true);
-        BowChargePlayable = new PlayerUpperBowCharge(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowcharge", "basic", bowCharge.length, bowChargeClip, true);
-        BowShotPlayable = new PlayerUpperBowShot(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowshot", "basic", bowShot.length, bowShotClip, true);
-        BowJumpPlayable = new PlayerUpperJumpRange(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowjump", "basic", jumpidle.length, jumpClip, false);
-        BowFallingPlayable = new PlayerUpperFallingRange(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowfalling", "basic", falling.length, fallingClip, false);
+        BowIdlePlayable = new PlayerUpperBowIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowidle", "basic", bowIdle.length, bowIdleClip, false  , false);
+        BowRunPlayable = new PlayerUpperBowRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowrun", "basic", bowRun.length, bowRunClip, false, false);
+        BowSprintPlayable = new PlayerUpperBowSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowsprint", "basic", bowSprint.length, bowSprintClip, false, false);
+        BowDrawArrowPlayable = new PlayerUpperBowDrawArrow(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowdrawarrow", "basic", bowDrawArrow.length, bowDrawArrowClip, true, false);
+        BowChargePlayable = new PlayerUpperBowCharge(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowcharge", "basic", bowCharge.length, bowChargeClip, true, false);
+        BowShotPlayable = new PlayerUpperBowShot(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowshot", "basic", bowShot.length, bowShotClip, true, false);
+        BowJumpPlayable = new PlayerUpperJumpRange(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowjump", "basic", jumpidle.length, jumpClip, false, false);
+        BowFallingPlayable = new PlayerUpperFallingRange(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowfalling", "basic", falling.length, fallingClip, false, false);
 
         #endregion
 

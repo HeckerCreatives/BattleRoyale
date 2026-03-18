@@ -3,12 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Playables;
 
 public class HealState : PlayerOnGround
 {
-    float healtimer;
-    float timer;
-    bool canAction;
+
     bool doneHeal;
 
     public HealState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
@@ -19,183 +18,135 @@ public class HealState : PlayerOnGround
     {
         base.Enter();
 
-        healtimer = playerPlayables.TickRateAnimation + (animationLength * 0.5f);
-        timer = playerPlayables.TickRateAnimation + animationLength;
+        if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority) playerMovement.IsHealing = false;
 
-        doneHeal = false;
-        canAction = true;
+        if (!playerPlayables.HasStateAuthority) return;
+
+        doneHeal = true;
     }
 
     public override void Exit()
     {
         base.Exit();
 
+        if (!playerPlayables.HasStateAuthority) return;
+
         doneHeal = false;
-        canAction = false;
     }
 
     public override void NetworkUpdate()
     {
-        if (!doneHeal && playerPlayables.TickRateAnimation > healtimer)
+        base.NetworkUpdate();
+
+        double animTime = animationClipPlayable.GetTime();
+
+        double healTime = animationLength * 0.5f;
+        bool beforeHeal = animTime < healTime;
+        bool finished = animTime >= animationLength - 0.02f;
+
+        if (animTime >= healTime && !doneHeal)
         {
-            playerPlayables.healthV2.HealHealth();
-            doneHeal = true;
+            if (playerPlayables.HasStateAuthority)
+            {
+                playerPlayables.healthV2.HealHealth();
+                doneHeal = true;
+            }
         }
 
-        if (playerPlayables.TickRateAnimation < healtimer)
+        if (playerPlayables.HasInputAuthority)
         {
-            WeaponChecker();
-            Animations();
+            var predictedState = GetNextState(animTime);
+
+            if (predictedState != null && playablesChanger.CurrentState != predictedState)
+            {
+                playablesChanger.ChangeState(predictedState);
+            }
+        }
+        if (playerPlayables.HasStateAuthority)
+        {
+            var nextState = GetNextState(animTime);
+
+            if (nextState != null && playablesChanger.CurrentState != nextState)
+            {
+                playablesChanger.ChangeState(nextState);
+            }
         }
 
-        if (canAction && playerPlayables.TickRateAnimation >= timer)
-        {
-            WeaponChecker();
-            Animations();
-        }
     }
-
-    private void Animations()
+    private AnimationPlayable GetNextState(double clipTime)
     {
         if (playerPlayables.healthV2.IsDead)
-        {
-            
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
-        }
+            return playerPlayables.lowerBodyMovement.DeathPlayable;
 
         if (!characterController.IsGrounded)
-        {
-            
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
-            return;
-        }
+            return playerPlayables.lowerBodyMovement.FallingPlayable;
 
         if (playerMovement.IsJumping)
-        {
-            
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.JumpPlayable);
-            return;
-        }
+            return playerPlayables.lowerBodyMovement.JumpPlayable;
 
         if (playerMovement.IsBlocking)
-        {
-            
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BlockPlayable);
-            return;
-        }
-
-        //if (playerPlayables.healthV2.IsHit)
-        //{
-            
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-        //    return;
-        //}
+            return GetBlockState();
 
         if (playerPlayables.healthV2.IsStagger)
-        {
-            
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
-            return;
-        }
+            return playerPlayables.lowerBodyMovement.StaggerHitPlayable;
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
-        {
-            
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RollPlayable);
-            return;
-        }
+            return playerPlayables.lowerBodyMovement.RollPlayable;
+
+        if (clipTime < animationLength - 0.02f)
+            return null;
+
+        return GetWeaponGroundedStateAfterHeal();
     }
 
-    private void WeaponChecker()
+    private AnimationPlayable GetWeaponGroundedStateAfterHeal()
     {
         if (playerPlayables.inventory.WeaponIndex == 1)
         {
+            if (playerMovement.Attacking)
+                return playerPlayables.lowerBodyMovement.Punch1Playable;
+
             if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
             {
                 if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SprintPlayable);
+                    return playerPlayables.lowerBodyMovement.SprintPlayable;
 
-                else
-                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RunPlayable);
-
-                return;
+                return playerPlayables.lowerBodyMovement.RunPlayable;
             }
 
-            if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
-            {
-                if (canAction && playerPlayables.TickRateAnimation >= timer)
-                {
-                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.IdlePlayable);
-                    canAction = false;
-                    return;
-                }
-            }
-
-            if (playerMovement.Attacking)
-            {
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.Punch1Playable);
-                return;
-            }
+            return playerPlayables.lowerBodyMovement.IdlePlayable;
         }
         else if (playerPlayables.inventory.WeaponIndex == 2)
         {
             if (playerPlayables.inventory.PrimaryWeaponID() == "001")
             {
+                if (playerMovement.Attacking)
+                    return playerPlayables.lowerBodyMovement.SwordAttackFirstPlayable;
+
                 if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
                 {
                     if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordSprintPlayable);
+                        return playerPlayables.lowerBodyMovement.SwordSprintPlayable;
 
-                    else
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordRunPlayable);
-
-                    return;
+                    return playerPlayables.lowerBodyMovement.SwordRunPlayable;
                 }
 
-                if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
-                {
-                    if (canAction && playerPlayables.TickRateAnimation >= timer)
-                    {
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordIdlePlayable);
-                        canAction = false;
-                        return;
-                    }
-                }
-
-                if (playerMovement.Attacking)
-                {
-                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordAttackFirstPlayable);
-                    return;
-                }
+                return playerPlayables.lowerBodyMovement.SwordIdlePlayable;
             }
             else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
             {
+                if (playerMovement.Attacking)
+                    return playerPlayables.lowerBodyMovement.SpearFirstAttackPlayable;
+
                 if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
                 {
                     if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearSprintPlayable);
+                        return playerPlayables.lowerBodyMovement.SpearSprintPlayable;
 
-                    else
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearRunPlayable);
-
-                    return;
+                    return playerPlayables.lowerBodyMovement.SpearRunPlayable;
                 }
 
-                if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
-                {
-                    if (canAction && playerPlayables.TickRateAnimation >= timer)
-                    {
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearIdlePlayable);
-                        canAction = false;
-                        return;
-                    }
-                }
-
-                if (playerMovement.Attacking)
-                {
-                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearFirstAttackPlayable);
-                    return;
-                }
+                return playerPlayables.lowerBodyMovement.SpearIdlePlayable;
             }
         }
         else if (playerPlayables.inventory.WeaponIndex == 3)
@@ -205,47 +156,44 @@ public class HealState : PlayerOnGround
                 if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
                 {
                     if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleSprintPlayable);
+                        return playerPlayables.lowerBodyMovement.RifleSprintPlayable;
 
-                    else
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleRunPlayable);
-
-                    return;
+                    return playerPlayables.lowerBodyMovement.RifleRunPlayable;
                 }
 
-                if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
-                {
-                    if (canAction && playerPlayables.TickRateAnimation >= timer)
-                    {
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleIdlePlayable);
-                        canAction = false;
-                        return;
-                    }
-                }
+                return playerPlayables.lowerBodyMovement.RifleIdlePlayable;
             }
             else if (playerPlayables.inventory.SecondaryWeaponID() == "004")
             {
                 if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
                 {
                     if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowSprintPlayable);
+                        return playerPlayables.lowerBodyMovement.BowSprintPlayable;
 
-                    else
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowRunPlayable);
-
-                    return;
+                    return playerPlayables.lowerBodyMovement.BowRunPlayable;
                 }
 
-                if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
-                {
-                    if (canAction && playerPlayables.TickRateAnimation >= timer)
-                    {
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowIdlePlayable);
-                        canAction = false;
-                        return;
-                    }
-                }
+                return playerPlayables.lowerBodyMovement.BowIdlePlayable;
             }
         }
+
+        return null;
+    }
+
+    private AnimationPlayable GetBlockState()
+    {
+        if (playerPlayables.inventory.WeaponIndex == 1)
+            return playerPlayables.lowerBodyMovement.BlockPlayable;
+
+        if (playerPlayables.inventory.WeaponIndex == 2)
+        {
+            if (playerPlayables.inventory.PrimaryWeaponID() == "001")
+                return playerPlayables.lowerBodyMovement.SwordBlockPlayable;
+
+            if (playerPlayables.inventory.PrimaryWeaponID() == "002")
+                return playerPlayables.lowerBodyMovement.SpearBlockPlayable;
+        }
+
+        return playerPlayables.lowerBodyMovement.BlockPlayable;
     }
 }

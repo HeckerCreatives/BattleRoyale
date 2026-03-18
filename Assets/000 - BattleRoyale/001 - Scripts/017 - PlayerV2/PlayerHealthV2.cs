@@ -90,41 +90,39 @@ public class PlayerHealthV2 : NetworkBehaviour
             switch (change)
             {
                 case nameof(CurrentHealth):
-                    if (!HasInputAuthority) return;
+                    if (!HasInputAuthority) break;
 
                     healthSlider.value = CurrentHealth / 100;
                     break;
                 case nameof(Hitted):
-                    if (!HasInputAuthority) return;
-
-                    Debug.Log("HITTED DAMAGED");
+                    if (!HasStateAuthority) break;
 
                     DamageIndicator();
 
                     HitSoundEffects();
+
+                    if (!HasInputAuthority) break;
 
                     ShakerCamera();
 
                     Invoke(nameof(OffCameraShaker), 0.15f);
                     break;
                 case nameof(IsStagger):
-                    if (!HasInputAuthority) return;
+                    if (!HasInputAuthority) break;
 
-                    if (!IsStagger) return;
-
-                    Debug.Log("STAGGER DAMAGED");
+                    if (!IsStagger) break;
 
                     DamageIndicator();
 
                     break;
                 case nameof(SafeZoneDamaged):
-                    if (!HasInputAuthority) return;
+                    if (!HasInputAuthority) break;
 
                     DamageIndicatorWithoutBlood();
 
                     break;
                 case nameof(FallDamage):
-                    if (!HasInputAuthority) return;
+                    if (!HasInputAuthority) break;
 
                     Debug.Log("FALL DAMAGED");
 
@@ -133,19 +131,19 @@ public class PlayerHealthV2 : NetworkBehaviour
 
                     break;
                 case nameof(IsDead):
-                    if (!HasInputAuthority) return;
+                    if (!HasInputAuthority) break;
                     DeathSoundEffect();
                     break;
                 case nameof(Healed):
 
-                    if (HasStateAuthority) return;
+                    if (HasStateAuthority) break;
 
                     healParticles.Play();
 
                     break;
                 case nameof(Repaired):
 
-                    if (HasStateAuthority) return;
+                    if (HasStateAuthority) break;
 
                     repairParticles.Play();
 
@@ -154,26 +152,7 @@ public class PlayerHealthV2 : NetworkBehaviour
         }
 
         if (HasInputAuthority)
-        {
             ArmorUI();
-
-            if (postProcessing.profile.TryGet<Vignette>(out circleVignette))
-            {
-                if (DamagedSafeZone)
-                {
-                    circleVignette.active = true;
-                    circleVignette.intensity.value = Mathf.MoveTowards(circleVignette.intensity.value, 0.5f, Time.deltaTime * 2f);
-                }
-                else
-                {
-                    circleVignette.intensity.value = Mathf.MoveTowards(circleVignette.intensity.value, 0f, Time.deltaTime * 2f);
-                    if (circleVignette.intensity.value == 0)
-                    {
-                        circleVignette.active = false;
-                    }
-                }
-            }
-        }
     }
 
     public override void FixedUpdateNetwork()

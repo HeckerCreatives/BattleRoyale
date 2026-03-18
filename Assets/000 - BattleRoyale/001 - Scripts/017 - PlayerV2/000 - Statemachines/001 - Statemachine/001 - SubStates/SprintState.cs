@@ -37,26 +37,15 @@ public class SprintState : PlayerOnGround
         playerMovement.MoveCharacter();
 
 
-        if (playerPlayables.HasInputAuthority)
-        {
-            var predictedState = GetNextLowerSprintState();
+        var nextState = GetNextLowerSprintState();
 
-            if (predictedState != null && playablesChanger.CurrentState != predictedState)
-            {
-                playablesChanger.ChangeState(predictedState);
-            }
+        if (nextState != null && playablesChanger.CurrentState != nextState)
+        {
+            playablesChanger.ChangeState(nextState);
         }
 
         if (playerPlayables.HasStateAuthority)
-        {
-            var nextState = GetNextLowerSprintState();
-
-            if (nextState != null && playablesChanger.CurrentState != nextState)
-            {
-                playablesChanger.ChangeState(nextState);
-            }
             playerPlayables.stamina.DecreaseStamina(20f);
-        }
     }
 
     private AnimationPlayable GetNextLowerSprintState()

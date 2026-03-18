@@ -367,15 +367,29 @@ public class GraphicsController : MonoBehaviour
     {
         PlayerPrefs.SetInt("AntiAliasing", CurrentAntiAliasingIndex);
 
-        int antiAliasingValue = CurrentShadowIndex switch
+        int antiAliasingValue = CurrentAntiAliasingIndex switch
         {
-            0 => 0,
-            1 => 0,
-            2 => 0,
-            3 => 0,
-            _ => 0,
+            0 => 1,
+            1 => 2,
+            2 => 4,
+            3 => 8,
+            _ => 1,
         };
 
-        QualitySettings.antiAliasing = antiAliasingValue;
+        switch (CurrentGraphicsQualityIndex)
+        {
+            case 0:
+                lowPipeline.msaaSampleCount = antiAliasingValue;
+                break;
+            case 1:
+                mediumPipeline.msaaSampleCount = antiAliasingValue;
+                break;
+            case 2:
+                highPipeline.msaaSampleCount = antiAliasingValue;
+                break;
+            default:
+                lowPipeline.msaaSampleCount = antiAliasingValue;
+                break;
+        }
     }
 }

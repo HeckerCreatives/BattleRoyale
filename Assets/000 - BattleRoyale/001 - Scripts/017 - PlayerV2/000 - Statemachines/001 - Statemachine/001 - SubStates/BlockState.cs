@@ -12,6 +12,13 @@ public class BlockState : PlayerOnGround
     {
     }
 
+    public override void Enter()
+    {
+        base.Enter();
+
+        if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority) playerMovement.IsBlocking = false;
+    }
+
 
     public override void NetworkUpdate()
     {
@@ -24,7 +31,6 @@ public class BlockState : PlayerOnGround
     {
         if (animationClipPlayable.GetTime() < animationLength - 0.02f)
             return;
-
 
         if (playerPlayables.HasInputAuthority)
         {

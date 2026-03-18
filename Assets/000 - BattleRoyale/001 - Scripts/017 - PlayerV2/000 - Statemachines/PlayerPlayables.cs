@@ -10,10 +10,15 @@ using UnityEngine.Animations;
 using UnityEngine.Animations.Rigging;
 using UnityEngine.Playables;
 using UnityEngine.Rendering.PostProcessing;
+using static Fusion.Sockets.NetBitBuffer;
 using static MainCorePlayable;
 
 public class PlayerPlayables : NetworkBehaviour
 {
+    private const int RECONCILE_DELAY_TICKS = 3;
+
+    //  =====================
+
     public PlayerStamina stamina;
     public PlayerInventoryV2 inventory;
     public PlayerOwnObjectEnabler ownObjectEnabler;
@@ -30,11 +35,15 @@ public class PlayerPlayables : NetworkBehaviour
     [SerializeField] private Transform playerObj;
     [SerializeField] private Transform bone;
     [SerializeField] private Transform target;
-    public float maxPitchUp = 25f;
-    public float maxPitchDown = 20f;
-    public bool enableRoll = false;
-    public float rollDeg = 0f;   // set this from your input / leaning logic
-    public float maxRoll = 12f;
+    [SerializeField] private float maxPitchUp = 25f;
+    [SerializeField] private float maxPitchDown = 20f;
+    [SerializeField] private bool enableRoll = false;
+    [SerializeField] private float rollDeg = 0f;   // set this from your input / leaning logic
+    [SerializeField] private float maxRoll = 12f;
+
+    [Space]
+    [SerializeField] private Transform bonePunchRot;
+    [SerializeField] private Vector3 punchrotationfix;
 
     [Space]
     public PlayerHealthV2 healthV2;
@@ -82,6 +91,12 @@ public class PlayerPlayables : NetworkBehaviour
     [SerializeField] AudioClip selectedClip;
     [SerializeField] AudioClip previousClip;
     [SerializeField] private int audioClipIndex;
+    [SerializeField] private float _upperMismatchTime;
+    [SerializeField] private float _lowerMismatchTime;
+    [SerializeField] private int _upperMismatchStartTick = -1;
+    [SerializeField] private int _lowerMismatchStartTick = -1;
+    [SerializeField] private int _pendingUpperTick = -1;
+    [SerializeField] private int _pendingLowerTick = -1;
 
     [field: Header("NETWORK DEBUGGER")]
     [Networked][field: SerializeField] public float TickRateAnimation { get; set; }
@@ -98,8 +113,11 @@ public class PlayerPlayables : NetworkBehaviour
     public PlayableGraph playableGraph;
     public UpperBodyChanger upperBodyChanger;
     public PlayablesChanger lowerBodyChanger;
+    private UpperBodyAnimations _pendingUpperState;
+    private AnimationPlayable _pendingLowerState;
     public AnimationLayerMixerPlayable finalMixer;
     public AnimationScriptPlayable lookAtPlayable;
+    public AnimationScriptPlayable punchFixRotation;
     public LookAtJobBoneIK job { get; set; }
     LagCompensatedHit hit = new LagCompensatedHit();
 
@@ -141,11 +159,15 @@ public class PlayerPlayables : NetworkBehaviour
         }
     }
 
+    public void PunchRotFix()
+    {
+        bonePunchRot.localRotation *= Quaternion.Euler(punchrotationfix);
+    }
+
     public override void Render()
     {
         if (lowerBodyChanger.CurrentState == null || upperBodyChanger.CurrentState == null) return;
-
-        if (HasStateAuthority || HasInputAuthority) return;
+        if (HasStateAuthority) return;
 
         upperBodyChanger.CurrentState.NetworkLocalUpdate();
 
@@ -158,23 +180,29 @@ public class PlayerPlayables : NetworkBehaviour
 
                     if (PlayableUpperBodyAnimationTick != _lastProcessedTickUpper)
                     {
-                        upperBodyChanger.ChangeState(upperBodyMovement.GetPlayableAnimation(PlayableUpperBoddyAnimationIndex));
-                        _lastProcessedTickUpper = PlayableUpperBodyAnimationTick;
+                        _pendingUpperTick = PlayableUpperBodyAnimationTick;
+                        _pendingUpperState = upperBodyMovement.GetPlayableAnimation(PlayableUpperBoddyAnimationIndex);
+                        _upperMismatchStartTick = Runner.Tick;
                     }
 
                     break;
+
                 case nameof(PlayableLowerBoddyAnimationIndex):
                 case nameof(PlayableLowerBodyAnimationTick):
 
                     if (PlayableLowerBodyAnimationTick != _lastProcessedTickLower)
                     {
-                        lowerBodyChanger.ChangeState(lowerBodyMovement.GetPlayableAnimation(PlayableLowerBoddyAnimationIndex));
-                        _lastProcessedTickLower = PlayableLowerBodyAnimationTick;
+                        _pendingLowerTick = PlayableLowerBodyAnimationTick;
+                        _pendingLowerState = lowerBodyMovement.GetPlayableAnimation(PlayableLowerBoddyAnimationIndex);
+                        _lowerMismatchStartTick = Runner.Tick;
                     }
 
                     break;
             }
         }
+
+        ResolveUpperReplication();
+        ResolveLowerReplication();
     }
 
     public override void FixedUpdateNetwork()
@@ -183,6 +211,68 @@ public class PlayerPlayables : NetworkBehaviour
 
         upperBodyChanger.CurrentState.NetworkUpdate();
         lowerBodyChanger.CurrentState.NetworkUpdate();
+    }
+
+    private void ResolveUpperReplication()
+    {
+        if (_pendingUpperTick == -1)
+            return;
+
+        if (!HasInputAuthority)
+        {
+            upperBodyChanger.ChangeState(_pendingUpperState);
+            _lastProcessedTickUpper = _pendingUpperTick;
+            _pendingUpperTick = -1;
+            return;
+        }
+
+        if (upperBodyChanger.CurrentState == _pendingUpperState)
+        {
+            _lastProcessedTickUpper = _pendingUpperTick;
+            _pendingUpperTick = -1;
+            _upperMismatchStartTick = -1;
+            return;
+        }
+
+        if (Runner.Tick - _upperMismatchStartTick < RECONCILE_DELAY_TICKS)
+            return;
+
+        upperBodyChanger.ChangeState(_pendingUpperState);
+
+        _lastProcessedTickUpper = _pendingUpperTick;
+        _pendingUpperTick = -1;
+        _upperMismatchStartTick = -1;
+    }
+
+    private void ResolveLowerReplication()
+    {
+        if (_pendingLowerTick == -1)
+            return;
+
+        if (!HasInputAuthority)
+        {
+            lowerBodyChanger.ChangeState(_pendingLowerState);
+            _lastProcessedTickLower = _pendingLowerTick;
+            _pendingLowerTick = -1;
+            return;
+        }
+
+        if (lowerBodyChanger.CurrentState == _pendingLowerState)
+        {
+            _lastProcessedTickLower = _pendingLowerTick;
+            _pendingLowerTick = -1;
+            _lowerMismatchStartTick = -1;
+            return;
+        }
+
+        if (Runner.Tick - _lowerMismatchStartTick < RECONCILE_DELAY_TICKS)
+            return;
+
+        lowerBodyChanger.ChangeState(_pendingLowerState);
+
+        _lastProcessedTickLower = _pendingLowerTick;
+        _pendingLowerTick = -1;
+        _lowerMismatchStartTick = -1;
     }
 
     public void InitializePlayables()
@@ -210,6 +300,7 @@ public class PlayerPlayables : NetworkBehaviour
         finalMixer.SetInputWeight(1, 1f);
         finalMixer.SetLayerMaskFromAvatarMask(1, upperBodyMask);
 
+
         Transform parentT = bone.parent;
 
         rollAxisLocal = PickLocalAxisClosestToWorldDir(bone, parentT.forward);
@@ -228,8 +319,24 @@ public class PlayerPlayables : NetworkBehaviour
         lookAtPlayable.ConnectInput(0, finalMixer, 0);
         lookAtPlayable.SetInputWeight(0, 1f);
 
+        PunchBoneFixJob punchJob = new PunchBoneFixJob
+        {
+            bone = playerAnimator.BindStreamTransform(bone),
+            weight = 0f,
+            correctionEulerLocal = Vector3.zero
+        };
+
+        punchFixRotation = AnimationScriptPlayable.Create(playableGraph, punchJob);
+        punchFixRotation.SetInputCount(1);
+
+        // Chain it AFTER lookAtPlayable, not directly to finalMixer
+        punchFixRotation.ConnectInput(0, lookAtPlayable, 0);
+        punchFixRotation.SetInputWeight(0, 1f);
+
         var playableOutput = AnimationPlayableOutput.Create(playableGraph, "Animation", playerAnimator);
-        playableOutput.SetSourcePlayable(lookAtPlayable);
+
+        // Output should use only the LAST playable in the chain
+        playableOutput.SetSourcePlayable(punchFixRotation);
 
         playableGraph.Play();
     }
@@ -283,6 +390,22 @@ public class PlayerPlayables : NetworkBehaviour
         lookAtPlayable.SetJobData(currentJob);
     }
 
+    public void SetPunchRotation(float newWeight)
+    {
+        if (!punchFixRotation.IsValid())
+        {
+            Debug.Log("punchFixRotation not valid");
+            return;
+        }
+
+        if (Runner == null) return;
+
+        var jobData = punchFixRotation.GetJobData<PunchBoneFixJob>();
+        jobData.weight = newWeight;
+        jobData.correctionEulerLocal = punchrotationfix;
+        punchFixRotation.SetJobData(jobData);
+    }
+
     public void SetAnimationUpperTick() => PlayableUpperBodyAnimationTick = Runner.Tick;
 
     public void SetAnimationLowerTick() => PlayableLowerBodyAnimationTick = Runner.Tick;
@@ -333,19 +456,7 @@ public class PlayerPlayables : NetworkBehaviour
     public void PlayFootstepSound()
     {
         if (HasStateAuthority) return;
-        //GetTerrainTexture();
 
-        //if (CurrentGround == MainCorePlayable.Ground.TERRAIN)
-        //{
-        //    if (textureValues[0] > 0)
-        //    {
-        //        footstepSource.PlayOneShot(GetClip(grassClip));
-        //    }
-        //    if (textureValues[1] > 0)
-        //    {
-        //        footstepSource.PlayOneShot(GetClip(dirtClip));
-        //    }
-        //}
         if (CurrentGround == MainCorePlayable.Ground.DIRT)
             footstepSource.PlayOneShot(GetClip(dirtClip));
         else if (CurrentGround == MainCorePlayable.Ground.STONE)
@@ -365,68 +476,6 @@ public class PlayerPlayables : NetworkBehaviour
 
         previousClip = selectedClip;
         return selectedClip;
-    }
-
-
-    //public void GetTerrainTexture()
-    //{
-    //    ConvertPosition(transform.position);
-    //}
-
-    //private void ConvertPosition(Vector3 playerPosition)
-    //{
-    //    Terrain tempterrain = ownObjectEnabler.ServerManager.battleFieldArena;
-
-    //    if (tempterrain == null || tempterrain.terrainData == null)
-    //        return;
-
-    //    // Get terrain dimensions
-    //    TerrainData terrainData = tempterrain.terrainData;
-    //    Vector3 terrainSize = terrainData.size;
-    //    int alphamapWidth = terrainData.alphamapWidth;
-    //    int alphamapHeight = terrainData.alphamapHeight;
-
-    //    // Convert world position to normalized [0,1] terrain coordinates
-    //    Vector3 relativePos = playerPosition - tempterrain.transform.position;
-    //    Vector3 normalizedPos = new Vector3(
-    //        relativePos.x / terrainSize.x,
-    //        0,
-    //        relativePos.z / terrainSize.z
-    //    );
-
-    //    // Clamp and convert to alphamap coordinates
-    //    normalizedPos.x = Mathf.Clamp01(normalizedPos.x);
-    //    normalizedPos.z = Mathf.Clamp01(normalizedPos.z);
-
-    //    posX = Mathf.FloorToInt(normalizedPos.x * (alphamapWidth - 1));
-    //    posZ = Mathf.FloorToInt(normalizedPos.z * (alphamapHeight - 1));
-
-    //    CheckTexture(tempterrain);
-    //}
-
-    //private void CheckTexture(Terrain terrain)
-    //{
-    //    TerrainData terrainData = terrain.terrainData;
-
-    //    // Verify array bounds
-    //    if (posX < 0 || posX >= terrainData.alphamapWidth ||
-    //        posZ < 0 || posZ >= terrainData.alphamapHeight)
-    //        return;
-
-    //    float[,,] aMap = terrainData.GetAlphamaps(posX, posZ, 1, 1);
-    //    int numTextures = aMap.GetLength(2);
-
-    //    // Ensure textureValues array matches available textures
-    //    if (textureValues.Length < numTextures)
-    //        Array.Resize(ref textureValues, numTextures);
-
-    //    for (int i = 0; i < numTextures; i++)
-    //        textureValues[i] = aMap[0, 0, i];
-    //}
-
-    public void OnDrawGizmos()
-    {
-        Debug.DrawLine(bone.position, target.position, Color.cyan);
     }
 }
 
@@ -450,5 +499,30 @@ public struct LookAtJobBoneIK : IAnimationJob
 
         Quaternion pitchDelta = Quaternion.AngleAxis(pitchDeg * pitchAxisSign, pitchAxisLocal);
         bone.SetRotation(stream, baseLocal * Quaternion.Slerp(Quaternion.identity, pitchDelta, weight));
+    }
+}
+
+public struct PunchBoneFixJob : IAnimationJob
+{
+    public TransformStreamHandle bone;
+    public float weight;
+
+    public Vector3 correctionEulerLocal;
+
+    public void ProcessRootMotion(AnimationStream stream) { }
+
+    public void ProcessAnimation(AnimationStream stream)
+    {
+        if (!bone.IsValid(stream)) return;
+
+        Quaternion animatedLocal = bone.GetLocalRotation(stream);
+
+        Quaternion correction = Quaternion.Slerp(
+            Quaternion.identity,
+            Quaternion.Euler(correctionEulerLocal),
+            weight
+        );
+
+        bone.SetLocalRotation(stream, animatedLocal * correction);
     }
 }

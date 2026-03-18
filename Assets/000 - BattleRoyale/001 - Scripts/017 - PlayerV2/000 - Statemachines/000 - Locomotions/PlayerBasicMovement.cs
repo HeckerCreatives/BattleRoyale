@@ -236,7 +236,7 @@ public class PlayerBasicMovement : NetworkBehaviour
 
         #region GLOBAL
 
-        FallingPlayable = new FallingState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "falling", "basic", falling.length, fallingClip, false, isLowerBody);
+        FallingPlayable = new FallingState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "falling", "basic", falling.length, fallingClip, true, isLowerBody);
         RollPlayable = new RollState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "roll", "basic", roll.length, rollClip, true, isLowerBody);
         HitPlayable = new HitState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "hit", "basic", hit.length, hitClip, true, isLowerBody  );
         StaggerHitPlayable = new StaggerHit(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "staggerhit", "basic", staggerHit.length, staggerHitClip, true, isLowerBody);
@@ -254,7 +254,7 @@ public class PlayerBasicMovement : NetworkBehaviour
         IdlePlayable = new IdleState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "idle", "basic", idle.length, idleClip, false, isLowerBody);
         RunPlayable = new RunState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "run", "basic", run.length, runClip, false, isLowerBody);
         SprintPlayable = new SprintState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "sprint", "basic", sprint.length, sprintClip, false, isLowerBody);
-        JumpPlayable = new JumpState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumpidle", "basic", jumpidle.length, idleJumpClip, false, isLowerBody);
+        JumpPlayable = new JumpState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "startjump", "basic", startJump.length, startJumpClip, true, isLowerBody);
         BlockPlayable = new BlockState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "block", "basic", block.length, blockClip, true, isLowerBody);
         Punch1Playable = new PunchState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch1", "basic", punch1.length, punch1Clip, true, isLowerBody);
         Punch2Playable = new MiddlePunchState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch2", "basic", punch2.length, punch2Clip, true, isLowerBody);
@@ -333,7 +333,7 @@ public class PlayerBasicMovement : NetworkBehaviour
                 return Punch2Playable;
             case 7:
                 return Punch3Playable;
-            case 9:
+            case 8:
                 return JumpPlayable;
             case 10:
                 return FallingPlayable;

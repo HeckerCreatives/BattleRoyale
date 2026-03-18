@@ -6,10 +6,6 @@ using UnityEngine.Animations;
 
 public class JumpPunchState : PlayerOnGround
 {
-    float timer;
-    bool canAction;
-    bool hasResetHitEnemies;
-
     public JumpPunchState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
     }
@@ -18,38 +14,28 @@ public class JumpPunchState : PlayerOnGround
     {
         base.Enter();
 
+        if (!playerPlayables.HasStateAuthority) return;
+
         playerPlayables.healthV2.FallDamageValue = 0;
-        hasResetHitEnemies = false;
-        timer = playerPlayables.TickRateAnimation + animationLength;
-        canAction = true;
     }
-
-    public override void Exit()
-    {
-        base.Exit();
-
-        canAction = false;
-    }
-
 
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
-        FallDamage();
 
+        var nextState = GetNextState();
 
-        if (characterController.IsGrounded && canAction)
+        if (nextState != null && playablesChanger.CurrentState != nextState)
         {
-            playerMovement.IsJumping = false;
-            playerMovement.JumpImpulse = 0;
-
-            if (playerPlayables.healthV2.FallDamageValue > 0)
-                playerPlayables.healthV2.FallDamae();
-
-            Animation();
+            OnLanding();
+            playablesChanger.ChangeState(nextState);
         }
 
-        playerPlayables.stamina.RecoverStamina(5f);
+        if (playerPlayables.HasStateAuthority)
+        {
+            FallDamage();
+            playerPlayables.stamina.RecoverStamina(5f);
+        }
     }
 
     private void FallDamage()
@@ -60,17 +46,51 @@ public class JumpPunchState : PlayerOnGround
         }
     }
 
-    private void Animation()
+    private void OnLanding()
     {
-        if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
-        {
-            if (playerMovement.IsSprint)
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SprintPlayable);
+        if (!characterController.IsGrounded) return;
 
-            else
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RunPlayable);
+        playerMovement.IsJumping = false;
+        playerMovement.JumpImpulse = 0;
+
+        if (playerPlayables.healthV2.FallDamageValue > 0)
+            playerPlayables.healthV2.FallDamae();
+    }
+
+    private AnimationPlayable GetNextState()
+    {
+        var interruptState = GetInterruptState();
+        if (interruptState != null)
+            return interruptState;
+
+        return GetLandingState();
+    }
+
+    private AnimationPlayable GetInterruptState()
+    {
+        if (playerPlayables.healthV2.IsDead)
+            return playerPlayables.lowerBodyMovement.DeathPlayable;
+
+        if (playerPlayables.healthV2.IsStagger)
+            return playerPlayables.lowerBodyMovement.StaggerHitPlayable;
+
+        return null;
+    }
+
+    private AnimationPlayable GetLandingState()
+    {
+        if (!characterController.IsGrounded)
+            return null;
+
+        bool isMoving = playerMovement.XMovement != 0 || playerMovement.YMovement != 0;
+
+        if (isMoving)
+        {
+            return playerMovement.IsSprint
+                ? playerPlayables.lowerBodyMovement.SprintPlayable
+                : playerPlayables.lowerBodyMovement.RunPlayable;
         }
-        else
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.IdlePlayable);
+
+        return playerPlayables.lowerBodyMovement.IdlePlayable;
     }
 }

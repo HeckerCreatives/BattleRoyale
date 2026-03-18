@@ -4,11 +4,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Playables;
 
 public class JumpState : PlayerOnGround
 {
-    float timer;
-
     public JumpState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
     }
@@ -21,8 +20,6 @@ public class JumpState : PlayerOnGround
             playerPlayables.CancelInvoke();
 
         playerPlayables.PlayJumpSoundEffect();
-
-        timer = playerPlayables.Runner.SimulationTime + 0.35f;
     }
 
     public override void Exit()
@@ -36,46 +33,25 @@ public class JumpState : PlayerOnGround
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
+        UpdateJumpFlags();
 
-        if (playerPlayables.HasInputAuthority)
+        var nextState = GetNextLowerJumpState();
+
+        if (nextState != null && playablesChanger.CurrentState != nextState)
         {
-            var predictedState = GetNextLowerJumpState();
-
-            if (predictedState != null && playablesChanger.CurrentState != predictedState)
-            {
-                playablesChanger.ChangeState(predictedState);
-            }
+            playablesChanger.ChangeState(nextState);
         }
 
         if (playerPlayables.HasStateAuthority)
-        {
-            UpdateJumpFlags();
-
-            var nextState = GetNextLowerJumpState();
-
-            if (nextState != null && playablesChanger.CurrentState != nextState)
-            {
-                playablesChanger.ChangeState(nextState);
-            }
-
             playerPlayables.stamina.RecoverStamina(5f);
-        }
     }
 
     private void UpdateJumpFlags()
     {
-        //if (characterController.IsGrounded)
-        //{
-        //    playerMovement.IsJumping = false;
-        //    playerMovement.JumpImpulse = 0f;
-        //    return;
-        //}
+        if (animationClipPlayable.GetTime() < animationLength * 0.1f) return;
 
-        if (playerPlayables.Runner.SimulationTime >= timer)
-        {
-            playerMovement.IsJumping = false;
-            playerMovement.JumpImpulse = 0f;
-        }
+        playerMovement.IsJumping = false;
+        playerMovement.JumpImpulse = 0f;
     }
 
     private AnimationPlayable GetNextLowerJumpState()
@@ -93,12 +69,11 @@ public class JumpState : PlayerOnGround
                 return jumpAttackState;
         }
 
+        if (animationClipPlayable.GetTime() < animationLength) return null;
+
         if (!characterController.IsGrounded)
         {
-            if (!playerMovement.IsJumping)
-                return lower.FallingPlayable;
-
-            return this;
+            return lower.FallingPlayable;
         }
 
         return GetGroundedLocomotionState();

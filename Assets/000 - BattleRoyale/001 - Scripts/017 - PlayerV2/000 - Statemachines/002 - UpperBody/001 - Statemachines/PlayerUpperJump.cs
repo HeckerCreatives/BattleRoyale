@@ -3,10 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Playables;
 
 public class PlayerUpperJump : UpperNoAimState
 {
-    public PlayerUpperJump(SimpleKCC characterController, UpperBodyChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public PlayerUpperJump(SimpleKCC characterController, UpperBodyChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool canAnimateUpper) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, canAnimateUpper)
     {
     }
 
@@ -16,25 +17,11 @@ public class PlayerUpperJump : UpperNoAimState
 
         playerMovement.WeaponSwitcher();
 
+        var nextState = GetNextUpperJumpState();
 
-        if (playerPlayables.HasInputAuthority)
+        if (nextState != null && playablesChanger.CurrentState != nextState)
         {
-            var predictedState = GetNextUpperJumpState();
-
-            if (predictedState != null && playablesChanger.CurrentState != predictedState)
-            {
-                playablesChanger.ChangeState(predictedState);
-            }
-        }
-
-        if (playerPlayables.HasStateAuthority)
-        {
-            var nextState = GetNextUpperJumpState();
-
-            if (nextState != null && playablesChanger.CurrentState != nextState)
-            {
-                playablesChanger.ChangeState(nextState);
-            }
+            playablesChanger.ChangeState(nextState);
         }
     }
 
@@ -53,12 +40,11 @@ public class PlayerUpperJump : UpperNoAimState
                 return jumpAttackState;
         }
 
+        if (animationClipPlayable.GetTime() < animationLength) return null;
+
         if (!characterController.IsGrounded)
         {
-            if (!playerMovement.IsJumping)
-                return GetUpperFallingState();
-
-            return this;
+            return GetUpperFallingState();
         }
 
         return GetGroundedUpperLocomotionState();

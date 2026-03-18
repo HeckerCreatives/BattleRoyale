@@ -1,16 +1,16 @@
 using Fusion.Addons.SimpleKCC;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Playables;
 
 public class PlayerJumpPunchPlayable : UpperNoAimState
 {
-    float timer;
-    bool canAction;
     bool hasResetHitEnemies;
 
-    public PlayerJumpPunchPlayable(SimpleKCC characterController, UpperBodyChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay) 
+    public PlayerJumpPunchPlayable(SimpleKCC characterController, UpperBodyChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool canAnimateUpper) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, canAnimateUpper) 
     {
     }
 
@@ -18,23 +18,47 @@ public class PlayerJumpPunchPlayable : UpperNoAimState
     {
         base.Enter();
 
+        if (!playerPlayables.HasStateAuthority) return;
+
         playerPlayables.healthV2.FallDamageValue = 0;
         hasResetHitEnemies = false;
-        timer = playerPlayables.TickRateAnimation + animationLength;
-        canAction = true;
-    }
-
-    public override void Exit()
-    {
-        base.Exit();
-
-        canAction = false;
     }
 
     public override void NetworkUpdate()
     {
         base.NetworkUpdate();
 
+        double animTime = Math.Min(animationClipPlayable.GetTime(), animationLength);
+
+        HandleDamage(animTime);
+
+        if (!characterController.IsGrounded || animTime < animationLength)
+            return;
+
+        if (playerPlayables.HasInputAuthority)
+        {
+            var predictedState = GetNextState();
+
+            if (predictedState != null && playablesChanger.CurrentState != predictedState)
+            {
+                playablesChanger.ChangeState(predictedState);
+            }
+        }
+        if (playerPlayables.HasStateAuthority)
+        {
+            var nextState = GetNextState();
+
+            if (nextState != null && playablesChanger.CurrentState != nextState)
+            {
+                playablesChanger.ChangeState(nextState);
+            }
+        }
+
+    }
+
+    private void HandleDamage(double animTime)
+    {
+        // If you want full-clip active hit detection, keep this exactly like this.
         if (!hasResetHitEnemies)
         {
             playerPlayables.upperBodyMovement.ResetSecondAttack();
@@ -42,24 +66,19 @@ public class PlayerJumpPunchPlayable : UpperNoAimState
         }
 
         playerPlayables.upperBodyMovement.PerformSecondAttack();
-
-        if (characterController.IsGrounded && canAction && playerPlayables.TickRateAnimation >= timer)
-        {
-            Animation();
-        }
     }
 
-    private void Animation()
+    private UpperBodyAnimations GetNextState()
     {
-        if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
-        {
-            if (playerMovement.IsSprint)
-                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SprintPlayables);
+        bool isMoving = playerMovement.XMovement != 0 || playerMovement.YMovement != 0;
 
-            else
-                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RunPlayables);
+        if (isMoving)
+        {
+            return playerMovement.IsSprint
+                ? playerPlayables.upperBodyMovement.SprintPlayables
+                : playerPlayables.upperBodyMovement.RunPlayables;
         }
-        else
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.IdlePlayables);
+
+        return playerPlayables.upperBodyMovement.IdlePlayables;
     }
 }

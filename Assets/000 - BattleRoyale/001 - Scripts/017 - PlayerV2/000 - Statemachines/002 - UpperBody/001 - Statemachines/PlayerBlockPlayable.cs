@@ -7,7 +7,7 @@ using UnityEngine.Playables;
 
 public class PlayerBlockPlayable : UpperNoAimState
 {
-    public PlayerBlockPlayable(SimpleKCC characterController, UpperBodyChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay)
+    public PlayerBlockPlayable(SimpleKCC characterController, UpperBodyChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool canAnimateUpper) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, canAnimateUpper)
     {
     }
 
@@ -25,7 +25,6 @@ public class PlayerBlockPlayable : UpperNoAimState
     {
         if (animationClipPlayable.GetTime() < animationLength - 0.025f)
             return;
-
 
         if (playerPlayables.HasInputAuthority)
         {
@@ -46,6 +45,7 @@ public class PlayerBlockPlayable : UpperNoAimState
                 playablesChanger.ChangeState(nextState);
             }
         }
+
     }
 
     private UpperBodyAnimations GetPostBlockUpperState()

@@ -39,28 +39,15 @@ public class RunState : PlayerOnGround
     {
         playerMovement.MoveCharacter();
 
+        var nextState = GetNextLowerRunState();
 
-        if (playerPlayables.HasInputAuthority)
+        if (nextState != null && playablesChanger.CurrentState != nextState)
         {
-            var predictedState = GetNextLowerRunState();
-
-            if (predictedState != null && playablesChanger.CurrentState != predictedState)
-            {
-                playablesChanger.ChangeState(predictedState);
-            }
+            playablesChanger.ChangeState(nextState);
         }
 
         if (playerPlayables.HasStateAuthority)
-        {
-            var nextState = GetNextLowerRunState();
-
-            if (nextState != null && playablesChanger.CurrentState != nextState)
-            {
-                playablesChanger.ChangeState(nextState);
-            }
-
             playerPlayables.stamina.RecoverStamina(5f);
-        }
     }
 
     private AnimationPlayable GetNextLowerRunState()
@@ -74,11 +61,11 @@ public class RunState : PlayerOnGround
         if (health.IsStagger)
             return lower.StaggerHitPlayable;
 
-        if (!characterController.IsGrounded)
-            return lower.FallingPlayable;
-
         if (playerMovement.IsJumping)
             return lower.JumpPlayable;
+
+        if (!characterController.IsGrounded)
+            return lower.FallingPlayable;
 
         if (playerMovement.IsBlocking)
             return lower.BlockPlayable;

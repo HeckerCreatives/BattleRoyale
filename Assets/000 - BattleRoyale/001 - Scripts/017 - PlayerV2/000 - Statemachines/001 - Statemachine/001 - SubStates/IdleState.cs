@@ -14,40 +14,19 @@ public class IdleState : PlayerOnGround
     {
     }
 
-    public override void Enter()
-    {
-        base.Enter();
-
-        if (playerMovement.Runner)
-            if (!playerMovement.IsJumping) playerMovement.JumpImpulse = 0f;
-    }
-
     public override void NetworkUpdate()
     {
-        characterController.Move(Vector3.zero, 0f);
+        playerMovement.MoveCharacter();
 
+        var nextState = GetNextLowerBodyState();
 
-        if (playerPlayables.HasInputAuthority)
+        if (nextState != null && playablesChanger.CurrentState != nextState)
         {
-            var predictedState = GetNextLowerBodyState();
-
-            if (predictedState != null && playablesChanger.CurrentState != predictedState)
-            {
-                playablesChanger.ChangeState(predictedState);
-            }
+            playablesChanger.ChangeState(nextState);
         }
 
         if (playerPlayables.HasStateAuthority)
-        {
-            var nextState = GetNextLowerBodyState();
-
-            if (nextState != null && playablesChanger.CurrentState != nextState)
-            {
-                playablesChanger.ChangeState(nextState);
-            }
-
             playerPlayables.stamina.RecoverStamina(5f);
-        }
     }
 
     private AnimationPlayable GetNextLowerBodyState()
@@ -73,9 +52,8 @@ public class IdleState : PlayerOnGround
         if (playerMovement.IsTrapping)
             return playerPlayables.lowerBodyMovement.TrappingPlayable;
 
-        if (playerPlayables.FinalAttack)
-            return playerPlayables.lowerBodyMovement.Punch3Playable;
-        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.Punch3Playable);
+        //if (playerPlayables.FinalAttack)
+        //    return playerPlayables.lowerBodyMovement.Punch3Playable;
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             return playerPlayables.lowerBodyMovement.RollPlayable;
