@@ -396,29 +396,32 @@ public class PlayerMovementV2 : NetworkBehaviour
 
         float moveSpeedValue = IsSprint ? SprintSpeed : MoveSpeed;
 
-        Vector3 targetMoveDirection = Vector3.zero;
-
-        if (MoveDir.sqrMagnitude > 0.01f && !IsRoll && !CurrentlyAttacking)
+        if (IsRoll)
         {
-            MoveDir.Normalize();
-
-            Quaternion targetRotation = Quaternion.LookRotation(MoveDir);
-            mainCharObj.rotation = Quaternion.Slerp(mainCharObj.rotation, targetRotation, Runner.DeltaTime * 10f);
-
-            targetMoveDirection = MoveDir * moveSpeedValue * Runner.DeltaTime;
+            MoveDirection = mainCharObj.forward * 200f;
         }
-        else if (IsRoll)
+        else
         {
-            targetMoveDirection = MainCharObj.forward * 200f * Runner.DeltaTime;
+            Vector3 targetMoveDirection = Vector3.zero;
+
+            if (MoveDir.sqrMagnitude > 0.01f)
+            {
+                MoveDir.Normalize();
+
+                Quaternion targetRotation = Quaternion.LookRotation(MoveDir);
+                mainCharObj.rotation = Quaternion.Slerp(mainCharObj.rotation, targetRotation, Runner.DeltaTime * 10f);
+
+                targetMoveDirection = MoveDir * moveSpeedValue;
+            }
+
+            MoveDirection = Vector3.MoveTowards(
+                MoveDirection,
+                targetMoveDirection,
+                MoveSmoothSpeed * Runner.DeltaTime
+            );
         }
 
-        MoveDirection = Vector3.MoveTowards(
-            MoveDirection,
-            targetMoveDirection,
-            MoveSmoothSpeed * Runner.DeltaTime
-        );
-
-        characterController.Move(MoveDirection, JumpImpulse);
+        characterController.Move(MoveDirection * Runner.DeltaTime, JumpImpulse);
         playerplayables.CheckGround();
     }
 
