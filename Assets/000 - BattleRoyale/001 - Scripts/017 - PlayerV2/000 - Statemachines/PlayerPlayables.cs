@@ -15,7 +15,7 @@ using static MainCorePlayable;
 
 public class PlayerPlayables : NetworkBehaviour
 {
-    private const int RECONCILE_DELAY_TICKS = 3;
+    private const int RECONCILE_DELAY_TICKS = 4;
 
     //  =====================
 
@@ -170,6 +170,7 @@ public class PlayerPlayables : NetworkBehaviour
         if (HasStateAuthority) return;
 
         upperBodyChanger.CurrentState.NetworkLocalUpdate();
+        lowerBodyChanger.CurrentState.NetworkLocalUpdate();
 
         foreach (var change in _changeDetector.DetectChanges(this))
         {

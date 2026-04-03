@@ -68,8 +68,10 @@ public class PlayerFistFirstPunch : UpperNoAimState
 
     private void HandleDamageWindow(double normalizedTime)
     {
+        if (!playerPlayables.HasStateAuthority) return;
+
         // 18% to 23% of animation
-        if (normalizedTime >= 0.18 && normalizedTime <= 0.23)
+        if (normalizedTime >= 0.18f && normalizedTime <= 0.9f)
         {
             if (!hasResetHitEnemies)
             {
@@ -88,6 +90,9 @@ public class PlayerFistFirstPunch : UpperNoAimState
 
         if (playerPlayables.healthV2.IsStagger)
             return playerPlayables.upperBodyMovement.StaggerHitPlayable;
+
+        if (playerMovement.IsJumping)
+            return playerPlayables.upperBodyMovement.JumpPlayable;
 
         if (!characterController.IsGrounded)
             return playerPlayables.upperBodyMovement.FallingPlayables;

@@ -11,19 +11,13 @@ public class FallingState : AnimationPlayable
     {
     }
 
-    public override void Enter()
-    {
-        base.Enter();
-
-        if (playerPlayables.HasStateAuthority || playerPlayables.HasInputAuthority) playerMovement.JumpImpulse = 0f;
-    }
-
     public override void Exit()
     {
         base.Exit();
 
         if (playerPlayables.HasStateAuthority || playerPlayables.HasInputAuthority)
         {
+            playerMovement.JumpImpulse = 0f;
             characterController.ResetVelocity();
             playerPlayables.healthV2.FallDamageValue = 0f;
         }

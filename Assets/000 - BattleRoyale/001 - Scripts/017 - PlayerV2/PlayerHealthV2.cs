@@ -16,6 +16,11 @@ public class PlayerHealthV2 : NetworkBehaviour
     [SerializeField] private PlayerPlayables playerPlayables;
     [SerializeField] private PlayerInventoryV2 inventory;
     [SerializeField] private PlayerOwnObjectEnabler playerOwnObjectEnabler;
+    [SerializeField] private InvincibleController invincible;
+
+    [Space]
+    [SerializeField] private NetworkObject healObj;
+    [SerializeField] private NetworkObject repairObj;
 
     [Space]
     [SerializeField] private float startingHealth;
@@ -95,7 +100,7 @@ public class PlayerHealthV2 : NetworkBehaviour
                     healthSlider.value = CurrentHealth / 100;
                     break;
                 case nameof(Hitted):
-                    if (!HasStateAuthority) break;
+                    if (HasStateAuthority) break;
 
                     DamageIndicator();
 
@@ -108,7 +113,7 @@ public class PlayerHealthV2 : NetworkBehaviour
                     Invoke(nameof(OffCameraShaker), 0.15f);
                     break;
                 case nameof(IsStagger):
-                    if (!HasInputAuthority) break;
+                    if (HasStateAuthority) break;
 
                     if (!IsStagger) break;
 
@@ -275,6 +280,8 @@ public class PlayerHealthV2 : NetworkBehaviour
 
         if (IsDead) return;
 
+        if (invincible.IsInvincible) return;
+
         float distanceFromCenter = Vector3.Distance(new Vector3(transform.position.x, 0, transform.position.z), new Vector3(SafeZoneServerController.Instance.SafeZone.transform.position.x, 0, SafeZoneServerController.Instance.SafeZone.transform.position.z));
         float radius = SafeZoneServerController.Instance.SafeZone.CurrentShrinkSize.x / 2; // Adjust based on your implementation
 
@@ -298,6 +305,8 @@ public class PlayerHealthV2 : NetworkBehaviour
                 PlayerJoinedController.Instance.RemainingPlayers.Remove(playerOwnObjectEnabler.Username.ToString());
 
                 KillNotifServerController.Instance.KillNotifController.RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} was killed outside safe area");
+
+                DropItems();
             }
         }
     }
@@ -307,6 +316,8 @@ public class PlayerHealthV2 : NetworkBehaviour
         if (!HasStateAuthority) return;
 
         if (IsDead) return;
+
+        if (invincible.IsInvincible) return;
 
         Hitted++;
 
@@ -364,22 +375,43 @@ public class PlayerHealthV2 : NetworkBehaviour
                 PlayerJoinedController.Instance.RemainingPlayers.Remove(playerOwnObjectEnabler.Username.ToString());
 
                 KillNotifServerController.Instance.KillNotifController.RPC_ReceiveKillNotification($"{killer} KILLED {playerOwnObjectEnabler.Username}");
+
+                DropItems();
             }
             //string statustext = killer == loader.Username ? $"{loader.Username} Killed themself" : $"{killer} KILLED {loader.Username}";
 
             //RPC_ReceiveKillNotification(statustext);
+        }
+    }
 
-            //if (playerInventory.PrimaryWeapon != null)
-            //{
-            //    playerInventory.PrimaryWeapon.DropPrimaryWeapon();
-            //    playerInventory.PrimaryWeapon = null;
-            //}
+    private void DropItems()
+    {
+        if (inventory.PrimaryWeapon != null)
+        {
+            inventory.PrimaryWeapon.DropWeapon();
+            inventory.PrimaryWeapon = null;
+        }
 
-            //if (playerInventory.Shield != null)
-            //{
-            //    playerInventory.Shield.DropShield();
-            //    playerInventory.Shield = null;
-            //}
+        if (inventory.Armor != null)
+        {
+            inventory.Armor.DropArmor();
+            inventory.Armor = null;
+        }
+
+        if (inventory.HealCount > 0)
+        {
+            Runner.Spawn(healObj, transform.position, Quaternion.identity, null, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+            {
+                obj.GetComponent<HealWeaponItem>().InitializeItem(transform.position, Quaternion.identity, inventory.HealCount);
+            });
+        }
+
+        if (inventory.ArmorRepairCount > 0)
+        {
+            Runner.Spawn(repairObj, transform.position, Quaternion.identity, null, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+            {
+                obj.GetComponent<RepairWeaponItem>().InitializeItem(transform.position, Quaternion.identity, inventory.HealCount);
+            });
         }
     }
 
@@ -388,6 +420,8 @@ public class PlayerHealthV2 : NetworkBehaviour
         if (!HasStateAuthority) return;
 
         if (IsDead) return;
+
+        if (invincible.IsInvincible) return;
 
         FallDamage++;
 
@@ -407,6 +441,8 @@ public class PlayerHealthV2 : NetworkBehaviour
                 playerGameStats.PlayerPlacement = PlayerJoinedController.Instance.RemainingPlayers.Count;
                 PlayerJoinedController.Instance.RemainingPlayers.Remove(playerOwnObjectEnabler.Username.ToString());
                 KillNotifServerController.Instance.KillNotifController.RPC_ReceiveKillNotification($"{playerOwnObjectEnabler.Username} killed by fall damage");
+
+                DropItems();
             }
         }
     }

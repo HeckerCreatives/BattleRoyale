@@ -4,9 +4,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.EventSystems;
+using UnityEngine.Playables;
 
 public class SprintState : PlayerOnGround
 {
+    bool playedStep1;
+    bool playedStep2;
+    double lastNormalizedTime;
+
     public SprintState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
     }
@@ -15,21 +20,29 @@ public class SprintState : PlayerOnGround
     {
         base.Enter();
 
-        if (playerPlayables.HasInputAuthority)
-        {
-            playerPlayables.CancelInvoke();
+        if (playerPlayables.HasStateAuthority) return;
 
-            playerPlayables.InvokeRepeating(nameof(playerPlayables.PlayFootstepSound), animationLength * 0.20f, animationLength);
-            playerPlayables.InvokeRepeating(nameof(playerPlayables.PlayFootstepSound), animationLength * 0.80f, animationLength);
-        }
+        playedStep1 = false;
+        playedStep2 = false;
+        lastNormalizedTime = 0.0;
     }
 
     public override void Exit()
     {
         base.Exit();
 
-        if (playerPlayables.HasInputAuthority)
-            playerPlayables.CancelInvoke();
+        if (playerPlayables.HasStateAuthority) return;
+
+        playedStep1 = false;
+        playedStep2 = false;
+        lastNormalizedTime = 0.0;
+    }
+
+    public override void NetworkLocalUpdate()
+    {
+        base.NetworkLocalUpdate();
+
+        HandleFootsteps();
     }
 
     public override void NetworkUpdate()
@@ -46,6 +59,39 @@ public class SprintState : PlayerOnGround
 
         if (playerPlayables.HasStateAuthority)
             playerPlayables.stamina.DecreaseStamina(20f);
+    }
+
+
+    private void HandleFootsteps()
+    {
+        if (playerPlayables.HasStateAuthority) return;
+
+        if (animationLength <= 0f)
+            return;
+
+        double animTime = animationClipPlayable.GetTime();
+        double normalizedTime = (animTime / animationLength) % 1.0;
+
+        // animation looped back to start
+        if (normalizedTime < lastNormalizedTime)
+        {
+            playedStep1 = false;
+            playedStep2 = false;
+        }
+
+        if (!playedStep1 && normalizedTime >= 0.20f)
+        {
+            playerPlayables.PlayFootstepSound();
+            playedStep1 = true;
+        }
+
+        if (!playedStep2 && normalizedTime >= 0.80f)
+        {
+            playerPlayables.PlayFootstepSound();
+            playedStep2 = true;
+        }
+
+        lastNormalizedTime = normalizedTime;
     }
 
     private AnimationPlayable GetNextLowerSprintState()
@@ -68,9 +114,6 @@ public class SprintState : PlayerOnGround
 
         if (playerMovement.IsBlocking)
             return lower.BlockPlayable;
-
-        if (playerMovement.Attacking)
-            return lower.Punch1Playable;
 
         if (playerMovement.IsHealing)
             return lower.HealPlayable;

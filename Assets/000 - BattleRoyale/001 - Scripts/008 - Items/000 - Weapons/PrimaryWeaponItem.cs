@@ -139,7 +139,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
             // If dropped, keep the position/rotation as-is (or update if needed)
             transform.parent = null;
             transform.position = Position;
-            transform.rotation = Quaternion.Euler(dropRotation);
+            transform.rotation = Rotation != Quaternion.identity ? Rotation : Quaternion.Euler(dropRotation);
         }
     }
 
@@ -170,8 +170,16 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
             // If dropped, keep the position/rotation as-is (or update if needed)
             transform.parent = null;
             transform.position = Position;
-            transform.rotation = Quaternion.Euler(dropRotation);
+            transform.rotation = Rotation != Quaternion.identity ? Rotation : Quaternion.Euler(dropRotation);
         }
+    }
+
+    public void InitializeItemOnSpawn(Vector3 position, Quaternion rotation)
+    {
+        Position = position;
+        Rotation = rotation;
+        IsEquipped = false;
+        IsPickedUp = false;
     }
 
 
@@ -227,6 +235,8 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
             PlayerOwnObjectEnabler tempcore = player.GetComponent<PlayerOwnObjectEnabler>();
             PlayerCore = tempcore;
         }
+
+        Rotation = Quaternion.identity;
 
         finalAction?.Invoke();
     }

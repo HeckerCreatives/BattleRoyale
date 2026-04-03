@@ -52,9 +52,6 @@ public class IdleState : PlayerOnGround
         if (playerMovement.IsTrapping)
             return playerPlayables.lowerBodyMovement.TrappingPlayable;
 
-        //if (playerPlayables.FinalAttack)
-        //    return playerPlayables.lowerBodyMovement.Punch3Playable;
-
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             return playerPlayables.lowerBodyMovement.RollPlayable;
 

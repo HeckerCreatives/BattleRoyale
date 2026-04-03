@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.EnhancedTouch;
 using UnityEngine.InputSystem.XR;
+using UnityEngine.UIElements;
 using UnityEngine.Windows;
 
 public class PlayerMovementV2 : NetworkBehaviour
@@ -35,6 +36,7 @@ public class PlayerMovementV2 : NetworkBehaviour
     [SerializeField] private PlayerInventoryV2 inventory;
     [SerializeField] private PlayerHealthV2 heatlh;
     [SerializeField] private PlayerPlayables playerplayables;
+    [SerializeField] private InvincibleController invincibleController;
 
     [Space]
     [SerializeField] private Transform mainCharObj;
@@ -44,6 +46,7 @@ public class PlayerMovementV2 : NetworkBehaviour
     [SerializeField] private float sprintSpeed;
     [SerializeField] private float jumpHeight; 
     [SerializeField] private float blockResumeDuration = 0.08f;
+    [SerializeField] private float MoveSmoothSpeed = 20f;
 
     [Space]
     public RectTransform joystickArea;
@@ -53,7 +56,7 @@ public class PlayerMovementV2 : NetworkBehaviour
     [SerializeField] private GameplayController gameplayController;
     [SerializeField] private Vector3 inputVector;
     [SerializeField] private float sprintCooldown;
-    [SerializeField] private float BlockResumeTimer;
+    [SerializeField] private float jumpFallTimer;
 
     [field: Header("DEBUGGER NETWORK")]
     [field: SerializeField][Networked] public Vector3 MoveDirection { get; set; }
@@ -98,13 +101,10 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     //  =======================
 
-    public override void Spawned()
+    public async override void Spawned()
     {
-        characterController.SetGravity(Physics.gravity.y * 3f);
-    }
+        while (!Runner) await Task.Yield();
 
-    public void PlayerMovementInitialize()
-    {
         characterController.SetGravity(Physics.gravity.y * 3f);
 
         if (!HasInputAuthority) return;
@@ -364,6 +364,7 @@ public class PlayerMovementV2 : NetworkBehaviour
         Move();
         Sprint();
         Jump();
+        Falling();
         Roll();
         Block();
         Shoot();
@@ -383,31 +384,39 @@ public class PlayerMovementV2 : NetworkBehaviour
         XMovement = controllerInput.MovementDirection.x;
         YMovement = controllerInput.MovementDirection.y;
 
-        //if (playerHealth.CurrentHealth <= 0) return;
-    }
+        if (XMovement != 0f || YMovement != 0f)
+            invincibleController.DisableInvincible();
 
-    public void StartBlockResumeBuffer()
-    {
-        BlockResumeTimer = blockResumeDuration;
+        //if (playerHealth.CurrentHealth <= 0) return;
     }
 
     public void MoveCharacter()
     {
         MoveDir = PlayerLookDirection();
 
+        float moveSpeedValue = IsSprint ? SprintSpeed : MoveSpeed;
+
+        Vector3 targetMoveDirection = Vector3.zero;
+
         if (MoveDir.sqrMagnitude > 0.01f && !IsRoll && !CurrentlyAttacking)
         {
-            // Normalize to prevent sprinting from affecting rotation
             MoveDir.Normalize();
 
-            // Optional: Smooth rotation
             Quaternion targetRotation = Quaternion.LookRotation(MoveDir);
             mainCharObj.rotation = Quaternion.Slerp(mainCharObj.rotation, targetRotation, Runner.DeltaTime * 10f);
+
+            targetMoveDirection = MoveDir * moveSpeedValue * Runner.DeltaTime;
+        }
+        else if (IsRoll)
+        {
+            targetMoveDirection = MainCharObj.forward * 200f * Runner.DeltaTime;
         }
 
-
-        float moveSpeedValue = IsSprint ? SprintSpeed : MoveSpeed;
-        MoveDirection = MoveDir * moveSpeedValue * Runner.DeltaTime;
+        MoveDirection = Vector3.MoveTowards(
+            MoveDirection,
+            targetMoveDirection,
+            MoveSmoothSpeed * Runner.DeltaTime
+        );
 
         characterController.Move(MoveDirection, JumpImpulse);
         playerplayables.CheckGround();
@@ -501,7 +510,10 @@ public class PlayerMovementV2 : NetworkBehaviour
         if (stamina.Stamina >= 10f)
         {
             if (sprintCooldown >= 0.3f)
+            {
                 IsSprint = true;
+                invincibleController.DisableInvincible();
+            }
             else
             {
                 sprintCooldown += Time.deltaTime;
@@ -515,7 +527,9 @@ public class PlayerMovementV2 : NetworkBehaviour
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Jump) && characterController.IsGrounded && !IsJumping)
         {
             IsJumping = true;
+            jumpFallTimer = Runner.SimulationTime + 0.25f;
             JumpImpulse = jumpHeight;
+            invincibleController.DisableInvincible();
         }
 
         //if (HasInputAuthority && IsJumping) Debug.Log($"was pressed? {controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Jump)}     on ground? {characterController.IsGrounded}       not jumping? {!IsJumping} ");
@@ -542,15 +556,30 @@ public class PlayerMovementV2 : NetworkBehaviour
         CurrentlyAttacking = value;
     }
 
+    private void Falling()
+    {
+        if (!HasStateAuthority) return;
+
+        if (JumpImpulse > 0 && !characterController.IsGrounded && !IsJumping && Runner.SimulationTime >= jumpFallTimer)
+        {
+            JumpImpulse = Mathf.MoveTowards(
+                JumpImpulse,
+                0f,
+                25f * Runner.DeltaTime
+            );
+        }
+    }
+
     private void Roll()
     {
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Roll))
         {
+            invincibleController.DisableInvincible();
+
             if (stamina.Stamina < 35f) return;
 
             IsRoll = true;
         }
-        else IsRoll = false;
     }
 
     private void Block()
@@ -579,6 +608,8 @@ public class PlayerMovementV2 : NetworkBehaviour
     {
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Heal))
         {
+            invincibleController.DisableInvincible();
+
             if (inventory.HealCount <= 0) return;
 
             if (IsRepairing) return;
@@ -594,6 +625,8 @@ public class PlayerMovementV2 : NetworkBehaviour
     {
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.ArmorRepair))
         {
+            invincibleController.DisableInvincible();
+
             if (inventory.ArmorRepairCount <= 0) return;
 
             if (IsHealing) return;
@@ -611,6 +644,8 @@ public class PlayerMovementV2 : NetworkBehaviour
     {
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchTrap))
         {
+            invincibleController.DisableInvincible();
+
             if (inventory.TrapCount <= 0) return;
 
             IsTrapping = true;
@@ -621,28 +656,40 @@ public class PlayerMovementV2 : NetworkBehaviour
     private void SwitchToHand()
     {
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchHands))
+        {
+            invincibleController.DisableInvincible();
             SwitchingHands = true;
+        }
         else SwitchingHands = false;
     }
     
     private void SwitchToPrimary()
     {
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchPrimary))
+        {
+            invincibleController.DisableInvincible();
             SwitchingPrimary = true;
+        }
         else SwitchingPrimary = false;
     }
 
     private void SwitchToSecondary()
     {
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.SwitchSecondary))
+        {
+            invincibleController.DisableInvincible();
             SwitchingSecondary = true;
+        }
         else SwitchingSecondary = false;
     }
 
     private void Reload()
     {
         if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Reload))
+        {
+            invincibleController.DisableInvincible();
             Reloading = true;
+        }
         else Reloading = false;
     }
 

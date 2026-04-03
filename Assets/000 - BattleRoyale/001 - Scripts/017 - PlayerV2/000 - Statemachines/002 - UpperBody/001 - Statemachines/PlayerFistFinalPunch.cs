@@ -71,7 +71,9 @@ public class PlayerFistFinalPunch : UpperNoAimState
 
     private void HandleDamageWindow(double animTime)
     {
-        if (animTime >= 0.45 && animTime <= 0.50)
+        if (!playerPlayables.HasStateAuthority) return;
+
+        if (animTime >= 0.45f && animTime <= 0.9f)
         {
             if (!doneResetHit)
             {

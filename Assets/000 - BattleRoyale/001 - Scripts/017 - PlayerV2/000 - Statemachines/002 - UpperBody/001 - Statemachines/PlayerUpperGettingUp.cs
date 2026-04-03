@@ -12,47 +12,16 @@ public class PlayerUpperGettingUp : UpperNoAimState
     {
     }
 
-    public override void Enter()
-    {
-        base.Enter();
-
-        if (!playerPlayables.HasStateAuthority) return;
-
-        playerPlayables.healthV2.IsGettingUp = true;
-    }
-
-    public override void Exit()
-    {
-        base.Exit();
-
-        if (!playerPlayables.HasStateAuthority) return;
-
-        playerPlayables.healthV2.IsGettingUp = false;
-    }
-
     public override void NetworkUpdate()
     {
         base.NetworkUpdate();
 
-        if (playerPlayables.HasInputAuthority)
+        var nextState = GetNextState();
+
+        if (nextState != null && playablesChanger.CurrentState != nextState)
         {
-            var predictedState = GetNextState();
-
-            if (predictedState != null && playablesChanger.CurrentState != predictedState)
-            {
-                playablesChanger.ChangeState(predictedState);
-            }
+            playablesChanger.ChangeState(nextState);
         }
-        if (playerPlayables.HasStateAuthority)
-        {
-            var nextState = GetNextState();
-
-            if (nextState != null && playablesChanger.CurrentState != nextState)
-            {
-                playablesChanger.ChangeState(nextState);
-            }
-        }
-
     }
 
     private UpperBodyAnimations GetNextState()
@@ -65,11 +34,8 @@ public class PlayerUpperGettingUp : UpperNoAimState
         if (!characterController.IsGrounded)
             return upper.FallingPlayables;
 
-        if (animationClipPlayable.GetTime() < animationLength - 0.025f)
-            return this;
-
-        // recovery finished
-        playerPlayables.healthV2.IsGettingUp = false;
+        if (animationClipPlayable.GetTime() < animationLength * 0.9f)
+            return null;
 
         if (playerMovement.IsJumping)
             return upper.JumpPlayable;

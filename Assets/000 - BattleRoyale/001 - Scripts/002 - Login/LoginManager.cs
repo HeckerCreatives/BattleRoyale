@@ -15,6 +15,10 @@ using UnityEngine.UI;
 
 public class LoginManager : MonoBehaviour
 {
+    public bool IsLoggedIn { get => isLoggedIn; }
+
+    //  ===================
+
     [SerializeField] private UserData userData;
     [SerializeField] private NetworkRunner instanceRunner;
     [SerializeField] private TextMeshProUGUI clientVersionTMP;
@@ -60,6 +64,7 @@ public class LoginManager : MonoBehaviour
 
     [Header("DEBUGGER")]
     [ReadOnly][SerializeField] public NetworkRunner currentRunnerInstance;
+    [SerializeField] private bool isLoggedIn;
 
     //  ============================
 
@@ -501,6 +506,8 @@ public class LoginManager : MonoBehaviour
                         userData.RememberMeDelete();
                     }
                 }
+
+                isLoggedIn = true;
 
                 CheckSelectedServer();
 

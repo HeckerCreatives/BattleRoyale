@@ -21,7 +21,7 @@ public class PlayerPhotonReconnect : MonoBehaviour
     [Header("DEBUGGER")]
     [SerializeField] private float lastOutOfFocusTime;
 
-    bool isPlayer;
+    public bool isPlayer;
     private NetworkRunner _runner;
     private string _sessionName;
     private GameMode _mode;
@@ -33,15 +33,15 @@ public class PlayerPhotonReconnect : MonoBehaviour
     {
         if (!isPlayer) return;
 
-        if (focus)
-        {
-            if (lastOutOfFocusTime > 0f && (Time.time - lastOutOfFocusTime) < 60f)
-                StartReconnect();
-        }
-        else
-        {
-            lastOutOfFocusTime = Time.time;
-        }
+        //if (focus)
+        //{
+        //    if (lastOutOfFocusTime > 0f && (Time.time - lastOutOfFocusTime) < 60f)
+        //        StartReconnect();
+        //}
+        //else
+        //{
+        //    lastOutOfFocusTime = Time.time;
+        //}
     }
 
     private void Awake()

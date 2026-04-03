@@ -10,7 +10,6 @@ public class SpearFinalAttackState : PlayerOnGround
     float moveTimer;
     float stopMoveTimer;
     bool canAction;
-    bool canMove;
 
     public SpearFinalAttackState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
@@ -24,7 +23,6 @@ public class SpearFinalAttackState : PlayerOnGround
         moveTimer = playerPlayables.TickRateAnimation + 0.30f;
         stopMoveTimer = playerPlayables.TickRateAnimation + 0.60f;
         canAction = true;
-        canMove = true;
     }
 
     public override void Exit()
@@ -40,7 +38,6 @@ public class SpearFinalAttackState : PlayerOnGround
         if (playerPlayables.TickRateAnimation >= moveTimer && playerPlayables.TickRateAnimation <= stopMoveTimer)
         {
             characterController.Move(characterController.TransformDirection * 3.5f, 0f);
-            canMove = false;
         }
 
         Animation();
@@ -53,7 +50,6 @@ public class SpearFinalAttackState : PlayerOnGround
         if (playerPlayables.healthV2.IsDead)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
-            return;
         }
 
 

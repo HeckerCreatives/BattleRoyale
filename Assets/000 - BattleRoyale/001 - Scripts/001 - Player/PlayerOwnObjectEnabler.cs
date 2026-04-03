@@ -55,18 +55,15 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     [SerializeField] private GameObject footstepSFX;
     [SerializeField] private GameObject punchSFX;
 
+    [Header("DEBUGGER")]
+    [SerializeField] private bool isStateAuthority;
+    [SerializeField] private bool isInputAuthority;
+
     [field: Header("DEBUGGER")]
-    [Networked][field: SerializeField] public bool NotEnoughPlayer { get; set; }
     [Networked][field: SerializeField] public NetworkString<_64> Username { get; set; }
     [Networked][field: SerializeField] public NetworkString<_64> UserID { get; set; }
     [Networked][field: SerializeField] public bool Removing { get; set; }
     [Networked][field: SerializeField] public bool DoneInit { get; set; }
-
-    //  ====================
-
-    private ChangeDetector _changeDetector;
-
-    //  ====================
 
     private void OnDisable()
     {
@@ -75,6 +72,10 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
 
     private void OnDestroy()
     {
+        if (isStateAuthority) return;
+
+        if (!isInputAuthority) return;
+
         Destroy(canvasPlayer);
         Destroy(playerVcam);
         Destroy(playerAimVCam);
@@ -83,11 +84,9 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         Destroy(target.gameObject);
     }
 
-    public async override void Spawned()
+    public async void OnEnable()
     {
         while (!Runner) await Task.Yield();
-
-        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
 
         target.parent = null;
 
@@ -95,9 +94,13 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         {
             footstepSFX.SetActive(false);
             punchSFX.SetActive(false);
+
+            isStateAuthority = true;
         }
 
         if (!HasInputAuthority) return;
+
+        isInputAuthority = true;
 
         GameManager.Instance.SocketMngr.IsOnGame = true;
 
@@ -137,35 +140,6 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         DoneInit = true;
     }
 
-    public override void Render()
-    {
-        if (!HasInputAuthority) return;
-
-        foreach (var change in _changeDetector.DetectChanges(this))
-        {
-            switch (change)
-            {
-                case nameof(NotEnoughPlayer):
-
-                    if (!NotEnoughPlayer) return;
-
-                    GameManager.Instance.NoBGLoading.SetActive(true);
-
-                    StartCoroutine(GameManager.Instance.PostRequest("/usergamedetail/refundenergy", "", new Dictionary<string, object>(), false, (response) =>
-                    {
-                        GameManager.Instance.NotificationController.ShowError("Not enough players to start the game! Please try again later", () =>
-                        {
-                            Runner.Shutdown();
-                            GameManager.Instance.SceneController.CurrentScene = "Lobby";
-                        });
-
-                    }, null));
-
-                    break;
-            }
-        }
-    }
-
     private void StateChange(object sender, EventArgs e)
     {
         if (MultiplayerServerManager.Instance.CurrentGameState == GameState.ARENA)
@@ -190,7 +164,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         PlayerPhotonReconnect.Instance.SetMatchInfo(Runner, Runner.SessionInfo.Name, GameMode.Client, true);
 
         cameraRotation.InitializeCameraRotationSensitivity();
-        movementV2.PlayerMovementInitialize();
+        //movementV2.PlayerMovementInitialize();
         yield return null;
     }
 

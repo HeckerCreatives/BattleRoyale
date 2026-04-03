@@ -120,7 +120,7 @@ public class ClientMatchmakingController : MonoBehaviour
     [SerializeField] private RectTransform enteringMatchTimerRT;
     [SerializeField] private RectTransform enteringMatchFlashRT;
     [SerializeField] private UnityEngine.UI.Image enteringMatchFlashImg;
-    [SerializeField] private GameObject lobbyObj;
+    [SerializeField] private List<GameObject> lobbyObjs;
     [SerializeField] private GameObject lobbyWaitingObj;
 
     [Header("DEBUGGER")]
@@ -140,6 +140,7 @@ public class ClientMatchmakingController : MonoBehaviour
     [SerializeField] private float currentWaitingTime;
     [SerializeField] private bool reconToWaiting;
     [SerializeField] private float enteringMatchTimer;
+    [SerializeField] private int availablePlayers;
 
     //  =====================
 
@@ -212,6 +213,12 @@ public class ClientMatchmakingController : MonoBehaviour
                 reconObj.SetActive(false);
 
                 matchBtn.SetActive(true);
+
+                inWaitingRoom = false;
+
+                isBattle = false;
+
+                reconToWaiting = false;
             });
         });
 
@@ -227,8 +234,6 @@ public class ClientMatchmakingController : MonoBehaviour
         {
             GameManager.Instance.AddJob(() =>
             {
-                Debug.Log(response);
-
                 List<WaitingRoomData> tempdata = JsonConvert.DeserializeObject<List<WaitingRoomData>>(response.ToString());
 
                 GameManager.Instance.SocketMngr.EmitEvent("ack", new { eventName = "matchstatuschanged", messageId = tempdata[0].messageId });
@@ -266,13 +271,20 @@ public class ClientMatchmakingController : MonoBehaviour
                     }, null));
                 }
 
+                int tempavailableplayers = 0;
+
                 for (int a = 0; a < waitingPlayerItems.Count; a++)
                 {
                     if (a < tempdata[0].players.Count)
+                    {
+                        tempavailableplayers += 1;
                         waitingPlayerItems[a].SetData(tempdata[0].players[a], true);
+                    }
                     else
                         waitingPlayerItems[a].SetData("", false);
                 }
+
+                availablePlayers = tempavailableplayers;
             });
         });
 
@@ -333,7 +345,15 @@ public class ClientMatchmakingController : MonoBehaviour
             waitingRoomTimerTMP.text = string.Format("{0:00} : {1:00}", minutes, seconds);
         }
         else if (inWaitingRoom && currentWaitingTime <= 0.0f)
+        {
+            if (availablePlayers < 2)
+            {
+                currentWaitingTime = 30f;
+                return;
+            }
+
             waitingRoomTimerTMP.text = string.Format("{0:00} : {1:00}", 0f, 0f);
+        }
     }
 
     private IEnumerator EnteringMatchTimer()
@@ -341,7 +361,13 @@ public class ClientMatchmakingController : MonoBehaviour
         currentRunnerInstance = Instantiate(instanceRunner);
 
         lobbyWaitingObj.SetActive(false);
-        lobbyObj.SetActive(false);
+
+        foreach (var obj in lobbyObjs)
+        {
+            obj.SetActive(false);
+
+            yield return null;
+        }
 
         //currentRunnerInstance.GetComponent<PlayerMultiplayerEvents>().queuedisconnection = CancelMatch;
 

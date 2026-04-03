@@ -120,6 +120,6 @@ public class UpperBodyAnimations
 
     public virtual void NetworkLocalUpdate() 
     {
-        if (playerPlayables.HasInputAuthority) return;
+        if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority) return;
     }
 }

@@ -3,16 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Playables;
 
 public class PlayerUpperSwordFirstAttack : UpperNoAimState
 {
-    float timer;
-    float nextPunchWindow;
-    float moveTimer;
-    float stopMoveTimer;
-    float damageWindowStart;
-    float damageWindowEnd;
-    bool canAction;
     bool hasResetHitEnemies;
 
     public PlayerUpperSwordFirstAttack(SimpleKCC characterController, UpperBodyChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool canAnimateUpper) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, canAnimateUpper)
@@ -23,114 +17,85 @@ public class PlayerUpperSwordFirstAttack : UpperNoAimState
     {
         base.Enter();
 
-        playerPlayables.SlashSwordParticles(0);
 
-        playerPlayables.inventory.PrimaryWeapon.SoundController.PlayAttackOne();
+        if (!playerPlayables.HasStateAuthority)
+        {
+            playerPlayables.inventory.PrimaryWeapon.SoundController.PlayAttackOne();
+            playerPlayables.SlashSwordParticles(0);
+
+            return;
+        }
 
         hasResetHitEnemies = false;
-        timer = playerPlayables.TickRateAnimation + (animationLength * 0.9f);
-        nextPunchWindow = playerPlayables.TickRateAnimation + (animationLength * 0.8f);
-        moveTimer = playerPlayables.TickRateAnimation + (animationLength * 0.3f);
-        stopMoveTimer = playerPlayables.TickRateAnimation + (animationLength * 0.5f);
-        damageWindowStart = playerPlayables.TickRateAnimation + (animationLength * 0.5f);
-        damageWindowEnd = playerPlayables.TickRateAnimation + (animationLength * 0.9f);
-        canAction = true;
-    }
-
-    public override void Exit()
-    {
-        base.Exit();
-
-        canAction = false;
     }
 
     public override void NetworkUpdate()
     {
         base.NetworkUpdate();
 
-        if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
+        double animTime = animationClipPlayable.GetTime();
+        double normalizedTime = animTime / animationLength;
+
+        HandleDamageWindow(normalizedTime);
+
+        var nextState = GetNextState(normalizedTime);
+
+        if (nextState != null && playablesChanger.CurrentState != nextState)
+        {
+            playablesChanger.ChangeState(nextState);
+        }
+
+        playerPlayables.stamina.RecoverStamina(5f);
+    }
+
+    private void HandleDamageWindow(double normalizedTime)
+    {
+        if (!playerPlayables.HasStateAuthority) return;
+
+        // original:
+        // damageWindowStart = 0.5f
+        // damageWindowEnd   = 0.9f
+        if (normalizedTime >= 0.5 && normalizedTime <= 0.9)
         {
             if (!hasResetHitEnemies)
             {
-                playerPlayables.inventory.PrimaryWeapon.ClearHitEnemies(); // Clear BEFORE performing attack
+                playerPlayables.inventory.PrimaryWeapon.ClearHitEnemies();
                 hasResetHitEnemies = true;
             }
 
             playerPlayables.inventory.PrimaryWeapon.DamagePlayer();
         }
-
-        Animation();
-
-        playerPlayables.stamina.RecoverStamina(5f);
     }
 
-    private void Animation()
+    private UpperBodyAnimations GetNextState(double normalizedTime)
     {
         if (playerPlayables.healthV2.IsDead)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
-            
-        }
+            return playerPlayables.upperBodyMovement.DeathPlayable;
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RollPlayables);
+            return playerPlayables.upperBodyMovement.RollPlayables;
 
-        }
-
-        //if (playerPlayables.healthV2.IsHitUpper)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
-        //    
-        //}
+        if (playerMovement.IsJumping)
+            return playerPlayables.upperBodyMovement.JumpPlayable;
 
         if (playerPlayables.healthV2.IsStagger)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
-            
-        }
+            return playerPlayables.upperBodyMovement.StaggerHitPlayable;
 
         if (!characterController.IsGrounded)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.FallingPlayables);
+            return playerPlayables.upperBodyMovement.FallingPlayables;
 
-            
-        }
+        if (playerMovement.IsSprint && (playerMovement.XMovement != 0f || playerMovement.YMovement != 0f))
+            return playerPlayables.upperBodyMovement.SwordSprint;
 
-        if (playerPlayables.TickRateAnimation >= nextPunchWindow && canAction)
+        if (normalizedTime >= 0.8)
         {
             if (playerMovement.Attacking)
-            {
-                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordAttackSecondPlayable);
-                
-            }
+                return playerPlayables.upperBodyMovement.SwordAttackSecondPlayable;
         }
 
-        if (playerPlayables.TickRateAnimation >= timer && canAction)
-        {
-            if (playerMovement.IsBlocking)
-            {
-                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordBlockPlayable);
-                
-            }
+        if (normalizedTime >= 0.9)
+            return playerPlayables.upperBodyMovement.SwordIdlePlayable;
 
-            if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
-            {
-                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RollPlayables);
-                
-            }
-
-
-            if (playerMovement.MoveDirection != Vector3.zero)
-            {
-                if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordSprint);
-
-                else
-                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordRunPlayable);
-            }
-            else
-                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordIdlePlayable);
-        }
+        return null;
     }
 }

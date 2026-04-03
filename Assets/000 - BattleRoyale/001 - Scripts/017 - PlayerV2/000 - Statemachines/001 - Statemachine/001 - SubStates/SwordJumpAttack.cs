@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Playables;
 
 public class SwordJumpAttack : AnimationPlayable
 {
@@ -17,35 +18,37 @@ public class SwordJumpAttack : AnimationPlayable
     {
         base.Enter();
 
+        if (!playerPlayables.HasStateAuthority) return;
+
         playerPlayables.healthV2.FallDamageValue = 0;
-        timer = playerPlayables.TickRateAnimation + animationLength;
-        canAction = true;
+        playerMovement.IsJumping = false;
     }
 
     public override void Exit()
     {
         base.Exit();
-        canAction = false;
-    }
 
+        playerMovement.JumpImpulse = 0;
+    }
 
     public override void NetworkUpdate()
     {
-        playerMovement.MoveCharacter();
-        FallDamage();
 
-        if (characterController.IsGrounded && canAction && playerPlayables.TickRateAnimation >= timer)
+        var nextState = GetNextState();
+
+        if (nextState != null && playablesChanger.CurrentState != nextState)
         {
-            playerMovement.IsJumping = false;
-            playerMovement.JumpImpulse = 0;
-
-            if (playerPlayables.healthV2.FallDamageValue > 0)
-                playerPlayables.healthV2.FallDamae();
-
-            Animation();
+            OnLanding();
+            playablesChanger.ChangeState(nextState);
         }
 
-        playerPlayables.stamina.RecoverStamina(5f);
+        if (playerPlayables.HasStateAuthority)
+        {
+            FallDamage();
+
+            playerPlayables.stamina.RecoverStamina(5f);
+        }
+        playerMovement.MoveCharacter();
     }
 
     private void FallDamage()
@@ -56,17 +59,54 @@ public class SwordJumpAttack : AnimationPlayable
         }
     }
 
-    private void Animation()
+    private void OnLanding()
     {
-        if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
-        {
-            if (playerMovement.IsSprint)
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordSprintPlayable);
+        if (!characterController.IsGrounded) return;
 
-            else
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordRunPlayable);
+        playerMovement.IsJumping = false;
+        playerMovement.JumpImpulse = 0;
+
+        if (playerPlayables.healthV2.FallDamageValue > 0)
+            playerPlayables.healthV2.FallDamae();
+    }
+
+    private AnimationPlayable GetNextState()
+    {
+        var interruptState = GetInterruptState();
+
+        if (interruptState != null)
+            return interruptState;
+
+        if (animationClipPlayable.GetTime() < animationLength * 0.9f) return null;
+
+        return GetLandingState();
+    }
+
+    private AnimationPlayable GetInterruptState()
+    {
+        if (playerPlayables.healthV2.IsDead)
+            return playerPlayables.lowerBodyMovement.DeathPlayable;
+
+        if (playerPlayables.healthV2.IsStagger)
+            return playerPlayables.lowerBodyMovement.StaggerHitPlayable;
+
+        return null;
+    }
+
+    private AnimationPlayable GetLandingState()
+    {
+        if (!characterController.IsGrounded)
+            return null;
+
+        bool isMoving = playerMovement.XMovement != 0 || playerMovement.YMovement != 0;
+
+        if (isMoving)
+        {
+            return playerMovement.IsSprint
+                ? playerPlayables.lowerBodyMovement.SwordSprintPlayable
+                : playerPlayables.lowerBodyMovement.SwordRunPlayable;
         }
-        else
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordIdlePlayable);
+
+        return playerPlayables.lowerBodyMovement.SwordIdlePlayable;
     }
 }

@@ -55,6 +55,8 @@ public class PlayerMultiplayerEvents : SimulationBehaviour, INetworkRunnerCallba
 
     public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason)
     {
+
+        Debug.Log($"DISCONNECTED FROM SERVER REASON: {reason}");
     }
 
     public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken)
@@ -108,60 +110,57 @@ public class PlayerMultiplayerEvents : SimulationBehaviour, INetworkRunnerCallba
 
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
     {
-        if (shutdownReason == ShutdownReason.DisconnectedByPluginLogic)
+        string errormessage = "";
+
+        Debug.Log($"SHUTDOWN REASON: {shutdownReason}");
+
+        switch (shutdownReason)
         {
-            Debug.Log($"Server error: {shutdownReason}");
+            case ShutdownReason.OperationTimeout:
 
-            GameManager.Instance.NotificationController.ShowError($"There's a problem with the game server! Please queue up and try again. Error: {(shutdownReason == ShutdownReason.DisconnectedByPluginLogic ? "Server Shutdown due to unexpected error." : shutdownReason)}");
+                PlayerPhotonReconnect.Instance.StartReconnect();
+                break;
+            case ShutdownReason.ConnectionTimeout:
 
-            Runner.Shutdown();
+                PlayerPhotonReconnect.Instance.StartReconnect();
+                break;
+            case ShutdownReason.PhotonCloudTimeout:
 
-            GameManager.Instance.SceneController.CurrentScene = "Lobby";
+                PlayerPhotonReconnect.Instance.StartReconnect();
+                break;
+            case ShutdownReason.DisconnectedByPluginLogic:
+
+                Debug.Log($"Server error: {shutdownReason}");
+
+                GameManager.Instance.NotificationController.ShowError($"There's a problem with the game server! Please queue up and try again. Error: {(shutdownReason == ShutdownReason.DisconnectedByPluginLogic ? "Server Shutdown due to unexpected error." : shutdownReason)}");
+
+                Runner.Shutdown();
+
+                GameManager.Instance.SceneController.CurrentScene = "Lobby";
+                break;
+
+            case ShutdownReason.GameIsFull:
+                errormessage = $"The game you're trying to join is full! Please queue up and try again";
+
+                GameManager.Instance.NotificationController.ShowError(errormessage);
+
+                queuedisconnection?.Invoke();
+                break;
+            case ShutdownReason.GameClosed:
+                errormessage = $"The game you're trying to join is now closed! Please queue up and try again";
+
+                GameManager.Instance.NotificationController.ShowError(errormessage);
+
+                queuedisconnection?.Invoke();
+                break;
+            case ShutdownReason.MaxCcuReached:
+                errormessage = $"The game server is experiencing high level of players! Please try again later or contact customer support for more details";
+
+                GameManager.Instance.NotificationController.ShowError(errormessage);
+
+                queuedisconnection?.Invoke();
+                break;
         }
-        else if (shutdownReason == ShutdownReason.MaxCcuReached || shutdownReason == ShutdownReason.GameIsFull || shutdownReason == ShutdownReason.GameClosed)
-        {
-
-            string errormessage = "";
-
-            switch (shutdownReason)
-            {
-                case ShutdownReason.GameIsFull:
-                    errormessage = $"The game you're trying to join is full! Please queue up and try again";
-                    break;
-                case ShutdownReason.GameClosed:
-                    errormessage = $"The game you're trying to join is now closed! Please queue up and try again";
-                    break;
-                case ShutdownReason.MaxCcuReached:
-                    errormessage = $"The game server is experiencing high level of players! Please try again later or contact customer support for more details";
-                    break;
-            }
-
-            GameManager.Instance.NotificationController.ShowError(errormessage);
-
-            queuedisconnection?.Invoke();
-        }
-        //if (shutdownReason == ShutdownReason.MaxCcuReached || shutdownReason == ShutdownReason.GameIsFull || shutdownReason == ShutdownReason.GameClosed)
-        //{
-
-        //    string errormessage = "";
-
-        //    switch (shutdownReason)
-        //    {
-        //        case ShutdownReason.GameIsFull:
-        //            errormessage = $"The game you're trying to join is full! Please queue up and try again";
-        //            break;
-        //        case ShutdownReason.GameClosed:
-        //            errormessage = $"The game you're trying to join is now closed! Please queue up and try again";
-        //            break;
-        //        case ShutdownReason.MaxCcuReached:
-        //            errormessage = $"The game server is experiencing high level of players! Please try again later or contact customer support for more details";
-        //            break;
-        //    }
-
-        //    GameManager.Instance.NotificationController.ShowError(errormessage);
-
-        //    queuedisconnection?.Invoke();
-        //}
     }
 
     public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message)

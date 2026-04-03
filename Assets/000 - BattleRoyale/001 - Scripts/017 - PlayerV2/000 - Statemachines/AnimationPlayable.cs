@@ -121,4 +121,9 @@ public class AnimationPlayable
     }
 
     public virtual void NetworkUpdate() { }
+
+    public virtual void NetworkLocalUpdate()
+    {
+        if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority) return;
+    }
 }

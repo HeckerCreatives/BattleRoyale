@@ -154,6 +154,8 @@ public class DedicatedServerManager : MonoBehaviour
             {
                 Debug.Log($"Done Setting up photon server");
 
+                obj.GetComponent<MultiplayerServerManager>().SessionName = sessionname;
+
                 obj.GetComponent<WeaponCratesSpawnerController>().CreateSpawnLocations = createSpawnLocations;
                 obj.GetComponent<PlayerJoinedController>().SpawnWaitingAreaPositions = spawnWaitingAreaPositions;
 
@@ -163,6 +165,9 @@ public class DedicatedServerManager : MonoBehaviour
 
                 Debug.Log($"Spawning Crates");
                 obj.GetComponent<WeaponCratesSpawnerController>().SpawnCrates();
+
+                Debug.Log($"Scattering items");
+                obj.GetComponent<MeshMapScatterTool>().Generate();
 
                 Debug.Log($"Set Spawn Positions");
                 obj.GetComponent<MultiplayerServerManager>().SetSpawnPositionPlayers();
@@ -178,8 +183,9 @@ public class DedicatedServerManager : MonoBehaviour
             SafeZoneServerController tempzone = temprunner.GetComponent<SafeZoneServerController>();
             WeaponCratesSpawnerController tempcrates = temprunner.GetComponent<WeaponCratesSpawnerController>();
             PlayerJoinedController tempjoined = temprunner.GetComponent<PlayerJoinedController>();
+            MeshMapScatterTool scatterTool = temprunner.GetComponent<MeshMapScatterTool>();
 
-            while (!tempmanager.DoneSetupBattlePos || !tempcrates.DoneSpawnCrates || !tempzone.DoneSetupSafeZone || !tempjoined.DoneSetupPlayers)
+            while (!tempmanager.DoneSetupBattlePos || !tempcrates.DoneSpawnCrates || !tempzone.DoneSetupSafeZone || !tempjoined.DoneSetupPlayers || !scatterTool.doneInitialize)
             {
                 await Task.Yield();
             }

@@ -33,6 +33,7 @@ public class ArmorItem : NetworkBehaviour, IPickupItem
     [Networked][field: SerializeField] public NetworkObject CurrentPlayer { get; set; }
     [Networked][field: SerializeField] public Vector3 Position { get; set; }
     [Networked][field: SerializeField] public NetworkObject Parent { get; set; }
+    [Networked][field: SerializeField] public Quaternion Rotation { get; set; }
 
 
     public override void Render()
@@ -50,9 +51,16 @@ public class ArmorItem : NetworkBehaviour, IPickupItem
         {
             transform.parent = null;
             transform.position = Position;
-            transform.rotation = Quaternion.Euler(dropRotation);
+            transform.rotation = Rotation != Quaternion.identity ? Rotation : Quaternion.Euler(dropRotation);
             transform.localScale = dropSize;
         }
+    }
+
+    public void InitializeItemOnSpawn(Vector3 position, Quaternion rotation)
+    {
+        Position = position;
+        Rotation = rotation;
+        IsPickedUp = false;
     }
 
     public void InitializeItem(NetworkObject player, NetworkObject armorParent, bool isSpawn = false, bool isBot = false, Action finalAction = null)
@@ -88,6 +96,8 @@ public class ArmorItem : NetworkBehaviour, IPickupItem
         IsPickedUp = true;
 
         Supplies = isSpawn ? 100 : Supplies;
+
+        Rotation = Quaternion.identity;
 
         finalAction?.Invoke();
     }

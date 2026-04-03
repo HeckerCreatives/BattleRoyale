@@ -24,8 +24,6 @@ public class RollState : PlayerOnGround
 
         playerPlayables.PlayRollSoundEffect();
 
-        if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority) playerMovement.IsRoll = false;
-
         if (!playerPlayables.HasStateAuthority) return;
 
         canReduce = true;
@@ -34,6 +32,8 @@ public class RollState : PlayerOnGround
     public override void Exit()
     {
         base.Exit();
+
+        playerMovement.IsRoll = false;
 
         if (playerPlayables.HasInputAuthority)
             playerPlayables.CancelInvoke();
@@ -47,11 +47,11 @@ public class RollState : PlayerOnGround
     {
         float currentTime = (float)animationClipPlayable.GetTime();
 
-        if (currentTime <= animationLength * 0.8f)
-            characterController.Move(
-                playerMovement.MainCharObj.forward * 400f * playerPlayables.Runner.DeltaTime,
-                0f
-            );
+        //if (currentTime <= animationLength * 0.8f)
+        //    characterController.Move(
+        //        playerMovement.MainCharObj.forward * 400f * playerPlayables.Runner.DeltaTime,
+        //        0f
+        //    );
 
 
         TryExitRoll(currentTime);
@@ -87,46 +87,34 @@ public class RollState : PlayerOnGround
                 {
                     if (animationClipPlayable.GetTime() < animationLength * 0.25f) return null;
 
-                    //if (isMoving)
-                    //    return lower.RunPlayable;
-
-                    //if (canSprint && isMoving)
-                    //    return lower.SprintPlayable;
-
                     if (playerMovement.IsJumping) return lower.JumpPlayable;
 
-                    if (animationClipPlayable.GetTime() < animationLength - 0.025f)
-                        return null;
+                    if (animationClipPlayable.GetTime() < animationLength * 0.85f) return null;
 
                     return lower.IdlePlayable;
                 }
 
             case 2:
                 {
+                    if (animationClipPlayable.GetTime() < animationLength * 0.25f) return null;
+
                     string primaryId = inventory.PrimaryWeaponID();
 
-                    if (!isMoving)
-                    {
-                        if (primaryId == "001") return lower.SwordIdlePlayable;
-                        if (primaryId == "002") return lower.SpearIdlePlayable;
-                    }
-                    else
-                    {
-                        if (canSprint)
-                        {
-                            if (primaryId == "001") return lower.SwordSprintPlayable;
-                            if (primaryId == "002") return lower.SpearSprintPlayable;
-                        }
 
-                        if (primaryId == "001") return lower.SwordRunPlayable;
-                        if (primaryId == "002") return lower.SpearRunPlayable;
-                    }
+                    if (playerMovement.IsJumping) return lower.JumpPlayable;
+
+                    if (animationClipPlayable.GetTime() < animationLength * 0.85f) return null;
+
+                    if (primaryId == "001") return lower.SwordIdlePlayable;
+                    if (primaryId == "002") return lower.SpearIdlePlayable;
 
                     break;
                 }
 
             case 3:
                 {
+                    if (animationClipPlayable.GetTime() < animationLength * 0.25f) return null;
+
                     string secondaryId = inventory.SecondaryWeaponID();
 
                     if (!isMoving)

@@ -67,15 +67,10 @@ public class PlayerFistSecondPunch : UpperNoAimState
 
     private void HandleDamageWindow(double normalizedTime)
     {
-        // Original:
-        // damageWindowStart = TickRateAnimation + 0.22f;
-        // damageWindowEnd   = TickRateAnimation + 0.27f;
-        //
-        // Since these were absolute seconds, convert to normalized time.
-        double start = 0.22 / animationLength;
-        double end = 0.27 / animationLength;
+        if (!playerPlayables.HasStateAuthority) return;
 
-        if (normalizedTime >= start && normalizedTime <= end)
+        // 18% to 23% of animation
+        if (normalizedTime >= 0.18f && normalizedTime <= 0.9f)
         {
             if (!hasResetHitEnemies)
             {

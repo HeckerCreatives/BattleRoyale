@@ -488,10 +488,10 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 766916308}
-        m_TargetAssemblyTypeName: LoginMenuManager, Assembly-CSharp
-        m_MethodName: ReturnToPreviousState
-        m_Mode: 1
+      - m_Target: {fileID: 597840247}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -10169,6 +10169,7 @@ MonoBehaviour:
   totalPlayersOnlineTMP: {fileID: 1592714652}
   selectedServerPlayersOnlineTMP: {fileID: 352718358}
   currentRunnerInstance: {fileID: 0}
+  isLoggedIn: 0
 --- !u!114 &766916308
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10181,6 +10182,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6c8be62ad95c7684ab0f98433f22bfe6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  loginManager: {fileID: 0}
   mainObj: {fileID: 425649614}
   loginRegisterObj: {fileID: 1533288433}
   moreObj: {fileID: 314301010}

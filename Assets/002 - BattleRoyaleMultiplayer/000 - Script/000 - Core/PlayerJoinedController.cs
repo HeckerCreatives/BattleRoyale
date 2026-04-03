@@ -34,14 +34,19 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [Space]
     [SerializeField] private NetworkObject playerObj;
 
+    [Space]
+    [SerializeField] private NetworkObject healObj;
+    [SerializeField] private NetworkObject armorObj;
+    [SerializeField] private NetworkObject ammoRifleObj;
+
     [Header("DEBUGGER")]
     [SerializeField] private List<Transform> spawnWaitingAreaPositions;
     [SerializeField] private bool doneSetupPlayers;
 
     //  ===========================
 
-    [Networked, Capacity(50)] public NetworkDictionary<string, NetworkObject> Players => default;
-    [Networked, Capacity(50)] public NetworkDictionary<string, NetworkObject> RemainingPlayers => default;
+    [Networked, Capacity(30)] public NetworkDictionary<string, NetworkObject> Players => default;
+    [Networked, Capacity(30)] public NetworkDictionary<string, NetworkObject> RemainingPlayers => default;
 
 
 
@@ -220,6 +225,22 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
                 if (playerinventory.MagazineContainer != null) playerinventory.MagazineContainer.DropWeapon();
 
+                if (playerinventory.HealCount > 0)
+                {
+                    Runner.Spawn(healObj, playerinventory.transform.position, Quaternion.identity, null, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                    {
+                        obj.GetComponent<HealWeaponItem>().InitializeItem(playerinventory.transform.position, Quaternion.identity, playerinventory.HealCount);
+                    });
+                }
+
+                if (playerinventory.ArmorRepairCount > 0)
+                {
+                    Runner.Spawn(armorObj, playerinventory.transform.position, Quaternion.identity, null, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                    {
+                        obj.GetComponent<RepairWeaponItem>().InitializeItem(playerinventory.transform.position, Quaternion.identity, playerinventory.HealCount);
+                    });
+                }
+
                 Players.Remove(username);
 
                 //Debug.Log($"activating removing 10   player obj null? {remainingPlayer == null}");
@@ -233,15 +254,13 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
                 if (Players.Count <= 0)
                 {
-                    Application.Quit();
+                    if (MultiplayerServerManager.Instance.CurrentGameState != GameState.DONE)
+                        MultiplayerServerManager.Instance.CurrentGameState = GameState.DONE;
                 }
             }
             else
                 core.Object.AssignInputAuthority(Runner.LocalPlayer);
         }
-
-        if ((MultiplayerServerManager.Instance.CurrentGameState == GameState.DONE || MultiplayerServerManager.Instance.CurrentGameState == GameState.ARENA) && Players.Count <= 0)
-            Application.Quit();
 
         PlayerCountChange?.Invoke(this, EventArgs.Empty);
     }
@@ -310,19 +329,15 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
             PlayerOwnObjectEnabler core = remainingPlayer.GetComponent<PlayerOwnObjectEnabler>();
 
             if (core.Removing || core.PlayerHealth.IsDead)
-                RemainingPlayers.Remove(playerId);
-            else
-                core.Object.AssignInputAuthority(PlayerRef.None);
-        }
-
-        if (Players.TryGet(playerId, out NetworkObject clientPlayer))
-        {
-            PlayerOwnObjectEnabler core = clientPlayer.GetComponent<PlayerOwnObjectEnabler>();
-            if (core != null && (core.Removing || core.PlayerHealth.IsDead))
             {
                 RemainingPlayers.Remove(playerId);
+                SocketServerController.Instance.Socket.Emit("serverremovereconnect", JsonConvert.SerializeObject(
+                    new Dictionary<string, string>() { { "username", playerId } }
+                ));
 
-                var inv = clientPlayer.GetComponent<PlayerInventoryV2>();
+                RemainingPlayers.Remove(playerId);
+
+                var inv = remainingPlayer.GetComponent<PlayerInventoryV2>();
                 if (inv != null)
                 {
                     if (inv.PrimaryWeapon != null) inv.PrimaryWeapon.DropWeapon();
@@ -333,15 +348,16 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
                 Players.Remove(playerId);
 
+                PlayerCountChange?.Invoke(this, EventArgs.Empty);
+
                 if (Players.Count <= 0)
-                    Application.Quit();
+                {
+                    if (MultiplayerServerManager.Instance.CurrentGameState != GameState.DONE)
+                        MultiplayerServerManager.Instance.CurrentGameState = GameState.DONE;
+                }
             }
+            //else
+            //    core.Object.AssignInputAuthority(PlayerRef.None);
         }
-
-
-        if (Players.Count <= 0)
-            Application.Quit();
-
-        PlayerCountChange?.Invoke(this, EventArgs.Empty);
     }
 }

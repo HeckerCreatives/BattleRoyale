@@ -81,6 +81,9 @@ public class LoginMenuManager : MonoBehaviour
 
     //  =========================
 
+    [SerializeField] private LoginManager loginManager;
+
+    [Space]
     [SerializeField] private GameObject mainObj;
     [SerializeField] private GameObject loginRegisterObj;
     [SerializeField] private GameObject moreObj;

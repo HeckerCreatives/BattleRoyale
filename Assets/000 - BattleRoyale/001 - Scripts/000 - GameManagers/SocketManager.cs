@@ -416,7 +416,11 @@ public class SocketManager : MonoBehaviour
 
             await Task.Delay(1000);
 
-            Reconnect();
+            ConnectionStatus = "Disconnected";
+            DisconnectAction?.Invoke();
+            sceneController.CurrentScene = "Login";
+            userData.ResetLogin();
+            Socket = null;
         }
     }
 

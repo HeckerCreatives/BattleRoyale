@@ -138,9 +138,7 @@ public class PlayerGameStats : NetworkBehaviour
 
     private void GameStats()
     {
-        int tempCapacity = PlayerJoinedController.Instance.RemainingPlayers.Capacity;
-
-        PlayerCount.text = $"{(PlayerJoinedController.Instance.RemainingPlayers.Count + BotSpawnerController.Instance.Bots.Count):n0} / {(tempCapacity - 2):n0}";
+        PlayerCount.text = $"{(PlayerJoinedController.Instance.RemainingPlayers.Count + BotSpawnerController.Instance.Bots.Count):n0} / 30";
         killCountTMP.text = $"{KillCount:n0}";
         playtimeTMP.text = $"Playtime: {GameManager.Instance.GetMinuteSecondsTime(playtime)}";
     }
@@ -171,13 +169,14 @@ public class PlayerGameStats : NetworkBehaviour
 
         // leaderboard points
         float rankpointLB = ((100 - rank + 1) / 100f) * 20f;
-        rankpointLB = (float)Math.Truncate(rankpointLB);
+        rankpointLB = Convert.ToInt32(rankpointLB);
 
         float killpointLB = KillCount * 100f;
-        killpointLB = (float)Math.Truncate(killpointLB);
+        killpointLB = Convert.ToInt32(killpointLB);
 
         float finalresultpointLB = rankpointLB + killpointLB + HitPoints;
-        finalresultpointLB = (float)Math.Truncate(finalresultpointLB);
+        finalresultpointLB = Convert.ToInt32(finalresultpointLB);
+        finalresultpointLB = userData.GameDetails.energy <= 0 ? 0 : finalresultpointLB;
 
         rankPointResultTMP.text = rankpointLB.ToString("n0");
         killPointsTMP.text = killpointLB.ToString("n0");
@@ -186,16 +185,17 @@ public class PlayerGameStats : NetworkBehaviour
 
         // EXP
         float userlevelPoints = (userData.GameDetails.level / 2f) * 3f;
-        userlevelPoints = (float)Math.Truncate(userlevelPoints);
+        userlevelPoints = Convert.ToInt32(userlevelPoints);
 
-        float rankxpPoints = ((100 - PlayerPlacement + 1) / 100f) * 20f;
-        rankxpPoints = (float)Math.Truncate(rankxpPoints);
+        float rankxpPoints = ((100 - (PlayerPlacement + 1)) / 100f) * 20f;
+        rankxpPoints = Convert.ToInt32(rankxpPoints);
 
         float killxpPoints = KillCount * ((userData.GameDetails.level / 4f) + 1f);
-        killxpPoints = (float)Math.Truncate(killxpPoints);
+        killxpPoints = Convert.ToInt32(killxpPoints);
 
         float finalxp = userlevelPoints + rankxpPoints + killxpPoints;
-        finalxp = (float)Math.Truncate(finalxp);
+        finalxp = Convert.ToInt32(finalxp);
+        finalxp = userData.GameDetails.energy <= 0 ? 0 : finalxp;
 
         lvlPointsExpTMP.text = userlevelPoints.ToString("n0");
         rankPointsExpTMP.text = rankxpPoints.ToString("n0");
@@ -230,13 +230,13 @@ public class PlayerGameStats : NetworkBehaviour
             : (PlayerPlacement + botsCount);
 
         float rankpointLB = ((100 - rank + 1) / 100f) * 20f;
-        rankpointLB = (float)Math.Truncate(rankpointLB);
+        rankpointLB = Convert.ToInt32(rankpointLB);
 
         float killpointLB = KillCount * 100f;
-        killpointLB = (float)Math.Truncate(killpointLB);
+        killpointLB = Convert.ToInt32(killpointLB);
 
         float finalresultpointLB = rankpointLB + killpointLB + HitPoints;
-        finalresultpointLB = (float)Math.Truncate(finalresultpointLB);
+        finalresultpointLB = Convert.ToInt32(finalresultpointLB);
 
         Debug.Log($"✅ SENDING RESULTS ONCE ({reason}) for {ownObjectEnabler.Username} rank={rank}");
 
@@ -313,7 +313,7 @@ public class PlayerGameStats : NetworkBehaviour
 
         if (PlayerJoinedController.Instance.RemainingPlayers.Count > 1 || BotSpawnerController.Instance.Bots.Count > 0) return;
 
-        TrySendResultsOnce("All players quit (server winner)", isWinner: true, rankOverride: 1);
+        TrySendResultsOnce("All players quit (server winner)", isWinner: ownObjectEnabler.Removing ? false : true, rankOverride: 1);
     }
 
     #endregion
@@ -354,13 +354,14 @@ public class PlayerGameStats : NetworkBehaviour
             killCountResultTMP.text = KillCount.ToString();
 
             float rankpointLB = ((100 - (PlayerPlacement + BotSpawnerController.Instance.Bots.Count) + 1) / 100f) * 20f;
-            rankpointLB = (float)Math.Truncate(rankpointLB);
+            rankpointLB = Convert.ToInt32(rankpointLB);
 
             float killpointLB = KillCount * 100f;
-            killpointLB = (float)Math.Truncate(killpointLB);
+            killpointLB = Convert.ToInt32(killpointLB);
 
             float finalresultpointLB = rankpointLB + killpointLB + HitPoints;
-            finalresultpointLB = (float)Math.Truncate(finalresultpointLB);
+            finalresultpointLB = Convert.ToInt32(finalresultpointLB);
+            finalresultpointLB = userData.GameDetails.energy <= 0 ? 0 : finalresultpointLB;
 
             rankPointResultTMP.text = rankpointLB.ToString("n0");
             killPointsTMP.text = killpointLB.ToString("n0");
@@ -368,16 +369,17 @@ public class PlayerGameStats : NetworkBehaviour
             resultPointsTMP.text = finalresultpointLB.ToString("n0");
 
             float userlevelPoints = (userData.GameDetails.level / 2f) * 3f;
-            userlevelPoints = (float)Math.Truncate(userlevelPoints);
+            userlevelPoints = Convert.ToInt32(userlevelPoints);
 
-            float rankxpPoints = ((100 - PlayerPlacement + 1) / 100f) * 20f;
-            rankxpPoints = (float)Math.Truncate(rankxpPoints);
+            float rankxpPoints = ((100 - (PlayerPlacement + 1)) / 100f) * 20f;
+            rankxpPoints = Convert.ToInt32(rankxpPoints);
 
             float killxpPoints = KillCount * ((userData.GameDetails.level / 4f) + 1f);
-            killxpPoints = (float)Math.Truncate(killxpPoints);
+            killxpPoints = Convert.ToInt32(killxpPoints);
 
             float finalxp = userlevelPoints + rankxpPoints + killxpPoints;
-            finalxp = (float)Math.Truncate(finalxp);
+            finalxp = Convert.ToInt32(finalxp);
+            finalxp = userData.GameDetails.energy <= 0 ? 0 : finalxp;
 
             lvlPointsExpTMP.text = userlevelPoints.ToString("n0");
             rankPointsExpTMP.text = rankxpPoints.ToString("n0");
@@ -411,13 +413,14 @@ public class PlayerGameStats : NetworkBehaviour
         killCountResultTMP.text = KillCount.ToString();
 
         float rankpointLB = ((100 - (PlayerPlacement + BotSpawnerController.Instance.Bots.Count) + 1) / 100f) * 20f;
-        rankpointLB = (float)Math.Truncate(rankpointLB);
+        rankpointLB = Convert.ToInt32(rankpointLB);
 
         float killpointLB = KillCount * 100f;
-        killpointLB = (float)Math.Truncate(killpointLB);
+        killpointLB = Convert.ToInt32(killpointLB);
 
         float finalresultpointLB = rankpointLB + killpointLB + HitPoints;
-        finalresultpointLB = (float)Math.Truncate(finalresultpointLB);
+        finalresultpointLB = Convert.ToInt32(finalresultpointLB);
+        finalresultpointLB = userData.GameDetails.energy <= 0 ? 0 : finalresultpointLB;
 
         rankPointResultTMP.text = rankpointLB.ToString("n0");
         killPointsTMP.text = killpointLB.ToString("n0");
@@ -425,16 +428,17 @@ public class PlayerGameStats : NetworkBehaviour
         resultPointsTMP.text = finalresultpointLB.ToString("n0");
 
         float userlevelPoints = (userData.GameDetails.level / 2f) * 3f;
-        userlevelPoints = (float)Math.Truncate(userlevelPoints);
+        userlevelPoints = Convert.ToInt32(userlevelPoints);
 
-        float rankxpPoints = ((100 - PlayerPlacement + 1) / 100f) * 20f;
-        rankxpPoints = (float)Math.Truncate(rankxpPoints);
+        float rankxpPoints = ((100 - (PlayerPlacement + 1)) / 100f) * 20f;
+        rankxpPoints = Convert.ToInt32(rankxpPoints);
 
         float killxpPoints = KillCount * ((userData.GameDetails.level / 4f) + 1f);
-        killxpPoints = (float)Math.Truncate(killxpPoints);
+        killxpPoints = Convert.ToInt32(killxpPoints);
 
         float finalxp = userlevelPoints + rankxpPoints + killxpPoints;
-        finalxp = (float)Math.Truncate(finalxp);
+        finalxp = Convert.ToInt32(finalxp);
+        finalxp = userData.GameDetails.energy <= 0 ? 0 : finalxp;
 
         lvlPointsExpTMP.text = userlevelPoints.ToString("n0");
         rankPointsExpTMP.text = rankxpPoints.ToString("n0");

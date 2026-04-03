@@ -20,44 +20,29 @@ public class PlayerJumpPunchPlayable : UpperNoAimState
 
         if (!playerPlayables.HasStateAuthority) return;
 
-        playerPlayables.healthV2.FallDamageValue = 0;
         hasResetHitEnemies = false;
     }
+
 
     public override void NetworkUpdate()
     {
         base.NetworkUpdate();
 
-        double animTime = Math.Min(animationClipPlayable.GetTime(), animationLength);
+        HandleDamage(animationClipPlayable.GetTime());
 
-        HandleDamage(animTime);
 
-        if (!characterController.IsGrounded || animTime < animationLength)
-            return;
+        var nextState = GetNextState();
 
-        if (playerPlayables.HasInputAuthority)
+        if (nextState != null && playablesChanger.CurrentState != nextState)
         {
-            var predictedState = GetNextState();
-
-            if (predictedState != null && playablesChanger.CurrentState != predictedState)
-            {
-                playablesChanger.ChangeState(predictedState);
-            }
+            playablesChanger.ChangeState(nextState);
         }
-        if (playerPlayables.HasStateAuthority)
-        {
-            var nextState = GetNextState();
-
-            if (nextState != null && playablesChanger.CurrentState != nextState)
-            {
-                playablesChanger.ChangeState(nextState);
-            }
-        }
-
     }
 
     private void HandleDamage(double animTime)
     {
+        if (!playerPlayables.HasStateAuthority) return;
+
         // If you want full-clip active hit detection, keep this exactly like this.
         if (!hasResetHitEnemies)
         {
@@ -70,6 +55,9 @@ public class PlayerJumpPunchPlayable : UpperNoAimState
 
     private UpperBodyAnimations GetNextState()
     {
+        if (!characterController.IsGrounded || animationClipPlayable.GetTime() < animationLength * 0.9f)
+            return null;
+
         bool isMoving = playerMovement.XMovement != 0 || playerMovement.YMovement != 0;
 
         if (isMoving)

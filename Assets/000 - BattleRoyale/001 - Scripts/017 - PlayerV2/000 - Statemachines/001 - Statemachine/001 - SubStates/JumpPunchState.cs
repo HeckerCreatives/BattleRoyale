@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Playables;
 
 public class JumpPunchState : PlayerOnGround
 {
@@ -17,12 +18,19 @@ public class JumpPunchState : PlayerOnGround
         if (!playerPlayables.HasStateAuthority) return;
 
         playerPlayables.healthV2.FallDamageValue = 0;
+        playerMovement.IsJumping = false;
+
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
+
+        playerMovement.JumpImpulse = 0;
     }
 
     public override void NetworkUpdate()
     {
-        playerMovement.MoveCharacter();
-
         var nextState = GetNextState();
 
         if (nextState != null && playablesChanger.CurrentState != nextState)
@@ -34,8 +42,11 @@ public class JumpPunchState : PlayerOnGround
         if (playerPlayables.HasStateAuthority)
         {
             FallDamage();
+
             playerPlayables.stamina.RecoverStamina(5f);
         }
+
+        playerMovement.MoveCharacter();
     }
 
     private void FallDamage()
@@ -59,7 +70,11 @@ public class JumpPunchState : PlayerOnGround
 
     private AnimationPlayable GetNextState()
     {
+        if (!characterController.IsGrounded || animationClipPlayable.GetTime() < animationLength * 0.9f)
+            return null;
+
         var interruptState = GetInterruptState();
+
         if (interruptState != null)
             return interruptState;
 

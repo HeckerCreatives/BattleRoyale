@@ -39,8 +39,11 @@ public class GettingUp : PlayerOnGround
         if (!characterController.IsGrounded)
             return playerPlayables.lowerBodyMovement.FallingPlayable;
 
-        if (animationClipPlayable.GetTime() < animationLength - 0.02f)
+        if (animationClipPlayable.GetTime() < animationLength * 0.9f)
             return null;
+
+        // recovery finished
+        playerPlayables.healthV2.IsGettingUp = false;
 
         if (playerPlayables.healthV2.IsStagger)
             return playerPlayables.lowerBodyMovement.StaggerHitPlayable;

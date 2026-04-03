@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 2046543979837632740}
   - component: {fileID: 7547791150730725687}
   - component: {fileID: 6931032213872811362}
+  - component: {fileID: 3659552662626323006}
   - component: {fileID: 1955493956064559302}
   m_Layer: 0
   m_Name: ServerManager
@@ -126,47 +127,7 @@ MonoBehaviour:
   createNO: {fileID: 5692795387059461451, guid: e9fed6ded1692e54c9773aa98fa82ac9,
     type: 3}
   doneSpawnCrates: 0
-  createSpawnLocations:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  createSpawnLocations: []
 --- !u!114 &4812494338444341753
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -182,77 +143,77 @@ MonoBehaviour:
   safeZoneNO: {fileID: 7230061636402373790, guid: 7036fa97a42265747aa18fa9ff7c411c,
     type: 3}
   safeZonePosition:
-  - {x: -8, y: 63.6, z: 0}
-  - {x: 67.5, y: 63.6, z: -33}
-  - {x: 76.7, y: 63.6, z: 68}
-  - {x: -81.1, y: 63.6, z: -33}
-  - {x: -78.5, y: 63.6, z: 64}
-  - {x: -7.8, y: 63.6, z: 64}
-  - {x: -7.8, y: 63.6, z: -58}
-  - {x: 33.5, y: 63.6, z: 27}
-  - {x: -32, y: 63.6, z: -23}
-  - {x: 87.2, y: 63.6, z: 5}
+  - {x: -8, y: 63.6, z: 7}
+  - {x: 79.8, y: 63.6, z: 75.4}
+  - {x: 69.8, y: 63.6, z: -38.2}
+  - {x: -71.8, y: 63.6, z: -47.5}
+  - {x: -78.4, y: 63.6, z: 67.5}
+  - {x: -11.3, y: 63.6, z: 67.5}
+  - {x: -11.3, y: 63.6, z: -61.3}
+  - {x: 30.2, y: 63.6, z: -21.5}
+  - {x: -38.4, y: 63.6, z: 33.2}
+  - {x: 89.9, y: 63.6, z: 3.4}
   safeZoneShrink:
   - shrinksizes:
-    - {x: 413.418, y: 291.9279, z: 413.418}
-    - {x: 249.89, y: 291.9279, z: 249.89}
-    - {x: 172.5415, y: 291.9279, z: 172.5415}
-    - {x: 76.4152, y: 291.9279, z: 76.4152}
-    - {x: 20.33179, y: 291.9279, z: 20.33179}
+    - {x: 372.48, y: 291.9279, z: 372.48}
+    - {x: 214.4591, y: 291.9279, z: 214.4591}
+    - {x: 146.2225, y: 291.9279, z: 146.2225}
+    - {x: 49.079, y: 291.9279, z: 49.079}
+    - {x: 13.94138, y: 291.9279, z: 13.94138}
   - shrinksizes:
-    - {x: 431.9588, y: 291.9279, z: 431.9588}
-    - {x: 367.0354, y: 291.9279, z: 367.0354}
-    - {x: 279.4167, y: 291.9279, z: 172279.42}
-    - {x: 160.835, y: 291.9279, z: 160.835}
-    - {x: 25.74165, y: 291.9279, z: 25.74165}
+    - {x: 464.6688, y: 291.9279, z: 464.6688}
+    - {x: 390.74, y: 291.9279, z: 390.74}
+    - {x: 285.5651, y: 291.9279, z: 285.5651}
+    - {x: 141.6917, y: 291.9279, z: 141.6917}
+    - {x: 25.21687, y: 291.9279, z: 25.21687}
   - shrinksizes:
-    - {x: 462.4983, y: 291.9279, z: 462.4983}
-    - {x: 339.8253, y: 291.9279, z: 339.8253}
-    - {x: 207.6298, y: 291.9279, z: 207.6298}
-    - {x: 106.6677, y: 291.9279, z: 106.6677}
-    - {x: 23.67704, y: 291.9279, z: 23.67704}
+    - {x: 431.8121, y: 291.9279, z: 431.8121}
+    - {x: 355.4807, y: 291.9279, z: 355.4807}
+    - {x: 245.5127, y: 291.9279, z: 245.5127}
+    - {x: 106.6335, y: 291.9279, z: 106.6335}
+    - {x: 18.98183, y: 291.9279, z: 18.98183}
   - shrinksizes:
-    - {x: 462.4983, y: 291.9279, z: 462.4983}
-    - {x: 339.8253, y: 291.9279, z: 339.8253}
-    - {x: 207.6298, y: 291.9279, z: 207.6298}
-    - {x: 106.6677, y: 291.9279, z: 106.6677}
-    - {x: 23.67704, y: 291.9279, z: 23.67704}
+    - {x: 508.1565, y: 291.9279, z: 508.1565}
+    - {x: 391.3719, y: 291.9279, z: 391.3719}
+    - {x: 256.4543, y: 291.9279, z: 256.4543}
+    - {x: 136.3106, y: 291.9279, z: 136.3106}
+    - {x: 21.71066, y: 291.9279, z: 21.71066}
   - shrinksizes:
-    - {x: 519.7556, y: 291.9279, z: 519.7556}
-    - {x: 423.2474, y: 291.9279, z: 423.2474}
-    - {x: 266.0787, y: 291.9279, z: 266.0787}
-    - {x: 141.4022, y: 291.9279, z: 141.4022}
-    - {x: 30.13847, y: 291.9279, z: 30.13847}
+    - {x: 449.7642, y: 291.9279, z: 449.7642}
+    - {x: 354.3557, y: 291.9279, z: 354.3557}
+    - {x: 247.8683, y: 291.9279, z: 247.8683}
+    - {x: 122.9922, y: 291.9279, z: 122.9922}
+    - {x: 22.97987, y: 291.9279, z: 22.97987}
   - shrinksizes:
-    - {x: 443.6985, y: 291.9279, z: 443.6985}
-    - {x: 353.468, y: 291.9279, z: 353.468}
-    - {x: 259.7141, y: 291.9279, z: 259.7141}
-    - {x: 127.0111, y: 291.9279, z: 127.0111}
-    - {x: 20.32685, y: 291.9279, z: 20.32685}
+    - {x: 354.3557, y: 291.9279, z: 354.3557}
+    - {x: 276.0537, y: 291.9279, z: 276.0537}
+    - {x: 176.0146, y: 291.9279, z: 176.0146}
+    - {x: 88.89091, y: 291.9279, z: 88.89091}
+    - {x: 20.53558, y: 291.9279, z: 20.53558}
   - shrinksizes:
-    - {x: 443.6985, y: 291.9279, z: 443.6985}
-    - {x: 306.5911, y: 291.9279, z: 306.5911}
-    - {x: 202.3043, y: 291.9279, z: 202.3043}
-    - {x: 109.2949, y: 291.9279, z: 109.2949}
-    - {x: 21.3595, y: 291.9279, z: 21.3595}
+    - {x: 438.905, y: 291.9279, z: 438.905}
+    - {x: 357.4398, y: 291.9279, z: 357.4398}
+    - {x: 240.5463, y: 291.9279, z: 240.5463}
+    - {x: 134.2393, y: 291.9279, z: 134.2393}
+    - {x: 15.5892, y: 291.9279, z: 15.5892}
   - shrinksizes:
-    - {x: 352.4318, y: 291.9279, z: 352.4318}
-    - {x: 255.8337, y: 291.9279, z: 255.8337}
-    - {x: 165.3556, y: 291.9279, z: 165.3556}
-    - {x: 87.8716, y: 291.9279, z: 87.8716}
-    - {x: 21.05667, y: 291.9279, z: 21.05667}
+    - {x: 353.5555, y: 291.9279, z: 353.5555}
+    - {x: 259.8067, y: 291.9279, z: 259.8067}
+    - {x: 154.1745, y: 291.9279, z: 154.1745}
+    - {x: 71.05132, y: 291.9279, z: 154.1745}
+    - {x: 15.7876, y: 291.9279, z: 15.7876}
   - shrinksizes:
-    - {x: 445.8967, y: 291.9279, z: 445.8967}
-    - {x: 323.6898, y: 291.9279, z: 323.6898}
-    - {x: 186.332, y: 291.9279, z: 186.332}
-    - {x: 75.96384, y: 291.9279, z: 75.96384}
-    - {x: 21.05667, y: 291.9279, z: 21.05667}
+    - {x: 353.5555, y: 291.9279, z: 353.5555}
+    - {x: 275.4339, y: 291.9279, z: 275.4339}
+    - {x: 195.0981, y: 291.9279, z: 195.0981}
+    - {x: 67.49418, y: 291.9279, z: 67.49418}
+    - {x: 17.38448, y: 291.9279, z: 17.38448}
   - shrinksizes:
-    - {x: 445.8967, y: 291.9279, z: 445.8967}
-    - {x: 323.6898, y: 291.9279, z: 323.6898}
-    - {x: 186.332, y: 291.9279, z: 186.332}
-    - {x: 75.96384, y: 291.9279, z: 75.96384}
-    - {x: 21.05667, y: 291.9279, z: 21.05667}
+    - {x: 425.4333, y: 291.9279, z: 425.4333}
+    - {x: 323.9079, y: 291.9279, z: 323.9079}
+    - {x: 241.4818, y: 291.9279, z: 241.4818}
+    - {x: 109.1522, y: 291.9279, z: 109.1522}
+    - {x: 20.39509, y: 291.9279, z: 20.39509}
   doneSetupSafeZone: 0
   _CurrentSafeZoneState: 0
   _SafeZoneTimer: 0
@@ -269,40 +230,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c316df97e63f10241b7103fba20f7445, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerObj: {fileID: 5445039399870471172, guid: 6ee04c1ee952dee48b45d97fca21e4ae,
+  playerObj: {fileID: 3073065320877543024, guid: 6ee04c1ee952dee48b45d97fca21e4ae,
     type: 3}
-  spawnWaitingAreaPositions:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  healObj: {fileID: 5711290807954466664, guid: ae5a4c3d7c9e15e4eb5f70b12af2b0c4, type: 3}
+  armorObj: {fileID: 1825424966074417164, guid: 91b9eccfad1c41b488dc8bbeccc98658,
+    type: 3}
+  ammoRifleObj: {fileID: 8284634702788986114, guid: 0efef0621ad0d474eb15e7b1dbdc2def,
+    type: 3}
+  spawnWaitingAreaPositions: []
   doneSetupPlayers: 0
   PlayerIDs: []
 --- !u!114 &2046543979837632740
@@ -551,6 +486,147 @@ MonoBehaviour:
   killNotifObj: {fileID: 8208427090230967597, guid: 40416c95c92f7324ea80ed84b21f7ee9,
     type: 3}
   _KillNotifController: {fileID: 0}
+--- !u!114 &3659552662626323006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4720992259611821993}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 153df72e4d953b34690a577bc8c7332a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  areaCenter: {x: 2.7, y: 28, z: 8.06}
+  areaSize: {x: 243.68, y: 35.65, z: 218}
+  randomSeed: 252907
+  clearBeforeGenerate: 1
+  rules:
+  - ruleName: MeleeWeapons
+    enabled: 1
+    prefabs:
+    - {fileID: -6896107499734453323, guid: 7fe4a221ff2f2d64181e56c9913c850c, type: 3}
+    - {fileID: 7258497585221354807, guid: 796b17788ddec0e4995ac5a523ff0d95, type: 3}
+    spawnCount: 100
+    maxAttempts: 1000
+    groundLayerMask:
+      serializedVersion: 2
+      m_Bits: 4194368
+    allowedTags:
+    - ForestArea
+    - DesertArea
+    - MaliArea
+    - TunisiaArea
+    - LalibelaArea
+    randomScaleRange: {x: 1, y: 1}
+    randomYRotation: 1
+    alignToSurfaceNormal: 1
+    surfaceNormalDirection: {x: 0, y: 1, z: 0}
+    useRandomAxisRotation: 1
+    randomRotationAxis: 2
+    randomRotationMin: 0
+    randomRotationMax: 360
+    useThreePointSurfaceAlignment: 1
+    objectLengthAxis: 0
+    backSampleDistance: 0.5
+    frontSampleDistance: 0.5
+    sampleRayStartHeight: 2
+    sampleRayDistance: 10
+    rotationOffsetEuler: {x: 90, y: 0, z: 90}
+    minSlope: 0
+    maxSlope: 30
+    minSpacing: 1
+    useHeightLimit: 0
+    minHeight: 1.98
+    maxHeight: 2.82
+    rayStartHeight: 50
+    rayDistance: 200
+    yOffset: 0.01
+    parentFolderName: SpawnTest
+  - ruleName: Heal
+    enabled: 1
+    prefabs:
+    - {fileID: 5711290807954466664, guid: ae5a4c3d7c9e15e4eb5f70b12af2b0c4, type: 3}
+    spawnCount: 100
+    maxAttempts: 1000
+    groundLayerMask:
+      serializedVersion: 2
+      m_Bits: 4194368
+    allowedTags:
+    - ForestArea
+    - DesertArea
+    - MaliArea
+    - TunisiaArea
+    - LalibelaArea
+    randomScaleRange: {x: 1, y: 1}
+    randomYRotation: 1
+    alignToSurfaceNormal: 1
+    surfaceNormalDirection: {x: 0, y: 1, z: 0}
+    useRandomAxisRotation: 1
+    randomRotationAxis: 2
+    randomRotationMin: 0
+    randomRotationMax: 360
+    useThreePointSurfaceAlignment: 1
+    objectLengthAxis: 0
+    backSampleDistance: 0.5
+    frontSampleDistance: 0.5
+    sampleRayStartHeight: 2
+    sampleRayDistance: 10
+    rotationOffsetEuler: {x: -90, y: 0, z: 90}
+    minSlope: 0
+    maxSlope: 30
+    minSpacing: 1
+    useHeightLimit: 0
+    minHeight: 1.98
+    maxHeight: 2.82
+    rayStartHeight: 50
+    rayDistance: 200
+    yOffset: 0.05
+    parentFolderName: SpawnTest
+  - ruleName: Repair
+    enabled: 1
+    prefabs:
+    - {fileID: 1825424966074417164, guid: 91b9eccfad1c41b488dc8bbeccc98658, type: 3}
+    spawnCount: 100
+    maxAttempts: 1000
+    groundLayerMask:
+      serializedVersion: 2
+      m_Bits: 4194368
+    allowedTags:
+    - ForestArea
+    - DesertArea
+    - MaliArea
+    - TunisiaArea
+    - LalibelaArea
+    randomScaleRange: {x: 1, y: 1}
+    randomYRotation: 1
+    alignToSurfaceNormal: 1
+    surfaceNormalDirection: {x: 0, y: 1, z: 0}
+    useRandomAxisRotation: 1
+    randomRotationAxis: 1
+    randomRotationMin: 0
+    randomRotationMax: 360
+    useThreePointSurfaceAlignment: 1
+    objectLengthAxis: 0
+    backSampleDistance: 0.5
+    frontSampleDistance: 0.5
+    sampleRayStartHeight: 2
+    sampleRayDistance: 10
+    rotationOffsetEuler: {x: 0, y: 0, z: 0}
+    minSlope: 0
+    maxSlope: 30
+    minSpacing: 1
+    useHeightLimit: 0
+    minHeight: 1.98
+    maxHeight: 2.82
+    rayStartHeight: 50
+    rayDistance: 200
+    yOffset: 0.05
+    parentFolderName: SpawnTest
+  drawScatterArea: 1
+  drawRaycastHits: 0
+  doneInitialize: 0
 --- !u!114 &1955493956064559302
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -574,4 +650,5 @@ MonoBehaviour:
   - {fileID: 7863920190444468710}
   - {fileID: 7547791150730725687}
   - {fileID: 6931032213872811362}
+  - {fileID: 3659552662626323006}
   ForceRemoteRenderTimeframe: 0

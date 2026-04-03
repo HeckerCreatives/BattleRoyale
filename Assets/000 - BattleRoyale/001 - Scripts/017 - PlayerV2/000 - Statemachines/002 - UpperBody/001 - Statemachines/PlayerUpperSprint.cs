@@ -55,9 +55,6 @@ public class PlayerUpperSprint : UpperNoAimState
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             return upper.RollPlayables;
 
-        if (playerMovement.Attacking)
-            return upper.FirstPunch;
-
         return GetUpperSprintLocomotionState();
     }
 

@@ -54,8 +54,7 @@ public class PlayerUpperRoll : UpperNoAimState
 
                     if (playerMovement.IsJumping) return upper.JumpPlayable;
 
-                    if (animationClipPlayable.GetTime() < animationLength - 0.025f)
-                        return null;
+                    if (animationClipPlayable.GetTime() < animationLength * 0.85f) return null;
 
                     //return upper.RunPlayables;
                     return upper.IdlePlayables;
@@ -63,24 +62,17 @@ public class PlayerUpperRoll : UpperNoAimState
 
             case 2:
                 {
+                    if (animationClipPlayable.GetTime() < animationLength * 0.25f) return null;
+
                     string primaryId = inventory.PrimaryWeaponID();
 
-                    if (!isMoving)
-                    {
-                        if (primaryId == "001") return upper.SwordIdlePlayable;
-                        if (primaryId == "002") return upper.SpearIdle;
-                    }
-                    else
-                    {
-                        if (canSprint)
-                        {
-                            if (primaryId == "001") return upper.SwordSprint;
-                            if (primaryId == "002") return upper.SpearSprintPlayable;
-                        }
 
-                        if (primaryId == "001") return upper.SwordRunPlayable;
-                        if (primaryId == "002") return upper.SpearRunPlayable;
-                    }
+                    if (playerMovement.IsJumping) return upper.JumpPlayable;
+
+                    if (animationClipPlayable.GetTime() < animationLength * 0.85f) return null;
+
+                    if (primaryId == "001") return upper.SwordIdlePlayable;
+                    if (primaryId == "002") return upper.SpearIdle;
 
                     break;
                 }

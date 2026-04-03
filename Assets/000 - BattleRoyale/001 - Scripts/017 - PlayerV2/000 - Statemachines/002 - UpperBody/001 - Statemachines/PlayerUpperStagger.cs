@@ -16,25 +16,12 @@ public class PlayerUpperStagger : UpperNoAimState
     {
         base.NetworkUpdate();
 
-        if (playerPlayables.HasInputAuthority)
+        var nextState = GetNextUpperStaggerState();
+
+        if (nextState != null && playablesChanger.CurrentState != nextState)
         {
-            var predictedState = GetNextUpperStaggerState();
-
-            if (predictedState != null && playablesChanger.CurrentState != predictedState)
-            {
-                playablesChanger.ChangeState(predictedState);
-            }
+            playablesChanger.ChangeState(nextState);
         }
-        if (playerPlayables.HasStateAuthority)
-        {
-            var nextState = GetNextUpperStaggerState();
-
-            if (nextState != null && playablesChanger.CurrentState != nextState)
-            {
-                playablesChanger.ChangeState(nextState);
-            }
-        }
-
     }
 
     private UpperBodyAnimations GetNextUpperStaggerState()
@@ -44,10 +31,8 @@ public class PlayerUpperStagger : UpperNoAimState
         if (playerPlayables.healthV2.IsDead)
             return upper.DeathPlayable;
 
-        if (animationClipPlayable.GetTime() < animationLength - 0.025f)
-            return this;
-
-        playerPlayables.healthV2.IsStagger = false;
+        if (animationClipPlayable.GetTime() < animationLength * 0.9f)
+            return null;
 
         if (!characterController.IsGrounded)
             return upper.FallingPlayables;

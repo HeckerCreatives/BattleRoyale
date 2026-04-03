@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
+using static Unity.Collections.Unicode;
 
 public class JumpState : PlayerOnGround
 {
@@ -16,24 +17,13 @@ public class JumpState : PlayerOnGround
     {
         base.Enter();
 
-        if (playerPlayables.HasInputAuthority)
-            playerPlayables.CancelInvoke();
-
         playerPlayables.PlayJumpSoundEffect();
-    }
-
-    public override void Exit()
-    {
-        base.Exit();
-
-        if (playerPlayables.HasInputAuthority)
-            playerPlayables.CancelInvoke();
     }
 
     public override void NetworkUpdate()
     {
-        playerMovement.MoveCharacter();
         UpdateJumpFlags();
+        playerMovement.MoveCharacter();
 
         var nextState = GetNextLowerJumpState();
 
@@ -48,10 +38,9 @@ public class JumpState : PlayerOnGround
 
     private void UpdateJumpFlags()
     {
-        if (animationClipPlayable.GetTime() < animationLength * 0.1f) return;
+        if (animationClipPlayable.GetTime() < animationLength * 0.25f) return;
 
         playerMovement.IsJumping = false;
-        playerMovement.JumpImpulse = 0f;
     }
 
     private AnimationPlayable GetNextLowerJumpState()
@@ -90,17 +79,17 @@ public class JumpState : PlayerOnGround
                 return lower.JumpPunchPlayable;
 
             case 2:
-                {
-                    string primaryId = inventory.PrimaryWeaponID();
+            {
+                string primaryId = inventory.PrimaryWeaponID();
 
-                    if (primaryId == "001")
-                        return lower.SwordJumpAttackPlayable;
+                if (primaryId == "001")
+                    return lower.SwordJumpAttackPlayable;
 
-                    if (primaryId == "002")
-                        return lower.SpearJumpAttackPlayable;
+                if (primaryId == "002")
+                    return lower.SpearJumpAttackPlayable;
 
-                    break;
-                }
+                break;
+            }
         }
 
         return null;

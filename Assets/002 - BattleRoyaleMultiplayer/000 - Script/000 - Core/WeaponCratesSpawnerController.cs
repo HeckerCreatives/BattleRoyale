@@ -24,16 +24,16 @@ public class WeaponCratesSpawnerController : NetworkBehaviour
     {
         List<string> itemPool = new List<string>
         {
-            "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", // 15%
-            "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", // 15%
+            //"rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", "rifle", // 15%
+            //"bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", "bow", // 15%
             "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", "sword", // 20%
             "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", "spear", // 20%
             "heal", "heal", "heal", "heal", "heal", "heal", "heal", "heal", "heal", "heal", // 10%
             "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", "repair armor", // 10%
             "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", // 10%
-            "rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", // 
-            "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", // 10%
-            "trap", "trap", "trap", "trap", "trap", "trap", "trap", "trap", "trap", "trap", // 10%
+            //"rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", // 
+            //"bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", // 10%
+            //"trap", "trap", "trap", "trap", "trap", "trap", "trap", "trap", "trap", "trap", // 10%
         };
 
 
@@ -109,7 +109,7 @@ public class WeaponCratesSpawnerController : NetworkBehaviour
 
         foreach (var spawnLocations in createSpawnLocations)
         {
-            var gameobject = Runner.Spawn(createNO, spawnLocations.transform.position, Quaternion.identity, null);
+            var gameobject = Runner.Spawn(createNO, spawnLocations.transform.position, spawnLocations.transform.rotation, null);
 
             gameobject.GetComponent<CrateController>().SetDatas(GenerateRandomItems());
 

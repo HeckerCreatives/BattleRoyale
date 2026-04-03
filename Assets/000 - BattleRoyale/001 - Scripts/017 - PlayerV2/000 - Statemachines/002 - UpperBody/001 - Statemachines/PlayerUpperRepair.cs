@@ -35,32 +35,19 @@ public class PlayerUpperRepair : UpperNoAimState
 
         double animTime = animationClipPlayable.GetTime();
 
-        bool beforeHeal = animTime < animationLength * 0.5f;
-        bool finished = animTime >= animationLength;
+        bool beforeHeal = animTime < animationLength * 0.4f;
+        bool finished = animTime >= animationLength * 0.9f;
 
         // Same behavior as your original:
         // run checks before heal point, and again when full timer is finished
         if (beforeHeal || finished)
         {
-            if (playerPlayables.HasInputAuthority)
+            var nextState = GetNextState();
+
+            if (nextState != null && playablesChanger.CurrentState != nextState)
             {
-                var predictedState = GetNextState();
-
-                if (predictedState != null && playablesChanger.CurrentState != predictedState)
-                {
-                    playablesChanger.ChangeState(predictedState);
-                }
+                playablesChanger.ChangeState(nextState);
             }
-            if (playerPlayables.HasStateAuthority)
-            {
-                var nextState = GetNextState();
-
-                if (nextState != null && playablesChanger.CurrentState != nextState)
-                {
-                    playablesChanger.ChangeState(nextState);
-                }
-            }
-
         }
     }
 

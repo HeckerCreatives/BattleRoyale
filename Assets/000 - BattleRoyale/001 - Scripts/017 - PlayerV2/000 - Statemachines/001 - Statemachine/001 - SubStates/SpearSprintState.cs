@@ -52,9 +52,6 @@ public class SpearSprintState : PlayerOnGround
         if (playerMovement.IsBlocking)
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearBlockPlayable);
 
-        if (playerMovement.Attacking)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearFirstAttackPlayable);
-
         if (playerMovement.IsHealing)
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HealPlayable);
 
@@ -65,11 +62,6 @@ public class SpearSprintState : PlayerOnGround
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.TrappingPlayable);
         }
-
-        //if (playerPlayables.healthV2.IsHit)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-        //}
 
         if (playerPlayables.healthV2.IsStagger)
         {

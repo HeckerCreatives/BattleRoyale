@@ -135,8 +135,7 @@ public class PlayerInventoryV2 : NetworkBehaviour
 
         //aimBtn.SetActive(WeaponIndex == 3);
         aimBtn.SetActive(false);
-        blockBtn.SetActive(WeaponIndex != 3);
-
+        //blockBtn.SetActive(WeaponIndex != 3);
         if (PrimaryWeapon != null)
             PrimaryBtn.ChangeSpriteButton(PrimaryWeapon.WeaponID, PrimaryWeapon.Supplies.ToString(), false);
         else PrimaryBtn.ResetUI();
@@ -315,19 +314,31 @@ public class PlayerInventoryV2 : NetworkBehaviour
 
         foreach (var item in localNearbyWeapon)
         {
+            if (item == null)
+            {
+                itemsToRemove.Add(item);
+                continue;
+            }
+
+            var nb = item.GetComponent<NetworkBehaviour>();
+            if (nb == null || nb.Object == null || !nb.Object.IsValid)
+            {
+                // Not spawned or already despawned ? remove safely
+                itemsToRemove.Add(item);
+                continue;
+            }
+
             var weaponItem = item.GetComponent<IPickupItem>();
 
             if (weaponItem != null && weaponItem.IsPickedUp)
                 itemsToRemove.Add(item);
         }
 
-        // Remove items outside the loop
         foreach (var item in itemsToRemove)
         {
             localNearbyWeapon.Remove(item);
         }
 
-        // Return true if no items were removed, false otherwise
         return itemsToRemove.Count == 0;
     }
 
@@ -384,39 +395,51 @@ public class PlayerInventoryV2 : NetworkBehaviour
 
             NetworkObject tempobject = Object;
 
-            if (itemID == "001")
+            weapon.TryGetComponent<PrimaryWeaponItem>(out PrimaryWeaponItem primarytempweapon);
+            weapon.TryGetComponent<SecondaryWeaponItem>(out SecondaryWeaponItem secondarytempweapon);
+
+
+            switch (itemID)
             {
-                PrimaryWeaponItem tempweapon = weapon.GetComponent<PrimaryWeaponItem>();
+                case "001":
+                case "002":
 
-                tempweapon.RPC_PickupPrimaryWeapon(tempobject);
-            }
+                    if (primarytempweapon == null) break;
 
-            else if (itemID == "002")
-            {
-                PrimaryWeaponItem tempweapon = weapon.GetComponent<PrimaryWeaponItem>();
+                    primarytempweapon.RPC_PickupPrimaryWeapon(tempobject);
+                    break;
+                case "003":
+                case "004":
 
-                tempweapon.RPC_PickupPrimaryWeapon(tempobject);
-            }
+                    if (secondarytempweapon == null) break;
 
-            else if (itemID == "003")
-            {
-                SecondaryWeaponItem tempweapon = weapon.GetComponent<SecondaryWeaponItem>();
+                    secondarytempweapon.RPC_PickupSecondaryWeapon(tempobject, secondarytempweapon.Supplies);
+                    break;
+                case "007":
 
-                tempweapon.RPC_PickupSecondaryWeapon(tempobject, tempweapon.Supplies);
-            }
+                    ArmorItem temparmor = weapon.GetComponent<ArmorItem>();
 
-            else if (itemID == "004")
-            {
-                SecondaryWeaponItem tempweapon = weapon.GetComponent<SecondaryWeaponItem>();
+                    temparmor.RPC_PickupArmor(tempobject, ArmorHand);
 
-                tempweapon.RPC_PickupSecondaryWeapon(tempobject, tempweapon.Supplies);
-            }
+                    break;
+                case "008":
 
-            else if (itemID == "007")
-            {
-                ArmorItem temparmor = weapon.GetComponent<ArmorItem>();
+                    HealWeaponItem tempheal = weapon.GetComponent<HealWeaponItem>();
 
-                temparmor.RPC_PickupArmor(tempobject, ArmorHand);
+                    tempheal.RPC_PickupHeal(tempobject);
+                    break;
+                case "009":
+
+                    RepairWeaponItem temprepair = weapon.GetComponent<RepairWeaponItem>();
+
+                    temprepair.RPC_PickupRepair(tempobject);
+                    break;
+                case "010":
+
+                    AmmoRifleWeaponItem tempammo = weapon.gameObject.GetComponent<AmmoRifleWeaponItem>();
+
+                    tempammo.RPC_PickupAmmoRifle(tempobject);
+                    break;
             }
         });
 

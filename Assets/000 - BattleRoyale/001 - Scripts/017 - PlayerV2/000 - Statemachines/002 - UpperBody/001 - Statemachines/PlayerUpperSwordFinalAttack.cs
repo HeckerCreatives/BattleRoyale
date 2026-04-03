@@ -3,14 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Playables;
 
 public class PlayerUpperSwordFinalAttack : UpperNoAimState
 {
-    float timer;
-    float damageWindowStart;
-    float damageWindowEnd;
-    bool canAction;
-    bool canMove;
     bool hasResetHitEnemies;
 
     public PlayerUpperSwordFinalAttack(SimpleKCC characterController, UpperBodyChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool canAnimateUpper) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, canAnimateUpper)
@@ -21,93 +17,83 @@ public class PlayerUpperSwordFinalAttack : UpperNoAimState
     {
         base.Enter();
 
-        playerPlayables.inventory.PrimaryWeapon.SoundController.PlayAttackOne();
+        if (!playerPlayables.HasStateAuthority)
+        {
+            playerPlayables.inventory.PrimaryWeapon.SoundController.PlayAttackOne();
+
+            return;
+        }
 
         hasResetHitEnemies = false;
-        timer = playerPlayables.TickRateAnimation + animationLength;
-        damageWindowStart = playerPlayables.TickRateAnimation + 0.2f;
-        damageWindowEnd = playerPlayables.TickRateAnimation + 0.8f;
-        canAction = true;
-        canMove = true;
         playerPlayables.FinalAttack = false;
     }
-
-    public override void Exit()
-    {
-        base.Exit();
-
-        canAction = false;
-    }
-
 
     public override void NetworkUpdate()
     {
         base.NetworkUpdate();
 
-        if (playerPlayables.TickRateAnimation >= damageWindowStart && playerPlayables.TickRateAnimation <= damageWindowEnd)
+        double animTime = animationClipPlayable.GetTime();
+        double normalizedTime = animTime / animationLength;
+
+        HandleDamageWindow(normalizedTime);
+
+        var nextState = GetNextState(normalizedTime);
+
+        if (nextState != null && playablesChanger.CurrentState != nextState)
+        {
+            playablesChanger.ChangeState(nextState);
+        }
+    }
+
+    private void HandleDamageWindow(double normalizedTime)
+    {
+        if (!playerPlayables.HasStateAuthority) return;
+        // original:
+        // damageWindowStart = +0.2f
+        // damageWindowEnd   = +0.8f
+        // these are absolute seconds from animation start
+        double damageStartNormalized = 0.2 / animationLength;
+        double damageEndNormalized = 0.8 / animationLength;
+
+        if (normalizedTime >= damageStartNormalized && normalizedTime <= damageEndNormalized)
         {
             if (!hasResetHitEnemies)
             {
-                playerPlayables.inventory.PrimaryWeapon.ClearHitEnemies(); // Clear BEFORE performing attack
+                playerPlayables.inventory.PrimaryWeapon.ClearHitEnemies();
                 hasResetHitEnemies = true;
             }
 
             playerPlayables.inventory.PrimaryWeapon.DamagePlayer(true);
         }
-
-        Animation();
     }
 
-    private void Animation()
+    private UpperBodyAnimations GetNextState(double normalizedTime)
     {
         if (playerPlayables.healthV2.IsDead)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
-            
-        }
+            return playerPlayables.upperBodyMovement.DeathPlayable;
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RollPlayables);
+            return playerPlayables.upperBodyMovement.RollPlayables;
 
-        }
-
-        //if (playerPlayables.healthV2.IsHitUpper)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
-        //    
-        //}
+        if (playerMovement.IsJumping)
+            return playerPlayables.upperBodyMovement.JumpPlayable;
 
         if (playerPlayables.healthV2.IsStagger)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
-            
-        }
+            return playerPlayables.upperBodyMovement.StaggerHitPlayable;
 
-        if (playerPlayables.TickRateAnimation >= timer && canAction)
-        {
-            if (playerMovement.IsBlocking)
-            {
-                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordBlockPlayable);
-                
-            }
+        if (!characterController.IsGrounded)
+            return playerPlayables.upperBodyMovement.FallingPlayables;
 
-            if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
-            {
-                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RollPlayables);
-                
-            }
+        if (playerMovement.IsSprint && (playerMovement.XMovement != 0f || playerMovement.YMovement != 0f))
+            return playerPlayables.upperBodyMovement.SwordSprint;
 
-            if (playerMovement.MoveDirection != Vector3.zero)
-            {
-                if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordSprint);
 
-                else
-                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordRunPlayable);
-            }
-            else
-                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordIdlePlayable);
-        }
+        // original:
+        // timer = TickRateAnimation + animationLength
+        // meaning transition after full clip
+        if (normalizedTime >= 1.0)
+            return playerPlayables.upperBodyMovement.SwordIdlePlayable;
+
+        return null;
     }
 }

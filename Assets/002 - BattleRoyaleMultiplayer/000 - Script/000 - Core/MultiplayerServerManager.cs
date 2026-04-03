@@ -71,6 +71,8 @@ public class MultiplayerServerManager : NetworkBehaviour
 
     public bool DoneSetupBattlePos { get => doneSetupBattlePos; }
 
+    public string SessionName { get => sessionname; set => sessionname = value; }
+
     //  =========================
 
     [SerializeField] private DeveloperConsole developerConsole;
@@ -152,6 +154,21 @@ public class MultiplayerServerManager : NetworkBehaviour
         }
     }
 
+    public override void Render()
+    {
+        foreach (var change in _changeDetector.DetectChanges(this))
+        {
+            switch (change)
+            {
+                case nameof(CurrentGameState):
+                    if (HasStateAuthority) return;
+
+                    CurrentStateChange?.Invoke(this, EventArgs.Empty);
+                    break;
+            }
+        }
+    }
+
     public override void FixedUpdateNetwork()
     {
         foreach (var change in _changeDetector.DetectChanges(this))
@@ -159,13 +176,21 @@ public class MultiplayerServerManager : NetworkBehaviour
             switch (change)
             {
                 case nameof(CurrentGameState):
+                    Debug.Log($"CHANGE GAME STATE TO {CurrentGameState}");
                     if (CurrentGameState == GameState.DONE)
                     {
+                        Debug.Log($"ENTERING ENDING OF SESSION");
 
                         socketServer.Socket.Emit("doneroom", JsonConvert.SerializeObject(new Dictionary<string, string>
                         {
                             { "sessioname", sessionname }
                         }));
+
+                        closeServerCount = 60;
+
+                        canStartCountDownToCloseServer = true;
+
+                        Debug.Log($"DONE INITIALIZE DONE SESSION     CLOSE COUNT {closeServerCount} {canStartCountDownToCloseServer}");
                     }
 
                     CurrentStateChange?.Invoke(this, EventArgs.Empty);

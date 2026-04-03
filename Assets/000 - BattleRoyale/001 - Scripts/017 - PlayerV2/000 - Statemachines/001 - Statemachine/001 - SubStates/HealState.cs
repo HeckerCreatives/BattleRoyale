@@ -22,7 +22,7 @@ public class HealState : PlayerOnGround
 
         if (!playerPlayables.HasStateAuthority) return;
 
-        doneHeal = true;
+        doneHeal = false;
     }
 
     public override void Exit()
@@ -40,11 +40,7 @@ public class HealState : PlayerOnGround
 
         double animTime = animationClipPlayable.GetTime();
 
-        double healTime = animationLength * 0.5f;
-        bool beforeHeal = animTime < healTime;
-        bool finished = animTime >= animationLength - 0.02f;
-
-        if (animTime >= healTime && !doneHeal)
+        if (animTime >= animationLength * 0.5f && !doneHeal)
         {
             if (playerPlayables.HasStateAuthority)
             {
@@ -53,48 +49,32 @@ public class HealState : PlayerOnGround
             }
         }
 
-        if (playerPlayables.HasInputAuthority)
+        var nextState = GetNextState(animTime);
+
+        if (nextState != null && playablesChanger.CurrentState != nextState)
         {
-            var predictedState = GetNextState(animTime);
-
-            if (predictedState != null && playablesChanger.CurrentState != predictedState)
-            {
-                playablesChanger.ChangeState(predictedState);
-            }
+            playablesChanger.ChangeState(nextState);
         }
-        if (playerPlayables.HasStateAuthority)
-        {
-            var nextState = GetNextState(animTime);
-
-            if (nextState != null && playablesChanger.CurrentState != nextState)
-            {
-                playablesChanger.ChangeState(nextState);
-            }
-        }
-
     }
     private AnimationPlayable GetNextState(double clipTime)
     {
-        if (playerPlayables.healthV2.IsDead)
-            return playerPlayables.lowerBodyMovement.DeathPlayable;
+        if (clipTime < animationLength * 0.4f)
+        {
+            if (playerPlayables.healthV2.IsDead)
+                return playerPlayables.lowerBodyMovement.DeathPlayable;
 
-        if (!characterController.IsGrounded)
-            return playerPlayables.lowerBodyMovement.FallingPlayable;
+            if (!characterController.IsGrounded)
+                return playerPlayables.lowerBodyMovement.FallingPlayable;
 
-        if (playerMovement.IsJumping)
-            return playerPlayables.lowerBodyMovement.JumpPlayable;
+            if (playerMovement.IsJumping)
+                return playerPlayables.lowerBodyMovement.JumpPlayable;
 
-        if (playerMovement.IsBlocking)
-            return GetBlockState();
+            if (playerPlayables.healthV2.IsStagger)
+                return playerPlayables.lowerBodyMovement.StaggerHitPlayable;
 
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.lowerBodyMovement.StaggerHitPlayable;
-
-        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
-            return playerPlayables.lowerBodyMovement.RollPlayable;
-
-        if (clipTime < animationLength - 0.02f)
-            return null;
+            if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
+                return playerPlayables.lowerBodyMovement.RollPlayable;
+        }
 
         return GetWeaponGroundedStateAfterHeal();
     }
@@ -114,6 +94,9 @@ public class HealState : PlayerOnGround
                 return playerPlayables.lowerBodyMovement.RunPlayable;
             }
 
+            if (animationClipPlayable.GetTime() < animationLength * 0.9f)
+                return null;
+
             return playerPlayables.lowerBodyMovement.IdlePlayable;
         }
         else if (playerPlayables.inventory.WeaponIndex == 2)
@@ -131,6 +114,9 @@ public class HealState : PlayerOnGround
                     return playerPlayables.lowerBodyMovement.SwordRunPlayable;
                 }
 
+                if (animationClipPlayable.GetTime() < animationLength * 0.9f)
+                    return null;
+
                 return playerPlayables.lowerBodyMovement.SwordIdlePlayable;
             }
             else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
@@ -145,6 +131,9 @@ public class HealState : PlayerOnGround
 
                     return playerPlayables.lowerBodyMovement.SpearRunPlayable;
                 }
+
+                if (animationClipPlayable.GetTime() < animationLength * 0.9f)
+                    return null;
 
                 return playerPlayables.lowerBodyMovement.SpearIdlePlayable;
             }
@@ -161,6 +150,9 @@ public class HealState : PlayerOnGround
                     return playerPlayables.lowerBodyMovement.RifleRunPlayable;
                 }
 
+                if (animationClipPlayable.GetTime() < animationLength * 0.9f)
+                    return null;
+
                 return playerPlayables.lowerBodyMovement.RifleIdlePlayable;
             }
             else if (playerPlayables.inventory.SecondaryWeaponID() == "004")
@@ -172,6 +164,9 @@ public class HealState : PlayerOnGround
 
                     return playerPlayables.lowerBodyMovement.BowRunPlayable;
                 }
+
+                if (animationClipPlayable.GetTime() < animationLength * 0.9f)
+                    return null;
 
                 return playerPlayables.lowerBodyMovement.BowIdlePlayable;
             }
