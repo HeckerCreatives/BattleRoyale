@@ -67,6 +67,7 @@ public class PlayerMovementV2 : NetworkBehaviour
     [field: SerializeField][Networked] public Vector3 CameraHitDirection { get; set; }
     [field: SerializeField][Networked] public bool IsSprint { get; set; }
     [field: SerializeField][Networked] public bool IsRoll { get; set; }
+    [field: SerializeField][Networked] public bool Rolling { get; set; }
     [field: SerializeField][Networked] public bool Attacking { get; set; }
     [field: SerializeField][Networked] public bool CurrentlyAttacking { get; set; }
     [field: SerializeField][Networked] public float JumpImpulse { get; set; }
@@ -395,25 +396,24 @@ public class PlayerMovementV2 : NetworkBehaviour
         MoveDir = PlayerLookDirection();
 
         float moveSpeedValue = IsSprint ? SprintSpeed : MoveSpeed;
+        Vector3 targetMoveDirection = Vector3.zero;
 
-        if (IsRoll)
+        if (MoveDir.sqrMagnitude > 0.01f && !Rolling && !CurrentlyAttacking)
         {
-            MoveDirection = mainCharObj.forward * 200f;
+            MoveDir.Normalize();
+
+            Quaternion targetRotation = Quaternion.LookRotation(MoveDir);
+            mainCharObj.rotation = Quaternion.Slerp(mainCharObj.rotation, targetRotation, Runner.DeltaTime * 10f);
+
+            targetMoveDirection = MoveDir * moveSpeedValue * Runner.DeltaTime;
+        }
+
+        if (Rolling)
+        {
+            MoveDirection = MainCharObj.forward * 500f * Runner.DeltaTime;
         }
         else
         {
-            Vector3 targetMoveDirection = Vector3.zero;
-
-            if (MoveDir.sqrMagnitude > 0.01f)
-            {
-                MoveDir.Normalize();
-
-                Quaternion targetRotation = Quaternion.LookRotation(MoveDir);
-                mainCharObj.rotation = Quaternion.Slerp(mainCharObj.rotation, targetRotation, Runner.DeltaTime * 10f);
-
-                targetMoveDirection = MoveDir * moveSpeedValue;
-            }
-
             MoveDirection = Vector3.MoveTowards(
                 MoveDirection,
                 targetMoveDirection,
@@ -421,7 +421,7 @@ public class PlayerMovementV2 : NetworkBehaviour
             );
         }
 
-        characterController.Move(MoveDirection * Runner.DeltaTime, JumpImpulse);
+        characterController.Move(MoveDirection, JumpImpulse);
         playerplayables.CheckGround();
     }
 
@@ -583,6 +583,7 @@ public class PlayerMovementV2 : NetworkBehaviour
 
             IsRoll = true;
         }
+        else IsRoll = false;
     }
 
     private void Block()

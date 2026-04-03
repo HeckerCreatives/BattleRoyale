@@ -26,6 +26,7 @@ public class RollState : PlayerOnGround
 
         if (!playerPlayables.HasStateAuthority) return;
 
+        playerMovement.Rolling = true;
         canReduce = true;
     }
 
@@ -33,13 +34,12 @@ public class RollState : PlayerOnGround
     {
         base.Exit();
 
-        playerMovement.IsRoll = false;
-
         if (playerPlayables.HasInputAuthority)
             playerPlayables.CancelInvoke();
 
         if (!playerPlayables.HasStateAuthority) return;
 
+        playerMovement.Rolling = false;
         canReduce = false;
     }
 
@@ -47,12 +47,7 @@ public class RollState : PlayerOnGround
     {
         float currentTime = (float)animationClipPlayable.GetTime();
 
-        //if (currentTime <= animationLength * 0.8f)
-        //    characterController.Move(
-        //        playerMovement.MainCharObj.forward * 400f * playerPlayables.Runner.DeltaTime,
-        //        0f
-        //    );
-
+        playerMovement.MoveCharacter();
 
         TryExitRoll(currentTime);
 
