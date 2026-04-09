@@ -435705,12 +435705,14 @@ MonoBehaviour:
   jumpHeight: 4
   blockResumeDuration: 2.5
   MoveSmoothSpeed: 50
+  RollMomentumStopSpeed: 50
   joystickArea: {fileID: 6929665552109727573}
   joystickHandle: {fileID: 6183867593672832946}
   gameplayController: {fileID: 0}
   inputVector: {x: 0, y: 0, z: 0}
   sprintCooldown: 0
   jumpFallTimer: 0
+  lastRollDirection: {x: 0, y: 0, z: 0}
   _MoveDirection: {x: 0, y: 0, z: 0}
   _MoveDir: {x: 0, y: 0, z: 0}
   _XMovement: 0
@@ -435719,6 +435721,7 @@ MonoBehaviour:
   _CameraHitDirection: {x: 0, y: 0, z: 0}
   _IsSprint: 0
   _IsRoll: 0
+  _Rolling: 0
   _Attacking: 0
   _CurrentlyAttacking: 0
   _JumpImpulse: 0

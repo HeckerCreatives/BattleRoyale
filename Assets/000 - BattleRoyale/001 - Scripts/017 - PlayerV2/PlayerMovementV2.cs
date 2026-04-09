@@ -46,7 +46,8 @@ public class PlayerMovementV2 : NetworkBehaviour
     [SerializeField] private float sprintSpeed;
     [SerializeField] private float jumpHeight; 
     [SerializeField] private float blockResumeDuration = 0.08f;
-    [SerializeField] private float MoveSmoothSpeed = 20f;
+    [SerializeField] private float MoveSmoothSpeed;
+    [SerializeField] private float RollMomentumStopSpeed;
 
     [Space]
     public RectTransform joystickArea;
@@ -57,6 +58,8 @@ public class PlayerMovementV2 : NetworkBehaviour
     [SerializeField] private Vector3 inputVector;
     [SerializeField] private float sprintCooldown;
     [SerializeField] private float jumpFallTimer;
+    [SerializeField] private Vector3 lastRollDirection;
+
 
     [field: Header("DEBUGGER NETWORK")]
     [field: SerializeField][Networked] public Vector3 MoveDirection { get; set; }
@@ -410,14 +413,19 @@ public class PlayerMovementV2 : NetworkBehaviour
 
         if (Rolling)
         {
-            MoveDirection = MainCharObj.forward * 500f * Runner.DeltaTime;
+            lastRollDirection = MainCharObj.forward;
+            MoveDirection = lastRollDirection * 500f * Runner.DeltaTime;
         }
         else
         {
+            float smoothSpeed = targetMoveDirection.sqrMagnitude > 0.0001f
+                ? MoveSmoothSpeed
+                : RollMomentumStopSpeed;
+
             MoveDirection = Vector3.MoveTowards(
                 MoveDirection,
                 targetMoveDirection,
-                MoveSmoothSpeed * Runner.DeltaTime
+                smoothSpeed * Runner.DeltaTime
             );
         }
 

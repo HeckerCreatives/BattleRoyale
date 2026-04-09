@@ -1,23 +1,15 @@
 using Fusion;
 using Fusion.Photon.Realtime;
-using Fusion.Sockets;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Runtime.Remoting;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
-using Unity.Services.Authentication;
-using Unity.Services.Core;
 using Unity.Services.Matchmaker;
 using Unity.Services.Matchmaker.Models;
-using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -27,7 +19,10 @@ public class ClientMatchmakingController : MonoBehaviour
     public enum PlayState
     {
         NORMAL,
-        RANKED
+        RANKED,
+        PRACTICE,
+        TOURNAMENT,
+        CUSTOM
     }
     private event EventHandler PlayStateChange;
     public event EventHandler OnPlayStateChange
@@ -113,13 +108,27 @@ public class ClientMatchmakingController : MonoBehaviour
     [SerializeField] private GameObject rankedMatchSettings;
     [SerializeField] private GameObject normalMatchBtn;
     [SerializeField] private GameObject normalMatchSettings;
+    [SerializeField] private GameObject practiceBtn;
+    [SerializeField] private GameObject practiceSettings;
+    [SerializeField] private GameObject tournamentBtn;
+    [SerializeField] private GameObject tournamentSettings;
+    [SerializeField] private GameObject customBtn;
+    [SerializeField] private GameObject customSettings;
+
+    [Space]
+    [SerializeField] private Sprite nftSprite;
+    [SerializeField] private Sprite energySprite;
+    [SerializeField] private Image energyNFTImg;
+    [SerializeField] private TextMeshProUGUI energyNFTTMP;
+    [SerializeField] private Button playBtn;
+    [SerializeField] private GameObject playButtons;
 
     [Space]
     [SerializeField] private GameObject enteringMatchObj;
     [SerializeField] private TextMeshProUGUI enteringMatchTimerTMP;
     [SerializeField] private RectTransform enteringMatchTimerRT;
     [SerializeField] private RectTransform enteringMatchFlashRT;
-    [SerializeField] private UnityEngine.UI.Image enteringMatchFlashImg;
+    [SerializeField] private Image enteringMatchFlashImg;
     [SerializeField] private List<GameObject> lobbyObjs;
     [SerializeField] private GameObject lobbyWaitingObj;
 
@@ -485,6 +494,24 @@ public class ClientMatchmakingController : MonoBehaviour
         switch (CurrentPlayState)
         {
             case PlayState.NORMAL:
+
+                energyNFTImg.sprite = energySprite;
+                energyNFTTMP.text = $"{userData.GameDetails.energy:n0} / 20";
+                playBtn.interactable = true;
+                playButtons.SetActive(true);
+
+                customBtn.SetActive(true);
+                customSettings.SetActive(false);
+
+                tournamentBtn.SetActive(true);
+                tournamentSettings.SetActive(false);
+
+                practiceBtn.SetActive(true);
+                practiceSettings.SetActive(false);
+
+                tournamentBtn.SetActive(true);
+                tournamentSettings.SetActive(false);
+
                 normalMatchBtn.SetActive(false);
                 normalMatchSettings.SetActive(true);
 
@@ -493,11 +520,87 @@ public class ClientMatchmakingController : MonoBehaviour
 
                 break;
             case PlayState.RANKED:
+
+                energyNFTImg.sprite = nftSprite;
+                energyNFTTMP.text = $"10 NFT Token";
+                playBtn.interactable = false;
+                playButtons.SetActive(true);
+
+                customBtn.SetActive(true);
+                customSettings.SetActive(false);
+
+                tournamentBtn.SetActive(true);
+                tournamentSettings.SetActive(false);
+
+                practiceBtn.SetActive(true);
+                practiceSettings.SetActive(false);
+
+                tournamentBtn.SetActive(true);
+                tournamentSettings.SetActive(false);
+
                 normalMatchBtn.SetActive(true);
                 normalMatchSettings.SetActive(false);
 
                 rankedMatchSettings.SetActive(true);
                 rankedMatchBtn.SetActive(false);
+
+                break;
+
+            case PlayState.PRACTICE:
+                playButtons.SetActive(false);
+
+                customBtn.SetActive(true);
+                customSettings.SetActive(false);
+
+                tournamentBtn.SetActive(true);
+                tournamentSettings.SetActive(false);
+
+                practiceBtn.SetActive(false);
+                practiceSettings.SetActive(true);
+
+                normalMatchBtn.SetActive(true);
+                normalMatchSettings.SetActive(false);
+
+                rankedMatchSettings.SetActive(false);
+                rankedMatchBtn.SetActive(true);
+                break;
+
+            case PlayState.TOURNAMENT:
+                playButtons.SetActive(false);
+
+                customBtn.SetActive(true);
+                customSettings.SetActive(false);
+
+                tournamentBtn.SetActive(false);
+                tournamentSettings.SetActive(true);
+
+                practiceBtn.SetActive(true);
+                practiceSettings.SetActive(false);
+
+                normalMatchBtn.SetActive(true);
+                normalMatchSettings.SetActive(false);
+
+                rankedMatchSettings.SetActive(false);
+                rankedMatchBtn.SetActive(true);
+                break;
+
+            case PlayState.CUSTOM:
+                playButtons.SetActive(false);
+
+                customBtn.SetActive(false);
+                customSettings.SetActive(true);
+
+                tournamentBtn.SetActive(true);
+                tournamentSettings.SetActive(false);
+
+                practiceBtn.SetActive(true);
+                practiceSettings.SetActive(false);
+
+                normalMatchBtn.SetActive(true);
+                normalMatchSettings.SetActive(false);
+
+                rankedMatchSettings.SetActive(false);
+                rankedMatchBtn.SetActive(true);
 
                 break;
         }
