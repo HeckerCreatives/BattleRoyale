@@ -1,4 +1,5 @@
 using Fusion;
+using Fusion.Addons.SimpleKCC;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -67,6 +68,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
     private readonly HashSet<NetworkObject> hitEnemies = new();
     private readonly List<LagCompensatedHit> hits = new List<LagCompensatedHit>();
 
+    Coroutine ShakerCoroutine;
 
     private ChangeDetector _changeDetector;
 
@@ -93,26 +95,23 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
             switch (change)
             {
                 case nameof(Hitted):
-                    ShakerCamera();
-                    Invoke(nameof(OffCameraShaker), 0.15f);
+
+                    if (ShakerCoroutine != null) StopCoroutine(ShakerCoroutine);
+
+                    ShakerCoroutine = StartCoroutine(Shaker());
+
                     break;
             }
         }
     }
 
-    private void ShakerCamera()
+    IEnumerator Shaker()
     {
         if (PlayerCore == null)
-            return;
+            yield break;
 
         PlayerCore.CurrentPlayerPlayables.CameraShaker(shaker);
-    }
-
-    private void OffCameraShaker()
-    {
-        if (PlayerCore == null)
-            return;
-
+        yield return new WaitForSecondsRealtime(0.15f);
         PlayerCore.CurrentPlayerPlayables.CameraShaker(0f);
     }
 
@@ -174,12 +173,14 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
         }
     }
 
-    public void InitializeItemOnSpawn(Vector3 position, Quaternion rotation)
+    public void InitializeItemOnSpawn(Vector3 position, Quaternion rotation, int supplies = 0)
     {
         Position = position;
         Rotation = rotation;
         IsEquipped = false;
         IsPickedUp = false;
+
+        Supplies = supplies;
     }
 
 
@@ -333,9 +334,6 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
             {
                 PlayerPlayables tempplayables = hitObject.GetComponent<PlayerPlayables>();
 
-                if (tempplayables.healthV2.IsStagger) return;
-                if (tempplayables.healthV2.IsGettingUp) return;
-
                 // Avoid duplicate hits
                 if (!hitEnemies.Contains(hitObject))
                 {
@@ -357,12 +355,23 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
 
                     PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
 
-                    if (isFinalHit)
-                        healthV2.IsStagger = true;
+                    if (tempplayables.healthV2.IsStagger) return;
+                    if (tempplayables.healthV2.IsGettingUp) return;
+                    if (tempplayables.playerMovementV2.Rolling) return;
+
+
+                    if (isFinalHit) tempplayables.StaggerAnimation();
+                    else
+                    {
+                        tempplayables.HitAnimation();
+                        hitObject.GetComponent<SimpleKCC>().Move(CurrentPlayer.GetComponent<PlayerMovementV2>().MainCharObj.forward * 100f);
+                    }
+
+                    tempplayables.RPC_PlaySwordHit();
 
                     healthV2.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username.ToString(), CurrentPlayer);
 
-                    Hitted++;
+                    Hitted = Runner.Tick;
                 }
             }
         }

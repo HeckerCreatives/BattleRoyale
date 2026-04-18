@@ -140,6 +140,9 @@ public class PlayerMultiplayerEvents : SimulationBehaviour, INetworkRunnerCallba
                 break;
 
             case ShutdownReason.GameIsFull:
+
+                if (!GameManager.Instance.SceneController.DoneLoading) return;
+
                 errormessage = $"The game you're trying to join is full! Please queue up and try again";
 
                 GameManager.Instance.NotificationController.ShowError(errormessage);
@@ -147,6 +150,9 @@ public class PlayerMultiplayerEvents : SimulationBehaviour, INetworkRunnerCallba
                 queuedisconnection?.Invoke();
                 break;
             case ShutdownReason.GameClosed:
+
+                if (!GameManager.Instance.SceneController.DoneLoading) return;
+
                 errormessage = $"The game you're trying to join is now closed! Please queue up and try again";
 
                 GameManager.Instance.NotificationController.ShowError(errormessage);

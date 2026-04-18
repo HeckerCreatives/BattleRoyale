@@ -140,7 +140,7 @@ public class Loader : MonoBehaviour
             if (server == "yes")
             {
                 Application.runInBackground = true;
-                Application.targetFrameRate = 60;
+                Application.targetFrameRate = 30;
                 userData.Username = "Server";
 
                 if (args.TryGetValue("mapname", out string sceneName))

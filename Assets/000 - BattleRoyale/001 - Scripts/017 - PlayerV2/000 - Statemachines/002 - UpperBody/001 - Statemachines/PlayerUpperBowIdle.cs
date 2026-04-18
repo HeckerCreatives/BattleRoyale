@@ -15,104 +15,91 @@ public class PlayerUpperBowIdle : UpperNoAimState
         base.NetworkUpdate();
 
         playerMovement.WeaponSwitcher();
-        Animation();
-        WeaponsChecker();
+
+        var nextState = GetNextUpperBodyState();
+
+        if (nextState != null && playablesChanger.CurrentState != nextState)
+        {
+            playablesChanger.ChangeState(nextState);
+        }
     }
 
-    private void Animation()
+    private UpperBodyAnimations GetNextUpperBodyState()
     {
-        if (playerPlayables.healthV2.IsDead)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
+        var upper = playerPlayables.upperBodyMovement;
+        var health = playerPlayables.healthV2;
 
-        }
+        // Highest priority first
+        if (health.IsDead)
+            return upper.DeathPlayable;
 
         if (playerMovement.IsJumping)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowJumpPlayable);
-
-        }
-
-        //if (playerPlayables.healthV2.IsHitUpper)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HitPlayable);
-
-        //}
-
-        if (playerPlayables.healthV2.IsStagger)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
-
-        }
-
-        if (playerMovement.IsHealing)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HealPlayable);
-
-        }
-
-        if (playerMovement.IsRepairing)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RepairPlayable);
-
-        }
-
-        if (playerMovement.IsTrapping)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.TrapPlayable);
-
-        }
-
-        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RollPlayables);
-
-        }
+            return upper.JumpPlayable;
 
         if (!characterController.IsGrounded)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowFallingPlayable);
+            return upper.FallingPlayables;
 
-        }
+        if (playerMovement.IsBlocking)
+            return upper.BlockPlayable;
 
-        if (playerMovement.Attacking && (playerPlayables.inventory.SecondaryWeapon.Supplies > 0 || playerPlayables.inventory.BowMagazine > 0))
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowDrawArrowPlayable);
+        if (playerMovement.IsHealing)
+            return upper.HealPlayable;
+
+        if (playerMovement.IsRepairing)
+            return upper.RepairPlayable;
+
+        if (playerMovement.IsTrapping)
+            return upper.TrapPlayable;
+
+        if (playerMovement.Attacking)
+            return upper.BowDrawArrowPlayable;
+
+        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
+            return upper.RollPlayables;
+
+        return GetUpperWeaponState();
     }
 
-    private void WeaponsChecker()
+    private UpperBodyAnimations GetUpperWeaponState()
     {
-        if (playerPlayables.inventory.WeaponIndex == 1)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.IdlePlayables);
-        }
-        else if (playerPlayables.inventory.WeaponIndex == 2)
-        {
-            if (playerPlayables.inventory.PrimaryWeaponID() == "001")
-            {
-                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordIdlePlayable);
-            }
-            else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
-            {
-                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearIdle);
-            }
-        }
-        else if (playerPlayables.inventory.WeaponIndex == 3)
-        {
-            if (playerPlayables.inventory.SecondaryWeaponID() == "003")
-            {
-                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleIdle);
-            }
-            if (playerPlayables.inventory.SecondaryWeaponID() == "004")
-            {
-                if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
-                {
-                    if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowSprintPlayable);
+        var upper = playerPlayables.upperBodyMovement;
+        var inventory = playerPlayables.inventory;
 
-                    else
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowRunPlayable);
+        bool isMoving = playerMovement.XMovement != 0f || playerMovement.YMovement != 0f;
+
+        switch (inventory.WeaponIndex)
+        {
+            case 1:
+                return upper.IdlePlayables;
+
+            case 2:
+                switch (inventory.PrimaryWeaponID())
+                {
+                    case "001": return upper.SwordIdlePlayable;
+                    case "002": return upper.SpearIdle;
                 }
-            }
+                break;
+
+            case 3:
+                switch (inventory.SecondaryWeaponID())
+                {
+                    case "003": return upper.RifleIdle;
+                    case "004":
+                        {
+                            if (isMoving)
+                            {
+                                if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
+                                    return upper.BowSprintPlayable;
+
+                                return upper.BowRunPlayable;
+                            }
+
+                            return null;
+                        }
+                }
+                break;
         }
+
+        return null;
     }
 }

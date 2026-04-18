@@ -16,14 +16,20 @@ public class PlayablesChanger
         CurrentState.Enter();
     }
 
-    public void ChangeState(AnimationPlayable nextState)
+    public void ChangeState(AnimationPlayable nextState, bool canSameEnter = false)
     {
-        if (CurrentState == nextState)
+        if (!canSameEnter && CurrentState == nextState)
             return;
 
-        CurrentState.Exit();
+        if (!canSameEnter)
+            CurrentState.Exit();
 
-        nextState.Enter();
+        // Crossfade weights together so the mixer never dips below 1.0 total weight.
+        // Independent ease-in/ease-out can momentarily underweight the pose, blending in bind pose (often looks like sinking).
+        if (CurrentState != null)
+            nextState.BeginCrossFadeFrom(CurrentState);
+        else
+            nextState.Enter();
 
         CurrentState = nextState;
     }

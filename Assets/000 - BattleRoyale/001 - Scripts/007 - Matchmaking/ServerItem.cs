@@ -2,6 +2,9 @@ using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,29 +16,42 @@ public class ServerItem : MonoBehaviour
     [Space]
     [SerializeField] private bool isLoggin;
     [SerializeField] private LoginManager loginManager;
-    [SerializeField] private LobbyController lobbyController;
+    [SerializeField] private string toPing;
+    [SerializeField] private int toPingPort;
 
     [Space]
     [SerializeField] private string serverCode;
     [SerializeField] private TextMeshProUGUI selectedServerTMP;
+    [SerializeField] private TextMeshProUGUI pingIndicatorTMP;
     [SerializeField] private Sprite goodPing;
     [SerializeField] private Sprite mediumPing;
     [SerializeField] private Sprite badPing;
     [SerializeField] private Image pingImg;
-    [SerializeField] private Button changeServer;
+    [SerializeField] private Toggle changeServer;
     [SerializeField] private Toggle rememberMe;
     [SerializeField] private TextMeshProUGUI userCount;
+
+    [Header("DEBUGGER")]
+    [SerializeField] private bool isInitialized;
+
+    //  ====================
+
+    Coroutine pingCoroutine;
+
+    //  ====================
 
     private void OnEnable()
     {
         LoginServers();
-        LobbyServers();
 
-        GameManager.Instance.SocketMngr.OnPlayerCountAsiaServerChange += AsiaChange;
-        GameManager.Instance.SocketMngr.OnPlayerCountAfricaServerChange += AfricaChange;
-        GameManager.Instance.SocketMngr.OnPlayerCounUAEtServerChange += UAEChange;
-        GameManager.Instance.SocketMngr.OnPlayerCountAmericaEastServerChange += USChange;
-        GameManager.Instance.SocketMngr.OnPlayerCountAmericaWestServerChange += USWChange;
+        switch (serverCode)
+        {
+            case "asia": GameManager.Instance.SocketMngr.OnPlayerCountAsiaServerChange += AsiaChange; break;
+            case "tr": GameManager.Instance.SocketMngr.OnPlayerCountAfricaServerChange += AfricaChange; break;
+            case "uae": GameManager.Instance.SocketMngr.OnPlayerCounUAEtServerChange += UAEChange; break;
+            case "us": GameManager.Instance.SocketMngr.OnPlayerCountAmericaEastServerChange += USChange; break;
+            case "usw": GameManager.Instance.SocketMngr.OnPlayerCountAmericaWestServerChange += USWChange; break;
+        }
 
         ChangeServerCount();
     }
@@ -43,11 +59,18 @@ public class ServerItem : MonoBehaviour
 
     private void OnDisable()
     {
-        GameManager.Instance.SocketMngr.OnPlayerCountAsiaServerChange -= AsiaChange;
-        GameManager.Instance.SocketMngr.OnPlayerCountAfricaServerChange -= AfricaChange;
-        GameManager.Instance.SocketMngr.OnPlayerCounUAEtServerChange -= UAEChange;
-        GameManager.Instance.SocketMngr.OnPlayerCountAmericaEastServerChange -= USChange;
-        GameManager.Instance.SocketMngr.OnPlayerCountAmericaWestServerChange -= USWChange;
+        if (pingCoroutine != null) StopCoroutine(pingCoroutine);
+
+        changeServer.onValueChanged.RemoveAllListeners();
+
+        switch (serverCode)
+        {
+            case "asia": GameManager.Instance.SocketMngr.OnPlayerCountAsiaServerChange -= AsiaChange; break;
+            case "tr": GameManager.Instance.SocketMngr.OnPlayerCountAfricaServerChange -= AfricaChange; break;
+            case "uae": GameManager.Instance.SocketMngr.OnPlayerCounUAEtServerChange -= UAEChange; break;
+            case "us": GameManager.Instance.SocketMngr.OnPlayerCountAmericaEastServerChange -= USChange; break;
+            case "usw": GameManager.Instance.SocketMngr.OnPlayerCountAmericaWestServerChange -= USWChange; break;
+        }
     }
 
     private void USWChange(object sender, EventArgs e)
@@ -98,7 +121,7 @@ public class ServerItem : MonoBehaviour
             case "us": display = GameManager.Instance.SocketMngr.PlayerAmericaEastCountServer.ToString("n0"); break;
             case "usw": display = GameManager.Instance.SocketMngr.PlayerAmericaWestCountServer.ToString("n0"); break;
         }
-
+        UnityEngine.Debug.Log($"DISPLAY {serverCode}  count {display}");
         if (userCount != null)
         {
             userCount.text = display;
@@ -106,52 +129,134 @@ public class ServerItem : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("userCount TMP is null!");
+            UnityEngine.Debug.LogWarning("userCount TMP is null!");
         }
     }
 
     private void LoginServers()
     {
-        if (!isLoggin) return;
-
-        changeServer.interactable = userData.ServerList.Contains(serverCode);
-
         if (!userData.ServerList.Contains(serverCode))
         {
-            selectedServerTMP.text = $"{GameManager.GetRegionName(serverCode)} <size=25><color=red>Not Available</color></size>";
+            selectedServerTMP.text = $"{GameManager.GetRegionName(serverCode)}";
+            pingIndicatorTMP.text = "Unavailable";
             changeServer.interactable = false;
+            changeServer.isOn = false;
             pingImg.sprite = badPing;
         }
         else
         {
-            //selectedServerTMP.text = $"<color=white>{GameManager.GetRegionName(serverCode)}</color> <size=25>{(loginManager.AvailableServers[serverCode] < 100 ? $"<color=#00BA0D>{loginManager.AvailableServers[serverCode]}ms</color>" : loginManager.AvailableServers[serverCode] > 100 && loginManager.AvailableServers[serverCode] < 250 ? $"<color=#D26E05>{loginManager.AvailableServers[serverCode]}ms</color>" : $"<color=red>{loginManager.AvailableServers[serverCode]}ms</color>")}</size>";
-            //pingImg.sprite = loginManager.AvailableServers[serverCode] < 100 ? goodPing : loginManager.AvailableServers[serverCode] > 100 && loginManager.AvailableServers[serverCode] < 250 ? mediumPing : badPing;
-            //changeServer.interactable = true;
-
             selectedServerTMP.text = $"<color=white>{GameManager.GetRegionName(serverCode)}</color>";
-            changeServer.interactable = true;
+
+            changeServer.onValueChanged.AddListener(delegate
+            {
+                ToggleValueChanged(changeServer);
+            });
+
+            if (userData.SelectedServer == serverCode)
+            {
+                changeServer.isOn = true;
+            }
+
+            pingCoroutine = StartCoroutine(OneTimePing(toPing, toPingPort, tempping =>
+            {
+                pingIndicatorTMP.text = $"Ping: {(tempping < 999 ? tempping : "Unavailable")}";
+                pingImg.sprite = tempping < 80 ? goodPing :
+                 tempping < 150 ? mediumPing :
+                 badPing;
+
+                changeServer.interactable = tempping < 999;
+                changeServer.interactable = true;
+            }, () =>
+            {
+                pingIndicatorTMP.text = $"Ping: Unavailable";
+                changeServer.isOn = false;
+                changeServer.interactable = false;
+                pingImg.sprite = badPing;
+            }));
         }
     }
 
-    private void LobbyServers()
+    void ToggleValueChanged(Toggle change)
     {
-        if (isLoggin) return;
-
-        changeServer.interactable = lobbyController.AvailableServers.ContainsKey(serverCode);
-
-        if (!userData.ServerList.Contains(serverCode))
+        if (!change.isOn)
         {
-            selectedServerTMP.text = $"{GameManager.GetRegionName(serverCode)} <size=25><color=red>Not Available</color></size>";
-            changeServer.interactable = false;
-            pingImg.sprite = badPing;
+            userData.SelectedServer = "";
+
+            if (isLoggin)
+                loginManager.CheckSelectedServer();
+
+            if (rememberMe == null) return;
+
+            if (rememberMe.isOn)
+                PlayerPrefs.SetString("server", serverCode);
+
+            return;
         }
-        else
-        {
-            //selectedServerTMP.text = $"<color=white>{GameManager.GetRegionName(serverCode)}</color> <size=25>{(lobbyController.AvailableServers[serverCode] < 100 ? $"<color=#00BA0D>{lobbyController.AvailableServers[serverCode]}ms</color>" : lobbyController.AvailableServers[serverCode] > 100 && lobbyController.AvailableServers[serverCode] < 250 ? $"<color=#D26E05>{lobbyController.AvailableServers[serverCode]}ms</color>" : $"<color=red>{lobbyController.AvailableServers[serverCode]}ms</color>")}</size>";
-            //pingImg.sprite = lobbyController.AvailableServers[serverCode] < 100 ? goodPing : lobbyController.AvailableServers[serverCode] > 100 && lobbyController.AvailableServers[serverCode] < 250 ? mediumPing : badPing;
 
-            selectedServerTMP.text = $"<color=white>{GameManager.GetRegionName(serverCode)}</color>";
-            changeServer.interactable = true;
+        ChangeServer();
+    }
+
+    public IEnumerator OneTimePing(string host, int port, System.Action<int> onResult, System.Action onFailed)
+    {
+        while (true)
+        {
+            using (UdpClient client = new UdpClient())
+            {
+                client.Client.ReceiveTimeout = 2000;
+
+                byte[] data = new byte[] { 1 };
+                IPEndPoint ep = new IPEndPoint(IPAddress.Any, 0);
+
+                Stopwatch sw = new Stopwatch();
+                bool received = false;
+
+                try
+                {
+                    sw.Start();
+                    client.Send(data, data.Length, host, port);
+                }
+                catch (Exception e)
+                {
+                    UnityEngine.Debug.LogWarning($"Error sending UDP ping to {host}:{port}. Error: {e}");
+                    onFailed?.Invoke();
+                    yield break;
+                }
+
+                float timeout = 2f;
+                float timer = 0f;
+
+                while (timer < timeout)
+                {
+                    if (client.Available > 0)
+                    {
+                        try
+                        {
+                            client.Receive(ref ep);
+                            sw.Stop();
+                            received = true;
+                            onResult?.Invoke((int)sw.ElapsedMilliseconds);
+                            break;
+                        }
+                        catch (Exception e)
+                        {
+                            UnityEngine.Debug.LogWarning($"Error receiving UDP ping reply from {host}:{port}. Error: {e}");
+                            onFailed?.Invoke();
+                            yield break;
+                        }
+                    }
+
+                    timer += Time.unscaledDeltaTime;
+                    yield return null;
+                }
+
+                if (!received)
+                {
+                    sw.Stop();
+                    onResult?.Invoke(999);
+                }
+            }
+
+            yield return new WaitForSecondsRealtime(2f);
         }
     }
 

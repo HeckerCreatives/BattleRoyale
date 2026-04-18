@@ -238,12 +238,22 @@ public class MeshMapScatterTool : NetworkBehaviour
                 instance.TryGetComponent<HealWeaponItem>(out HealWeaponItem heal);
                 instance.TryGetComponent<RepairWeaponItem>(out RepairWeaponItem repair);
                 instance.TryGetComponent<AmmoRifleWeaponItem>(out AmmoRifleWeaponItem ammo);
+                instance.TryGetComponent<MagazineContainerItem>(out MagazineContainerItem bowammo);
 
-                if (primaryweapon != null) primaryweapon.InitializeItemOnSpawn(finalPosition, rotation);
-                if (secondaryweapon != null) secondaryweapon.InitializeItemOnSpawn(finalPosition, rotation);
+                if (primaryweapon != null) primaryweapon.InitializeItemOnSpawn(finalPosition, rotation, 1);
+                if (secondaryweapon != null)
+                {
+                    int tempammot = Random.Range(1, 11);
+                    secondaryweapon.InitializeItemOnSpawn(finalPosition, rotation, tempammot);
+                }
                 if (armor != null) armor.InitializeItemOnSpawn(finalPosition, rotation);
                 if (heal != null) heal.InitializeItem(finalPosition, rotation, 1);
                 if (repair != null) repair.InitializeItem(finalPosition, rotation, 1);
+                if (bowammo != null)
+                {
+                    int tempammot = Random.Range(1, 11);
+                    bowammo.InitializeOnStart(finalPosition, rotation, tempammot);
+                }
 
                 localPositions.Add(spawnPosition);
                 spawned++;

@@ -39,11 +39,6 @@ public class PlayerUpperRifleIdle : UpperNoAimState
 
         //}
 
-        if (playerPlayables.healthV2.IsStagger)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
-
-        }
 
         if (playerMovement.IsHealing)
         {

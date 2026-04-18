@@ -164,6 +164,7 @@ public class SocketManager : MonoBehaviour
     [field: SerializeField] public string ConnectionStatus { get; private set; }
     [field: SerializeField] public LoginState LoginStatus { get; private set; }
     [field: SerializeField] public int missedPingCount;
+    [field: SerializeField] public bool isOnLogin;
     [SerializeField] private int playerCountServer;
     [SerializeField] private int playerAsiaCountServer;
     [SerializeField] private int playerUAECountServer;
@@ -388,7 +389,10 @@ public class SocketManager : MonoBehaviour
                 GameManager.Instance.NoBGLoading.SetActive(false);
                 ConnectionStatus = "Disconnected";
                 DisconnectAction?.Invoke();
-                sceneController.CurrentScene = "Login";
+
+                if (!isOnLogin)
+                    sceneController.CurrentScene = "Login";
+
                 userData.ResetLogin();
                 Socket = null;
             });

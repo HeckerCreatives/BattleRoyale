@@ -78,8 +78,6 @@ public class PlayerUpperRepair : UpperNoAimState
         if (playerPlayables.healthV2.IsDead)
             return playerPlayables.upperBodyMovement.DeathPlayable;
 
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.upperBodyMovement.StaggerHitPlayable;
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             return playerPlayables.upperBodyMovement.RollPlayables;

@@ -385,11 +385,13 @@ public class LoginManager : MonoBehaviour
 
     private void PlayerCountChange(object sender, EventArgs e)
     {
-        totalPlayersOnlineTMP.text = $"Online: <color=green>{GameManager.Instance.SocketMngr.PlayerCountServer:n0}</color>";
+        totalPlayersOnlineTMP.text = $"Online: {GameManager.Instance.SocketMngr.PlayerCountServer:n0}";
     }
 
     private IEnumerator CheckRememberMe()
     {
+        GameManager.Instance.SocketMngr.isOnLogin = true;
+
         rememberMe.isOn = userData.RememberMe;
 
         Debug.Log($"Remember Me: {userData.RememberMe}");
@@ -539,7 +541,7 @@ public class LoginManager : MonoBehaviour
             }
             catch (Exception ex)
             {
-                Debug.Log("Error API CALL! Error Code: " + apiRquest.result + ", " + apiRquest.downloadHandler.text);
+                Debug.Log("Error API CALL! Error Code: " + apiRquest.result + ", " + apiRquest.downloadHandler.text + "   " + ex);
                 GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please contact customer support for more details.", null);
                 GameManager.Instance.NoBGLoading.SetActive(false);
             }
@@ -555,55 +557,18 @@ public class LoginManager : MonoBehaviour
 
     public void CheckSelectedServer()
     {
-
-        //if (userData.SelectedServer == "")
-        //{
-        //    var lowest = AvailableServers.Aggregate((x, y) => x.Value < y.Value ? x : y);
-
-        //    userData.SelectedServer = lowest.Key;
-
-        //    selectedServerTMP.text = $"{GameManager.GetRegionName(lowest.Key)} <size=25>(Ping: {(lowest.Value < 100 ? $"<color=#00BA0D>{lowest.Value}</color>" : lowest.Value > 100 && lowest.Value < 250 ? $"<color=orange>{lowest.Value}</color>" : $"<color=red>{lowest.Value}</color>")})</size>";
-        //    pingImg.sprite = lowest.Value < 100 ? goodPing : lowest.Value > 100 && lowest.Value < 250 ? mediumPing : badPing;
-        //    startGameBtn.interactable = true;
-        //}
-        //else
-        //{
-        //    if (AvailableServers.ContainsKey(userData.SelectedServer))
-        //    {
-        //        selectedServerTMP.text = $"{GameManager.GetRegionName(userData.SelectedServer)} <size=25>{(AvailableServers[userData.SelectedServer] < 100 ? $"<color=#00BA0D>{AvailableServers[userData.SelectedServer]}ms</color>" : AvailableServers[userData.SelectedServer] > 100 && AvailableServers[userData.SelectedServer] < 250 ? $"<color=#D26E05>{AvailableServers[userData.SelectedServer]}ms</color>" : $"<color=red>{AvailableServers[userData.SelectedServer]}ms</color>")}</size>";
-        //        pingImg.sprite = AvailableServers[userData.SelectedServer] < 100 ? goodPing : AvailableServers[userData.SelectedServer] > 100 && AvailableServers[userData.SelectedServer] < 250 ? mediumPing : badPing;
-        //        startGameBtn.interactable = true;
-        //    }
-        //    else
-        //    {
-        //        selectedServerTMP.text = $"{GameManager.GetRegionName(userData.SelectedServer)} <size=25>(<color=red>Not Available</color>)</size>";
-        //        pingImg.sprite = badPing;
-        //        startGameBtn.interactable = false;
-        //    }
-        //}
-
-        //userData.SelectedServer = lowest.Key;
-
-        //selectedServerTMP.text = $"{GameManager.GetRegionName(lowest.Key)} <size=25>(Ping: {(lowest.Value < 100 ? $"<color=#00BA0D>{lowest.Value}</color>" : lowest.Value > 100 && lowest.Value < 250 ? $"<color=orange>{lowest.Value}</color>" : $"<color=red>{lowest.Value}</color>")})</size>";
-        //pingImg.sprite = lowest.Value < 100 ? goodPing : lowest.Value > 100 && lowest.Value < 250 ? mediumPing : badPing;
-        //startGameBtn.interactable = true;
-
         if (userData.SelectedServer == "")
         {
-            userData.SelectedServer = "asia";
-            startGameBtn.interactable = true;
-            selectedServerTMP.text = $"{GameManager.GetRegionName(userData.SelectedServer)}";
+            startGameBtn.interactable = false;
         }
         else
         {
             if (userData.ServerList.Contains(userData.SelectedServer))
             {
-                selectedServerTMP.text = $"{GameManager.GetRegionName(userData.SelectedServer)}";
                 startGameBtn.interactable = true;
             }
             else
             {
-                selectedServerTMP.text = $"{GameManager.GetRegionName(userData.SelectedServer)} <size=25>(<color=red>Not Available</color>)</size>";
                 startGameBtn.interactable = false;
             }
         }

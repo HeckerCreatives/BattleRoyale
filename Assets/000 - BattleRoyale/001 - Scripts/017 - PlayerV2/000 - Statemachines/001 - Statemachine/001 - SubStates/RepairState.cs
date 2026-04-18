@@ -69,8 +69,6 @@ public class RepairState : PlayerOnGround
             if (playerMovement.IsJumping)
                 return playerPlayables.lowerBodyMovement.JumpPlayable;
 
-            if (playerPlayables.healthV2.IsStagger)
-                return playerPlayables.lowerBodyMovement.StaggerHitPlayable;
 
             if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
                 return playerPlayables.lowerBodyMovement.RollPlayable;

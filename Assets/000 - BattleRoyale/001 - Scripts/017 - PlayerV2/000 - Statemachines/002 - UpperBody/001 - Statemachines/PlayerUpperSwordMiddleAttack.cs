@@ -17,14 +17,6 @@ public class PlayerUpperSwordMiddleAttack : UpperNoAimState
     {
         base.Enter();
 
-        if (!playerPlayables.HasStateAuthority)
-        {
-            playerPlayables.inventory.PrimaryWeapon.SoundController.PlayAttackTwo();
-            //playerPlayables.SlashSwordParticles(0);
-
-            return;
-        }
-
         hasResetHitEnemies = false;
     }
 
@@ -32,12 +24,9 @@ public class PlayerUpperSwordMiddleAttack : UpperNoAimState
     {
         base.NetworkUpdate();
 
-        double animTime = animationClipPlayable.GetTime();
-        double normalizedTime = animTime / animationLength;
+        HandleDamageWindow();
 
-        HandleDamageWindow(normalizedTime);
-
-        var nextState = GetNextState(normalizedTime);
+        var nextState = GetNextState();
 
         if (nextState != null && playablesChanger.CurrentState != nextState)
         {
@@ -47,17 +36,18 @@ public class PlayerUpperSwordMiddleAttack : UpperNoAimState
         playerPlayables.stamina.RecoverStamina(5f);
     }
 
-    private void HandleDamageWindow(double normalizedTime)
+    private void HandleDamageWindow()
     {
         if (!playerPlayables.HasStateAuthority) return;
-            // original:
-            // damageWindowStart = +0.22f
-            // damageWindowEnd   = +0.27f
-            // these were absolute seconds, so convert to normalized time
-        double damageStartNormalized = 0.22 / animationLength;
-        double damageEndNormalized = 0.27 / animationLength;
 
-        if (normalizedTime >= damageStartNormalized && normalizedTime <= damageEndNormalized)
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - playerMovement.SwordStartTick;
+
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int startStartTick = Mathf.CeilToInt(totalPunchTicks * 0.18f);
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
+
+        if (elapsedTicks >= startStartTick && elapsedTicks <= finishStartTick)
         {
             if (!hasResetHitEnemies)
             {
@@ -69,7 +59,7 @@ public class PlayerUpperSwordMiddleAttack : UpperNoAimState
         }
     }
 
-    private UpperBodyAnimations GetNextState(double normalizedTime)
+    private UpperBodyAnimations GetNextState()
     {
         if (playerPlayables.healthV2.IsDead)
             return playerPlayables.upperBodyMovement.DeathPlayable;
@@ -80,25 +70,27 @@ public class PlayerUpperSwordMiddleAttack : UpperNoAimState
         if (playerMovement.IsJumping)
             return playerPlayables.upperBodyMovement.JumpPlayable;
 
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.upperBodyMovement.StaggerHitPlayable;
-
         if (!characterController.IsGrounded)
             return playerPlayables.upperBodyMovement.FallingPlayables;
 
         if (playerMovement.IsSprint && (playerMovement.XMovement != 0f || playerMovement.YMovement != 0f))
             return playerPlayables.upperBodyMovement.SwordSprint;
 
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.SwordStartTick : playerMovement.AnimationTick);
 
-        double finalAttackWindowNormalized = (animationLength - 0.2f) / animationLength;
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int startStartTick = Mathf.CeilToInt(totalPunchTicks * 0.8f);
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
 
-        if (normalizedTime >= finalAttackWindowNormalized && playerMovement.Attacking)
+        // combo window opens at 80%
+        if (elapsedTicks >= startStartTick && playerMovement.Attacking)
         {
             playerPlayables.FinalAttack = true;
             return playerPlayables.upperBodyMovement.SwordFinalAttackPlayable;
         }
 
-        if (normalizedTime >= 0.9)
+        if (elapsedTicks >= finishStartTick)
             return playerPlayables.upperBodyMovement.SwordIdlePlayable;
 
         return null;

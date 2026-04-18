@@ -106,7 +106,7 @@ public class RunState : PlayerOnGround
         if (health.IsStagger)
             return lower.StaggerHitPlayable;
 
-        if (playerMovement.IsJumping)
+        if (playerMovement.IsJumping && playerPlayables.stamina.Stamina >= 20f)
             return lower.JumpPlayable;
 
         if (!characterController.IsGrounded)
@@ -115,8 +115,8 @@ public class RunState : PlayerOnGround
         if (playerMovement.IsBlocking)
             return lower.BlockPlayable;
 
-        if (playerPlayables.FinalAttack)
-            return lower.Punch3Playable;
+        if (playerMovement.Attacking)
+            return lower.Punch1Playable;
 
         if (playerMovement.IsHealing)
             return lower.HealPlayable;

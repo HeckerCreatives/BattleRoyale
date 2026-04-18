@@ -29,7 +29,7 @@ public class RifleRunState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
-        playerMovement.MoveCharacter();
+        //playerMovement.MoveCharacter();
         WeaponsChecker();
         Animation();
         playerPlayables.stamina.RecoverStamina(5f);
@@ -46,8 +46,6 @@ public class RifleRunState : PlayerOnGround
         if (playerMovement.IsJumping)
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleJumpPlayable);
 
-        if (playerPlayables.healthV2.IsStagger)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
 
         if (playerMovement.IsHealing)
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HealPlayable);

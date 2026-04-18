@@ -7,8 +7,7 @@ using UnityEngine.Playables;
 
 public class SpearJumpAttack : AnimationPlayable
 {
-    float timer;
-    bool canAction;
+    private int groundedSinceTick = -1;
 
     public SpearJumpAttack(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
@@ -17,6 +16,12 @@ public class SpearJumpAttack : AnimationPlayable
     public override void Enter()
     {
         base.Enter();
+
+        groundedSinceTick = -1;
+
+        if (!playerPlayables.HasStateAuthority) return;
+
+        playerMovement.JumpAttackStartTick = playerPlayables.Runner.Tick;
 
         if (!playerPlayables.HasStateAuthority) return;
 
@@ -28,11 +33,17 @@ public class SpearJumpAttack : AnimationPlayable
     {
         base.Exit();
 
+        groundedSinceTick = -1;
+
+        if (!playerPlayables.HasStateAuthority) return;
+
+        playerMovement.IsFalling = false;
         playerMovement.JumpImpulse = 0;
     }
 
     public override void NetworkUpdate()
     {
+        playerMovement.Falling();
 
         var nextState = GetNextState();
 
@@ -71,15 +82,28 @@ public class SpearJumpAttack : AnimationPlayable
             playerPlayables.healthV2.FallDamae();
     }
 
+    // In SpearJumpAttack.cs
+
     private AnimationPlayable GetNextState()
     {
-        var interruptState = GetInterruptState();
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority
+            ? playerMovement.JumpAttackStartTick
+            : playerMovement.AnimationTick);
 
+        int totalPunchTicks = Mathf.CeilToInt(animationLength / playerPlayables.Runner.DeltaTime);
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
+
+        var interruptState = GetInterruptState();
         if (interruptState != null)
             return interruptState;
 
-        if (animationClipPlayable.GetTime() < animationLength * 0.9f) return null;
+        // Animation not finished yet
+        if (elapsedTicks < finishStartTick)
+            return null;
 
+        // Animation done — wait until grounded before transitioning
+        // This prevents re-entering falling/jump attack mid-air after anim ends
         return GetLandingState();
     }
 
@@ -88,16 +112,32 @@ public class SpearJumpAttack : AnimationPlayable
         if (playerPlayables.healthV2.IsDead)
             return playerPlayables.lowerBodyMovement.DeathPlayable;
 
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.lowerBodyMovement.StaggerHitPlayable;
-
         return null;
     }
 
     private AnimationPlayable GetLandingState()
     {
+        // Stay in this state until we actually touch ground
         if (!characterController.IsGrounded)
+        {
+            groundedSinceTick = -1;
             return null;
+        }
+
+        if (groundedSinceTick < 0)
+            groundedSinceTick = playerPlayables.Runner.Tick;
+
+        int ticksGrounded = playerPlayables.Runner.Tick - groundedSinceTick;
+        if (ticksGrounded < 2)
+            return null; // Wait for stable ground contact
+
+        // Clear attack flag on landing so FallingState won't re-trigger jump attack
+        if (playerPlayables.HasStateAuthority)
+        {
+            playerMovement.Attacking = false;   // <-- KEY FIX
+            playerMovement.IsJumping = false;
+            playerMovement.JumpImpulse = 0;
+        }
 
         bool isMoving = playerMovement.XMovement != 0 || playerMovement.YMovement != 0;
 

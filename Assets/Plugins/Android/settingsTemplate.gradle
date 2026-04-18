@@ -21,6 +21,9 @@ dependencyResolutionManagement {
         maven {
             url "https://repo.maven.apache.org/maven2" // Packages/com.onesignal.unity.android/Editor/OneSignalAndroidDependencies.xml:5
         }
+        maven {
+            url "https://maven.google.com/" // Assets/GoogleMobileAds/Editor/GoogleMobileAdsDependencies.xml:7, Assets/GoogleMobileAds/Editor/GoogleMobileAdsDependencies.xml:12, Assets/GoogleMobileAds/Editor/GoogleMobileAdsDependencies.xml:17, Assets/GoogleMobileAds/Editor/GoogleUmpDependencies.xml:7
+        }
         mavenLocal()
 // Android Resolver Repos End
         flatDir {

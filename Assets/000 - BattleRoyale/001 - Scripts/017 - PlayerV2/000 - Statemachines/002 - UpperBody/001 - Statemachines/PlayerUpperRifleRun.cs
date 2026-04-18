@@ -34,9 +34,6 @@ public class PlayerUpperRifleRun : UpperNoAimState
         if (playerMovement.IsJumping)
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleJumpPlayable);
 
-        if (playerPlayables.healthV2.IsStagger)
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
-
         if (playerMovement.IsHealing)
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HealPlayable);
 

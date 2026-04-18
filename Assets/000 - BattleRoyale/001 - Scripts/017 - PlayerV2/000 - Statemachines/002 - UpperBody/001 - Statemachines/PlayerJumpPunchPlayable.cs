@@ -55,7 +55,13 @@ public class PlayerJumpPunchPlayable : UpperNoAimState
 
     private UpperBodyAnimations GetNextState()
     {
-        if (!characterController.IsGrounded || animationClipPlayable.GetTime() < animationLength * 0.9f)
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.JumpAttackStartTick : playerMovement.AnimationTick);
+
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
+
+        if (!characterController.IsGrounded || elapsedTicks < finishStartTick)
             return null;
 
         bool isMoving = playerMovement.XMovement != 0 || playerMovement.YMovement != 0;

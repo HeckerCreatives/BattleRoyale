@@ -3,9 +3,12 @@ using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerGameStats : NetworkBehaviour
 {
@@ -16,6 +19,22 @@ public class PlayerGameStats : NetworkBehaviour
     [Header("GAME STATUS")]
     [SerializeField] public TextMeshProUGUI pingTMP;
     [SerializeField] public TextMeshProUGUI playtimeTMP;
+
+    [Header("PING")]
+    [SerializeField] private string asiaPing;
+    [SerializeField] private string trPing;
+    [SerializeField] private string uaePing;
+    [SerializeField] private string usPing;
+    [SerializeField] private Sprite goodPing;
+    [SerializeField] private Sprite mediumPing;
+    [SerializeField] private Sprite badPing;
+    [SerializeField] private Image pingImg;
+
+    [Header("PORT")]
+    [SerializeField] private int asiaPort;
+    [SerializeField] private int trPort;
+    [SerializeField] private int uaePort;
+    [SerializeField] private int usPort;
 
     [Header("WAITING AREA")]
     [SerializeField] public GameObject Timer;
@@ -74,6 +93,12 @@ public class PlayerGameStats : NetworkBehaviour
     // local-only cache so we don't re-run UI when detector is called elsewhere
     private int _lastPlacementUI = -1;
 
+    //  =================
+
+    Coroutine pingCounter;
+
+    //  =================
+
     private void OnEnable()
     {
         quitCountdown = 10f;
@@ -83,6 +108,54 @@ public class PlayerGameStats : NetworkBehaviour
     {
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
         RegisterServerEvents();
+
+        if (HasInputAuthority)
+        {
+            string toPing;
+            int toPingPort;
+
+            switch (userData.SelectedServer)
+            {
+                case "asia":
+                    toPing = asiaPing;
+                    toPingPort = asiaPort;
+                    break;
+                case "tr":
+                    toPing = trPing;
+                    toPingPort = trPort;
+                    break;
+                case "uae":
+                    toPing = uaePing;
+                    toPingPort = uaePort;
+                    break;
+                case "us":
+                    toPing = usPing;
+                    toPingPort = usPort;
+                    break;
+                default:
+                    toPing = "";
+                    toPingPort = 0;
+                    break;
+            }
+
+            pingCounter = StartCoroutine(OneTimePing(toPing, toPingPort, tempping =>
+            {
+                pingTMP.text = $"Ping: <color={GetPingColor(tempping)}>{tempping:n0} ms</color>";
+                pingImg.sprite = tempping < 80 ? goodPing :
+                 tempping < 150 ? mediumPing :
+                 badPing;
+            }, () =>
+            {
+                pingImg.sprite = badPing;
+            }));
+        }
+    }
+
+    private string GetPingColor(int ping)
+    {
+        if (ping <= 80) return "#2E7D32";   // Dark Green
+        if (ping <= 150) return "#B28704";  // Dark Yellow
+        return "#8B0000";                   // Dark Red
     }
 
     public override void Render()
@@ -107,15 +180,67 @@ public class PlayerGameStats : NetworkBehaviour
         QuitOnShowStatusCountdown();
     }
 
-    private void LateUpdate()
+    public IEnumerator OneTimePing(string host, int port, System.Action<int> onResult, System.Action onFailed)
     {
-        if (!HasInputAuthority) return;
-        if (Runner == null) return;
-
-        if (pingChange < Time.time)
+        while (true)
         {
-            pingChange = Time.time + 1;
-            pingTMP.text = $"Ping: {(Runner.GetPlayerRtt(Object.InputAuthority) * 1000):n0} (ms)";
+            using (UdpClient client = new UdpClient())
+            {
+                client.Client.ReceiveTimeout = 2000;
+
+                byte[] data = new byte[] { 1 };
+                IPEndPoint ep = new IPEndPoint(IPAddress.Any, 0);
+
+                Stopwatch sw = new Stopwatch();
+                bool received = false;
+
+                try
+                {
+                    sw.Start();
+                    client.Send(data, data.Length, host, port);
+                }
+                catch (Exception e)
+                {
+                    UnityEngine.Debug.LogWarning($"Error sending UDP ping to {host}:{port}. Error: {e}");
+                    onFailed?.Invoke();
+                    yield break;
+                }
+
+                float timeout = 2f;
+                float timer = 0f;
+
+                while (timer < timeout)
+                {
+                    if (client.Available > 0)
+                    {
+                        try
+                        {
+                            client.Receive(ref ep);
+                            sw.Stop();
+                            received = true;
+                            onResult?.Invoke((int)sw.ElapsedMilliseconds);
+                            break;
+                        }
+                        catch (Exception e)
+                        {
+                            UnityEngine.Debug.LogWarning($"Error receiving UDP ping reply from {host}:{port}. Error: {e}");
+                            onFailed?.Invoke();
+                            yield break;
+                        }
+                    }
+
+                    timer += Time.unscaledDeltaTime;
+                    yield return null;
+                }
+
+                if (!received)
+                {
+                    sw.Stop();
+                    onResult?.Invoke(999);
+                }
+            }
+
+            yield return new WaitForSecondsRealtime(2f);
         }
     }
 
@@ -128,6 +253,7 @@ public class PlayerGameStats : NetworkBehaviour
 
     private void OnDisable()
     {
+        if (pingCounter != null) StopCoroutine(pingCounter);
         // ✅ avoid event leak if object gets disabled/despawned
         if (Runner)
         {
@@ -238,7 +364,7 @@ public class PlayerGameStats : NetworkBehaviour
         float finalresultpointLB = rankpointLB + killpointLB + HitPoints;
         finalresultpointLB = Convert.ToInt32(finalresultpointLB);
 
-        Debug.Log($"✅ SENDING RESULTS ONCE ({reason}) for {ownObjectEnabler.Username} rank={rank}");
+        UnityEngine.Debug.Log($"✅ SENDING RESULTS ONCE ({reason}) for {ownObjectEnabler.Username} rank={rank}");
 
         StartCoroutine(MultiplayerServerManager.Instance.PostRequest("/usergamedetail/updatebyserverusergamedetails", "", new Dictionary<string, object>
         {
@@ -269,14 +395,14 @@ public class PlayerGameStats : NetworkBehaviour
             // error callback
             () =>
             {
-                Debug.LogError($"❌ leaderboard update failed ({reason})");
+                UnityEngine.Debug.LogError($"❌ leaderboard update failed ({reason})");
                 ResultsSending = false; // allow retry if you want
             }));
         },
         // error callback
         () =>
         {
-            Debug.LogError($"❌ usergamedetail update failed ({reason})");
+            UnityEngine.Debug.LogError($"❌ usergamedetail update failed ({reason})");
             ResultsSending = false; // allow retry if you want
         }));
     }

@@ -6,6 +6,11 @@ using UnityEngine.UI;
 
 public class ControllerSettingDataRetriever : MonoBehaviour
 {
+    [SerializeField] private PlayerStamina stamina;
+    [SerializeField] private float checkStamina;
+    [SerializeField] private bool shouldCheckStamina;
+
+    [Space]
     [SerializeField] private UserData userData;
     [SerializeField] private RectTransform uiRT;
     [SerializeField] private CanvasGroup uiImg;
@@ -14,10 +19,31 @@ public class ControllerSettingDataRetriever : MonoBehaviour
     [SerializeField] private Image uiImage;
     [SerializeField] private Color downPressColor;
     [SerializeField] private Color upPress;
+    [SerializeField] private Color disabledColor;
+
+    [Header("DEBUGGER")]
+    [SerializeField] private bool isDownPress;
 
     private void OnEnable()
     {
         SetUILayout();
+    }
+
+    private void Update()
+    {
+        if (shouldCheckStamina)
+        {
+            if (isDownPress)
+            {
+                uiImage.color = downPressColor;
+                return;
+            }
+
+            if (stamina.Stamina >= checkStamina)
+                uiImage.color = upPress;
+            else
+                uiImage.color = downPressColor;
+        }
     }
 
     public void SetUILayout()
@@ -47,7 +73,24 @@ public class ControllerSettingDataRetriever : MonoBehaviour
 
     public float UIOpacity() => uiImg.alpha;
 
-    public void DownPress() => uiImage.color = downPressColor;
+    public void DownPress()
+    {
+        isDownPress = true;
+        uiImage.color = downPressColor;
+    }
 
-    public void UpPress() => uiImage.color = upPress;
+    public void UpPress()
+    {
+        isDownPress = false;
+
+        if (shouldCheckStamina)
+        {
+            if (stamina.Stamina >= checkStamina)
+                uiImage.color = disabledColor;
+
+            return;
+        }
+
+        uiImage.color = upPress;
+    }
 }

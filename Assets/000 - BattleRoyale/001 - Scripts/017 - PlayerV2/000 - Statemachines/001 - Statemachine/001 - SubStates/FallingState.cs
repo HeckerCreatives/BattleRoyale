@@ -11,22 +11,32 @@ public class FallingState : AnimationPlayable
     {
     }
 
+    public override void Enter()
+    {
+        base.Enter();
+
+        if (!playerPlayables.HasStateAuthority) return;
+
+        playerMovement.IsFalling = true;
+        playerMovement.Jumping = false;
+        playerPlayables.healthV2.IsStagger = false;
+    }
+
     public override void Exit()
     {
         base.Exit();
 
-        if (playerPlayables.HasStateAuthority || playerPlayables.HasInputAuthority)
-        {
-            playerMovement.JumpImpulse = 0f;
-            characterController.ResetVelocity();
-            playerPlayables.healthV2.FallDamageValue = 0f;
-        }
+        if (!playerPlayables.HasStateAuthority) return;
+
+        playerMovement.JumpImpulse = 0f;
+        playerPlayables.healthV2.FallDamageValue = 0f;
     }
 
     public override void NetworkUpdate()
     {
         playerMovement.MoveCharacter();
-
+        playerMovement.Jumping = false;
+        playerMovement.Falling();
 
         var nextState = GetNextState();
 
@@ -38,7 +48,6 @@ public class FallingState : AnimationPlayable
         if (playerPlayables.HasStateAuthority)
         {
             FallDamage();
-            playerPlayables.stamina.RecoverStamina(5f);
         }
     }
 
@@ -74,6 +83,7 @@ public class FallingState : AnimationPlayable
         if (characterController.IsGrounded)
         {
             playerMovement.JumpImpulse = 0;
+            playerMovement.Attacking = false;  // <-- Clear stale attack flag on land
 
             if (playerPlayables.healthV2.FallDamageValue > 0)
                 playerPlayables.healthV2.FallDamae();

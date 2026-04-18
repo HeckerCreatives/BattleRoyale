@@ -81,6 +81,9 @@ public class LoginMenuManager : MonoBehaviour
 
     //  =========================
 
+    [SerializeField] private UserData userData;
+
+    [Space]
     [SerializeField] private LoginManager loginManager;
 
     [Space]
@@ -103,7 +106,6 @@ public class LoginMenuManager : MonoBehaviour
 
     [Space]
     [SerializeField] private GameObject serverSelectObj;
-    [SerializeField] private GameObject serverSelectionObj;
 
     [Space]
     [SerializeField] private Color selected;
@@ -129,10 +131,27 @@ public class LoginMenuManager : MonoBehaviour
         LoginRegisterStateChange -= LoginRegisterStateChanged;
     }
 
+    public void Logout(bool ask = true)
+    {
+        GameManager.Instance.NotificationController.ShowConfirmation("Are you sure you want to logout?", async () =>
+        {
+            userData.ResetLogin();
+            GameManager.Instance.SocketMngr.Socket.Disconnect();
+            ResetMenu();
+        }, null);
+    }
+
     #region MENU PANELS
 
     private void StateChange(object sender, EventArgs e)
     {
+        PanelEnabler();
+    }
+
+    private void ResetMenu()
+    {
+        lastLoginMenuState.Clear();
+        loginMenuState = LoginMenuState.MAIN;
         PanelEnabler();
     }
 
@@ -144,7 +163,6 @@ public class LoginMenuManager : MonoBehaviour
         socMedObj.SetActive(false);
         contactUsObj.SetActive(false);
         serverSelectObj.SetActive(false);
-        serverSelectionObj.SetActive(false);
 
         repairBtnImg.color = selected;
         socmedBtnImg.color = selected;
@@ -176,9 +194,6 @@ public class LoginMenuManager : MonoBehaviour
                 break;
             case LoginMenuState.SERVERSELECT:
                 serverSelectObj.SetActive(true);
-                break;
-            case LoginMenuState.SERVERSELECTION:
-                serverSelectionObj.SetActive(true);
                 break;
         }
     }

@@ -33,12 +33,6 @@ public class BowShot : PlayerOnGround
 
         }
 
-        if (playerPlayables.healthV2.IsStagger)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
-
-        }
-
         if (playerMovement.IsHealing)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HealPlayable);

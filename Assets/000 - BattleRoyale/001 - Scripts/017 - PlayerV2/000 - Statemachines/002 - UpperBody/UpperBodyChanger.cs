@@ -14,9 +14,9 @@ public class UpperBodyChanger
         CurrentState.Enter();
     }
 
-    public void ChangeState(UpperBodyAnimations nextState)
+    public void ChangeState(UpperBodyAnimations nextState, bool canSameEnter = false)
     {
-        if (CurrentState == nextState)
+        if (!canSameEnter && CurrentState == nextState)
             return;
 
         CurrentState.Exit();

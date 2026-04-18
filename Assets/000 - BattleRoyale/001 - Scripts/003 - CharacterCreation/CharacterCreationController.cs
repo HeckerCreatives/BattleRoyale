@@ -1,10 +1,42 @@
 using MyBox;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
+public enum CustomizationState
+{
+    HAIRSTYLE,
+    HAIRCOLOR,
+    CLOTHES,
+    SKIN
+}
+
 public class CharacterCreationController : MonoBehaviour
 {
+    private event EventHandler CustomizationStateChange;
+    public event EventHandler OnCustomizationStateChange
+    {
+        add
+        {
+            if (CustomizationStateChange == null || !CustomizationStateChange.GetInvocationList().Contains(value))
+                CustomizationStateChange += value;
+        }
+        remove { CustomizationStateChange -= value; }
+    }
+    public CustomizationState CurrentCustomizationState
+    {
+        get => customizationState;
+        set
+        {
+            customizationState = value;
+            CustomizationStateChange?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    //  ==================
+
     [SerializeField] private UserData userData;
     [SerializeField] private RectTransform customizerTF;
     [SerializeField] private LeanTweenType easeType;
@@ -45,6 +77,12 @@ public class CharacterCreationController : MonoBehaviour
     [SerializeField] private List<Image> clotheColorIndicator;
     [SerializeField] private List<Image> skinColorIndicator;
 
+    [Header("PROFILE CUSTOMIZATION")]
+    [SerializeField] private GameObject hairstyleContainerObj;
+    [SerializeField] private GameObject hairColorContainerObj;
+    [SerializeField] private GameObject clotheColorContainerObj;
+    [SerializeField] private GameObject skinColorContainerObj;
+
     [Header("CHARACTER")]
     [SerializeField] private SkinnedMeshRenderer bodyColorMR;
     [SerializeField] private List<SkinnedMeshRenderer> clothingMRList;
@@ -56,6 +94,7 @@ public class CharacterCreationController : MonoBehaviour
     [SerializeField] private Button saveBtn;
 
     [Header("DEBUGGER")]
+    [SerializeField] private CustomizationState customizationState;
     [ReadOnly][SerializeField] private bool customIsOn;
     [ReadOnly][SerializeField] private int hairStyleIndex;
     [ReadOnly][SerializeField] private int hairColorIndex;
@@ -68,6 +107,30 @@ public class CharacterCreationController : MonoBehaviour
     int customizerLT;
 
     //  =======================
+
+    private void OnEnable()
+    {
+        CheckCustomizationState();
+        OnCustomizationStateChange += CustomStateChange;
+    }
+
+    private void OnDisable()
+    {
+        OnCustomizationStateChange -= CustomStateChange;
+    }
+
+    private void CustomStateChange(object sender, EventArgs e)
+    {
+        CheckCustomizationState();
+    }
+
+    private void CheckCustomizationState()
+    {
+        hairstyleContainerObj.SetActive(customizationState == CustomizationState.HAIRSTYLE);
+        hairColorContainerObj.SetActive(customizationState == CustomizationState.HAIRCOLOR);
+        clotheColorContainerObj.SetActive(customizationState == CustomizationState.CLOTHES);
+        skinColorContainerObj.SetActive(customizationState == CustomizationState.SKIN);
+    }
 
     public void InitializeCharacterSettings(int hairStyleIndex, int hairColorIndex, int clothingColorIndex, int skinColorIndex)
     {
@@ -343,27 +406,5 @@ public class CharacterCreationController : MonoBehaviour
                 GameManager.Instance.NoBGLoading.SetActive(false);
             }));
         }, null);
-    }
-
-    public void CustomizerOpener()
-    {
-        if (customizerLT != 0) LeanTween.cancel(customizerLT);
-
-        customIsOn = !customIsOn;
-
-        if (customIsOn)
-        {
-            customizerLT = LeanTween.value(customizerTF.gameObject, customizerTF.anchoredPosition.x, 0f, easeDuration).setOnUpdate((float val) =>
-            {
-                customizerTF.anchoredPosition = new Vector3(val, customizerTF.anchoredPosition.y, 0f);
-            }).setEase(easeType).id;
-        }
-        else
-        {
-            customizerLT = LeanTween.value(customizerTF.gameObject, customizerTF.anchoredPosition.x, 309f, easeDuration).setOnUpdate((float val) =>
-            {
-                customizerTF.anchoredPosition = new Vector3(val, customizerTF.anchoredPosition.y, 0f);
-            }).setEase(easeType).id;
-        }
     }
 }

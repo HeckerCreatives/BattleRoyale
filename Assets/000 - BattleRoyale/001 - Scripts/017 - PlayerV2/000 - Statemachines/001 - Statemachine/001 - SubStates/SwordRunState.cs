@@ -109,10 +109,8 @@ public class SwordRunState : PlayerOnGround
         if (playerPlayables.healthV2.IsDead)
             return playerPlayables.lowerBodyMovement.DeathPlayable;
 
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.lowerBodyMovement.StaggerHitPlayable;
 
-        if (playerMovement.IsJumping)
+        if (playerMovement.IsJumping && playerPlayables.stamina.Stamina >= 20f)
             return playerPlayables.lowerBodyMovement.JumpPlayable;
 
         if (!characterController.IsGrounded)
@@ -132,6 +130,9 @@ public class SwordRunState : PlayerOnGround
 
         if (playerMovement.IsBlocking)
             return playerPlayables.lowerBodyMovement.SwordBlockPlayable;
+
+        if (playerMovement.Attacking)
+            return playerPlayables.lowerBodyMovement.SwordAttackFirstPlayable;
 
         // if (playerPlayables.healthV2.IsHit)
         //     return playerPlayables.lowerBodyMovement.HitPlayable;

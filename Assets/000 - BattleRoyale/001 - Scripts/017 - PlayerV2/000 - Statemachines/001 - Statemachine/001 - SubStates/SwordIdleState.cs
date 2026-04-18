@@ -12,6 +12,8 @@ public class SwordIdleState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
+        playerMovement.MoveCharacter();
+
         var nextState = GetNextState();
 
         if (nextState != null && playablesChanger.CurrentState != nextState)
@@ -40,17 +42,11 @@ public class SwordIdleState : PlayerOnGround
         if (!characterController.IsGrounded)
             return playerPlayables.lowerBodyMovement.FallingPlayable;
 
-        if (playerMovement.IsJumping)
+        if (playerMovement.IsJumping && playerPlayables.stamina.Stamina >= 20f)
             return playerPlayables.lowerBodyMovement.JumpPlayable;
 
         if (playerMovement.IsBlocking)
             return playerPlayables.lowerBodyMovement.SwordBlockPlayable;
-
-        // if (playerPlayables.healthV2.IsHit)
-        //     return playerPlayables.lowerBodyMovement.HitPlayable;
-
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.lowerBodyMovement.StaggerHitPlayable;
 
         if (playerMovement.IsTrapping)
             return playerPlayables.lowerBodyMovement.TrappingPlayable;
@@ -60,6 +56,9 @@ public class SwordIdleState : PlayerOnGround
 
         if (playerMovement.IsRepairing)
             return playerPlayables.lowerBodyMovement.RepairPlayable;
+
+        if (playerMovement.Attacking)
+            return playerPlayables.lowerBodyMovement.SwordAttackFirstPlayable;
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             return playerPlayables.lowerBodyMovement.RollPlayable;

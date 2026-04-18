@@ -58,9 +58,6 @@ public class PlayerUpperTrap : UpperNoAimState
         if (playerMovement.IsBlocking)
             return playerPlayables.upperBodyMovement.BlockPlayable;
 
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.upperBodyMovement.StaggerHitPlayable;
-
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             return playerPlayables.upperBodyMovement.RollPlayables;
 

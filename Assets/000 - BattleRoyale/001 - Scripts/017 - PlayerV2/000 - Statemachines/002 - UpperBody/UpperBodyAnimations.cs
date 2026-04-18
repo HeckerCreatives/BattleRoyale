@@ -15,8 +15,7 @@ public class UpperBodyAnimations
     public List<string> animations;
     List<string> mixers;
 
-    int ltEnter;
-    int ltExit;
+    private Coroutine _weightBlendRoutine;
 
     //  ======================
 
@@ -31,10 +30,6 @@ public class UpperBodyAnimations
 
     //  ======================
 
-    public float blendDuration = 0.25f; // Duration of blend in seconds
-
-    public Coroutine blendCoroutine;
-    public Coroutine weightCoroutine;
     private AnimationMixerPlayable mixerAnimations;
 
     //  ======================
@@ -58,7 +53,7 @@ public class UpperBodyAnimations
 
     public virtual void Enter()
     {
-        if (oncePlay && canAnimateUpper)
+        if (oncePlay)
         {
             animationClipPlayable.SetTime(0f);
             animationClipPlayable.Play();
@@ -79,13 +74,7 @@ public class UpperBodyAnimations
 
         if (!canAnimateUpper) return;
 
-        if (ltExit != 0) LeanTween.cancel(ltExit);
-
-        ltEnter = LeanTween.value(playerPlayables.gameObject, mixerPlayable.GetInputWeight(animIndex), 1f, playerPlayables.enterSpeed)
-        .setOnUpdate((float weight) =>
-        {
-            mixerPlayable.SetInputWeight(animIndex, weight);
-        }).setOnComplete(() => mixerPlayable.SetInputWeight(animIndex, 1f)).setEase(LeanTweenType.easeInSine).id;
+        StartWeightBlend(animIndex, 1f, playerPlayables.enterSpeed, EaseInSine);
 
         //mixerPlayable.SetInputWeight(animIndex, 1f);
     }
@@ -103,13 +92,7 @@ public class UpperBodyAnimations
 
         if (!canAnimateUpper) return;
 
-        if (ltEnter != 0) LeanTween.cancel(ltEnter);
-
-        ltExit = LeanTween.value(playerPlayables.gameObject, mixerPlayable.GetInputWeight(animIndex), 0f, playerPlayables.exitSpeed)
-        .setOnUpdate((float weight) =>
-        {
-            mixerPlayable.SetInputWeight(animIndex, weight);
-        }).setOnComplete(() => mixerPlayable.SetInputWeight(animIndex, 0f)).setEase(LeanTweenType.easeOutSine).id;
+        StartWeightBlend(animIndex, 0f, playerPlayables.exitSpeed, EaseOutSine);
 
         //mixerPlayable.SetInputWeight(animIndex, 0f);
     }
@@ -122,4 +105,43 @@ public class UpperBodyAnimations
     {
         if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority) return;
     }
+
+    private void StartWeightBlend(int animIndex, float targetWeight, float duration, System.Func<float, float> easeFn)
+    {
+        if (playerPlayables == null)
+        {
+            mixerPlayable.SetInputWeight(animIndex, targetWeight);
+            return;
+        }
+
+        if (_weightBlendRoutine != null)
+            playerPlayables.StopCoroutine(_weightBlendRoutine);
+
+        _weightBlendRoutine = playerPlayables.StartCoroutine(BlendWeight(animIndex, targetWeight, duration, easeFn));
+    }
+
+    private IEnumerator BlendWeight(int animIndex, float targetWeight, float duration, System.Func<float, float> easeFn)
+    {
+        float startWeight = mixerPlayable.GetInputWeight(animIndex);
+
+        if (duration <= 0f)
+        {
+            mixerPlayable.SetInputWeight(animIndex, targetWeight);
+            yield break;
+        }
+
+        float t = 0f;
+        while (t < 1f)
+        {
+            t += Time.deltaTime / duration;
+            float eased = easeFn(Mathf.Clamp01(t));
+            mixerPlayable.SetInputWeight(animIndex, Mathf.Lerp(startWeight, targetWeight, eased));
+            yield return null;
+        }
+
+        mixerPlayable.SetInputWeight(animIndex, targetWeight);
+    }
+
+    private static float EaseInSine(float t) => 1f - Mathf.Cos((t * Mathf.PI) * 0.5f);
+    private static float EaseOutSine(float t) => Mathf.Sin((t * Mathf.PI) * 0.5f);
 }

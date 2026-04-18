@@ -18,11 +18,19 @@ public class JumpState : PlayerOnGround
         base.Enter();
 
         playerPlayables.PlayJumpSoundEffect();
+
+        if (playerPlayables.HasStateAuthority) playerMovement.AnimationTick = playerPlayables.Runner.Tick;
+
+        if (!playerPlayables.HasStateAuthority) return;
+
+        playerMovement.JumpStartTick = playerPlayables.Runner.Tick;
+        playerMovement.Jumping = true;
     }
 
     public override void NetworkUpdate()
     {
         UpdateJumpFlags();
+        playerMovement.Falling();
         playerMovement.MoveCharacter();
 
         var nextState = GetNextLowerJumpState();
@@ -31,22 +39,30 @@ public class JumpState : PlayerOnGround
         {
             playablesChanger.ChangeState(nextState);
         }
-
-        if (playerPlayables.HasStateAuthority)
-            playerPlayables.stamina.RecoverStamina(5f);
     }
 
     private void UpdateJumpFlags()
     {
-        if (animationClipPlayable.GetTime() < animationLength * 0.25f) return;
+        int elapsedTicks = playerPlayables.Runner.Tick - (playerPlayables.HasStateAuthority ? playerMovement.JumpStartTick : playerMovement.AnimationTick);
 
-        playerMovement.IsJumping = false;
+        int totalJumpTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int jumpStopTick = Mathf.CeilToInt(totalJumpTicks * 0.25f);
+
+        if (elapsedTicks >= jumpStopTick)
+            playerMovement.Jumping = false;
+        else
+            playerMovement.Jumping = true;
     }
 
     private AnimationPlayable GetNextLowerJumpState()
     {
         var lower = playerPlayables.lowerBodyMovement;
         var health = playerPlayables.healthV2;
+
+        int elapsedTicks = playerPlayables.Runner.Tick - (playerPlayables.HasStateAuthority ? playerMovement.JumpStartTick : playerMovement.AnimationTick);
+
+        int totalJumpTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int jumpStopTick = Mathf.CeilToInt(totalJumpTicks * 1f);
 
         if (health.IsDead)
             return lower.DeathPlayable;
@@ -58,7 +74,7 @@ public class JumpState : PlayerOnGround
                 return jumpAttackState;
         }
 
-        if (animationClipPlayable.GetTime() < animationLength) return null;
+        if (totalJumpTicks < jumpStopTick) return null;
 
         if (!characterController.IsGrounded)
         {

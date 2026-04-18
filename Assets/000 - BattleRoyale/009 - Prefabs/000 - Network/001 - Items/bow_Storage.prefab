@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7782167564959681625}
   - component: {fileID: 8718209516328954601}
   - component: {fileID: 2778236567379565943}
+  - component: {fileID: 8847922759578791670}
   - component: {fileID: 2836240876747883898}
   m_Layer: 12
   m_Name: bow_Storage
@@ -99,17 +100,36 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponID: arrowcontainer
   weaponName: arrowcontainer
-  impactPoint: {fileID: 0}
-  enemyLayerMask:
-    serializedVersion: 2
-    m_Bits: 0
   backRotation: {x: 0, y: 0, z: 0}
-  dropRotation: {x: 0, y: 0, z: 0}
+  _Supplies: 0
   _IsPickedUp: 0
   _CurrentPlayer: {fileID: 0}
   _PlayerCore: {fileID: 0}
   _Position: {x: 0, y: 0, z: 0}
   _Back: {fileID: 0}
+  _Rotation: {x: 0, y: 0, z: 0, w: 0}
+--- !u!64 &8847922759578791670
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5713840924020863758}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -8904615750914718161, guid: d9401eaa0f8ee044381bf32cda460280, type: 3}
 --- !u!114 &2836240876747883898
 MonoBehaviour:
   m_ObjectHideFlags: 0

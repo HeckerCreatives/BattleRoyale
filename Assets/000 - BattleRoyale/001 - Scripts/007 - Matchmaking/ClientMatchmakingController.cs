@@ -206,9 +206,9 @@ public class ClientMatchmakingController : MonoBehaviour
                 for (int a = 0; a < waitingPlayerItems.Count; a++)
                 {
                     if (a < tempdata[0].players.Count)
-                        waitingPlayerItems[a].SetData(tempdata[0].players[a], true);
+                        waitingPlayerItems[a].SetData(tempdata[0].players[a].username, true, tempdata[0].players[a].avatarid);
                     else
-                        waitingPlayerItems[a].SetData("", false);
+                        waitingPlayerItems[a].SetData("", false, "");
                 }
             });
         });
@@ -287,10 +287,10 @@ public class ClientMatchmakingController : MonoBehaviour
                     if (a < tempdata[0].players.Count)
                     {
                         tempavailableplayers += 1;
-                        waitingPlayerItems[a].SetData(tempdata[0].players[a], true);
+                        waitingPlayerItems[a].SetData(tempdata[0].players[a].username, true, tempdata[0].players[a].avatarid);
                     }
                     else
-                        waitingPlayerItems[a].SetData("", false);
+                        waitingPlayerItems[a].SetData("", false, "");
                 }
 
                 availablePlayers = tempavailableplayers;
@@ -697,7 +697,10 @@ public class ClientMatchmakingController : MonoBehaviour
 
             yield return new WaitForSecondsRealtime(rand);
 
-            GameManager.Instance.SocketMngr.EmitEvent("findmatch", JsonConvert.SerializeObject(new Dictionary<string, string>()));
+            GameManager.Instance.SocketMngr.EmitEvent("findmatch", JsonConvert.SerializeObject(new Dictionary<string, string>
+            {
+                { "avatarid", userData.AvatarID }
+            }));
         }
         else
         {
@@ -971,8 +974,15 @@ public class WaitingRoomData
 {
     public string messageId;
     public string roomName;
-    public List<string> players;
+    public List<WaitingRoomPlayerData> players;
     public int maxPlayers;
     public string status;
     public float countdown;
+}
+
+[System.Serializable]
+public class WaitingRoomPlayerData
+{
+    public string username;
+    public string avatarid;
 }

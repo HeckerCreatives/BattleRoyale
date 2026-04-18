@@ -3,9 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Playables;
 
 public class SpearSprintState : PlayerOnGround
 {
+    bool playedStep1;
+    bool playedStep2;
+    double lastNormalizedTime;
+
     public SpearSprintState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
     }
@@ -14,108 +19,166 @@ public class SpearSprintState : PlayerOnGround
     {
         base.Enter();
 
-        playerPlayables.CancelInvoke();
+        if (playerPlayables.HasInputAuthority)
+        {
+            playerPlayables.ChangeFOV(70f);
+            playerPlayables.WarpDrive.Play();
+        }
 
-        playerPlayables.InvokeRepeating(nameof(playerPlayables.PlayFootstepSound), (animationLength * 0.20f), animationLength);
-        playerPlayables.InvokeRepeating(nameof(playerPlayables.PlayFootstepSound), (animationLength * 0.80f), animationLength);
+        if (playerPlayables.HasStateAuthority) return;
+
+        playedStep1 = false;
+        playedStep2 = false;
+        lastNormalizedTime = 0.0;
     }
 
     public override void Exit()
     {
         base.Exit();
 
-        playerPlayables.CancelInvoke();
+        if (playerPlayables.HasInputAuthority)
+        {
+            playerPlayables.ChangeFOV(60f);
+            playerPlayables.WarpDrive.Stop();
+        }
+
+        if (playerPlayables.HasStateAuthority) return;
+
+        playedStep1 = false;
+        playedStep2 = false;
+        lastNormalizedTime = 0.0;
+    }
+
+    public override void NetworkLocalUpdate()
+    {
+        base.NetworkLocalUpdate();
+
+        HandleFootsteps();
     }
 
     public override void NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         playerMovement.MoveCharacter();
-        WeaponsChecker();
-        Animation();
+
+        HandleFootsteps();
+
+        var nextState = GetNextState();
+
+        if (nextState != null && playablesChanger.CurrentState != nextState)
+        {
+            playablesChanger.ChangeState(nextState);
+        }
+
         playerPlayables.stamina.DecreaseStamina(20f);
     }
 
-    private void Animation()
+    private void HandleFootsteps()
     {
-        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RollPlayable);
+        if (playerPlayables.HasStateAuthority) return;
 
-        if (playerPlayables.healthV2.IsDead)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
+        if (animationLength <= 0f)
+            return;
 
-        if (!characterController.IsGrounded)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
+        double animTime = animationClipPlayable.GetTime();
+        double normalizedTime = (animTime / animationLength) % 1.0;
 
-        if (playerMovement.IsJumping)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.JumpPlayable);
-
-        if (playerMovement.IsBlocking)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearBlockPlayable);
-
-        if (playerMovement.IsHealing)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HealPlayable);
-
-        if (playerMovement.IsRepairing)
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RepairPlayable);
-
-        if (playerMovement.IsTrapping)
+        // animation looped back to start
+        if (normalizedTime < lastNormalizedTime)
         {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.TrappingPlayable);
+            playedStep1 = false;
+            playedStep2 = false;
         }
 
-        if (playerPlayables.healthV2.IsStagger)
+        if (!playedStep1 && normalizedTime >= 0.20f)
         {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
+            playerPlayables.PlayFootstepSound();
+            playedStep1 = true;
         }
+
+        if (!playedStep2 && normalizedTime >= 0.80f)
+        {
+            playerPlayables.PlayFootstepSound();
+            playedStep2 = true;
+        }
+
+        lastNormalizedTime = normalizedTime;
     }
 
-    private void WeaponsChecker()
+    private AnimationPlayable GetNextState()
     {
-        if (playerPlayables.stamina.Stamina > 0f)
-        {
-            if (playerPlayables.inventory.WeaponIndex == 1)
-            {
-                if (playerMovement.MoveDirection != Vector3.zero)
-                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SprintPlayable);
-            }
-            else if (playerPlayables.inventory.WeaponIndex == 2)
-            {
-                if (playerPlayables.inventory.PrimaryWeaponID() == "001")
-                {
-                    if (playerMovement.MoveDirection != Vector3.zero)
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordSprintPlayable);
-                }
-            }
-            else if (playerPlayables.inventory.WeaponIndex == 3)
-            {
-                if (playerPlayables.inventory.SecondaryWeaponID() == "003")
-                {
-                    if (playerMovement.MoveDirection != Vector3.zero)
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RifleSprintPlayable);
-                }
-                else if (playerPlayables.inventory.SecondaryWeaponID() == "004")
-                {
-                    if (playerMovement.MoveDirection != Vector3.zero)
-                        playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.BowSprintPlayable);
-                }
-            }
+        var forcedState = GetForcedState();
+        if (forcedState != null)
+            return forcedState;
 
-            if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
-            {
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearIdlePlayable);
-            }
-            else if (!playerMovement.IsSprint)
-            {
-                if (playerMovement.MoveDirection != Vector3.zero)
-                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearRunPlayable);
-            }
-        }
-        else
+        return GetMovementState();
+    }
+
+    private AnimationPlayable GetForcedState()
+    {
+        if (playerPlayables.healthV2.IsDead)
+            return playerPlayables.lowerBodyMovement.DeathPlayable;
+
+
+        if (playerMovement.IsJumping && playerPlayables.stamina.Stamina >= 20f)
+            return playerPlayables.lowerBodyMovement.JumpPlayable;
+
+        if (!characterController.IsGrounded)
+            return playerPlayables.lowerBodyMovement.FallingPlayable;
+
+        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
+            return playerPlayables.lowerBodyMovement.RollPlayable;
+
+        if (playerMovement.IsTrapping)
+            return playerPlayables.lowerBodyMovement.TrappingPlayable;
+
+        if (playerMovement.IsHealing)
+            return playerPlayables.lowerBodyMovement.HealPlayable;
+
+        if (playerMovement.IsRepairing)
+            return playerPlayables.lowerBodyMovement.RepairPlayable;
+
+        if (playerMovement.IsBlocking)
+            return playerPlayables.lowerBodyMovement.SwordBlockPlayable;
+
+        // if (playerPlayables.healthV2.IsHit)
+        //     return playerPlayables.lowerBodyMovement.HitPlayable;
+
+        return null;
+    }
+
+    private AnimationPlayable GetMovementState()
+    {
+        bool isMoving = playerMovement.XMovement != 0f || playerMovement.YMovement != 0f;
+        bool hasSprintStamina = playerPlayables.stamina.Stamina > 0f && playerMovement.IsSprint;
+
+        if (!isMoving)
+            return playerPlayables.lowerBodyMovement.IdlePlayable;
+
+        if (!hasSprintStamina && isMoving)
+            return playerPlayables.lowerBodyMovement.SpearRunPlayable;
+
+        if (playerPlayables.inventory.WeaponIndex == 1)
+            return playerPlayables.lowerBodyMovement.SprintPlayable;
+
+        if (playerPlayables.inventory.WeaponIndex == 2)
         {
-            if (playerMovement.MoveDirection == Vector3.zero)
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearIdlePlayable);
-            else
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearRunPlayable);
+            if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "001")
+                return playerPlayables.lowerBodyMovement.SwordSprintPlayable;
+
+            return null;
         }
+
+        if (playerPlayables.inventory.WeaponIndex == 3)
+        {
+            if (playerPlayables.inventory.SecondaryWeaponID() == "003")
+                return playerPlayables.lowerBodyMovement.RifleSprintPlayable;
+
+            if (playerPlayables.inventory.SecondaryWeaponID() == "004")
+                return playerPlayables.lowerBodyMovement.BowSprintPlayable;
+        }
+
+        return null;
     }
 }

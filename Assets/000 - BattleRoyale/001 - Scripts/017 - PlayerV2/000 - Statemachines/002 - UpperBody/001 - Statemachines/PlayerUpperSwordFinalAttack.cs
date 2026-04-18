@@ -17,12 +17,6 @@ public class PlayerUpperSwordFinalAttack : UpperNoAimState
     {
         base.Enter();
 
-        if (!playerPlayables.HasStateAuthority)
-        {
-            playerPlayables.inventory.PrimaryWeapon.SoundController.PlayAttackOne();
-
-            return;
-        }
 
         hasResetHitEnemies = false;
         playerPlayables.FinalAttack = false;
@@ -32,12 +26,9 @@ public class PlayerUpperSwordFinalAttack : UpperNoAimState
     {
         base.NetworkUpdate();
 
-        double animTime = animationClipPlayable.GetTime();
-        double normalizedTime = animTime / animationLength;
+        HandleDamageWindow();
 
-        HandleDamageWindow(normalizedTime);
-
-        var nextState = GetNextState(normalizedTime);
+        var nextState = GetNextState();
 
         if (nextState != null && playablesChanger.CurrentState != nextState)
         {
@@ -45,17 +36,18 @@ public class PlayerUpperSwordFinalAttack : UpperNoAimState
         }
     }
 
-    private void HandleDamageWindow(double normalizedTime)
+    private void HandleDamageWindow()
     {
         if (!playerPlayables.HasStateAuthority) return;
-        // original:
-        // damageWindowStart = +0.2f
-        // damageWindowEnd   = +0.8f
-        // these are absolute seconds from animation start
-        double damageStartNormalized = 0.2 / animationLength;
-        double damageEndNormalized = 0.8 / animationLength;
 
-        if (normalizedTime >= damageStartNormalized && normalizedTime <= damageEndNormalized)
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - playerMovement.SwordStartTick;
+
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int startStartTick = Mathf.CeilToInt(totalPunchTicks * 0.18f);
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
+
+        if (elapsedTicks >= startStartTick && elapsedTicks <= finishStartTick)
         {
             if (!hasResetHitEnemies)
             {
@@ -67,7 +59,7 @@ public class PlayerUpperSwordFinalAttack : UpperNoAimState
         }
     }
 
-    private UpperBodyAnimations GetNextState(double normalizedTime)
+    private UpperBodyAnimations GetNextState()
     {
         if (playerPlayables.healthV2.IsDead)
             return playerPlayables.upperBodyMovement.DeathPlayable;
@@ -78,20 +70,19 @@ public class PlayerUpperSwordFinalAttack : UpperNoAimState
         if (playerMovement.IsJumping)
             return playerPlayables.upperBodyMovement.JumpPlayable;
 
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.upperBodyMovement.StaggerHitPlayable;
-
         if (!characterController.IsGrounded)
             return playerPlayables.upperBodyMovement.FallingPlayables;
 
         if (playerMovement.IsSprint && (playerMovement.XMovement != 0f || playerMovement.YMovement != 0f))
             return playerPlayables.upperBodyMovement.SwordSprint;
 
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.SwordStartTick : playerMovement.AnimationTick);
 
-        // original:
-        // timer = TickRateAnimation + animationLength
-        // meaning transition after full clip
-        if (normalizedTime >= 1.0)
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
+
+        if (elapsedTicks >= finishStartTick)
             return playerPlayables.upperBodyMovement.SwordIdlePlayable;
 
         return null;

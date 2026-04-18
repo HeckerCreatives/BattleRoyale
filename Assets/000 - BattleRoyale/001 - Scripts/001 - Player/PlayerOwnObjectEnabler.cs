@@ -54,6 +54,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     [SerializeField] private GameObject playerSpawnLocCam;
     [SerializeField] private GameObject footstepSFX;
     [SerializeField] private GameObject punchSFX;
+    [SerializeField] private GameObject cameraProxy;
 
     [Header("DEBUGGER")]
     [SerializeField] private bool isStateAuthority;
@@ -82,6 +83,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         Destroy(playerMinimapCam);
         Destroy(playerSpawnLocCam);
         Destroy(target.gameObject);
+        Destroy(cameraProxy.gameObject);
     }
 
     public async void OnEnable()
@@ -123,6 +125,7 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         canvasPlayer.transform.parent = null;
         playerVcam.transform.parent = null;
         playerAimVCam.transform.parent = null;
+        cameraProxy.transform.parent = null;
 
         MultiplayerServerManager.Instance.OnCurrentStateChange += StateChange;
     }

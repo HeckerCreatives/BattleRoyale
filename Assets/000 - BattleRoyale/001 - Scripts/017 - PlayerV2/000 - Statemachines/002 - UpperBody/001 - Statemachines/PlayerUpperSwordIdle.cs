@@ -39,9 +39,6 @@ public class PlayerUpperSwordIdle : UpperNoAimState
         if (playerPlayables.healthV2.IsDead)
             return playerPlayables.upperBodyMovement.DeathPlayable;
 
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.upperBodyMovement.StaggerHitPlayable;
-
         if (playerMovement.IsJumping)
             return playerPlayables.upperBodyMovement.JumpPlayable;
 

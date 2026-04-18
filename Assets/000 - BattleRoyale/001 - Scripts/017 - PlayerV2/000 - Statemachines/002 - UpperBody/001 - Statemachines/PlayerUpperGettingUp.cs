@@ -40,8 +40,6 @@ public class PlayerUpperGettingUp : UpperNoAimState
         if (playerMovement.IsJumping)
             return upper.JumpPlayable;
 
-        if (playerPlayables.healthV2.IsStagger)
-            return upper.StaggerHitPlayable;
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             return upper.RollPlayables;

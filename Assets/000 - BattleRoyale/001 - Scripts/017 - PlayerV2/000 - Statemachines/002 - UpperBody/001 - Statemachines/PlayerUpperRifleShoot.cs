@@ -46,12 +46,6 @@ public class PlayerUpperRifleShoot : UpperWithAimState
 
         }
 
-        if (playerPlayables.healthV2.IsStagger)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
-
-        }
-
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RollPlayables);

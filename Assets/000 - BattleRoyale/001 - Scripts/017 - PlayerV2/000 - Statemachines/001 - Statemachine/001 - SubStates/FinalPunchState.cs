@@ -1,6 +1,7 @@
 using Fusion.Addons.SimpleKCC;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Animations;
 using UnityEngine.Playables;
@@ -11,10 +12,48 @@ public class FinalPunchState : PlayerOnGround
     {
     }
 
+    public override void Enter()
+    {
+        base.Enter();
+
+        playerMovement.AttackMoveSpeed = playerMovement.AttackMoveSpeedThree;
+
+        if (playerPlayables.HasInputAuthority) playerMovement.AnimationTick = playerPlayables.Runner.Tick;
+
+        if (!playerPlayables.HasStateAuthority)
+        {
+            playerPlayables.fistSoundController.PlayAttackOne();
+            playerPlayables.SlashPunchParticles(2);
+        }
+
+        if (!playerPlayables.HasStateAuthority) return;
+
+        playerMovement.RotatePlayer();
+
+        playerMovement.PunchStartTick = playerPlayables.Runner.Tick;
+        playerMovement.Punching = true;
+        //playerMovement.CannotJump = true;
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
+
+        playerPlayables.SlashPunchParticlesStop(2);
+
+        if (!playerPlayables.HasStateAuthority) return;
+
+        playerMovement.Punching = false;
+        playerMovement.PunchingMove = false;
+        playerMovement.Attacking = false;
+        //playerMovement.CannotJump = false;
+    }
+
+
     public override void NetworkUpdate()
     {
-        //HandleMoveWindow();
-
+        HandleMoveWindow();
+        playerMovement.MoveCharacter();
 
         var nextState = GetNextState();
 
@@ -27,17 +66,17 @@ public class FinalPunchState : PlayerOnGround
             playerPlayables.stamina.RecoverStamina(5f);
     }
 
-    //private void HandleMoveWindow()
-    //{
-    //    double animTime = animationClipPlayable.GetTime();
+    private void HandleMoveWindow()
+    {
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.PunchStartTick : playerMovement.AnimationTick);
 
-    //    bool moveWindow = animTime >= 0.30f && animTime <= 0.50f;
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int moveStartTick = Mathf.CeilToInt(totalPunchTicks * 0.05f);
+        int moveEndTick = Mathf.CeilToInt(totalPunchTicks * 0.4f);
 
-    //    if (moveWindow)
-    //    {
-    //        characterController.Move(characterController.TransformDirection * 1.25f, 0f);
-    //    }
-    //}
+        playerMovement.PunchingMove = elapsedTicks >= moveStartTick && elapsedTicks <= moveEndTick;
+    }
 
     private AnimationPlayable GetNextState()
     {
@@ -53,25 +92,34 @@ public class FinalPunchState : PlayerOnGround
         if (playerPlayables.healthV2.IsDead)
             return playerPlayables.lowerBodyMovement.DeathPlayable;
 
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.lowerBodyMovement.StaggerHitPlayable;
+        if (!characterController.IsGrounded)
+            return playerPlayables.lowerBodyMovement.FallingPlayable;
 
         return null;
     }
 
+
     private AnimationPlayable GetRecoveryState()
     {
-        double animTime = animationClipPlayable.GetTime();
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.PunchStartTick : playerMovement.AnimationTick);
 
-        bool finishedPunch = animTime >= animationLength;
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
+
+        bool finishedPunch = elapsedTicks >= finishStartTick;
         bool isMoving = playerMovement.XMovement != 0 || playerMovement.YMovement != 0;
         bool canRoll = playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f;
 
         if (canRoll)
             return playerPlayables.lowerBodyMovement.RollPlayable;
 
-        if (isMoving)
+        if (isMoving && finishedPunch)
         {
+            // ? Wait until punch momentum blend is fully done before switching to run
+            if (playerMovement.WasPunchingMoveLastTick)
+                return null; // hold on idle/punch end until movement catches up
+
             return playerMovement.IsSprint
                 ? playerPlayables.lowerBodyMovement.SprintPlayable
                 : playerPlayables.lowerBodyMovement.RunPlayable;

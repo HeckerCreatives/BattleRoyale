@@ -16,7 +16,10 @@ public enum LeaderboardState
     POINTS,
     KILL,
     DEATH,
-    LEVEL
+    LEVEL,
+    PLAYTIME,
+    MATCH,
+    WIN
 }
 
 public class LobbyController : MonoBehaviour
@@ -50,6 +53,7 @@ public class LobbyController : MonoBehaviour
     [SerializeField] private ControllerSetting controllerSetting;
     [SerializeField] private LobbyUserProfile userProfile;
     [SerializeField] private InventoryController inventoryController;
+    [SerializeField] private MarketplaceController martketController;
 
     [Space]
     [SerializeField] private AudioClip bgMusicClip;
@@ -69,6 +73,9 @@ public class LobbyController : MonoBehaviour
     [SerializeField] private List<LeaderboardItem> killLeaderboardItems;
     [SerializeField] private List<LeaderboardItem> deathLeaderboardItems;
     [SerializeField] private List<LeaderboardItem> levelLeaderboardItems;
+    [SerializeField] private List<LeaderboardItem> playTimeLeaderboadItems;
+    [SerializeField] private List<LeaderboardItem> matchLeaderboadItems;
+    [SerializeField] private List<LeaderboardItem> winsLeaderboadItems;
 
     [Space]
     [SerializeField] private List<ProfileHistoryItem> profileHistoryItems;
@@ -120,6 +127,7 @@ public class LobbyController : MonoBehaviour
             }
         }, () =>
         {
+            GameManager.Instance.SocketMngr.isOnLogin = false;
             GameManager.Instance.SceneController.StopLoading();
             GameManager.Instance.SocketMngr.Socket.Disconnect();
             GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 2", null);
@@ -266,6 +274,120 @@ public class LobbyController : MonoBehaviour
             GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
             GameManager.Instance.SceneController.CurrentScene = "Login";
         }));
+        GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/leaderboard/getplaytimeleaderboard", "", false, (response) =>
+        {
+            try
+            {
+                Dictionary<string, object> responsetempdata = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.ToString());
+
+                if (responsetempdata.Count <= 0) return;
+
+                Dictionary<string, LeaderboardData> tempdata = JsonConvert.DeserializeObject<Dictionary<string, LeaderboardData>>(responsetempdata["leaderboard"].ToString());
+
+                //  KILL
+                for (int a = 0; a < killLeaderboardItems.Count; a++)
+                {
+                    if (a < tempdata.Count)
+                    {
+                        playTimeLeaderboadItems[a].SetData(tempdata[a.ToString()].user, (a + 1).ToString("n0"), GameManager.Instance.GetHourMinuteSecondsTime(tempdata[a.ToString()].amount));
+                    }
+                    else
+                    {
+                        playTimeLeaderboadItems[a].SetData("-", (a + 1).ToString("n0"), "-");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                GameManager.Instance.SceneController.StopLoading();
+                Debug.Log(ex.ToString());
+                GameManager.Instance.SocketMngr.Socket.Disconnect();
+                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
+                GameManager.Instance.SceneController.CurrentScene = "Login";
+            }
+        }, () =>
+        {
+            GameManager.Instance.SceneController.StopLoading();
+            GameManager.Instance.SocketMngr.Socket.Disconnect();
+            GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
+            GameManager.Instance.SceneController.CurrentScene = "Login";
+        }));
+        GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/leaderboard/getmatchesleaderboard", "", false, (response) =>
+        {
+            try
+            {
+                Dictionary<string, object> responsetempdata = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.ToString());
+
+                if (responsetempdata.Count <= 0) return;
+
+                Dictionary<string, LeaderboardData> tempdata = JsonConvert.DeserializeObject<Dictionary<string, LeaderboardData>>(responsetempdata["leaderboard"].ToString());
+
+                //  KILL
+                for (int a = 0; a < killLeaderboardItems.Count; a++)
+                {
+                    if (a < tempdata.Count)
+                    {
+                        matchLeaderboadItems[a].SetData(tempdata[a.ToString()].user, (a + 1).ToString("n0"), tempdata[a.ToString()].amount.ToString("n0"));
+                    }
+                    else
+                    {
+                        matchLeaderboadItems[a].SetData("-", (a + 1).ToString("n0"), "-");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                GameManager.Instance.SceneController.StopLoading();
+                Debug.Log(ex.ToString());
+                GameManager.Instance.SocketMngr.Socket.Disconnect();
+                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
+                GameManager.Instance.SceneController.CurrentScene = "Login";
+            }
+        }, () =>
+        {
+            GameManager.Instance.SceneController.StopLoading();
+            GameManager.Instance.SocketMngr.Socket.Disconnect();
+            GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
+            GameManager.Instance.SceneController.CurrentScene = "Login";
+        }));
+        GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/leaderboard/getwinsleaderboard", "", false, (response) =>
+        {
+            try
+            {
+                Dictionary<string, object> responsetempdata = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.ToString());
+
+                if (responsetempdata.Count <= 0) return;
+
+                Dictionary<string, LeaderboardData> tempdata = JsonConvert.DeserializeObject<Dictionary<string, LeaderboardData>>(responsetempdata["leaderboard"].ToString());
+
+                //  KILL
+                for (int a = 0; a < killLeaderboardItems.Count; a++)
+                {
+                    if (a < tempdata.Count)
+                    {
+                        winsLeaderboadItems[a].SetData(tempdata[a.ToString()].user, (a + 1).ToString("n0"), tempdata[a.ToString()].amount.ToString("n0"));
+                    }
+                    else
+                    {
+                        winsLeaderboadItems[a].SetData("-", (a + 1).ToString("n0"), "-");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                GameManager.Instance.SceneController.StopLoading();
+                Debug.Log(ex.ToString());
+                GameManager.Instance.SocketMngr.Socket.Disconnect();
+                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
+                GameManager.Instance.SceneController.CurrentScene = "Login";
+            }
+        }, () =>
+        {
+            GameManager.Instance.SceneController.StopLoading();
+            GameManager.Instance.SocketMngr.Socket.Disconnect();
+            GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
+            GameManager.Instance.SceneController.CurrentScene = "Login";
+        }));
         GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/leaderboard/getlevelleaderboard", "", false, (response) =>
         {
             try
@@ -324,6 +446,28 @@ public class LobbyController : MonoBehaviour
                         profileHistoryItems[a].InitializeHistory("NORMAL", tempdata[a.ToString()].kill, tempdata[a.ToString()].placement, GameManager.Instance.GetMinuteSecondsTime(tempdata[a.ToString()].playtime), tempdata[a.ToString()].date);
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                GameManager.Instance.SceneController.StopLoading();
+                Debug.Log(ex.ToString());
+                GameManager.Instance.SocketMngr.Socket.Disconnect();
+                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
+                GameManager.Instance.SceneController.CurrentScene = "Login";
+            }
+        }, () =>
+        {
+            GameManager.Instance.SceneController.StopLoading();
+            GameManager.Instance.SocketMngr.Socket.Disconnect();
+            GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
+            GameManager.Instance.SceneController.CurrentScene = "Login";
+        }));
+        GameManager.Instance.SceneController.AddActionLoadinList(GameManager.Instance.GetRequest("/avatar/getavatar", "", false, (response) =>
+        {
+            Debug.Log(response.ToString());
+            try
+            {
+                userData.AvatarID = response.ToString();
             }
             catch (Exception ex)
             {
@@ -433,6 +577,8 @@ public class LobbyController : MonoBehaviour
             }
         }, null));
         GameManager.Instance.SceneController.AddActionLoadinList(inventoryController.GetInventory());
+        GameManager.Instance.SceneController.AddActionLoadinList(LoadRewardAds());
+        GameManager.Instance.SceneController.AddActionLoadinList(martketController.GetAdsData());
         GameManager.Instance.SceneController.AddActionLoadinList(CheckIfFirstTimeDownload());
         GameManager.Instance.AudioController.SetBGMusic(bgMusicClip);
         GameManager.Instance.SceneController.ActionPass = true;
@@ -444,7 +590,7 @@ public class LobbyController : MonoBehaviour
         userData.OnTitleChange += TitleChange;
 
         serverTMP.text = $"Server: {GameManager.GetRegionName(userData.SelectedServer)}";
-        totalPlayersOnlineTMP.text = $"Online: <color=green>{GameManager.Instance.SocketMngr.PlayerCountServer:n0}</color>";
+        totalPlayersOnlineTMP.text = $"Online: {GameManager.Instance.SocketMngr.PlayerCountServer:n0}";
     }
 
     private void OnDisable()
@@ -495,6 +641,13 @@ public class LobbyController : MonoBehaviour
             potionMultiplier.text = $"x1";
     }
 
+    private IEnumerator LoadRewardAds()
+    {
+        GameManager.Instance.AdsManager.LoadRewardedAd();
+
+        yield return null;
+    } 
+
     private IEnumerator CheckIfFirstTimeDownload()
     {
         if (PlayerPrefs.HasKey("firstdownload")) yield break;
@@ -519,47 +672,6 @@ public class LobbyController : MonoBehaviour
     private void TitleChange(object sender, EventArgs e)
     {
         TitleChecker();
-    }
-
-    public async void GetAvailableRegions()
-    {
-        GameManager.Instance.NoBGLoading.SetActive(true);
-
-        //if (currentRunnerInstance != null)
-        //{
-        //    Destroy(currentRunnerInstance.gameObject);
-
-        //    currentRunnerInstance = null;
-        //}
-        //else
-        //{
-        //    currentRunnerInstance = Instantiate(instanceRunner);
-        //}
-
-        //var _tokenSource = new CancellationTokenSource();
-
-        //var regions = await NetworkRunner.GetAvailableRegions(cancellationToken: _tokenSource.Token);
-
-        //AvailableServers.Clear();
-
-        //foreach (var region in regions)
-        //{
-        //    if (userData.SelectedServer != "asia" && userData.SelectedServer != "za" && userData.SelectedServer != "uae" && userData.SelectedServer != "us" && userData.SelectedServer != "usw") continue;
-
-        //    AvailableServers.Add(region.RegionCode, region.RegionPing);
-
-        //    await Task.Yield();
-        //}
-
-        //serverList.SetActive(true);
-
-        //Destroy(currentRunnerInstance.gameObject);
-
-        //currentRunnerInstance = null;
-
-        serverList.SetActive(true);
-
-        GameManager.Instance.NoBGLoading.SetActive(false);
     }
 
     public void ChangeScene()

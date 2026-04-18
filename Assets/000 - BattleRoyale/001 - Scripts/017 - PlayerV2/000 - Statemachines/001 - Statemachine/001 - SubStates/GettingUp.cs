@@ -16,9 +16,34 @@ public class GettingUp : PlayerOnGround
     {
         base.Enter();
 
+        if (playerPlayables.HasInputAuthority) playerMovement.AnimationTick = playerPlayables.Runner.Tick;
+
         if (!playerPlayables.HasStateAuthority) return;
 
+        playerMovement.GettingUpStartTick = playerPlayables.Runner.Tick;
+
         playerPlayables.healthV2.IsGettingUp = true;
+        playerPlayables.healthV2.IsStagger = false;
+        playerMovement.CannotJump = true;
+
+        playerMovement.Swording = false;
+        playerMovement.Punching = false;
+        playerMovement.SwordingMove = false;
+        playerMovement.PunchingMove = false;
+        playerMovement.WasPunchingMoveLastTick = false;
+        playerMovement.WasRollingMoveLastTick = false;
+        playerMovement.WasSwordingMoveLastTick = false;
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
+
+        if (!playerPlayables.HasStateAuthority) return;
+
+        playerPlayables.healthV2.IsStagger = false;
+        playerPlayables.healthV2.IsGettingUp = false;
+        playerMovement.CannotJump = false;
     }
 
     public override void NetworkUpdate()
@@ -33,20 +58,20 @@ public class GettingUp : PlayerOnGround
     }
     private AnimationPlayable GetNextState()
     {
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.GettingUpStartTick : playerMovement.AnimationTick);
+
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
+
         if (playerPlayables.healthV2.IsDead)
             return playerPlayables.lowerBodyMovement.DeathPlayable;
 
         if (!characterController.IsGrounded)
             return playerPlayables.lowerBodyMovement.FallingPlayable;
 
-        if (animationClipPlayable.GetTime() < animationLength * 0.9f)
+        if (elapsedTicks < finishStartTick)
             return null;
-
-        // recovery finished
-        playerPlayables.healthV2.IsGettingUp = false;
-
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.lowerBodyMovement.StaggerHitPlayable;
 
         if (playerMovement.IsJumping)
             return playerPlayables.lowerBodyMovement.JumpPlayable;

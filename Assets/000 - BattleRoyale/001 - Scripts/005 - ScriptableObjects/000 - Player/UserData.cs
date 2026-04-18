@@ -97,6 +97,7 @@ public class UserData : ScriptableObject
     [field: SerializeField] public string Password { get; set; }
     [field: SerializeField] public bool RememberMe { get; set; }
     [field: SerializeField] public string SelectedServer { get; set; }
+    [field: SerializeField] public string AvatarID { get; set; }
     [field: SerializeField] public bool IsGuest { get; set; }
 
     [field: Header("CHARACTER")]
@@ -160,6 +161,7 @@ public class UserData : ScriptableObject
         Username = "";
         Password = "";
         SelectedServer = "";
+        AvatarID = "";
         RememberMe = false;
         CharacterSetting = new PlayerCharacterSetting();
         GameDetails = new GameUserDetails();
@@ -258,6 +260,7 @@ public class UserData : ScriptableObject
         Username = "";
         Password = "";
         SelectedServer = "";
+        AvatarID = "";
         RememberMe = false;
         LoadRememberMe();
         ControlSetting = new Dictionary<string, ControllerSettingData>();

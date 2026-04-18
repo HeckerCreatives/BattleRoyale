@@ -13,6 +13,7 @@ public class PlayerHealth : NetworkBehaviour
     [SerializeField] private PlayerNetworkLoader loader;
     [SerializeField] private UserData userData;
     [SerializeField] private SimpleKCC characterController;
+    [SerializeField] private PlayerMovementV2 movementV2;
     [SerializeField] private HealPlayables healPlayables;
     [SerializeField] private Volume postProcessing;
     [SerializeField] private AudioClip[] gruntClips;

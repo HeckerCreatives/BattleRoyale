@@ -44,6 +44,7 @@ public class GameManager : MonoBehaviour
     [field: SerializeField] public GraphicsController GraphicsManager { get; private set; }
     [field: SerializeField] public GameplaySettingsController GameSettingManager { get; private set; }
     [field: SerializeField] public NotificationController NotificationController { get; private set; }
+    [field: SerializeField] public AdsController AdsManager { get; private set; }
     [field: SerializeField] public GameObject NoBGLoading { get; private set; }
 
 
@@ -643,7 +644,7 @@ public class GameManager : MonoBehaviour
         }
     }
 }
-
+ 
 public static class ClipboardExtension
 {
     /// <summary>

@@ -20,19 +20,37 @@ public class RollState : PlayerOnGround
         base.Enter();
 
         if (playerPlayables.HasInputAuthority)
-            playerPlayables.CancelInvoke();
+        {
+            playerMovement.AnimationTick = playerPlayables.Runner.Tick;
+
+            playerPlayables.ChangeFOV(70);
+        }
 
         playerPlayables.PlayRollSoundEffect();
 
         if (!playerPlayables.HasStateAuthority) return;
 
+        playerMovement.RollStartTick = playerPlayables.Runner.Tick;
         playerMovement.Rolling = true;
+        playerPlayables.healthV2.IsStagger = false;
         canReduce = true;
+
+        playerMovement.Swording = false;
+        playerMovement.Punching = false;
+        playerMovement.SwordingMove = false;
+        playerMovement.PunchingMove = false;
+        playerMovement.WasPunchingMoveLastTick = false;
+        playerMovement.WasRollingMoveLastTick = false;
+        playerMovement.WasSwordingMoveLastTick = false;
+
+        playerPlayables.stamina.ReduceStamina(35f);
     }
 
     public override void Exit()
     {
         base.Exit();
+
+        if (playerPlayables.HasInputAuthority) playerPlayables.ChangeFOV(60);
 
         if (playerPlayables.HasInputAuthority)
             playerPlayables.CancelInvoke();
@@ -48,13 +66,25 @@ public class RollState : PlayerOnGround
         float currentTime = (float)animationClipPlayable.GetTime();
 
         playerMovement.MoveCharacter();
-
+        FOVChanger();
         TryExitRoll(currentTime);
+    }
 
-        if (canReduce && playerPlayables.HasStateAuthority)
+    private void FOVChanger()
+    {
+        if (!playerPlayables.HasInputAuthority) return;
+
+        if (!canReduce) return;
+
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - playerMovement.AnimationTick;
+
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.25f);
+
+        if (elapsedTicks >= finishStartTick)
         {
-            playerPlayables.stamina.ReduceStamina(35f);
-            canReduce = false;
+            playerPlayables.ChangeFOV(60);
         }
     }
 
@@ -73,60 +103,102 @@ public class RollState : PlayerOnGround
         var lower = playerPlayables.lowerBodyMovement;
         var inventory = playerPlayables.inventory;
 
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.RollStartTick : playerMovement.AnimationTick);
+
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
+        int cancelStartTick = Mathf.CeilToInt(totalPunchTicks * 0.25f);
+
         bool isMoving = playerMovement.XMovement != 0f || playerMovement.YMovement != 0f;
-        bool canSprint = playerMovement.IsSprint && playerPlayables.stamina.Stamina > 0f;
+        bool canSprint = playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f;
 
         switch (inventory.WeaponIndex)
         {
             case 1:
                 {
-                    if (animationClipPlayable.GetTime() < animationLength * 0.25f) return null;
+                    if (elapsedTicks < cancelStartTick) return null; 
 
                     if (playerMovement.IsJumping) return lower.JumpPlayable;
 
-                    if (animationClipPlayable.GetTime() < animationLength * 0.85f) return null;
+                    if (elapsedTicks < finishStartTick) return null;
+
+                    if (isMoving)
+                    {
+                        if (canSprint) return lower.SprintPlayable;
+
+                        return lower.RunPlayable;
+                    }
 
                     return lower.IdlePlayable;
                 }
 
             case 2:
                 {
-                    if (animationClipPlayable.GetTime() < animationLength * 0.25f) return null;
+                    if (elapsedTicks < cancelStartTick) return null;
 
                     string primaryId = inventory.PrimaryWeaponID();
 
-
                     if (playerMovement.IsJumping) return lower.JumpPlayable;
 
-                    if (animationClipPlayable.GetTime() < animationLength * 0.85f) return null;
+                    if (elapsedTicks < finishStartTick) return null;
 
-                    if (primaryId == "001") return lower.SwordIdlePlayable;
-                    if (primaryId == "002") return lower.SpearIdlePlayable;
+                    if (primaryId == "001") 
+                    {
+                        if (isMoving)
+                        {
+                            if (canSprint) return lower.SwordSprintPlayable;
+
+                            return lower.SwordRunPlayable;
+                        }
+                        return lower.SwordIdlePlayable;
+                    } 
+                    if (primaryId == "002")
+                    {
+                        if (isMoving)
+                        {
+                            if (canSprint) return lower.SpearSprintPlayable;
+
+                            return lower.SpearRunPlayable;
+                        }
+                        return lower.SpearIdlePlayable;
+                    }
 
                     break;
                 }
 
             case 3:
                 {
-                    if (animationClipPlayable.GetTime() < animationLength * 0.25f) return null;
+                    if (elapsedTicks < cancelStartTick) return null;
 
                     string secondaryId = inventory.SecondaryWeaponID();
 
-                    if (!isMoving)
+
+                    if (playerMovement.IsJumping) return lower.JumpPlayable;
+
+                    if (elapsedTicks < finishStartTick) return null;
+
+                    if (secondaryId == "003")
                     {
-                        if (secondaryId == "003") return lower.RifleIdlePlayable;
-                        if (secondaryId == "004") return lower.BowIdlePlayable;
-                    }
-                    else
-                    {
-                        if (canSprint)
+                        if (isMoving)
                         {
-                            if (secondaryId == "003") return lower.RifleSprintPlayable;
-                            if (secondaryId == "004") return lower.BowSprintPlayable;
+                            if (canSprint) return lower.RifleSprintPlayable;
+
+                            return lower.RifleRunPlayable;
                         }
 
-                        if (secondaryId == "003") return lower.RifleRunPlayable;
-                        if (secondaryId == "004") return lower.BowRunPlayable;
+                        return lower.RifleIdlePlayable;
+                    }
+                    if (secondaryId == "004")
+                    {
+                        if (isMoving)
+                        {
+                            if (canSprint) return lower.BowSprintPlayable;
+
+                            return lower.BowRunPlayable;
+                        }
+
+                        return lower.BowIdlePlayable;
                     }
 
                     break;

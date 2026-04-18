@@ -31,9 +31,6 @@ public class PlayerUpperSprint : UpperNoAimState
         if (health.IsDead)
             return upper.DeathPlayable;
 
-        if (health.IsStagger)
-            return upper.StaggerHitPlayable;
-
         if (playerMovement.IsJumping)
             return upper.JumpPlayable;
 
@@ -73,10 +70,10 @@ public class PlayerUpperSprint : UpperNoAimState
         {
             case 1:
                 {
-                    if (canSprint)
-                        return upper.SprintPlayables;
+                    if (!canSprint && isMoving)
+                        return upper.RunPlayables;
 
-                    return upper.RunPlayables;
+                    return null;
                 }
 
             case 2:
@@ -124,6 +121,6 @@ public class PlayerUpperSprint : UpperNoAimState
                 }
         }
 
-        return upper.RunPlayables;
+        return null;
     }
 }

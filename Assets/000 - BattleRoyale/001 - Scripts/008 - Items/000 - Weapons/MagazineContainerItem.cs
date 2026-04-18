@@ -14,8 +14,6 @@ public class MagazineContainerItem : NetworkBehaviour, IPickupItem
 
     public string WeaponID => weaponID;
 
-    public int Supplies => 0;
-
     //  ====================
 
     [SerializeField] private string weaponID;
@@ -25,21 +23,38 @@ public class MagazineContainerItem : NetworkBehaviour, IPickupItem
     [SerializeField] private Vector3 backRotation;
 
     [field: Header("NETWORK")]
+    [Networked][field: SerializeField] public int Supplies { get; set; }
     [Networked][field: SerializeField] public bool IsPickedUp { get; set; }
     [Networked][field: SerializeField] public NetworkObject CurrentPlayer { get; set; }
     [Networked][field: SerializeField] public PlayerOwnObjectEnabler PlayerCore { get; set; }
     [Networked][field: SerializeField] public Vector3 Position { get; set; }
     [Networked][field: SerializeField] public NetworkObject Back { get; set; }
+    [Networked][field: SerializeField] public Quaternion Rotation { get; set; }
 
 
     public override void Render()
     {
         if (IsPickedUp)
         {
-            transform.parent = PlayerCore.Inventory.SecondaryWeaponID() == "004" ? PlayerCore.Inventory.BowAmmoBack : null;
+            transform.parent = PlayerCore.Inventory.BowAmmoBack;
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.Euler(backRotation);
         }
+        else
+        {
+            transform.parent = null;
+            transform.position = Position;
+            transform.rotation = Rotation;
+        }
+    }
+
+    public void InitializeOnStart(Vector3 position, Quaternion rotation, int supplies)
+    {
+        Supplies = supplies;
+        Position = position;
+        Rotation = rotation;
+
+        Object.RemoveInputAuthority();
     }
 
     public void InitializeItem(NetworkObject player, Action finalAction = null)
@@ -52,6 +67,10 @@ public class MagazineContainerItem : NetworkBehaviour, IPickupItem
 
         tempPlayerinventory.MagazineContainer = this;
 
+        tempPlayerinventory.BowMagazine += Supplies;
+
+        Supplies = 0;
+
         IsPickedUp = true;
 
         PlayerOwnObjectEnabler tempcore = player.GetComponent<PlayerOwnObjectEnabler>();
@@ -63,7 +82,15 @@ public class MagazineContainerItem : NetworkBehaviour, IPickupItem
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     public void RPC_PickupMagazineContainer(NetworkObject player)
     {
-        InitializeItem(player);
+        PlayerInventoryV2 tempPlayerinventory = player.GetComponent<PlayerInventoryV2>();
+
+        if (tempPlayerinventory.MagazineContainer == null)
+            InitializeItem(player);
+        else
+        {
+            tempPlayerinventory.BowMagazine += Supplies;
+            Runner.Despawn(Object);
+        }
     }
 
     public void DropWeapon()

@@ -17,15 +17,6 @@ public class PlayerUpperSpearFirstAttack : UpperNoAimState
     {
         base.Enter();
 
-
-        if (!playerPlayables.HasStateAuthority)
-        {
-            playerPlayables.inventory.PrimaryWeapon.SoundController.PlayAttackOne();
-            playerPlayables.SlashSwordParticles(0);
-
-            return;
-        }
-
         hasResetHitEnemies = false;
     }
 
@@ -52,10 +43,14 @@ public class PlayerUpperSpearFirstAttack : UpperNoAimState
     {
         if (!playerPlayables.HasStateAuthority) return;
 
-        // original:
-        // damageWindowStart = 0.5f
-        // damageWindowEnd   = 0.9f
-        if (normalizedTime >= 0.5 && normalizedTime <= 0.9)
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - playerMovement.SwordStartTick;
+
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int startStartTick = Mathf.CeilToInt(totalPunchTicks * 0.5f);
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
+
+        if (elapsedTicks >= startStartTick && elapsedTicks <= finishStartTick)
         {
             if (!hasResetHitEnemies)
             {
@@ -78,22 +73,26 @@ public class PlayerUpperSpearFirstAttack : UpperNoAimState
         if (playerMovement.IsJumping)
             return playerPlayables.upperBodyMovement.JumpPlayable;
 
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.upperBodyMovement.StaggerHitPlayable;
-
         if (!characterController.IsGrounded)
             return playerPlayables.upperBodyMovement.FallingPlayables;
 
         if (playerMovement.IsSprint && (playerMovement.XMovement != 0f || playerMovement.YMovement != 0f))
             return playerPlayables.upperBodyMovement.SpearSprintPlayable;
 
-        if (normalizedTime >= 0.8)
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.SwordStartTick : playerMovement.AnimationTick);
+
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int startStartTick = Mathf.CeilToInt(totalPunchTicks * 0.8f);
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
+
+        if (elapsedTicks >= startStartTick)
         {
             if (playerMovement.Attacking)
                 return playerPlayables.upperBodyMovement.SpearFinalAttackPlayable;
         }
 
-        if (normalizedTime >= 0.9)
+        if (elapsedTicks >= finishStartTick)
             return playerPlayables.upperBodyMovement.SpearIdle;
 
         return null;

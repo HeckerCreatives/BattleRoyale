@@ -15,8 +15,7 @@ public class BotAnimationPlayable
     List<string> animations;
     List<string> mixers;
 
-    int ltEnter;
-    int ltExit;
+    private Coroutine _weightBlendRoutine;
 
     //  ======================
 
@@ -29,11 +28,6 @@ public class BotAnimationPlayable
     bool oncePlay;
 
     //  ======================
-
-    public float blendDuration = 0.25f; // Duration of blend in seconds
-
-    public Coroutine blendCoroutine;
-    public Coroutine weightCoroutine;
 
     private MonoBehaviour coroutineHost; // host to start coroutine
 
@@ -72,12 +66,7 @@ public class BotAnimationPlayable
         int mixerIndex = mixers.IndexOf(mixername);
         int animIndex = animations.IndexOf(animationname);
 
-        if (ltExit != 0) LeanTween.cancel(ltExit);
-
-        ltEnter = LeanTween.value(botPlayables.gameObject, mixerPlayable.GetInputWeight(animIndex), 1f, botPlayables.enterSpeed)
-        .setOnUpdate((float weight) => {
-            mixerPlayable.SetInputWeight(animIndex, weight);
-        }).setOnComplete(() => mixerPlayable.SetInputWeight(animIndex, 1f)).setEase(LeanTweenType.linear).id;
+        StartWeightBlend(animIndex, 1f, botPlayables.enterSpeed);
 
         if (botPlayables.HasInputAuthority || botPlayables.HasStateAuthority)
         {
@@ -94,12 +83,7 @@ public class BotAnimationPlayable
         int mixerIndex = mixers.IndexOf(mixername);
         int animIndex = animations.IndexOf(animationname);
 
-        if (ltEnter != 0) LeanTween.cancel(ltEnter);
-
-        ltExit = LeanTween.value(botPlayables.gameObject, mixerPlayable.GetInputWeight(animIndex), 0f, botPlayables.exitSpeed)
-        .setOnUpdate((float weight) => {
-            mixerPlayable.SetInputWeight(animIndex, weight);
-        }).setOnComplete(() => mixerPlayable.SetInputWeight(animIndex, 0f)).setEase(LeanTweenType.linear).id;
+        StartWeightBlend(animIndex, 0f, botPlayables.exitSpeed);
     }
 
     ////public virtual void LogicUpdate()
@@ -109,20 +93,38 @@ public class BotAnimationPlayable
 
     public virtual void NetworkUpdate() { }
 
-    private IEnumerator BlendWeights(Playable mixer, int index, float targetWeight)
+    private void StartWeightBlend(int animIndex, float targetWeight, float duration)
     {
-        float startWeight = mixer.GetInputWeight(index);
-        float time = 0f;
-
-        while (time < blendDuration)
+        if (coroutineHost == null)
         {
-            time += Time.deltaTime;
-            float t = time / blendDuration;
-            float newWeight = Mathf.Lerp(startWeight, targetWeight, t);
-            mixer.SetInputWeight(index, newWeight);
+            mixerPlayable.SetInputWeight(animIndex, targetWeight);
+            return;
+        }
+
+        if (_weightBlendRoutine != null)
+            coroutineHost.StopCoroutine(_weightBlendRoutine);
+
+        _weightBlendRoutine = coroutineHost.StartCoroutine(BlendWeight(animIndex, targetWeight, duration));
+    }
+
+    private IEnumerator BlendWeight(int animIndex, float targetWeight, float duration)
+    {
+        float startWeight = mixerPlayable.GetInputWeight(animIndex);
+
+        if (duration <= 0f)
+        {
+            mixerPlayable.SetInputWeight(animIndex, targetWeight);
+            yield break;
+        }
+
+        float t = 0f;
+        while (t < 1f)
+        {
+            t += Time.deltaTime / duration;
+            mixerPlayable.SetInputWeight(animIndex, Mathf.Lerp(startWeight, targetWeight, Mathf.Clamp01(t)));
             yield return null;
         }
 
-        mixer.SetInputWeight(index, targetWeight); // Final snap to target
+        mixerPlayable.SetInputWeight(animIndex, targetWeight);
     }
 }

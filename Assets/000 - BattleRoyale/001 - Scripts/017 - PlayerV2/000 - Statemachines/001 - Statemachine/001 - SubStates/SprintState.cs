@@ -20,6 +20,12 @@ public class SprintState : PlayerOnGround
     {
         base.Enter();
 
+        if (playerPlayables.HasInputAuthority)
+        {
+            playerPlayables.ChangeFOV(70f);
+            playerPlayables.WarpDrive.Play();
+        }
+
         if (playerPlayables.HasStateAuthority) return;
 
         playedStep1 = false;
@@ -30,6 +36,12 @@ public class SprintState : PlayerOnGround
     public override void Exit()
     {
         base.Exit();
+
+        if (playerPlayables.HasInputAuthority)
+        {
+            playerPlayables.ChangeFOV(60f);
+            playerPlayables.WarpDrive.Stop();
+        }
 
         if (playerPlayables.HasStateAuthority) return;
 
@@ -103,10 +115,7 @@ public class SprintState : PlayerOnGround
         if (health.IsDead)
             return lower.DeathPlayable;
 
-        if (health.IsStagger)
-            return lower.StaggerHitPlayable;
-
-        if (playerMovement.IsJumping)
+        if (playerMovement.IsJumping && playerPlayables.stamina.Stamina >= 20f)
             return lower.JumpPlayable;
 
         if (!characterController.IsGrounded)
@@ -139,31 +148,16 @@ public class SprintState : PlayerOnGround
         bool canSprint = playerMovement.IsSprint && playerPlayables.stamina.Stamina > 0f;
 
         if (!isMoving)
-        {
-            switch (inventory.WeaponIndex)
-            {
-                case 2:
-                    {
-                        string primaryId = inventory.PrimaryWeaponID();
-                        if (primaryId == "001") return lower.SwordIdlePlayable;
-                        if (primaryId == "002") return lower.SpearIdlePlayable;
-                        break;
-                    }
-
-                case 3:
-                    {
-                        string secondaryId = inventory.SecondaryWeaponID();
-                        if (secondaryId == "003") return lower.RifleIdlePlayable;
-                        if (secondaryId == "004") return lower.BowIdlePlayable;
-                        break;
-                    }
-            }
-
             return lower.IdlePlayable;
-        }
 
         switch (inventory.WeaponIndex)
         {
+            case 1:
+
+                if (!canSprint && isMoving) return lower.RunPlayable;
+
+                break;
+
             case 2:
                 {
                     string primaryId = inventory.PrimaryWeaponID();
@@ -195,9 +189,6 @@ public class SprintState : PlayerOnGround
                 }
         }
 
-        if (canSprint)
-            return lower.SprintPlayable;
-
-        return lower.RunPlayable;
+        return null;
     }
 }

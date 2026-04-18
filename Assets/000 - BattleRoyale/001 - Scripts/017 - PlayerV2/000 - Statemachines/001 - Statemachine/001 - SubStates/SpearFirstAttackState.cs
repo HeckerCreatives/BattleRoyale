@@ -14,83 +14,138 @@ public class SpearFirstAttackState : PlayerOnGround
     {
     }
 
+
     public override void Enter()
     {
         base.Enter();
 
-        timer = playerPlayables.TickRateAnimation + (animationLength * 0.9f);
-        nextPunchWindow = playerPlayables.TickRateAnimation + (animationLength * 0.8f);
-        canAction = true;
+        if (playerPlayables.HasInputAuthority) playerMovement.AnimationTick = playerPlayables.Runner.Tick;
+
+        if (!playerPlayables.HasStateAuthority)
+        {
+            playerPlayables.inventory.PrimaryWeapon.SoundController.PlayAttackOne();
+            //playerPlayables.SlashSpearParticles(0);
+        }
+
+        if (!playerPlayables.HasStateAuthority) return;
+
+        playerMovement.RotatePlayer();
+
+        playerMovement.AttackMoveSpeed = playerMovement.SpearAttackMoveSpeedOne;
+        playerMovement.SwordStartTick = playerPlayables.Runner.Tick;
+        playerMovement.Swording = true;
+        //playerMovement.CannotJump = true;
     }
 
     public override void Exit()
     {
         base.Exit();
 
-        canAction = false;
-    }
+        if (!playerPlayables.HasStateAuthority) return;
 
+        playerMovement.Swording = false;
+        playerMovement.SwordingMove = false;
+        playerMovement.Attacking = false;
+        //playerMovement.CannotJump = false;
+    }
 
     public override void NetworkUpdate()
     {
-        Animation();
+        HandleMoveWindow();
+        playerMovement.MoveCharacter();
+
+        var nextState = GetNextState();
+
+        if (nextState != null && playablesChanger.CurrentState != nextState)
+        {
+            playablesChanger.ChangeState(nextState);
+        }
+
+        if (playerPlayables.HasStateAuthority)
+            playerPlayables.stamina.RecoverStamina(5f);
     }
 
-    private void Animation()
+    private void HandleMoveWindow()
+    {
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.SwordStartTick : playerMovement.AnimationTick);
+
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int moveStartTick = Mathf.CeilToInt(totalPunchTicks * 0.2f);
+        int moveEndTick = Mathf.CeilToInt(totalPunchTicks * 0.5f);
+
+        playerMovement.SwordingMove = elapsedTicks >= moveStartTick && elapsedTicks <= moveEndTick;
+    }
+
+    private AnimationPlayable GetNextState()
+    {
+        var interruptState = GetInterruptState();
+        if (interruptState != null)
+            return interruptState;
+
+        var comboState = GetComboState();
+        if (comboState != null)
+            return comboState;
+
+        return GetRecoveryState();
+    }
+
+    private AnimationPlayable GetInterruptState()
     {
         if (playerPlayables.healthV2.IsDead)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
-        }
-
-
-        //if (playerPlayables.healthV2.IsHit)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-        //    return;
-        //}
-
-        if (playerPlayables.healthV2.IsStagger)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
-        }
+            return playerPlayables.lowerBodyMovement.DeathPlayable;
 
         if (!characterController.IsGrounded)
+            return playerPlayables.lowerBodyMovement.FallingPlayable;
+
+        return null;
+    }
+
+    private AnimationPlayable GetComboState()
+    {
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.SwordStartTick : playerMovement.AnimationTick);
+
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int comboWindowStartTick = Mathf.CeilToInt(totalPunchTicks * 0.8f);
+
+        bool comboWindow = elapsedTicks >= comboWindowStartTick;
+
+        if (comboWindow && playerMovement.Attacking)
+            return playerPlayables.lowerBodyMovement.SpearFinalAttackPlayable;
+
+        return null;
+    }
+
+    private AnimationPlayable GetRecoveryState()
+    {
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.SwordStartTick : playerMovement.AnimationTick);
+
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
+
+        bool finishedPunch = elapsedTicks >= finishStartTick;
+        bool isMoving = playerMovement.XMovement != 0 || playerMovement.YMovement != 0;
+        bool canRoll = playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f;
+
+
+        //if (playerMovement.IsBlocking)
+        //    return playerPlayables.lowerBodyMovement.BlockPlayable;
+
+        if (canRoll)
+            return playerPlayables.lowerBodyMovement.RollPlayable;
+
+        if (isMoving && finishedPunch)
         {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable);
+            return playerMovement.IsSprint
+                ? playerPlayables.lowerBodyMovement.SpearSprintPlayable
+                : playerPlayables.lowerBodyMovement.SpearRunPlayable;
         }
 
-        if (playerPlayables.TickRateAnimation >= nextPunchWindow && canAction)
-        {
-            if (playerMovement.Attacking)
-            {
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordAttackSecondPlayable);
-            }
-        }
+        if (!finishedPunch)
+            return null;
 
-        if (playerPlayables.TickRateAnimation >= timer && canAction)
-        {
-            if (playerMovement.IsBlocking)
-            {
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearBlockPlayable);
-            }
-
-            if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
-            {
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RollPlayable);
-            }
-
-
-            if (playerMovement.MoveDirection != Vector3.zero)
-            {
-                if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearSprintPlayable);
-
-                else
-                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearRunPlayable);
-            }
-            else
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SpearIdlePlayable);
-        }
+        return playerPlayables.lowerBodyMovement.SpearIdlePlayable;
     }
 }

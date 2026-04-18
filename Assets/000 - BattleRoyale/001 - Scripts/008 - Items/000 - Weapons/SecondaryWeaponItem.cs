@@ -118,12 +118,14 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
         }
     }
 
-    public void InitializeItemOnSpawn(Vector3 position, Quaternion rotation)
+    public void InitializeItemOnSpawn(Vector3 position, Quaternion rotation, int supplies = 0)
     {
         Position = position;
         Rotation = rotation;
         IsEquipped = false;
         IsPickedUp = false;
+
+        Supplies = supplies;
     }
 
     public void InitializeItem(NetworkObject player, int supplies, bool isBot = false, Action finalAction = null)
@@ -143,8 +145,8 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
 
             if (tempPlayerinventory.SecondaryWeapon != null) tempPlayerinventory.SecondaryWeapon.DropWeapon();
 
-            if (tempPlayerinventory.MagazineContainer != null)
-                tempPlayerinventory.MagazineContainer.DropWeapon();
+            //if (tempPlayerinventory.MagazineContainer != null)
+            //    tempPlayerinventory.MagazineContainer.DropWeapon();
 
             if (WeaponID == "004")
                 tempPlayerinventory.RPC_SpawnBowMagazine();

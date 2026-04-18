@@ -109,8 +109,6 @@ public class SpearRunState : PlayerOnGround
         if (playerPlayables.healthV2.IsDead)
             return playerPlayables.lowerBodyMovement.DeathPlayable;
 
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.lowerBodyMovement.StaggerHitPlayable;
 
         if (playerMovement.IsJumping)
             return playerPlayables.lowerBodyMovement.JumpPlayable;
@@ -130,8 +128,8 @@ public class SpearRunState : PlayerOnGround
         if (playerMovement.IsRepairing)
             return playerPlayables.lowerBodyMovement.RepairPlayable;
 
-        if (playerMovement.IsBlocking)
-            return playerPlayables.lowerBodyMovement.SwordBlockPlayable;
+        if (playerMovement.Attacking)
+            return playerPlayables.lowerBodyMovement.SpearFirstAttackPlayable;
 
         // if (playerPlayables.healthV2.IsHit)
         //     return playerPlayables.lowerBodyMovement.HitPlayable;

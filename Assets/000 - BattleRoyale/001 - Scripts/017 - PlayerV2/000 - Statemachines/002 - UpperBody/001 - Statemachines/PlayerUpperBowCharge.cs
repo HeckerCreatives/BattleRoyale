@@ -31,8 +31,6 @@ public class PlayerUpperBowCharge : UpperWithAimState
         if (playerMovement.IsJumping)
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowJumpPlayable);
 
-        if (playerPlayables.healthV2.IsStagger)
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
 
         if (playerMovement.IsHealing)
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HealPlayable);

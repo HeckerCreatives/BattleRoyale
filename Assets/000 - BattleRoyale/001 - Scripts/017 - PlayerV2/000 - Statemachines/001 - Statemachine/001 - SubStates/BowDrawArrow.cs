@@ -33,11 +33,6 @@ public class BowDrawArrow : PlayerOnGround
 
         }
 
-        if (playerPlayables.healthV2.IsStagger)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
-
-        }
 
         if (playerMovement.IsHealing)
         {

@@ -44,10 +44,6 @@ public class PlayerUpperRifleCocking : UpperWithAimState
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
         }
 
-        if (playerPlayables.healthV2.IsStagger)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
-        }
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
         {

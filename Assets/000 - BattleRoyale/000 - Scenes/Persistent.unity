@@ -870,6 +870,7 @@ GameObject:
   - component: {fileID: 425614881}
   - component: {fileID: 425614886}
   - component: {fileID: 425614887}
+  - component: {fileID: 425614889}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -1020,6 +1021,7 @@ MonoBehaviour:
   <GraphicsManager>k__BackingField: {fileID: 425614886}
   <GameSettingManager>k__BackingField: {fileID: 425614887}
   <NotificationController>k__BackingField: {fileID: 425614882}
+  <AdsManager>k__BackingField: {fileID: 425614889}
   <NoBGLoading>k__BackingField: {fileID: 688634266}
 --- !u!114 &425614885
 MonoBehaviour:
@@ -1090,6 +1092,7 @@ MonoBehaviour:
   <ConnectionStatus>k__BackingField: 
   <LoginStatus>k__BackingField: 0
   missedPingCount: 0
+  isOnLogin: 0
   playerCountServer: 0
   playerAsiaCountServer: 0
   playerUAECountServer: 0
@@ -1098,6 +1101,20 @@ MonoBehaviour:
   playerAmericaWestCountServer: 0
   isOnGame: 0
   retryReconnect: 0
+--- !u!114 &425614889
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 425614879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f74a6e79ce376641824fd4ab5c38794, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  adsInitialized: 0
+  rewardAdsAvailable: 0
 --- !u!1 &432989998
 GameObject:
   m_ObjectHideFlags: 0
@@ -4976,8 +4993,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2008200656}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.012083344, y: -0.48220962, z: 0.006651889, w: 0.8759473}
-  m_LocalPosition: {x: 53.28398, y: 11.427272, z: 37392.844}
+  m_LocalRotation: {x: 0, y: 0.08715578, z: 0, w: 0.9961947}
+  m_LocalPosition: {x: -0.20218915, y: 1.8680046, z: -4.026055}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5115,9 +5132,9 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.1
+  near clip plane: 0.16
   far clip plane: 5000
-  field of view: 60.000004
+  field of view: 70
   orthographic: 0
   orthographic size: 10
   m_Depth: 1

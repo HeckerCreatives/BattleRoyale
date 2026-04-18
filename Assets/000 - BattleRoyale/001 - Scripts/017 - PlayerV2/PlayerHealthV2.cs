@@ -72,6 +72,8 @@ public class PlayerHealthV2 : NetworkBehaviour
 
     Vignette circleVignette;
 
+    Coroutine ShakerCoroutine;
+
     //==========================
 
     public override void Spawned()
@@ -108,9 +110,9 @@ public class PlayerHealthV2 : NetworkBehaviour
 
                     if (!HasInputAuthority) break;
 
-                    ShakerCamera();
+                    if (ShakerCoroutine != null) StopCoroutine(ShakerCoroutine);
 
-                    Invoke(nameof(OffCameraShaker), 0.15f);
+                    ShakerCoroutine = StartCoroutine(Shaker());
                     break;
                 case nameof(IsStagger):
                     if (HasStateAuthority) break;
@@ -128,8 +130,6 @@ public class PlayerHealthV2 : NetworkBehaviour
                     break;
                 case nameof(FallDamage):
                     if (!HasInputAuthority) break;
-
-                    Debug.Log("FALL DAMAGED");
 
                     DamageIndicatorWithoutBlood();
                     FallSoundEffects();
@@ -165,6 +165,14 @@ public class PlayerHealthV2 : NetworkBehaviour
         base.FixedUpdateNetwork();
 
         CircleDamage();
+    }
+
+
+    IEnumerator Shaker()
+    {
+        playerPlayables.CameraShaker(shaker);
+        yield return new WaitForSecondsRealtime(0.15f);
+        playerPlayables.CameraShaker(0f);
     }
 
     private void ShakerCamera()

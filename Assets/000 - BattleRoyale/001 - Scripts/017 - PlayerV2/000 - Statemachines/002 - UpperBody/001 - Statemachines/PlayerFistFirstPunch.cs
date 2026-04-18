@@ -18,12 +18,6 @@ public class PlayerFistFirstPunch : UpperNoAimState
     {
         base.Enter();
 
-        if (!playerPlayables.HasStateAuthority)
-        {
-            playerPlayables.fistSoundController.PlayAttackOne();
-            return;
-        }
-
         hasResetHitEnemies = false;
     }
 
@@ -48,17 +42,9 @@ public class PlayerFistFirstPunch : UpperNoAimState
     {
         base.NetworkUpdate();
 
-        if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
-            playerPlayables.SetPunchRotation(1f);
-        else
-            playerPlayables.SetPunchRotation(0f);
+        HandleDamageWindow();
 
-        double animTime = animationClipPlayable.GetTime();
-        double normalizedTime = animTime / animationLength;
-
-        HandleDamageWindow(normalizedTime);
-
-        var nextState = GetNextState(normalizedTime);
+        var nextState = GetNextState();
 
         if (nextState != null && playablesChanger.CurrentState != nextState)
         {
@@ -66,12 +52,18 @@ public class PlayerFistFirstPunch : UpperNoAimState
         }
     }
 
-    private void HandleDamageWindow(double normalizedTime)
+    private void HandleDamageWindow()
     {
         if (!playerPlayables.HasStateAuthority) return;
 
-        // 18% to 23% of animation
-        if (normalizedTime >= 0.18f && normalizedTime <= 0.9f)
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - playerMovement.PunchStartTick;
+
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int startStartTick = Mathf.CeilToInt(totalPunchTicks * 0.18f);
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
+
+        if (elapsedTicks >= startStartTick && elapsedTicks <= finishStartTick)
         {
             if (!hasResetHitEnemies)
             {
@@ -83,13 +75,11 @@ public class PlayerFistFirstPunch : UpperNoAimState
         }
     }
 
-    private UpperBodyAnimations GetNextState(double normalizedTime)
+    private UpperBodyAnimations GetNextState()
     {
         if (playerPlayables.healthV2.IsDead)
             return playerPlayables.upperBodyMovement.DeathPlayable;
 
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.upperBodyMovement.StaggerHitPlayable;
 
         if (playerMovement.IsJumping)
             return playerPlayables.upperBodyMovement.JumpPlayable;
@@ -103,15 +93,22 @@ public class PlayerFistFirstPunch : UpperNoAimState
         if (playerMovement.IsSprint && (playerMovement.XMovement != 0f || playerMovement.YMovement != 0f))
             return playerPlayables.upperBodyMovement.SprintPlayables;
 
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - playerMovement.PunchStartTick;
+
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int startStartTick = Mathf.CeilToInt(totalPunchTicks * 0.8f);
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
+
         // combo window opens at 80%
-        if (normalizedTime >= 0.8)
+        if (elapsedTicks >= startStartTick)
         {
             if (playerMovement.Attacking)
                 return playerPlayables.upperBodyMovement.SecondPunch;
         }
 
         // state ends at 90%
-        if (normalizedTime >= 0.9)
+        if (elapsedTicks >= finishStartTick)
             return playerPlayables.upperBodyMovement.IdlePlayables;
 
         return null;

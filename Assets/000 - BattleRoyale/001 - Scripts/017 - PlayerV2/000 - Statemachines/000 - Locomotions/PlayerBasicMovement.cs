@@ -65,6 +65,8 @@ public class PlayerBasicMovement : NetworkBehaviour
     [SerializeField] private AnimationClip bowDrawArrow;
     [SerializeField] private AnimationClip bowCharge;
     [SerializeField] private AnimationClip bowShot;
+    [SerializeField] private AnimationClip stopSprint;
+    [SerializeField] private AnimationClip bowDrawIdle;
 
     [Space]
     [SerializeField] private LayerMask enemyLayerMask;
@@ -125,12 +127,14 @@ public class PlayerBasicMovement : NetworkBehaviour
     public BowDrawArrow BowDrawArrowPlayable { get; private set; }
     public BowCharge BowChargePlayable { get; private set; }
     public BowShot BowShotPlayable { get; private set; }
+    public StopSprintState StopSprintPlayable { get; private set; }
+    public BowDrawIdle BowDrawIdlePlayable { get; private set; }
 
     //  ======================
 
     public AnimationMixerPlayable Initialize()
     {
-        mixerPlayable = AnimationMixerPlayable.Create(playerPlayables.playableGraph, 50);
+        mixerPlayable = AnimationMixerPlayable.Create(playerPlayables.playableGraph, 52);
 
         var idleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, idle);
         var runClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, run);
@@ -181,6 +185,8 @@ public class PlayerBasicMovement : NetworkBehaviour
         var bowDrawArrowClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, bowDrawArrow);
         var bowChargeClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, bowCharge);
         var bowShotClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, bowShot);
+        var stopSprintClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, stopSprint);
+        var bowDrawIdleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, bowDrawIdle);
 
         playerPlayables.playableGraph.Connect(idleClip, 0, mixerPlayable, 1);
         playerPlayables.playableGraph.Connect(runClip, 0, mixerPlayable, 2);
@@ -190,47 +196,48 @@ public class PlayerBasicMovement : NetworkBehaviour
         playerPlayables.playableGraph.Connect(punch2Clip, 0, mixerPlayable, 6);
         playerPlayables.playableGraph.Connect(punch3Clip, 0, mixerPlayable, 7);
         playerPlayables.playableGraph.Connect(startJumpClip, 0, mixerPlayable, 8);
-        playerPlayables.playableGraph.Connect(idleJumpClip, 0, mixerPlayable, 9);
-        playerPlayables.playableGraph.Connect(fallingClip, 0, mixerPlayable, 10);
-        playerPlayables.playableGraph.Connect(jumpPunchClip, 0, mixerPlayable, 11);
-        playerPlayables.playableGraph.Connect(blockClip, 0, mixerPlayable, 12);
-        playerPlayables.playableGraph.Connect(hitClip, 0, mixerPlayable, 13);
-        playerPlayables.playableGraph.Connect(staggerHitClip, 0, mixerPlayable, 14);
-        playerPlayables.playableGraph.Connect(gettingUpClip, 0, mixerPlayable, 15);
-        playerPlayables.playableGraph.Connect(deathClip, 0, mixerPlayable, 16);
-        playerPlayables.playableGraph.Connect(healClip, 0, mixerPlayable, 17);
-        playerPlayables.playableGraph.Connect(repairClip, 0, mixerPlayable, 18);
-        playerPlayables.playableGraph.Connect(trappingClip, 0, mixerPlayable, 19);
-        playerPlayables.playableGraph.Connect(middleHitClip, 0, mixerPlayable, 20);
-        playerPlayables.playableGraph.Connect(swordIdleClip, 0, mixerPlayable, 21);
-        playerPlayables.playableGraph.Connect(swordRunClip, 0, mixerPlayable, 22);
-        playerPlayables.playableGraph.Connect(swordFirstAttackClip, 0, mixerPlayable, 23);
-        playerPlayables.playableGraph.Connect(swordSecondAttackClip, 0, mixerPlayable, 24);
-        playerPlayables.playableGraph.Connect(swordFinalAttackClip, 0, mixerPlayable, 25);
-        playerPlayables.playableGraph.Connect(swordSprintClip, 0, mixerPlayable, 26);
-        playerPlayables.playableGraph.Connect(swordBlockClip, 0, mixerPlayable, 27);
-        playerPlayables.playableGraph.Connect(swordJumpAttackClip, 0, mixerPlayable, 28);
-        playerPlayables.playableGraph.Connect(spearIdleClip, 0, mixerPlayable, 29);
-        playerPlayables.playableGraph.Connect(spearRunClip, 0, mixerPlayable, 30);
-        playerPlayables.playableGraph.Connect(spearSprintClip, 0, mixerPlayable, 31);
-        playerPlayables.playableGraph.Connect(spearFirstAattackClip, 0, mixerPlayable, 32);
-        playerPlayables.playableGraph.Connect(spearFinalAattackClip, 0, mixerPlayable, 33);
-        playerPlayables.playableGraph.Connect(spearBlockClip, 0, mixerPlayable, 34);
-        playerPlayables.playableGraph.Connect(spearJumpAttackClip, 0, mixerPlayable, 35);
-        playerPlayables.playableGraph.Connect(rifleIdleClip, 0, mixerPlayable, 36);
-        playerPlayables.playableGraph.Connect(rifleRunClip, 0, mixerPlayable, 37);
-        playerPlayables.playableGraph.Connect(rifleSprintClip, 0, mixerPlayable, 38);
-        playerPlayables.playableGraph.Connect(rifleShootClip, 0, mixerPlayable, 39);
-        playerPlayables.playableGraph.Connect(rifleCockingClip, 0, mixerPlayable, 40);
-        playerPlayables.playableGraph.Connect(rifleReloadClip, 0, mixerPlayable, 41);
-        playerPlayables.playableGraph.Connect(rifleFallingClip, 0, mixerPlayable, 42);
-        playerPlayables.playableGraph.Connect(rifleJumpClip, 0, mixerPlayable, 43);
-        playerPlayables.playableGraph.Connect(bowIdleClip, 0, mixerPlayable, 44);
-        playerPlayables.playableGraph.Connect(bowRunClip, 0, mixerPlayable, 45);
-        playerPlayables.playableGraph.Connect(bowSprintClip, 0, mixerPlayable, 46);
-        playerPlayables.playableGraph.Connect(bowDrawArrowClip, 0, mixerPlayable, 47);
-        playerPlayables.playableGraph.Connect(bowChargeClip, 0, mixerPlayable, 48);
-        playerPlayables.playableGraph.Connect(bowShotClip, 0, mixerPlayable, 49);
+        playerPlayables.playableGraph.Connect(fallingClip, 0, mixerPlayable, 9);
+        playerPlayables.playableGraph.Connect(jumpPunchClip, 0, mixerPlayable, 10);
+        playerPlayables.playableGraph.Connect(blockClip, 0, mixerPlayable, 11);
+        playerPlayables.playableGraph.Connect(hitClip, 0, mixerPlayable, 12);
+        playerPlayables.playableGraph.Connect(staggerHitClip, 0, mixerPlayable, 13);
+        playerPlayables.playableGraph.Connect(gettingUpClip, 0, mixerPlayable, 14);
+        playerPlayables.playableGraph.Connect(deathClip, 0, mixerPlayable, 15);
+        playerPlayables.playableGraph.Connect(healClip, 0, mixerPlayable, 16);
+        playerPlayables.playableGraph.Connect(repairClip, 0, mixerPlayable, 17);
+        playerPlayables.playableGraph.Connect(trappingClip, 0, mixerPlayable, 18);
+        playerPlayables.playableGraph.Connect(middleHitClip, 0, mixerPlayable, 19);
+        playerPlayables.playableGraph.Connect(swordIdleClip, 0, mixerPlayable, 20);
+        playerPlayables.playableGraph.Connect(swordRunClip, 0, mixerPlayable, 21);
+        playerPlayables.playableGraph.Connect(swordFirstAttackClip, 0, mixerPlayable, 22);
+        playerPlayables.playableGraph.Connect(swordSecondAttackClip, 0, mixerPlayable, 23);
+        playerPlayables.playableGraph.Connect(swordFinalAttackClip, 0, mixerPlayable, 24);
+        playerPlayables.playableGraph.Connect(swordSprintClip, 0, mixerPlayable, 25);
+        playerPlayables.playableGraph.Connect(swordBlockClip, 0, mixerPlayable, 26);
+        playerPlayables.playableGraph.Connect(swordJumpAttackClip, 0, mixerPlayable, 27);
+        playerPlayables.playableGraph.Connect(spearIdleClip, 0, mixerPlayable, 28);
+        playerPlayables.playableGraph.Connect(spearRunClip, 0, mixerPlayable, 29);
+        playerPlayables.playableGraph.Connect(spearSprintClip, 0, mixerPlayable, 30);
+        playerPlayables.playableGraph.Connect(spearFirstAattackClip, 0, mixerPlayable, 31);
+        playerPlayables.playableGraph.Connect(spearFinalAattackClip, 0, mixerPlayable, 32);
+        playerPlayables.playableGraph.Connect(spearBlockClip, 0, mixerPlayable, 33);
+        playerPlayables.playableGraph.Connect(spearJumpAttackClip, 0, mixerPlayable, 34);
+        playerPlayables.playableGraph.Connect(rifleIdleClip, 0, mixerPlayable, 35);
+        playerPlayables.playableGraph.Connect(rifleRunClip, 0, mixerPlayable, 36);
+        playerPlayables.playableGraph.Connect(rifleSprintClip, 0, mixerPlayable, 37);
+        playerPlayables.playableGraph.Connect(rifleShootClip, 0, mixerPlayable, 38);
+        playerPlayables.playableGraph.Connect(rifleCockingClip, 0, mixerPlayable, 39);
+        playerPlayables.playableGraph.Connect(rifleReloadClip, 0, mixerPlayable, 40);
+        playerPlayables.playableGraph.Connect(rifleFallingClip, 0, mixerPlayable, 41);
+        playerPlayables.playableGraph.Connect(rifleJumpClip, 0, mixerPlayable, 42);
+        playerPlayables.playableGraph.Connect(bowIdleClip, 0, mixerPlayable, 43);
+        playerPlayables.playableGraph.Connect(bowRunClip, 0, mixerPlayable, 44);
+        playerPlayables.playableGraph.Connect(bowSprintClip, 0, mixerPlayable, 45);
+        playerPlayables.playableGraph.Connect(bowDrawArrowClip, 0, mixerPlayable, 46);
+        playerPlayables.playableGraph.Connect(bowChargeClip, 0, mixerPlayable, 47);
+        playerPlayables.playableGraph.Connect(bowShotClip, 0, mixerPlayable, 48);
+        playerPlayables.playableGraph.Connect(stopSprintClip, 0, mixerPlayable, 49);
+        playerPlayables.playableGraph.Connect(bowDrawIdleClip, 0, mixerPlayable, 50);
 
         PlayablesChanger changer = playerPlayables.lowerBodyChanger;
 
@@ -246,6 +253,7 @@ public class PlayerBasicMovement : NetworkBehaviour
         RepairPlayable = new RepairState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "repair", "basic", heal.length, repairClip, true, isLowerBody);
         TrappingPlayable = new TrappingState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "trapping", "basic", trapping.length, trappingClip, true, isLowerBody);
         MiddleHitPlayable = new MiddleHitState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "middlehit", "basic", hit.length, hitClip, true, isLowerBody);
+        StopSprintPlayable = new StopSprintState(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "stopsprint", "basic", hit.length, stopSprintClip, true, isLowerBody);
 
         #endregion
 
@@ -309,6 +317,7 @@ public class PlayerBasicMovement : NetworkBehaviour
         BowDrawArrowPlayable = new BowDrawArrow(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowdrawarrow", "basic", bowDrawArrow.length, bowDrawArrowClip, true, isLowerBody);
         BowChargePlayable = new BowCharge(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowcharge", "basic", bowCharge.length, bowChargeClip, true, isLowerBody);
         BowShotPlayable = new BowShot(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowshot", "basic", bowShot.length, bowShotClip, true, isLowerBody);
+        BowDrawIdlePlayable = new BowDrawIdle(this, simpleKCC, changer, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowdrawidle", "basic", bowShot.length, bowShotClip, true, isLowerBody);
 
         #endregion
 
@@ -335,86 +344,88 @@ public class PlayerBasicMovement : NetworkBehaviour
                 return Punch3Playable;
             case 8:
                 return JumpPlayable;
-            case 10:
+            case 9:
                 return FallingPlayable;
-            case 11:
+            case 10:
                 return JumpPunchPlayable;
-            case 12:
+            case 11:
                 return BlockPlayable;
-            case 13:
+            case 12:
                 return HitPlayable;
-            case 14:
+            case 13:
                 return StaggerHitPlayable;
-            case 15:
+            case 14:
                 return GettingUpPlayable;
-            case 16:
+            case 15:
                 return DeathPlayable;
-            case 17:
+            case 16:
                 return HealPlayable;
-            case 18:
+            case 17:
                 return RepairPlayable;
-            case 19:
+            case 18:
                 return TrappingPlayable;
-            case 20:
+            case 19:
                 return MiddleHitPlayable;
-            case 21:
+            case 20:
                 return SwordIdlePlayable;
-            case 22:
+            case 21:
                 return SwordRunPlayable;
-            case 23:
+            case 22:
                 return SwordAttackFirstPlayable;
-            case 24:
+            case 23:
                 return SwordAttackSecondPlayable;
-            case 25:
+            case 24:
                 return SwordFinalAttackPlayable;
-            case 26:
+            case 25:
                 return SwordSprintPlayable;
-            case 27:
+            case 26:
                 return SwordBlockPlayable;
-            case 28:
+            case 27:
                 return SwordJumpAttackPlayable;
-            case 29:
+            case 28:
                 return SpearIdlePlayable;
-            case 30:
+            case 29:
                 return SpearRunPlayable;
-            case 31:
+            case 30:
                 return SpearSprintPlayable;
-            case 32:
+            case 31:
                 return SpearFirstAttackPlayable;
-            case 33:
+            case 32:
                 return SpearFinalAttackPlayable;
-            case 34:
+            case 33:
                 return SpearBlockPlayable;
-            case 35:
+            case 34:
                 return SpearJumpAttackPlayable;
-            case 36:
+            case 35:
                 return RifleIdlePlayable;
-            case 37:
+            case 36:
                 return RifleRunPlayable;
-            case 38:
+            case 37:
                 return RifleSprintPlayable;
-            case 39:
+            case 38:
                 return RifleShootPlayable;
+            case 39:
+                return RifleReloadPlayable;
             case 40:
                 return RifleReloadPlayable;
             case 41:
-                return RifleReloadPlayable;
-            case 42:
                 return RifleFallingPlayable;
-            case 43:
+            case 42:
                 return RifleJumpPlayable;
-            case 44:
+            case 43:
                 return BowIdlePlayable;
-            case 45:
+            case 44:
                 return BowRunPlayable;
-            case 46:
+            case 45:
                 return BowSprintPlayable;
-            case 47:
+            case 46:
                 return BowDrawArrowPlayable;
-            case 48:
+            case 47:
                 return BowChargePlayable;
-            case 49:
+            case 48:
                 return BowShotPlayable;
+            case 49:
+                return StopSprintPlayable;
             default: return null;
         }
     }

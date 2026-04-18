@@ -1,15 +1,10 @@
 using Fusion.Addons.SimpleKCC;
-using System.Buffers;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
-using UnityEngine.Playables;
 
 public class PunchState : PlayerOnGround
 {
-    bool canMove;
-
     public PunchState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
     }
@@ -18,21 +13,44 @@ public class PunchState : PlayerOnGround
     {
         base.Enter();
 
-        canMove = true;
+        playerMovement.AttackMoveSpeed = playerMovement.AttackMoveSpeedOne;
+
+        if (playerPlayables.HasInputAuthority) playerMovement.AnimationTick = playerPlayables.Runner.Tick;
+
+        if (!playerPlayables.HasStateAuthority)
+        {
+            playerPlayables.fistSoundController.PlayAttackOne();
+            playerPlayables.SlashPunchParticles(0);
+        }
+
+        if (!playerPlayables.HasStateAuthority) return;
+
+        playerMovement.RotatePlayer();
+
+        playerMovement.PunchStartTick = playerPlayables.Runner.Tick;
+        playerMovement.Punching = true;
+        //playerMovement.CannotJump = true;
     }
 
     public override void Exit()
     {
         base.Exit();
 
-        canMove = false;
+        playerPlayables.SlashPunchParticlesStop(0);
+
+        if (!playerPlayables.HasStateAuthority) return;
+
+        playerMovement.Punching = false;
+        playerMovement.PunchingMove = false;
+        playerMovement.Attacking = false;
+        //playerMovement.CannotJump = false;
     }
 
     public override void NetworkUpdate()
     {
-        playerMovement.RotatePlayer();
+        HandleMoveWindow();
 
-        //HandleMoveWindow();
+        playerMovement.MoveCharacter();
 
         var nextState = GetNextState();
 
@@ -43,6 +61,18 @@ public class PunchState : PlayerOnGround
 
         if (playerPlayables.HasStateAuthority)
             playerPlayables.stamina.RecoverStamina(5f);
+    }
+
+    private void HandleMoveWindow()
+    {
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.PunchStartTick : playerMovement.AnimationTick);
+
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int moveStartTick = Mathf.CeilToInt(totalPunchTicks * 0.3f);
+        int moveEndTick = Mathf.CeilToInt(totalPunchTicks * 0.6f);
+
+        playerMovement.PunchingMove = elapsedTicks >= moveStartTick && elapsedTicks <= moveEndTick;
     }
 
     private AnimationPlayable GetNextState()
@@ -63,8 +93,6 @@ public class PunchState : PlayerOnGround
         if (playerPlayables.healthV2.IsDead)
             return playerPlayables.lowerBodyMovement.DeathPlayable;
 
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.lowerBodyMovement.StaggerHitPlayable;
 
         if (!characterController.IsGrounded)
             return playerPlayables.lowerBodyMovement.FallingPlayable;
@@ -74,9 +102,14 @@ public class PunchState : PlayerOnGround
 
     private AnimationPlayable GetComboState()
     {
-        double animTime = animationClipPlayable.GetTime();
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.PunchStartTick : playerMovement.AnimationTick);
 
-        bool comboWindow = animTime >= animationLength * 0.8f;
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int comboWindowStartTick = Mathf.CeilToInt(totalPunchTicks * 0.8f);
+        int comboWindowEndTick = Mathf.CeilToInt(totalPunchTicks * 0.95f);
+
+        bool comboWindow = elapsedTicks >= comboWindowStartTick && elapsedTicks <= comboWindowEndTick;
 
         if (comboWindow && playerMovement.Attacking)
             return playerPlayables.lowerBodyMovement.Punch2Playable;
@@ -86,21 +119,25 @@ public class PunchState : PlayerOnGround
 
     private AnimationPlayable GetRecoveryState()
     {
-        double animTime = animationClipPlayable.GetTime();
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.PunchStartTick : playerMovement.AnimationTick);
 
-        bool finishedPunch = animTime >= animationLength * 0.9f;
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
+
+        bool finishedPunch = elapsedTicks >= finishStartTick;
         bool isMoving = playerMovement.XMovement != 0 || playerMovement.YMovement != 0;
         bool canRoll = playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f;
-
-
-        //if (playerMovement.IsBlocking)
-        //    return playerPlayables.lowerBodyMovement.BlockPlayable;
 
         if (canRoll)
             return playerPlayables.lowerBodyMovement.RollPlayable;
 
-        if (isMoving)
+        if (isMoving && finishedPunch)
         {
+            // ? Wait until punch momentum blend is fully done before switching to run
+            if (playerMovement.WasPunchingMoveLastTick)
+                return null; // hold on idle/punch end until movement catches up
+
             return playerMovement.IsSprint
                 ? playerPlayables.lowerBodyMovement.SprintPlayable
                 : playerPlayables.lowerBodyMovement.RunPlayable;

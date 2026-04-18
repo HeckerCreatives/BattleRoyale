@@ -40,9 +40,6 @@ public class IdleState : PlayerOnGround
         if (playerMovement.IsBlocking)
             return playerPlayables.lowerBodyMovement.BlockPlayable;
 
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.lowerBodyMovement.StaggerHitPlayable;
-
         if (playerMovement.IsHealing)
             return playerPlayables.lowerBodyMovement.HealPlayable;
 
@@ -54,6 +51,9 @@ public class IdleState : PlayerOnGround
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             return playerPlayables.lowerBodyMovement.RollPlayable;
+
+        if (playerMovement.Attacking)
+            return playerPlayables.lowerBodyMovement.Punch1Playable;
 
         if (!characterController.IsGrounded)
             return playerPlayables.lowerBodyMovement.FallingPlayable;

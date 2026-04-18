@@ -33,9 +33,6 @@ public class PlayerUpperRun : UpperNoAimState
         if (health.IsDead)
             return upper.DeathPlayable;
 
-        if (health.IsStagger)
-            return upper.StaggerHitPlayable;
-
         if (playerMovement.IsJumping)
             return upper.JumpPlayable;
 

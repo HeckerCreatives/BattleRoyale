@@ -48,10 +48,6 @@ public class PlayerUpperRifleSprint : UpperNoAimState
         {
             playablesChanger.ChangeState(playerPlayables.upperBodyMovement.TrapPlayable);
         }
-        if (playerPlayables.healthV2.IsStagger)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
-        }
     }
 
     private void WeaponsChecker()

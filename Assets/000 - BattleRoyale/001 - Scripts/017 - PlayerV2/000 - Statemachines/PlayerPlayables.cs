@@ -3,6 +3,7 @@ using Fusion;
 using Fusion.Addons.SimpleKCC;
 using NUnit.Framework;
 using System;
+using System.Collections;
 using System.Linq;
 using Unity.Jobs;
 using UnityEngine;
@@ -12,10 +13,11 @@ using UnityEngine.Playables;
 using UnityEngine.Rendering.PostProcessing;
 using static Fusion.Sockets.NetBitBuffer;
 using static MainCorePlayable;
+using static UnityEngine.Rendering.PostProcessing.PostProcessResources;
 
 public class PlayerPlayables : NetworkBehaviour
 {
-    private const int RECONCILE_DELAY_TICKS = 4;
+    private const int RECONCILE_DELAY_TICKS = 10;
 
     //  =====================
 
@@ -23,12 +25,14 @@ public class PlayerPlayables : NetworkBehaviour
     public PlayerInventoryV2 inventory;
     public PlayerOwnObjectEnabler ownObjectEnabler;
     public PlayerCameraRotation cameraRotation;
-    public PlayerAim aimWeights;
     public MeleeSoundController fistSoundController;
+    public PlayerMovementV2 playerMovementV2;
 
     [Space]
     [SerializeField] private CinemachineVirtualCamera vCam;
+    [SerializeField] private CinemachineVirtualCamera aimVCam;
     [SerializeField] private CinemachineBasicMultiChannelPerlin vcamShaker;
+    [SerializeField] private float changeFOVSpeed;
 
     [Space]
     [SerializeField] private Animator playerAnimator;
@@ -62,12 +66,12 @@ public class PlayerPlayables : NetworkBehaviour
     public float exitSpeed;
 
     [Space]
-    [SerializeField] private ParticleSystem[] swordSlashList;
-
-    [Space]
     [SerializeField] private SimpleKCC characterController;
     [SerializeField] private Transform groundDetector;
     [SerializeField] private LayerMask groundMask;
+
+    [field: Space] 
+    [field: SerializeField] public ParticleSystem WarpDrive { get; private set; }
 
     [Space]
     [SerializeField] private AudioSource footstepSource;
@@ -77,6 +81,13 @@ public class PlayerPlayables : NetworkBehaviour
     [SerializeField] private AudioClip[] woodClip;
     [SerializeField] private AudioClip jumpClip;
     [SerializeField] private AudioClip rollClip;
+
+    [field: Space]
+    [field: SerializeField] public ParticleSystem[] SwordSlashes { get; private set; }
+    [field: SerializeField] public ParticleSystem SwordImpact { get; private set; }
+    [field: SerializeField] public ParticleSystem[] PunchSlashes { get; private set; }
+    [field: SerializeField] public ParticleSystem PunchImpact { get; private set; }
+    [field: SerializeField] public ParticleSystem[] SpearSlashes { get; private set; }
 
     [Header("DEBUGGER")]
     [SerializeField] private int _lastProcessedTickUpper = -1;
@@ -124,6 +135,10 @@ public class PlayerPlayables : NetworkBehaviour
     private ChangeDetector _changeDetector;
 
     private Vector3 rollAxisLocal;
+
+    int FovChanger;
+
+    //Coroutine ShakerCoroutine;
 
     //  =======================
 
@@ -245,6 +260,22 @@ public class PlayerPlayables : NetworkBehaviour
         _upperMismatchStartTick = -1;
     }
 
+    public void ChangeCamera(bool isAiming)
+    {
+        aimVCam.Priority = isAiming ? 11 : 0;
+        vCam.Priority = isAiming ? 0 : 11;
+    }
+
+    public void ChangeFOV(float fovvalue)
+    {
+        if (FovChanger > 0) LeanTween.cancel(FovChanger);
+
+        FovChanger = LeanTween.value(vCam.gameObject, vCam.m_Lens.FieldOfView, fovvalue, changeFOVSpeed).setEase(LeanTweenType.easeInOutCirc).setOnUpdate(val =>
+        {
+            vCam.m_Lens.FieldOfView = val;
+        }).id;
+    }
+
     private void ResolveLowerReplication()
     {
         if (_pendingLowerTick == -1)
@@ -274,6 +305,19 @@ public class PlayerPlayables : NetworkBehaviour
         _lastProcessedTickLower = _pendingLowerTick;
         _pendingLowerTick = -1;
         _lowerMismatchStartTick = -1;
+    }
+
+    public void HitAnimation()
+    {
+        upperBodyChanger.ChangeState(upperBodyMovement.HitPlayable, true);
+        lowerBodyChanger.ChangeState(lowerBodyMovement.HitPlayable, true);
+    }
+
+    public void StaggerAnimation()
+    {
+        healthV2.IsStagger = true;
+        upperBodyChanger.ChangeState(upperBodyMovement.StaggerHitPlayable, false);
+        lowerBodyChanger.ChangeState(lowerBodyMovement.StaggerHitPlayable, false);
     }
 
     public void InitializePlayables()
@@ -342,10 +386,32 @@ public class PlayerPlayables : NetworkBehaviour
         playableGraph.Play();
     }
 
-    public void SlashSwordParticles(int index)
+    public void SlashSwordParticles(int index) => SwordSlashes[index].Play();
+
+    public void SlashPunchParticles(int index) => PunchSlashes[index].Play();
+
+    public void SlashPunchParticlesStop(int index)
     {
-        swordSlashList[index].Play();
+        if (PunchSlashes[index].isPlaying) PunchSlashes[index].Stop();
     }
+
+    public void SlashSwordParticlesStop(int index)
+    {
+        if (SwordSlashes[index].isPlaying) SwordSlashes[index].Stop();
+    }
+
+    public void SlashSpearParticles(int index) => SpearSlashes[index].Play();
+
+    public void SlashSpearParticlesStop(int index)
+    {
+        if (SpearSlashes[index].isPlaying) SpearSlashes[index].Stop();
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPC_PlaySwordHit() => SwordImpact.Play();
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RPC_PlayPunchHit() => PunchImpact.Play();
 
     static Vector3 PickLocalAxisClosestToWorldDir(Transform bone, Vector3 desiredWorldDir)
     {
@@ -377,7 +443,6 @@ public class PlayerPlayables : NetworkBehaviour
     {
         if (!lookAtPlayable.IsValid())
         {
-            Debug.Log("look at playable not valid");
             return;
         }
 
@@ -395,7 +460,6 @@ public class PlayerPlayables : NetworkBehaviour
     {
         if (!punchFixRotation.IsValid())
         {
-            Debug.Log("punchFixRotation not valid");
             return;
         }
 
@@ -422,6 +486,21 @@ public class PlayerPlayables : NetworkBehaviour
     public void CameraShaker(float amplitude)
     {
         vcamShaker.m_AmplitudeGain = amplitude;
+    }
+
+    //[Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority)]
+    //public void RPC_CameraShaker(float shaker)
+    //{
+    //    if (ShakerCoroutine != null) StopCoroutine(ShakerCoroutine);
+
+    //    ShakerCoroutine = StartCoroutine(Shaker(shaker));
+    //}
+
+    IEnumerator Shaker(float shaker)
+    {
+        CameraShaker(shaker);
+        yield return new WaitForSecondsRealtime(0.15f);
+        CameraShaker(0f);
     }
 
     public void SpawnArrows() => Runner.Spawn(arrows);

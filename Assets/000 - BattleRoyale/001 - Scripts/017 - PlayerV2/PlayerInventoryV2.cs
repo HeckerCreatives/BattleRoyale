@@ -237,6 +237,8 @@ public class PlayerInventoryV2 : NetworkBehaviour
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     public void RPC_SpawnBowMagazine()
     {
+        if (MagazineContainer != null) return;
+
         Runner.Spawn(weaponSpawnData.GetItemObject("arrowcontainer"), Vector3.zero, Quaternion.identity, Object.InputAuthority, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
         {
             obj.GetComponent<MagazineContainerItem>().InitializeItem(Object);
@@ -384,6 +386,10 @@ public class PlayerInventoryV2 : NetworkBehaviour
         {
             if (isCrateItem)
             {
+                if (CrateObject == null) return;
+
+                if (itemID == "") return;
+
                 CrateObject.RPC_RemoveItem(itemID, this);
 
                 return;
@@ -439,6 +445,12 @@ public class PlayerInventoryV2 : NetworkBehaviour
                     AmmoRifleWeaponItem tempammo = weapon.gameObject.GetComponent<AmmoRifleWeaponItem>();
 
                     tempammo.RPC_PickupAmmoRifle(tempobject);
+                    break;
+                case "006":
+
+                    MagazineContainerItem tempbowammo = weapon.gameObject.GetComponent<MagazineContainerItem>();
+
+                    tempbowammo.RPC_PickupMagazineContainer(tempobject);
                     break;
             }
         });

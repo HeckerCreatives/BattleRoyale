@@ -376,8 +376,9 @@ public class RemovePlayerData
 public class PlayerSpawnData
 {
     public string _id;
-    public string username;
-    public string ownerid;
+    public string username;      // ? flat string now
+    public string avatarid;      // ? avatarid is at root level
+    public string ownerId;
     public int hairstyle;
     public int haircolor;
     public int clothingcolor;

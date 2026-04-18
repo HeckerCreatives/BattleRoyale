@@ -8,8 +8,8 @@ using UnityEngine.UI;
 public class LeaderboardTab : MonoBehaviour
 {
     [SerializeField] private LeaderboardState tabState;
-    [SerializeField] private Sprite onTab;
-    [SerializeField] private Sprite offTab;
+    [SerializeField] private Color onTab;
+    [SerializeField] private Color offTab;
 
     [Space]
     [SerializeField] private string header;
@@ -43,13 +43,13 @@ public class LeaderboardTab : MonoBehaviour
         if (lobbyController.CurrentLeaderboardState == tabState)
         {
             leaderboardContainer.SetActive(true);
-            tabBtn.sprite = onTab;
+            tabBtn.color = onTab;
             headerTMP.text = header;
         }
         else
         {
             leaderboardContainer.SetActive(false);
-            tabBtn.sprite = offTab;
+            tabBtn.color = offTab;
         }
     }
 

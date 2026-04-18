@@ -47,10 +47,6 @@ public class PlayerMiddleHit : UpperNoAimState
         //    return;
         //}
 
-        if (playerPlayables.healthV2.IsStagger)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.StaggerHitPlayable);
-        }
 
         if (playerPlayables.healthV2.IsDead)
         {

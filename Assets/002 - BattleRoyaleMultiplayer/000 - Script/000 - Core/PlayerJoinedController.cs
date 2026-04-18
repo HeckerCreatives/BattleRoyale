@@ -114,7 +114,7 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 PlayerOwnObjectEnabler core = obj.GetComponent<PlayerOwnObjectEnabler>();
 
                 core.Username = data.username;
-                core.UserID = data.ownerid;
+                core.UserID = data.ownerId;
             });
 
             Debug.Log($"Does server have input authority to {data.username}? {playerCharacter.HasInputAuthority}");
@@ -223,7 +223,13 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
                 if (playerinventory.Armor != null) playerinventory.Armor.DropArmor();
 
-                if (playerinventory.MagazineContainer != null) playerinventory.MagazineContainer.DropWeapon();
+                if (playerinventory.BowMagazine > 0)
+                {
+                    Runner.Spawn(healObj, playerinventory.transform.position, Quaternion.identity, null, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                    {
+                        obj.GetComponent<MagazineContainerItem>().InitializeOnStart(playerinventory.transform.position, Quaternion.identity, playerinventory.HealCount);
+                    });
+                }
 
                 if (playerinventory.HealCount > 0)
                 {
@@ -341,9 +347,34 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
                 if (inv != null)
                 {
                     if (inv.PrimaryWeapon != null) inv.PrimaryWeapon.DropWeapon();
+
                     if (inv.SecondaryWeapon != null) inv.SecondaryWeapon.DropWeapon();
+
                     if (inv.Armor != null) inv.Armor.DropArmor();
-                    if (inv.MagazineContainer != null) inv.MagazineContainer.DropWeapon();
+
+                    if (inv.BowMagazine > 0)
+                    {
+                        Runner.Spawn(healObj, inv.transform.position, Quaternion.identity, null, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                        {
+                            obj.GetComponent<MagazineContainerItem>().InitializeOnStart(inv.transform.position, Quaternion.identity, inv.BowMagazine);
+                        });
+                    }
+
+                    if (inv.HealCount > 0)
+                    {
+                        Runner.Spawn(healObj, inv.transform.position, Quaternion.identity, null, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                        {
+                            obj.GetComponent<HealWeaponItem>().InitializeItem(inv.transform.position, Quaternion.identity, inv.HealCount);
+                        });
+                    }
+
+                    if (inv.ArmorRepairCount > 0)
+                    {
+                        Runner.Spawn(armorObj, inv.transform.position, Quaternion.identity, null, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                        {
+                            obj.GetComponent<RepairWeaponItem>().InitializeItem(inv.transform.position, Quaternion.identity, inv.HealCount);
+                        });
+                    }
                 }
 
                 Players.Remove(playerId);

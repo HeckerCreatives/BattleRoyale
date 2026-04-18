@@ -63,8 +63,6 @@ public class TrappingState : PlayerOnGround
         if (playerMovement.IsBlocking)
             return GetBlockState();
 
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.lowerBodyMovement.StaggerHitPlayable;
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             return playerPlayables.lowerBodyMovement.RollPlayable;

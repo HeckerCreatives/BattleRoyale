@@ -12,6 +12,8 @@ public class SpearIdleState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
+        playerMovement.MoveCharacter();
+
         var nextState = GetNextState();
 
         if (nextState != null && playablesChanger.CurrentState != nextState)
@@ -46,12 +48,6 @@ public class SpearIdleState : PlayerOnGround
         if (playerMovement.IsBlocking)
             return playerPlayables.lowerBodyMovement.SwordBlockPlayable;
 
-        // if (playerPlayables.healthV2.IsHit)
-        //     return playerPlayables.lowerBodyMovement.HitPlayable;
-
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.lowerBodyMovement.StaggerHitPlayable;
-
         if (playerMovement.IsTrapping)
             return playerPlayables.lowerBodyMovement.TrappingPlayable;
 
@@ -63,6 +59,9 @@ public class SpearIdleState : PlayerOnGround
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             return playerPlayables.lowerBodyMovement.RollPlayable;
+
+        if (playerMovement.Attacking)
+            return playerPlayables.lowerBodyMovement.SpearFirstAttackPlayable;
 
         return null;
     }

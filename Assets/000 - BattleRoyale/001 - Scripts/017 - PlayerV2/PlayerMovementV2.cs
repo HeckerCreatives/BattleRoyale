@@ -7,6 +7,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.EnhancedTouch;
+using UnityEngine.InputSystem.OnScreen;
 using UnityEngine.InputSystem.XR;
 using UnityEngine.UIElements;
 using UnityEngine.Windows;
@@ -28,6 +29,57 @@ public class PlayerMovementV2 : NetworkBehaviour
         get => mainCharObj;
     }
 
+    public int AnimationTick
+    {
+        get => animationTick;
+        set => animationTick = value;
+    }
+
+    public float AttackMoveSpeed
+    {
+        get => attackMoveSpeed;
+        set => attackMoveSpeed = value;
+    }
+
+    public float AttackMoveSpeedOne
+    {
+        get => attackMoveSpeedOne;
+    }
+    public float AttackMoveSpeedTwo
+    {
+        get => attackMoveSpeedTwo;
+    }
+    public float AttackMoveSpeedThree
+    {
+        get => attackMoveSpeedThree;
+    }
+    public bool WasPunchingMoveLastTick
+    {
+        get => wasPunchingMoveLastTick;
+        set => wasPunchingMoveLastTick = value;
+    }
+
+    public bool WasRollingMoveLastTick
+    {
+        get => wasRollingLastTick;
+        set => wasRollingLastTick = value;
+    }
+
+    public bool WasSwordingMoveLastTick
+    {
+        get => wasSwordingMoveLastTick;
+        set => wasSwordingMoveLastTick = value;
+    }
+
+    public float SpearAttackMoveSpeedOne
+    {
+        get => spearAttackMoveSpeedOne;
+    }
+    public float SpearAttackMoveSpeedFinal
+    {
+        get => spearAttackMoveSpeedFinal;
+    }
+
     //  ====================
 
     [SerializeField] private SimpleKCC characterController;
@@ -40,14 +92,27 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     [Space]
     [SerializeField] private Transform mainCharObj;
+    [SerializeField] private OnScreenButton sprintBtn;
+    [SerializeField] private OnScreenButton jumpBtn;
+    [SerializeField] private OnScreenButton rollBtn;
 
     [Space]
     [SerializeField] private float moveSpeed;
     [SerializeField] private float sprintSpeed;
-    [SerializeField] private float jumpHeight; 
+    [SerializeField] private float jumpHeight;
     [SerializeField] private float blockResumeDuration = 0.08f;
     [SerializeField] private float MoveSmoothSpeed;
     [SerializeField] private float RollMomentumStopSpeed;
+    [SerializeField] private float attackMoveSpeedOne;
+    [SerializeField] private float attackMoveSpeedTwo;
+    [SerializeField] private float attackMoveSpeedThree;
+    [SerializeField] private float spearAttackMoveSpeedOne;
+    [SerializeField] private float spearAttackMoveSpeedFinal;
+
+    [Space]
+    [SerializeField] private Transform groundCheckPoint;
+    [SerializeField] private float groundCheckRadius;
+    [SerializeField] private LayerMask groundMask;
 
     [Space]
     public RectTransform joystickArea;
@@ -59,6 +124,11 @@ public class PlayerMovementV2 : NetworkBehaviour
     [SerializeField] private float sprintCooldown;
     [SerializeField] private float jumpFallTimer;
     [SerializeField] private Vector3 lastRollDirection;
+    [SerializeField] private bool wasRollingLastTick;
+    [SerializeField] private bool wasPunchingMoveLastTick;
+    [SerializeField] private bool wasSwordingMoveLastTick;
+    [SerializeField] private int animationTick;
+    [SerializeField] private float attackMoveSpeed;
 
 
     [field: Header("DEBUGGER NETWORK")]
@@ -71,14 +141,20 @@ public class PlayerMovementV2 : NetworkBehaviour
     [field: SerializeField][Networked] public bool IsSprint { get; set; }
     [field: SerializeField][Networked] public bool IsRoll { get; set; }
     [field: SerializeField][Networked] public bool Rolling { get; set; }
+    [field: SerializeField][Networked] public bool PunchingMove { get; set; }
+    [field: SerializeField][Networked] public bool Punching { get; set; }
+    [field: SerializeField][Networked] public bool SwordingMove { get; set; }
+    [field: SerializeField][Networked] public bool Swording { get; set; }
     [field: SerializeField][Networked] public bool Attacking { get; set; }
     [field: SerializeField][Networked] public bool CurrentlyAttacking { get; set; }
     [field: SerializeField][Networked] public float JumpImpulse { get; set; }
     [field: SerializeField][Networked] public bool IsJumping { get; set; }
+    [field: SerializeField][Networked] public bool Jumping { get; set; }
     [field: SerializeField][Networked] public bool IsBlocking { get; set; }
     [field: SerializeField][Networked] public bool IsHealing { get; set; }
     [field: SerializeField][Networked] public bool IsRepairing { get; set; }
     [field: SerializeField][Networked] public bool IsTrapping { get; set; }
+    [field: SerializeField][Networked] public bool IsFalling { get; set; }
     [field: SerializeField][Networked] public Vector2 LastTouchPos { get; set; }
     [field: SerializeField][Networked] public bool IsTouching { get; set; }
     [field: SerializeField][Networked] public bool SwitchingHands { get; set; }
@@ -86,6 +162,17 @@ public class PlayerMovementV2 : NetworkBehaviour
     [field: SerializeField][Networked] public bool SwitchingSecondary { get; set; }
     [field: SerializeField][Networked] public bool Aiming { get; set; }
     [field: SerializeField][Networked] public bool Reloading { get; set; }
+    [field: SerializeField][Networked] public bool IsHit { get; set; }
+    [field: SerializeField][Networked] public bool CannotJump { get; set; }
+    [field: SerializeField][Networked] public int PunchStartTick { get; set; }
+    [field: SerializeField][Networked] public int SwordStartTick { get; set; }
+    [field: SerializeField][Networked] public int JumpStartTick { get; set; }
+    [field: SerializeField][Networked] public int RollStartTick { get; set; }
+    [field: SerializeField][Networked] public int HitStartTick { get; set; }
+    [field: SerializeField][Networked] public int StaggerStartTick { get; set; }
+    [field: SerializeField][Networked] public int GettingUpStartTick { get; set; }
+    [field: SerializeField][Networked] public int JumpAttackStartTick { get; set; }
+    [field: SerializeField][Networked] public int StopSprintStartTick { get; set; }
 
     //  =======================
 
@@ -126,6 +213,8 @@ public class PlayerMovementV2 : NetworkBehaviour
     public override void FixedUpdateNetwork()
     {
         //FallingAfterJump();
+        //MoveCharacter();
+        //MovementButtons();
         InputControlls();
     }
 
@@ -197,6 +286,7 @@ public class PlayerMovementV2 : NetworkBehaviour
             lastTouchPositions[id] = pos;
         }
     }
+
 
     private void ResetJoystick()
     {
@@ -356,6 +446,15 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     #region MOVEMENTS
 
+    //private void MovementButtons()
+    //{
+    //    if (!HasInputAuthority) return;
+
+    //    jumpBtn.enabled = stamina.Stamina >= 20f;
+    //    sprintBtn.enabled = stamina.Stamina >= 10f;
+    //    rollBtn.enabled = stamina.Stamina >= 30f;
+    //}
+
     private void InputControlls()
     {
         if (GetInput<MyInput>(out var input) == false) return;
@@ -368,7 +467,6 @@ public class PlayerMovementV2 : NetworkBehaviour
         Move();
         Sprint();
         Jump();
-        Falling();
         Roll();
         Block();
         Shoot();
@@ -396,29 +494,152 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     public void MoveCharacter()
     {
+        if (heatlh.IsDead) return;
+
+        if (Rolling)
+        {
+            HandleRollMovement();
+            wasPunchingMoveLastTick = false;
+            wasSwordingMoveLastTick = false;
+        }
+        else if (PunchingMove)
+        {
+            HandlePunchMovement();
+            wasSwordingMoveLastTick = false;
+        }
+        else if (SwordingMove)
+        {
+            wasPunchingMoveLastTick = false;
+            HandleSwordMovement();
+        }
+        else
+        {
+            // ❌ Remove these two lines — let HandleNormalMovement manage them internally
+            // wasPunchingMoveLastTick = false;
+            // wasSwordingMoveLastTick = false;
+            HandleNormalMovement();
+        }
+
+        characterController.Move(MoveDirection, JumpImpulse);
+        playerplayables.CheckGround();
+    }
+
+    private void HandleRollMovement()
+    {
+        if (!wasRollingLastTick)
+        {
+            lastRollDirection = mainCharObj.forward;
+            wasRollingLastTick = true;
+        }
+
+        MoveDirection = lastRollDirection * 500f * Runner.DeltaTime;
+    }
+
+    private void HandlePunchMovement()
+    {
+        if (!wasPunchingMoveLastTick)
+        {
+            lastRollDirection = mainCharObj.forward;
+            wasPunchingMoveLastTick = true;
+        }
+
+        MoveDirection = lastRollDirection * attackMoveSpeed * Runner.DeltaTime;
+    }
+
+    //public bool IsGrounded()
+    //{
+    //    return Physics.CheckSphere(
+    //        groundCheckPoint.position,
+    //        groundCheckRadius,
+    //        groundMask
+    //    );
+    //}
+
+    private void HandleSwordMovement()
+    {
+        if (!wasSwordingMoveLastTick)
+        {
+            lastRollDirection = mainCharObj.forward;
+            wasSwordingMoveLastTick = true;
+        }
+
+        MoveDirection = lastRollDirection * attackMoveSpeed * Runner.DeltaTime;
+    }
+
+    private void HandleNormalMovement()
+    {
         MoveDir = PlayerLookDirection();
 
         float moveSpeedValue = IsSprint ? SprintSpeed : MoveSpeed;
         Vector3 targetMoveDirection = Vector3.zero;
 
-        if (MoveDir.sqrMagnitude > 0.01f && !Rolling && !CurrentlyAttacking)
+        if (MoveDir.sqrMagnitude > 0.01f && !Punching && !Swording)
         {
             MoveDir.Normalize();
 
             Quaternion targetRotation = Quaternion.LookRotation(MoveDir);
-            mainCharObj.rotation = Quaternion.Slerp(mainCharObj.rotation, targetRotation, Runner.DeltaTime * 10f);
+
+            float rotationSpeed = wasRollingLastTick ? 6f : 10f;
+            mainCharObj.rotation = Quaternion.Slerp(
+                mainCharObj.rotation,
+                targetRotation,
+                Runner.DeltaTime * rotationSpeed
+            );
 
             targetMoveDirection = MoveDir * moveSpeedValue * Runner.DeltaTime;
         }
 
-        if (Rolling)
+        float smoothSpeed;
+
+        if (wasRollingLastTick)
         {
-            lastRollDirection = MainCharObj.forward;
-            MoveDirection = lastRollDirection * 500f * Runner.DeltaTime;
+            smoothSpeed = MoveSmoothSpeed * 0.5f;
+
+            MoveDirection = Vector3.MoveTowards(
+                MoveDirection,
+                targetMoveDirection,
+                smoothSpeed * Runner.DeltaTime
+            );
+
+            if (Vector3.Distance(MoveDirection, targetMoveDirection) < 0.01f)
+            {
+                wasRollingLastTick = false;
+            }
+        }
+        // ✅ NEW: smooth out punch momentum just like roll
+        else if (wasPunchingMoveLastTick)
+        {
+            smoothSpeed = MoveSmoothSpeed * 0.75f; // tune this multiplier to taste
+
+            MoveDirection = Vector3.MoveTowards(
+                MoveDirection,
+                targetMoveDirection,
+                smoothSpeed * Runner.DeltaTime
+            );
+
+            if (Vector3.Distance(MoveDirection, targetMoveDirection) < 0.01f)
+            {
+                wasPunchingMoveLastTick = false;
+            }
+        }
+        else if (wasSwordingMoveLastTick)  // same idea if you want it for sword too
+        {
+            smoothSpeed = MoveSmoothSpeed * 0.75f;
+
+            MoveDirection = Vector3.MoveTowards(
+                MoveDirection,
+                targetMoveDirection,
+                smoothSpeed * Runner.DeltaTime
+            );
+
+            if (Vector3.Distance(MoveDirection, targetMoveDirection) < 0.01f)
+            {
+                wasSwordingMoveLastTick = false;
+            }
         }
         else
         {
-            float smoothSpeed = targetMoveDirection.sqrMagnitude > 0.0001f
+            smoothSpeed = targetMoveDirection.sqrMagnitude > 0.0001f
                 ? MoveSmoothSpeed
                 : RollMomentumStopSpeed;
 
@@ -428,39 +649,7 @@ public class PlayerMovementV2 : NetworkBehaviour
                 smoothSpeed * Runner.DeltaTime
             );
         }
-
-        characterController.Move(MoveDirection, JumpImpulse);
-        playerplayables.CheckGround();
     }
-
-    //public void MoveCharacter()
-    //{
-    //    if (BlockResumeTimer > 0f)
-    //        BlockResumeTimer -= Runner.DeltaTime;
-
-    //    MoveDir = PlayerLookDirection();
-
-    //    if (MoveDir.sqrMagnitude > 0.01f && !IsRoll && !CurrentlyAttacking)
-    //    {
-    //        MoveDir.Normalize();
-
-    //        Quaternion targetRotation = Quaternion.LookRotation(MoveDir);
-    //        mainCharObj.rotation = Quaternion.Slerp(mainCharObj.rotation, targetRotation, Runner.DeltaTime * 10f);
-    //    }
-
-    //    float moveSpeedValue = IsSprint ? SprintSpeed : MoveSpeed;
-
-    //    float resumeMultiplier = 1f;
-    //    if (BlockResumeTimer > 0f)
-    //    {
-    //        resumeMultiplier = 1f - (BlockResumeTimer / blockResumeDuration);
-    //    }
-
-    //    MoveDirection = MoveDir * moveSpeedValue * resumeMultiplier * Runner.DeltaTime;
-
-    //    characterController.Move(MoveDirection, JumpImpulse);
-    //    playerplayables.CheckGround();
-    //}
 
     public void MoveWithAim()
     {
@@ -535,29 +724,18 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     private void Jump()
     {
-        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Jump) && characterController.IsGrounded && !IsJumping)
+        if (controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Jump) && characterController.IsGrounded && !IsJumping && stamina.Stamina >= 20f && !CannotJump)
         {
             IsJumping = true;
             jumpFallTimer = Runner.SimulationTime + 0.25f;
             JumpImpulse = jumpHeight;
+            stamina.ReduceStamina(20f);
             invincibleController.DisableInvincible();
         }
+        else if (!controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Jump))
+            IsJumping = false;
 
         //if (HasInputAuthority && IsJumping) Debug.Log($"was pressed? {controllerInput.Buttons.WasPressed(PreviousButtons, InputButton.Jump)}     on ground? {characterController.IsGrounded}       not jumping? {!IsJumping} ");
-    }
-
-    public void FallingAfterJump()
-    {
-        if (!characterController.IsGrounded)
-        {
-            JumpImpulse -= Mathf.Abs(Physics.gravity.y) * 3f * Runner.DeltaTime;
-
-            if (JumpImpulse <= 0f)
-            {
-                JumpImpulse = 0f;
-                IsJumping = false;
-            }
-        }
     }
 
     public void CurrentAttackingEnabler(bool value)
@@ -567,11 +745,11 @@ public class PlayerMovementV2 : NetworkBehaviour
         CurrentlyAttacking = value;
     }
 
-    private void Falling()
+    public void Falling()
     {
         if (!HasStateAuthority) return;
 
-        if (JumpImpulse > 0 && !characterController.IsGrounded && !IsJumping && Runner.SimulationTime >= jumpFallTimer)
+        if (JumpImpulse > 0 && !characterController.IsGrounded && !Jumping && Runner.SimulationTime >= jumpFallTimer)
         {
             JumpImpulse = Mathf.MoveTowards(
                 JumpImpulse,
@@ -716,4 +894,12 @@ public class PlayerMovementV2 : NetworkBehaviour
     }
 
     #endregion
+
+    public void OnDrawGizmos()
+    {
+        if (groundCheckPoint == null) return;
+
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireSphere(groundCheckPoint.transform.position, groundCheckRadius);
+    }
 }

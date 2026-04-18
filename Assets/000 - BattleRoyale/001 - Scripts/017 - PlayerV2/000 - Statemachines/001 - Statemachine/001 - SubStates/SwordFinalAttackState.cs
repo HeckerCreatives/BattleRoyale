@@ -3,14 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
+using UnityEngine.Playables;
 
 public class SwordFinalAttackState : PlayerOnGround
 {
-    float timer;
-    float moveTimer;
-    float stopMoveTimer;
-    bool canAction;
-
     public SwordFinalAttackState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
     }
@@ -19,73 +15,112 @@ public class SwordFinalAttackState : PlayerOnGround
     {
         base.Enter();
 
-        timer = playerPlayables.TickRateAnimation + animationLength;
-        moveTimer = playerPlayables.TickRateAnimation + 0.30f;
-        stopMoveTimer = playerPlayables.TickRateAnimation + 0.60f;
-        canAction = true;
+        playerMovement.RotatePlayer();
+
+        if (playerPlayables.HasInputAuthority) playerMovement.AnimationTick = playerPlayables.Runner.Tick;
+
+        if (!playerPlayables.HasStateAuthority)
+        {
+            playerPlayables.inventory.PrimaryWeapon.SoundController.PlayAttackTwo();
+            playerPlayables.SlashSwordParticles(2);
+        }
+
+        if (!playerPlayables.HasStateAuthority) return;
+
+        playerMovement.AttackMoveSpeed = playerMovement.AttackMoveSpeedThree;
+        playerMovement.SwordStartTick = playerPlayables.Runner.Tick;
+        playerMovement.Swording = true;
+        //playerMovement.CannotJump = true;
     }
 
     public override void Exit()
     {
         base.Exit();
 
-        canAction = false;
+        playerPlayables.SlashSwordParticlesStop(2);
+
+        if (!playerPlayables.HasStateAuthority) return;
+
+        playerMovement.Swording = false;
+        playerMovement.SwordingMove = false;
+        playerMovement.Attacking = false;
+        //playerMovement.CannotJump = false;
     }
 
 
     public override void NetworkUpdate()
     {
-        if (playerPlayables.TickRateAnimation >= moveTimer && playerPlayables.TickRateAnimation <= stopMoveTimer)
+        HandleMoveWindow();
+        playerMovement.MoveCharacter();
+
+        var nextState = GetNextState();
+
+        if (nextState != null && playablesChanger.CurrentState != nextState)
         {
-            characterController.Move(characterController.TransformDirection * 3.5f, 0f);
+            playablesChanger.ChangeState(nextState);
         }
 
-        Animation();
-
-        playerPlayables.stamina.RecoverStamina(5f);
+        if (playerPlayables.HasStateAuthority)
+            playerPlayables.stamina.RecoverStamina(5f);
     }
 
-    private void Animation()
+    private void HandleMoveWindow()
+    {
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.SwordStartTick : playerMovement.AnimationTick);
+
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int moveStartTick = Mathf.CeilToInt(totalPunchTicks * 0.05f);
+        int moveEndTick = Mathf.CeilToInt(totalPunchTicks * 0.4f);
+
+        playerMovement.SwordingMove = elapsedTicks >= moveStartTick && elapsedTicks <= moveEndTick;
+    }
+
+    private AnimationPlayable GetNextState()
+    {
+        var interruptState = GetInterruptState();
+        if (interruptState != null)
+            return interruptState;
+
+        return GetRecoveryState();
+    }
+
+    private AnimationPlayable GetInterruptState()
     {
         if (playerPlayables.healthV2.IsDead)
+            return playerPlayables.lowerBodyMovement.DeathPlayable;
+
+        if (!characterController.IsGrounded)
+            return playerPlayables.lowerBodyMovement.FallingPlayable;
+
+        return null;
+    }
+
+    private AnimationPlayable GetRecoveryState()
+    {
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.SwordStartTick : playerMovement.AnimationTick);
+
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
+
+        bool finishedPunch = elapsedTicks >= finishStartTick;
+        bool isMoving = playerMovement.XMovement != 0 || playerMovement.YMovement != 0;
+        bool canRoll = playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f;
+
+        if (canRoll)
+            return playerPlayables.lowerBodyMovement.RollPlayable;
+
+        if (isMoving && finishedPunch)
         {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable);
+            return playerMovement.IsSprint
+                ? playerPlayables.lowerBodyMovement.SwordSprintPlayable
+                : playerPlayables.lowerBodyMovement.SwordRunPlayable;
         }
 
+        if (!finishedPunch)
+            return null;
 
-        //if (playerPlayables.healthV2.IsHit)
-        //{
-        //    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.HitPlayable);
-        //    return;
-        //}
-
-        if (playerPlayables.healthV2.IsStagger)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
-        }
-
-        if (playerPlayables.TickRateAnimation >= timer && canAction)
-        {
-            if (playerMovement.IsBlocking)
-            {
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordBlockPlayable);
-            }
-
-            if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
-            {
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.RollPlayable);
-            }
-
-            if (playerMovement.MoveDirection != Vector3.zero)
-            {
-                if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordSprintPlayable);
-
-                else
-                    playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordRunPlayable);
-            }
-            else
-                playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.SwordIdlePlayable);
-        }
+        return playerPlayables.lowerBodyMovement.SwordIdlePlayable;
     }
 }

@@ -19,6 +19,12 @@ public class SwordSprintState : PlayerOnGround
     {
         base.Enter();
 
+        if (playerPlayables.HasInputAuthority)
+        {
+            playerPlayables.ChangeFOV(70f);
+            playerPlayables.WarpDrive.Play();
+        }
+
         if (playerPlayables.HasStateAuthority) return;
 
         playedStep1 = false;
@@ -29,6 +35,12 @@ public class SwordSprintState : PlayerOnGround
     public override void Exit()
     {
         base.Exit();
+
+        if (playerPlayables.HasInputAuthority)
+        {
+            playerPlayables.ChangeFOV(60f);
+            playerPlayables.WarpDrive.Stop();
+        }
 
         if (playerPlayables.HasStateAuthority) return;
 
@@ -108,10 +120,8 @@ public class SwordSprintState : PlayerOnGround
         if (playerPlayables.healthV2.IsDead)
             return playerPlayables.lowerBodyMovement.DeathPlayable;
 
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.lowerBodyMovement.StaggerHitPlayable;
 
-        if (playerMovement.IsJumping)
+        if (playerMovement.IsJumping && playerPlayables.stamina.Stamina >= 20f)
             return playerPlayables.lowerBodyMovement.JumpPlayable;
 
         if (!characterController.IsGrounded)
@@ -140,13 +150,13 @@ public class SwordSprintState : PlayerOnGround
 
     private AnimationPlayable GetMovementState()
     {
-        bool isMoving = playerMovement.MoveDirection != Vector3.zero;
+        bool isMoving = playerMovement.XMovement != 0f || playerMovement.YMovement != 0f;
         bool hasSprintStamina = playerPlayables.stamina.Stamina > 0f && playerMovement.IsSprint;
 
         if (!isMoving)
-            return playerPlayables.lowerBodyMovement.SwordIdlePlayable;
+            return playerPlayables.lowerBodyMovement.IdlePlayable;
 
-        if (!hasSprintStamina)
+        if (!hasSprintStamina && isMoving)
             return playerPlayables.lowerBodyMovement.SwordRunPlayable;
 
         if (playerPlayables.inventory.WeaponIndex == 1)
@@ -157,7 +167,7 @@ public class SwordSprintState : PlayerOnGround
             if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "002")
                 return playerPlayables.lowerBodyMovement.SpearSprintPlayable;
 
-            return playerPlayables.lowerBodyMovement.SwordSprintPlayable;
+            return null;
         }
 
         if (playerPlayables.inventory.WeaponIndex == 3)
@@ -169,6 +179,6 @@ public class SwordSprintState : PlayerOnGround
                 return playerPlayables.lowerBodyMovement.BowSprintPlayable;
         }
 
-        return playerPlayables.lowerBodyMovement.SwordSprintPlayable;
+        return null;
     }
 }

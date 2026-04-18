@@ -25,7 +25,7 @@ public class FallingRangeState : AnimationPlayable
 
     public override void NetworkUpdate()
     {
-        playerMovement.MoveCharacter();
+        //playerMovement.MoveCharacter();
         FallDamage();
         Animation();
         WeaponsChecker(); //    NEXT FUNCTION AFTER DAMAGE IS APPLIED

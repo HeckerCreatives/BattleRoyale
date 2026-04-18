@@ -7,6 +7,7 @@ using UnityEngine.Animations;
 using UnityEngine.Experimental.AI;
 using UnityEngine.Playables;
 using static UnityEngine.Rendering.PostProcessing.HistogramMonitor;
+using static UnityEngine.Rendering.PostProcessing.PostProcessResources;
 
 public class PlayerUpperMovement : NetworkBehaviour
 {
@@ -17,6 +18,7 @@ public class PlayerUpperMovement : NetworkBehaviour
 
     [Space]
     public bool isLowerBody;
+    [SerializeField] private float shaker;
 
     [Space]
     [SerializeField] private List<string> animationnames;
@@ -65,12 +67,16 @@ public class PlayerUpperMovement : NetworkBehaviour
     [SerializeField] private AnimationClip bowDrawArrow;
     [SerializeField] private AnimationClip bowCharge;
     [SerializeField] private AnimationClip bowShot;
+    [SerializeField] private AnimationClip stopSprint;
 
     [Space]
     [SerializeField] private LayerMask enemyLayerMask;
     [SerializeField] private float attackRadius;
     [SerializeField] private Transform impactFirstFistPoint;
     [SerializeField] private Transform impactSecondFistPoint;
+
+    [field: Space]
+    [Networked][field: SerializeField] public int Hitted { get; set; }
 
     //  =====================
 
@@ -129,17 +135,62 @@ public class PlayerUpperMovement : NetworkBehaviour
     public PlayerUpperBowIdle BowIdlePlayable;
     public PlayerUpperBowRun BowRunPlayable;
     public PlayerUpperBowSprint BowSprintPlayable;
-    public PlayerUpperBowDrawArrow BowDrawArrowPlayable;
+    public PlayerUpperBowDraw BowDrawArrowPlayable;
     public PlayerUpperBowCharge BowChargePlayable;
     public PlayerUpperBowShot BowShotPlayable;
     public PlayerUpperJumpRange BowJumpPlayable;
     public PlayerUpperFallingRange BowFallingPlayable;
+    public PlayerUpperStopSprint StopSprintPlayable;
 
     //  ======================
 
+    private ChangeDetector _changeDetector;
+
+    Coroutine ShakerCoroutine;
+
+    //  ======================
+
+    public override void Spawned()
+    {
+        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+    }
+    public override void Render()
+    {
+        if (HasStateAuthority) return;
+
+        ChangeDetectorUpdate();
+    }
+
+    private void ChangeDetectorUpdate()
+    {
+        if (!HasInputAuthority) return;
+
+
+        foreach (var change in _changeDetector.DetectChanges(this))
+        {
+            switch (change)
+            {
+                case nameof(Hitted):
+
+                    if (ShakerCoroutine != null) StopCoroutine(ShakerCoroutine);
+
+                    ShakerCoroutine = StartCoroutine(Shaker());
+
+                    break;
+            }
+        }
+    }
+
+    IEnumerator Shaker()
+    {
+        playerPlayables.CameraShaker(shaker);
+        yield return new WaitForSecondsRealtime(0.15f);
+        playerPlayables.CameraShaker(0f);
+    }
+
     public AnimationMixerPlayable Initialize()
     {
-        mixerPlayable = AnimationMixerPlayable.Create(playerPlayables.playableGraph, 51);
+        mixerPlayable = AnimationMixerPlayable.Create(playerPlayables.playableGraph, 52);
 
         var idleClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, idle);
         var runClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, run);
@@ -191,6 +242,7 @@ public class PlayerUpperMovement : NetworkBehaviour
         var bowShotClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, bowShot);
         var bowJumpClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, jumpidle);
         var bowFallingClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, falling);
+        var stopSprintClip = AnimationClipPlayable.Create(playerPlayables.playableGraph, stopSprint);
 
         playerPlayables.playableGraph.Connect(idleClip, 0, mixerPlayable, 1);
         playerPlayables.playableGraph.Connect(runClip, 0, mixerPlayable, 2);
@@ -242,6 +294,7 @@ public class PlayerUpperMovement : NetworkBehaviour
         playerPlayables.playableGraph.Connect(bowShotClip, 0, mixerPlayable, 48);
         playerPlayables.playableGraph.Connect(bowJumpClip, 0, mixerPlayable, 49);
         playerPlayables.playableGraph.Connect(bowFallingClip, 0, mixerPlayable, 50);
+        playerPlayables.playableGraph.Connect(stopSprintClip, 0, mixerPlayable, 51);
 
         #region GLOBAL
 
@@ -255,6 +308,7 @@ public class PlayerUpperMovement : NetworkBehaviour
         RepairPlayable = new PlayerUpperRepair(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "repair", "basic", heal.length, repairClip, true, false);
         TrapPlayable = new PlayerUpperTrap(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "trapping", "basic", trapping.length, trappingClip, true, false);
         MiddleHitPlayable = new PlayerMiddleHit(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "middlehit", "basic", hit.length, hitClip, true, false);
+        StopSprintPlayable = new PlayerUpperStopSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "stopsprint", "basic", hit.length, stopSprintClip, true, false);
 
         #endregion
 
@@ -262,9 +316,9 @@ public class PlayerUpperMovement : NetworkBehaviour
 
         IdlePlayables = new PlayerUpperIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "idle", "basic", idle.length, idleClip, false, false);
         RunPlayables = new PlayerUpperRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "run", "basic", run.length, runClip, false, false);
-        FirstPunch = new PlayerFistFirstPunch(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch1", "basic", punch1.length, punch1Clip, true, true);
-        SecondPunch = new PlayerFistSecondPunch(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch2", "basic", punch2.length, punch2Clip, true, true);
-        FinalPunch = new PlayerFistFinalPunch(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch3", "basic", punch3.length, punch3Clip, true, true);
+        FirstPunch = new PlayerFistFirstPunch(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch1", "basic", punch1.length, punch1Clip, true, false);
+        SecondPunch = new PlayerFistSecondPunch(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch2", "basic", punch2.length, punch2Clip, true, false);
+        FinalPunch = new PlayerFistFinalPunch(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "punch3", "basic", punch3.length, punch3Clip, true, false);
         SprintPlayables = new PlayerUpperSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "sprint", "basic", sprint.length, sprintClip, false, false);
         JumpPlayable = new PlayerUpperJump(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "jumpidle", "basic", startJump.length, jumpClip, true, false);
         BlockPlayable = new PlayerBlockPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "block", "basic", block.length, blockClip, true, false);
@@ -276,9 +330,9 @@ public class PlayerUpperMovement : NetworkBehaviour
 
         SwordIdlePlayable = new PlayerUpperSwordIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordidle", "basic", swordIdle.length, swordIdleClip, false, false);
         SwordRunPlayable = new PlayerUpperSwordRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordrun", "basic", swordRun.length, swordRunClip, false, false);
-        SwordAttackFirstPlayable = new PlayerUpperSwordFirstAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfirstattack", "basic", swordFirstAttack.length, swordFirstAttackClip, true, true);
-        SwordAttackSecondPlayable = new PlayerUpperSwordMiddleAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsecondattack", "basic", swordSecondAttack.length, swordSecondAttackClip, true, true);
-        SwordFinalAttackPlayable = new PlayerUpperSwordFinalAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfinalattack", "basic", swordFinalAttack.length, swordFinalAttackClip, true, true);
+        SwordAttackFirstPlayable = new PlayerUpperSwordFirstAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfirstattack", "basic", swordFirstAttack.length, swordFirstAttackClip, true, false);
+        SwordAttackSecondPlayable = new PlayerUpperSwordMiddleAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsecondattack", "basic", swordSecondAttack.length, swordSecondAttackClip, true, false);
+        SwordFinalAttackPlayable = new PlayerUpperSwordFinalAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordfinalattack", "basic", swordFinalAttack.length, swordFinalAttackClip, true, false);
         SwordSprint = new PlayerUpperSwordSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordsprint", "basic", swordSprint.length, swordSprintClip, false, false);
         SwordBlockPlayable = new PlayerBlockPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordblock", "basic", swordBlock.length, swordBlockClip, true, false);
         SwordJumpAttackPlayable = new PlayerUpperSwordJumpAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "swordjumpattack", "basic", swordJumpSlash.length, swordJumpAttackClip, true, false);
@@ -290,8 +344,8 @@ public class PlayerUpperMovement : NetworkBehaviour
         SpearIdle = new PlayerUpperSpearIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearidle", "basic", spearIdle.length, spearIdleClip, false, false);
         SpearRunPlayable = new PlayerUpperSpearRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearrun", "basic", swordRun.length, spearRunClip, false, false);
         SpearSprintPlayable = new PlayerUpperSpearSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearsprint", "basic", swordSprint.length, spearSprintClip, false, false);
-        SpearFirstAttackPlayable = new PlayerUpperSpearFirstAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfirstattack", "basic", spearFirstAttack.length, spearFirstAattackClip, true, true);
-        SpearFinalAttackPlayable = new PlayerUpperSpearFinalAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfinalattack", "basic", spearFinalAttack.length, spearFinalAattackClip, true, true);
+        SpearFirstAttackPlayable = new PlayerUpperSpearFirstAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfirstattack", "basic", spearFirstAttack.length, spearFirstAattackClip, true, false);
+        SpearFinalAttackPlayable = new PlayerUpperSpearFinalAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearfinalattack", "basic", spearFinalAttack.length, spearFinalAattackClip, true, false);
         SpearBlockPlayable = new PlayerBlockPlayable(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearblock", "basic", swordBlock.length, spearBlockClip, true, false);
         SpearJumpAttackPlayable = new PlayerUpperSpearJumpAttack(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "spearjumpattack", "basic", spearJumpAttack.length, spearJumpAttackClip, true, false);
 
@@ -315,7 +369,7 @@ public class PlayerUpperMovement : NetworkBehaviour
         BowIdlePlayable = new PlayerUpperBowIdle(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowidle", "basic", bowIdle.length, bowIdleClip, false  , false);
         BowRunPlayable = new PlayerUpperBowRun(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowrun", "basic", bowRun.length, bowRunClip, false, false);
         BowSprintPlayable = new PlayerUpperBowSprint(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowsprint", "basic", bowSprint.length, bowSprintClip, false, false);
-        BowDrawArrowPlayable = new PlayerUpperBowDrawArrow(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowdrawarrow", "basic", bowDrawArrow.length, bowDrawArrowClip, true, false);
+        BowDrawArrowPlayable = new PlayerUpperBowDraw(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowdrawarrow", "basic", bowDrawArrow.length, bowDrawArrowClip, true, true);
         BowChargePlayable = new PlayerUpperBowCharge(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowcharge", "basic", bowCharge.length, bowChargeClip, true, false);
         BowShotPlayable = new PlayerUpperBowShot(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowshot", "basic", bowShot.length, bowShotClip, true, false);
         BowJumpPlayable = new PlayerUpperJumpRange(simpleKCC, playerPlayables.upperBodyChanger, playerMovementV2, playerPlayables, mixerPlayable, animationnames, mixernames, "bowjump", "basic", jumpidle.length, jumpClip, false, false);
@@ -388,8 +442,6 @@ public class PlayerUpperMovement : NetworkBehaviour
             {
                 PlayerPlayables tempplayables = hitObject.GetComponent<PlayerPlayables>();
 
-                if (tempplayables.healthV2.IsStagger) return;
-                if (tempplayables.healthV2.IsGettingUp) return;
 
                 // Avoid duplicate hits
                 if (!hitEnemiesFirstFist.Contains(hitObject))
@@ -413,9 +465,22 @@ public class PlayerUpperMovement : NetworkBehaviour
 
                     PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
 
-                    if (isFinal) healthV2.IsStagger = true;
+                    if (tempplayables.healthV2.IsStagger) return;
+                    if (tempplayables.healthV2.IsGettingUp) return;
+                    if (playerMovementV2.Rolling) return;
+
+                    if (isFinal) hitObject.GetComponent<PlayerPlayables>().StaggerAnimation();
+                    else
+                    {
+                        hitObject.GetComponent<PlayerPlayables>().HitAnimation();
+                        hitObject.GetComponent<SimpleKCC>().Move(playerMovementV2.MainCharObj.forward * 100f);
+                    }
+
+                    tempplayables.RPC_PlayPunchHit();
 
                     healthV2.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username.ToString(), Object);
+
+                    Hitted = Runner.Tick;
                 }
             }
         }
@@ -482,8 +547,6 @@ public class PlayerUpperMovement : NetworkBehaviour
             {
                 PlayerPlayables tempplayables = hitObject.GetComponent<PlayerPlayables>();
 
-                if (tempplayables.healthV2.IsStagger) return;
-                if (tempplayables.healthV2.IsGettingUp) return;
 
                 // Avoid duplicate hits
                 if (!hitEnemiesSecondFist.Contains(hitObject))
@@ -509,7 +572,18 @@ public class PlayerUpperMovement : NetworkBehaviour
 
                     PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
 
+                    if (tempplayables.healthV2.IsStagger) return;
+                    if (tempplayables.healthV2.IsGettingUp) return;
+                    if (playerMovementV2.Rolling) return;
+
+                    hitObject.GetComponent<PlayerPlayables>().HitAnimation();
+                    hitObject.GetComponent<SimpleKCC>().Move(playerMovementV2.MainCharObj.forward * 100f);
+
+                    tempplayables.RPC_PlayPunchHit();
+
                     healthV2.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username.ToString(), Object);
+
+                    Hitted = Runner.Tick;
                 }
             }
         }
@@ -629,6 +703,8 @@ public class PlayerUpperMovement : NetworkBehaviour
                 return BowJumpPlayable;
             case 50:
                 return BowFallingPlayable;
+            case 51:
+                return StopSprintPlayable;
             default: return null;
         }
     }

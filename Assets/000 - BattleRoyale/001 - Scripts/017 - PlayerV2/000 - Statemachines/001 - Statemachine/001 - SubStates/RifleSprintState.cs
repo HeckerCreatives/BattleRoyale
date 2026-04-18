@@ -29,7 +29,7 @@ public class RifleSprintState : PlayerOnGround
 
     public override void NetworkUpdate()
     {
-        playerMovement.MoveCharacter();
+        //playerMovement.MoveCharacter();
         WeaponsChecker();
         Animation();
         playerPlayables.stamina.DecreaseStamina(20f);
@@ -61,10 +61,6 @@ public class RifleSprintState : PlayerOnGround
         if (playerMovement.IsTrapping)
         {
             playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.TrappingPlayable);
-        }
-        if (playerPlayables.healthV2.IsStagger)
-        {
-            playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.StaggerHitPlayable);
         }
     }
 

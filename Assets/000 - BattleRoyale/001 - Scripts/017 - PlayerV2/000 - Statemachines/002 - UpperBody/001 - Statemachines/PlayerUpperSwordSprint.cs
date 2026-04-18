@@ -37,9 +37,6 @@ public class PlayerUpperSwordSprint : UpperNoAimState
         if (playerPlayables.healthV2.IsDead)
             return playerPlayables.upperBodyMovement.DeathPlayable;
 
-        if (playerPlayables.healthV2.IsStagger)
-            return playerPlayables.upperBodyMovement.StaggerHitPlayable;
-
         if (playerMovement.IsJumping)
             return playerPlayables.upperBodyMovement.JumpPlayable;
 
@@ -74,7 +71,7 @@ public class PlayerUpperSwordSprint : UpperNoAimState
         bool wantsSprint = playerMovement.IsSprint;
 
         if (!isMoving)
-            return playerPlayables.upperBodyMovement.SwordIdlePlayable;
+            return playerPlayables.upperBodyMovement.IdlePlayables;
 
         if (!wantsSprint || !hasSprintStamina)
             return playerPlayables.upperBodyMovement.SwordRunPlayable;
@@ -87,7 +84,7 @@ public class PlayerUpperSwordSprint : UpperNoAimState
             if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "002")
                 return playerPlayables.upperBodyMovement.SpearSprintPlayable;
 
-            return playerPlayables.upperBodyMovement.SwordSprint;
+            return null;
         }
 
         if (playerPlayables.inventory.WeaponIndex == 3)
@@ -99,6 +96,6 @@ public class PlayerUpperSwordSprint : UpperNoAimState
                 return playerPlayables.upperBodyMovement.BowSprintPlayable;
         }
 
-        return playerPlayables.upperBodyMovement.SwordSprint;
+        return null;
     }
 }
