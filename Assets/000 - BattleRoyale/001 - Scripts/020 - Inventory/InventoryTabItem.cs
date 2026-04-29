@@ -9,8 +9,8 @@ public class InventoryTabItem : MonoBehaviour
 {
     [SerializeField] private UserData userData;
     [SerializeField] private InventoryController controller;
+    [SerializeField] private LobbyQuestController lobbyQuest;
     [SerializeField] private InventoryTab tab;
-
     [Space]
     [SerializeField] private List<MarketItems> marketItems;
 
@@ -29,8 +29,8 @@ public class InventoryTabItem : MonoBehaviour
 
     [Space]
     [SerializeField] private Image tabImg;
-    [SerializeField] private Sprite unselected;
-    [SerializeField] private Sprite selected;
+    [SerializeField] private Color unselected;
+    [SerializeField] private Color selected;
 
     //  ==================
 
@@ -57,7 +57,7 @@ public class InventoryTabItem : MonoBehaviour
 
     private void CheckButton()
     {
-        tabImg.sprite = controller.CurrentInventoryTab == tab ? selected : unselected;
+        tabImg.color = controller.CurrentInventoryTab == tab ? selected : unselected;
         contentObj.SetActive(controller.CurrentInventoryTab == tab);
     }
 
@@ -118,7 +118,7 @@ public class InventoryTabItem : MonoBehaviour
                     continue;
                 }
 
-                consumableItem.InitializeItem(tempmarketitem, kvp.Value.quantity);
+                consumableItem.InitializeItem(tempmarketitem, kvp.Value.quantity, lobbyQuest);
             }
 
             yield return null;

@@ -9,6 +9,9 @@ using static Unity.Collections.Unicode;
 
 public class JumpState : PlayerOnGround
 {
+    bool _pendingJumpSound;
+    int _jumpSoundQueuedTick = -1;
+
     public JumpState(MonoBehaviour host, SimpleKCC characterController, PlayablesChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool isLower) : base(host, characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, isLower)
     {
     }
@@ -17,7 +20,15 @@ public class JumpState : PlayerOnGround
     {
         base.Enter();
 
-        playerPlayables.PlayJumpSoundEffect();
+        if (playerPlayables.HasInputAuthority)
+        {
+            int tick = playerPlayables.Runner.Tick;
+            if (_jumpSoundQueuedTick != tick)
+            {
+                _jumpSoundQueuedTick = tick;
+                _pendingJumpSound = true;
+            }
+        }
 
         if (playerPlayables.HasStateAuthority) playerMovement.AnimationTick = playerPlayables.Runner.Tick;
 
@@ -25,6 +36,17 @@ public class JumpState : PlayerOnGround
 
         playerMovement.JumpStartTick = playerPlayables.Runner.Tick;
         playerMovement.Jumping = true;
+    }
+
+    public override void NetworkLocalUpdate()
+    {
+        base.NetworkLocalUpdate();
+
+        if (_pendingJumpSound)
+        {
+            playerPlayables.PlayJumpSoundEffect();
+            _pendingJumpSound = false;
+        }
     }
 
     public override void NetworkUpdate()
@@ -74,7 +96,7 @@ public class JumpState : PlayerOnGround
                 return jumpAttackState;
         }
 
-        if (totalJumpTicks < jumpStopTick) return null;
+        if (elapsedTicks < jumpStopTick) return null;
 
         if (!characterController.IsGrounded)
         {

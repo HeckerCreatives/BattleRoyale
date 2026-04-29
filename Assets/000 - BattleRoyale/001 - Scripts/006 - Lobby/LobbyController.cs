@@ -22,6 +22,19 @@ public enum LeaderboardState
     WIN
 }
 
+public enum MENUSTATE
+{
+    LOBBY,
+    MESSAGES,
+    SETTINGS,
+    UISETTINGS,
+    LEADERBOARD,
+    PROFILE,
+    SERVERSELECT,
+    MARKETPLACE,
+    INVENTORY
+}
+
 public class LobbyController : MonoBehaviour
 {
     private event EventHandler LeaderboardStateChange;
@@ -44,6 +57,26 @@ public class LobbyController : MonoBehaviour
         }
     }
 
+    private event EventHandler LobbyStateChange;
+    public event EventHandler OnLobbyStateChange
+    {
+        add
+        {
+            if (LobbyStateChange == null || !LobbyStateChange.GetInvocationList().Contains(value))
+                LobbyStateChange += value;
+        }
+        remove {  LobbyStateChange -= value; }
+    }
+    public MENUSTATE CurrentMenuState
+    {
+        get => currentMenuState;
+        set
+        {
+            currentMenuState = value;
+            LobbyStateChange?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
     //  ========================
 
     [SerializeField] private UserData userData;
@@ -54,6 +87,7 @@ public class LobbyController : MonoBehaviour
     [SerializeField] private LobbyUserProfile userProfile;
     [SerializeField] private InventoryController inventoryController;
     [SerializeField] private MarketplaceController martketController;
+    [SerializeField] private LobbyQuestController questController;
 
     [Space]
     [SerializeField] private AudioClip bgMusicClip;
@@ -94,6 +128,7 @@ public class LobbyController : MonoBehaviour
     [SerializeField] private GameObject findMatchObj;
 
     [Header("DEBUGGER")]
+    [SerializeField] private MENUSTATE currentMenuState;
     [SerializeField] private bool cancountdowntime;
     [SerializeField] public NetworkRunner currentRunnerInstance;
     [SerializeField] private LeaderboardState currentLeaderboardState;
@@ -111,6 +146,7 @@ public class LobbyController : MonoBehaviour
         {
             try
             {
+                Debug.Log("2 LOADING");
                 PlayerCharacterSetting charactersetting = JsonConvert.DeserializeObject<PlayerCharacterSetting>(response.ToString());
 
                 Debug.Log(response.ToString());
@@ -138,6 +174,7 @@ public class LobbyController : MonoBehaviour
             Debug.Log(response.ToString());
             try
             {
+                Debug.Log("3 LOADING");
                 GameUserDetails gameUserDetails = JsonConvert.DeserializeObject<GameUserDetails>(response.ToString());
 
                 userData.GameDetails = gameUserDetails;
@@ -164,6 +201,7 @@ public class LobbyController : MonoBehaviour
         {
             try
             {
+                Debug.Log("4 LOADING");
                 Dictionary<string, object> responsetempdata = JsonConvert.DeserializeObject<Dictionary<string, object>>(response.ToString());
 
                 if (responsetempdata.Count <= 0) return;
@@ -579,12 +617,14 @@ public class LobbyController : MonoBehaviour
         GameManager.Instance.SceneController.AddActionLoadinList(inventoryController.GetInventory());
         GameManager.Instance.SceneController.AddActionLoadinList(LoadRewardAds());
         GameManager.Instance.SceneController.AddActionLoadinList(martketController.GetAdsData());
+        GameManager.Instance.SceneController.AddActionLoadinList(questController.FetchQuestDataRoutine());
         GameManager.Instance.SceneController.AddActionLoadinList(CheckIfFirstTimeDownload());
         GameManager.Instance.AudioController.SetBGMusic(bgMusicClip);
         GameManager.Instance.SceneController.ActionPass = true;
 
 
         GameManager.Instance.SocketMngr.OnPlayerCountServerChange += PlayerCountChange;
+        OnLobbyStateChange += MenuStateChange;
 
         userData.OnSelectedServerChange += ServerChange;
         userData.OnTitleChange += TitleChange;
@@ -598,6 +638,7 @@ public class LobbyController : MonoBehaviour
         GameManager.Instance.SocketMngr.OnPlayerCountServerChange -= PlayerCountChange;
         userData.OnSelectedServerChange -= ServerChange;
         userData.OnTitleChange -= TitleChange;
+        OnLobbyStateChange -= MenuStateChange;
     }
 
     private void Update()
@@ -639,6 +680,44 @@ public class LobbyController : MonoBehaviour
         }
         else
             potionMultiplier.text = $"x1";
+    }
+
+
+    private void MenuStateChange(object sender, EventArgs e)
+    {
+    }
+
+    public void ChangeMenuState(int index) => CurrentMenuState = (MENUSTATE)index;
+
+    public IEnumerator RefreshUserData(bool stayAliveLoadingAfter = false)
+    {
+        yield return StartCoroutine(GameManager.Instance.GetRequest("/usergamedetail/getusergamedetails", "", stayAliveLoadingAfter, (response) =>
+        {
+            Debug.Log(response.ToString());
+            try
+            {
+                GameUserDetails gameUserDetails = JsonConvert.DeserializeObject<GameUserDetails>(response.ToString());
+
+                userData.GameDetails = gameUserDetails;
+                userProfile.SetData();
+
+                cancountdowntime = true;
+            }
+            catch (Exception ex)
+            {
+                GameManager.Instance.SceneController.StopLoading();
+                Debug.Log(ex.ToString());
+                GameManager.Instance.SocketMngr.Socket.Disconnect();
+                GameManager.Instance.NotificationController.ShowError("There's a problem with the server! Please try again later. 3", null);
+                GameManager.Instance.SceneController.CurrentScene = "Login";
+            }
+        }, () =>
+        {
+            GameManager.Instance.SceneController.StopLoading();
+            GameManager.Instance.SocketMngr.Socket.Disconnect();
+            GameManager.Instance.NotificationController.ShowError("There's a problem with your network connection! Please try again later. 4", null);
+            GameManager.Instance.SceneController.CurrentScene = "Login";
+        }));
     }
 
     private IEnumerator LoadRewardAds()
@@ -689,7 +768,9 @@ public class LobbyController : MonoBehaviour
                     await matchmakingController.ShutdownServer();
 
                 userData.ResetLogin();
-                GameManager.Instance.SocketMngr.Socket.Disconnect();
+                GameManager.Instance.SocketMngr.LogoutAndDisconnect();
+                GameManager.Instance.SceneController.CurrentScene = "Login";
+                GameManager.Instance.NoBGLoading.SetActive(false);
             }, null);
         else
             AwaitLogout();
@@ -702,7 +783,9 @@ public class LobbyController : MonoBehaviour
             await matchmakingController.ShutdownServer();
 
         userData.ResetLogin();
-        GameManager.Instance.SocketMngr.Socket.Disconnect();
+        GameManager.Instance.SocketMngr.LogoutAndDisconnect();
+        GameManager.Instance.SceneController.CurrentScene = "Login";
+        GameManager.Instance.NoBGLoading.SetActive(false);
     }
 
     public void ButtonPress() => GameManager.Instance.AudioController.PlaySFX(buttonClip);

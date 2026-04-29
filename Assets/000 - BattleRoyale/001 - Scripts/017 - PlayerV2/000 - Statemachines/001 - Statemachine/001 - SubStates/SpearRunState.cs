@@ -23,7 +23,13 @@ public class SpearRunState : PlayerOnGround
 
         playedStep1 = false;
         playedStep2 = false;
-        lastNormalizedTime = 0.0;
+
+        lastNormalizedTime = animationLength > 0f
+            ? (animationClipPlayable.GetTime() / animationLength) % 1.0
+            : 0.0;
+
+        if (lastNormalizedTime >= 0.35) playedStep1 = true;
+        if (lastNormalizedTime >= 0.85) playedStep2 = true;
     }
 
     public override void Exit()
@@ -49,8 +55,6 @@ public class SpearRunState : PlayerOnGround
         base.NetworkUpdate();
 
         playerMovement.MoveCharacter();
-
-        HandleFootsteps();
 
         var nextState = GetNextState();
 

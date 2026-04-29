@@ -52,50 +52,30 @@ public class BowDrawIdle : PlayerOnGround
         //if (!playerMovement.Attacking)
         //    return playerPlayables.lowerBodyMovement.BowIdlePlayable; 
 
-        //if (!characterController.IsGrounded)
-        //    return playerPlayables.lowerBodyMovement.FallingPlayable;
+        if (!characterController.IsGrounded)
+            return playerPlayables.lowerBodyMovement.FallingPlayable;
 
-        //return GetWeaponBasedIdleOrMoveState();
-        return null;
+        return GetWeaponBasedIdleOrMoveState();
     }
 
-    //private AnimationPlayable GetWeaponBasedIdleOrMoveState()
-    //{
-    //    bool isMoving = playerMovement.XMovement != 0f || playerMovement.YMovement != 0f;
+    private AnimationPlayable GetWeaponBasedIdleOrMoveState()
+    {
+        bool isMoving = playerMovement.XMovement != 0f || playerMovement.YMovement != 0f;
+        bool isAiming = playerMovement.Attacking || IsUpperBodyAiming();
 
-    //    if (playerPlayables.inventory.WeaponIndex == 1)
-    //    {
-    //        return playerPlayables.lowerBodyMovement.IdlePlayable;
-    //    }
+        if (isMoving)
+        {
+            if (isAiming)
+                return playerPlayables.lowerBodyMovement.BowShootingMovePlayable;
 
-    //    if (playerPlayables.inventory.WeaponIndex == 2)
-    //    {
-    //        if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "001")
-    //            return playerPlayables.lowerBodyMovement.SwordIdlePlayable;
+            return playerPlayables.lowerBodyMovement.BowRunPlayable;
+        }
+        else
+        {
+            if (isAiming)
+                return null;
 
-    //        if (playerPlayables.inventory.PrimaryWeapon.WeaponID == "002")
-    //            return playerPlayables.lowerBodyMovement.SpearIdlePlayable;
-    //    }
-
-    //    if (playerPlayables.inventory.WeaponIndex == 3)
-    //    {
-    //        if (playerPlayables.inventory.SecondaryWeapon.WeaponID == "003")
-    //            return playerPlayables.lowerBodyMovement.RifleIdlePlayable;
-
-    //        if (playerPlayables.inventory.SecondaryWeapon.WeaponID == "004")
-    //        {
-    //            if (isMoving)
-    //            {
-    //                if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-    //                    return playerPlayables.lowerBodyMovement.BowSprintPlayable;
-
-    //                return playerPlayables.lowerBodyMovement.BowRunPlayable;
-    //            }
-
-    //            return null;
-    //        }
-    //    }
-
-    //    return null;
-    //}
+            return playerPlayables.lowerBodyMovement.BowIdlePlayable;
+        }
+    }
 }

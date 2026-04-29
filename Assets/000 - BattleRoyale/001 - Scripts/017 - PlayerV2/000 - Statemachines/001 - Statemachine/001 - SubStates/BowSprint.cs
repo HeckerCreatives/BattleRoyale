@@ -60,7 +60,6 @@ public class BowSprint : PlayerOnGround
     {
         playerMovement.MoveCharacter();
 
-
         var nextState = GetNextLowerSprintState();
 
         if (nextState != null && playablesChanger.CurrentState != nextState)

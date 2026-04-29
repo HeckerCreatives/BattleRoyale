@@ -21,6 +21,8 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
         get => meleeSoundController;
     }
 
+    public Transform ImpactPoint { get  => impactPoint; }
+
     //  ======================
 
     [SerializeField] private GunSoundController meleeSoundController;
@@ -220,106 +222,5 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
         PlayerCore = null;
         BotData = null;
         Object.RemoveInputAuthority();
-    }
-
-    public async void SpawnBullet(Vector3 cameraHitOrigin, Vector3 cameraHitDirection, float animationLength, bool isBot = false)
-    {
-        Ray tempRay = new Ray(cameraHitOrigin, cameraHitDirection);
-
-        //Debug.DrawRay(cameraHitOrigin, cameraHitDirection * 999f, Color.red, 5);
-
-        LagCompensatedHit hit = new LagCompensatedHit();
-        bool validTargetFound = false;
-        Vector3 raystart = tempRay.origin;
-        float resettemptime = Runner.Tick + animationLength;
-
-        while (!validTargetFound)
-        {
-            if (Runner.LagCompensation.Raycast(raystart, tempRay.direction, 999f, Object.InputAuthority, out hit, enemyLayerMask, HitOptions.IncludePhysX))
-            {
-                NetworkObject hitObject = hit.Hitbox?.Root.Object;
-
-                if (hitObject != null && hitObject.InputAuthority == Object.InputAuthority)
-                {
-                    raystart = hit.Point + tempRay.direction * 0.2f;
-                    continue;
-                }
-
-                validTargetFound = true;
-            }
-
-            if (Runner.Tick >= resettemptime)
-                break;
-
-            await Task.Yield();
-        }
-
-        if (validTargetFound)
-        {
-            PlayerCore.CurrentPlayerPlayables.SpawnBullets(impactPoint.transform.position, hit, isRifle, WeaponID == "003" ? 5f : 2.5f);
-
-            //Debug.Log($"raycast hit: {hit.GameObject.name}");
-
-            if (hit.Hitbox != null)
-            {
-
-                if (hit.Hitbox.Root.tag == "Bot")
-                {
-                    Botdata tempdata = hit.Hitbox.Root.GetComponent<Botdata>();
-
-                    if (tempdata.IsStagger) return;
-                    if (tempdata.IsGettingUp) return;
-                    if (tempdata.IsDead) return;
-
-                    string tag = hit.Hitbox.tag;
-
-                    float tempdamage = tag switch
-                    {
-                        "Head" => Head,
-                        "Body" => Body,
-                        "Thigh" => Thigh,
-                        "Shin" => Shin,
-                        "Foot" => Foot,
-                        "Arm" => Arm,
-                        "Forearm" => Forearm,
-                        _ => 0f
-                    };
-
-                    tempdata.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username.ToString(), CurrentPlayer);
-                }
-
-                else
-                {
-                    PlayerPlayables tempplayables = hit.Hitbox.Root.GetComponent<PlayerPlayables>();
-
-                    if (tempplayables.healthV2.IsStagger) return;
-                    if (tempplayables.healthV2.IsGettingUp) return;
-
-                    PlayerHealthV2 playerHealth = hit.Hitbox.Root.GetComponent<PlayerHealthV2>();
-
-                    string tag = hit.Hitbox.tag;
-
-                    float tempdamage = tag switch
-                    {
-                        "Head" => Head,
-                        "Body" => Body,
-                        "Thigh" => Thigh,
-                        "Shin" => Shin,
-                        "Foot" => Foot,
-                        "Arm" => Arm,
-                        "Forearm" => Forearm,
-                        _ => 0f
-                    };
-
-                    playerHealth.ApplyDamage(tempdamage, PlayerCore.Username.ToString(), PlayerCore.Object);
-                }
-            }
-
-            Vector3 mouseWorldPosition = hit.Point;
-
-            Vector3 aimDir = (mouseWorldPosition - impactPoint.transform.position).normalized;
-
-            //  spawn bullets here
-        }
     }
 }

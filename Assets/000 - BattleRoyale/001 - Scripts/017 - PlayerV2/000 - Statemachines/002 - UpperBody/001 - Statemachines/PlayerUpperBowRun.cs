@@ -54,9 +54,6 @@ public class PlayerUpperBowRun : UpperNoAimState
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             return upper.RollPlayables;
 
-        if (playerMovement.Attacking)
-            return upper.FirstPunch;
-
         return GetWeaponBasedUpperRunState();
     }
 
@@ -66,6 +63,7 @@ public class PlayerUpperBowRun : UpperNoAimState
         var inventory = playerPlayables.inventory;
 
         bool isMoving = playerMovement.XMovement != 0f || playerMovement.YMovement != 0f;
+        bool isSprint = playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f;
 
         switch (inventory.WeaponIndex)
         {
@@ -101,21 +99,33 @@ public class PlayerUpperBowRun : UpperNoAimState
                             return upper.RifleIdle;
 
                         if (inventory.SecondaryWeaponID() == "004")
+                        {
+                            if (playerMovement.Attacking)
+                                return upper.BowDrawArrowPlayable;
+
                             return upper.BowIdlePlayable;
+                        }
                     }
                     else
                     {
+
                         if (inventory.SecondaryWeaponID() == "003")
                             return upper.RifleRunPlayable;
 
                         if (inventory.SecondaryWeaponID() == "004")
-                            return upper.SprintPlayables;
+                        {
+                            if (playerMovement.Attacking && playerPlayables.inventory.BowAmmo() > 0)
+                                return upper.BowDrawArrowPlayable;
+
+                            if (isMoving && isSprint)
+                                return upper.BowSprintPlayable;
+                        }
                     }
 
                     break;
                 }
         }
 
-        return upper.IdlePlayables;
+        return null;
     }
 }

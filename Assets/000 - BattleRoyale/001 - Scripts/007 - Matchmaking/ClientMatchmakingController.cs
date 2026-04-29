@@ -1,3 +1,4 @@
+using Cinemachine;
 using Fusion;
 using Fusion.Photon.Realtime;
 using Newtonsoft.Json;
@@ -77,6 +78,9 @@ public class ClientMatchmakingController : MonoBehaviour
     //  ========================
 
     [SerializeField] private UserData userData;
+    [SerializeField] private LobbyController lobbyController;
+
+    [Space]
     [SerializeField] private string lobbyName;
     [SerializeField] private bool useMultiplay;
     [SerializeField] private bool usePrivateServer;
@@ -131,6 +135,11 @@ public class ClientMatchmakingController : MonoBehaviour
     [SerializeField] private Image enteringMatchFlashImg;
     [SerializeField] private List<GameObject> lobbyObjs;
     [SerializeField] private GameObject lobbyWaitingObj;
+
+    [Space]
+    [SerializeField] private CinemachineVirtualCamera inventoryVCam;
+    [SerializeField] private CinemachineVirtualCamera lobbyVCam;
+    [SerializeField] private GameObject InventoryObj;
 
     [Header("DEBUGGER")]
     [ReadOnly][SerializeField] public NetworkRunner currentRunnerInstance;
@@ -275,7 +284,16 @@ public class ClientMatchmakingController : MonoBehaviour
                         roomname = tempdata[0].roomName;
 
                         if (!reconToWaiting)
+                        {
                             waitingRoomObj.SetActive(true);
+
+                            if (lobbyController.CurrentMenuState == MENUSTATE.INVENTORY)
+                            {
+                                InventoryObj.SetActive(false);
+                                lobbyVCam.m_Priority = 11;
+                                inventoryVCam.m_Priority = 0;
+                            }
+                        }
 
                     }, null));
                 }
@@ -610,6 +628,7 @@ public class ClientMatchmakingController : MonoBehaviour
 
     public IEnumerator WaitForReconnectStatus()
     {
+        Debug.Log("1 LOADING");
         GameManager.Instance.SocketMngr.EmitEvent("needtoreconnect", null);
 
         while (!finishCheckingIfCanRecon) yield return null;
@@ -850,10 +869,18 @@ public class ClientMatchmakingController : MonoBehaviour
             findingMatch = false;
             matchFound = false;
             inWaitingRoom = false;
+            reconToWaiting = false;
 
             cancelBtn.interactable = false;
 
             timerTMP.text = "Canceling matchmaking...";
+
+            if (lobbyController.CurrentMenuState == MENUSTATE.INVENTORY)
+            {
+                InventoryObj.SetActive(true);
+                lobbyVCam.m_Priority = 0;
+                inventoryVCam.m_Priority = 11;
+            }
 
             matchmakingObj.SetActive(false);
             matchBtn.SetActive(true);

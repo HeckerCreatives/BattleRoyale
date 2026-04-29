@@ -15,7 +15,14 @@ public enum MarketplaceTab
     SKINCOLOR,
     HAIRCOLOR,
     HAIRSTYLES,
-    COMINGSOON
+    COMINGSOON,
+    HEADGEAR,
+    GLOVES,
+    UPPERBODY,
+    LOWERBODY,
+    FULLSET,
+    WEAPON,
+    FOOT
 }
 
 public class MarketplaceController : MonoBehaviour
@@ -93,6 +100,8 @@ public class MarketplaceController : MonoBehaviour
 
                 for (int a = 0; a < tempads.ads.Count; a++)
                 {
+                    if (a >= 1) break;
+
                     dailiesItems[a].InitializedData(tempads.ads[a]._id, tempads.ads[a].owner, tempads.ads[a].itemid, tempads.ads[a].itemname, tempads.ads[a].type, tempads.ads[a].isClaimed);
                 }
 

@@ -64,7 +64,7 @@ public class AdsController : MonoBehaviour
                     { "adsid", adsid },
                     { "type", item.ItemType },
                     { "itemid", item.ItemID }
-                }, false, (response) =>
+                }, true, (response) =>
                 {
                     try
                     {

@@ -19,9 +19,9 @@ public class SwordJumpAttack : AnimationPlayable
 
         groundedSinceTick = -1;
 
-        if (!playerPlayables.HasStateAuthority) return;
+        if (playerPlayables.HasInputAuthority)
+            playerMovement.AnimationTick = playerPlayables.Runner.Tick;
 
-        playerMovement.AnimationTick = playerPlayables.Runner.Tick;
 
         if (!playerPlayables.HasStateAuthority) return;
 
@@ -41,6 +41,7 @@ public class SwordJumpAttack : AnimationPlayable
 
         playerMovement.IsFalling = false;
         playerMovement.JumpImpulse = 0;
+        playerMovement.Jumping = false;
     }
 
     public override void NetworkUpdate()

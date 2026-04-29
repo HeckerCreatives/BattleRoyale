@@ -51,7 +51,7 @@ public class PlayerUpperBowIdle : UpperNoAimState
         if (playerMovement.IsTrapping)
             return upper.TrapPlayable;
 
-        if (playerMovement.Attacking)
+        if (playerMovement.Attacking && playerPlayables.inventory.BowAmmo() > 0)
             return upper.BowDrawArrowPlayable;
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)

@@ -6,8 +6,7 @@ using UnityEngine.Animations;
 
 public class PlayerUpperRifleReload : UpperNoAimState
 {
-    float timer;
-    float reloadtimer;
+    private int _lastEnterProcessedTick = -1;
     bool doneReload;
 
     public PlayerUpperRifleReload(SimpleKCC characterController, UpperBodyChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool canAnimateUpper) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, canAnimateUpper)
@@ -18,24 +17,61 @@ public class PlayerUpperRifleReload : UpperNoAimState
     {
         base.Enter();
 
-        playerPlayables.inventory.SecondaryWeapon.SoundController.PlayReload();
+        int currentTick = playerPlayables.Runner != null ? playerPlayables.Runner.Tick : -1;
 
-        timer = playerPlayables.TickRateAnimation + animationLength;
-        reloadtimer = playerPlayables.TickRateAnimation + (animationLength * 0.9f);
-        doneReload = false;
+        if (_lastEnterProcessedTick == currentTick)
+            return;
+
+        _lastEnterProcessedTick = currentTick;
+
+        if (playerPlayables.HasInputAuthority)
+        {
+            playerMovement.AnimationTick = playerPlayables.Runner.Tick;
+            playerPlayables.ShowReloadProgress();
+        }
+
+        if (playerPlayables.HasStateAuthority)
+        {
+            playerMovement.AuthoritiveAniamtionTick = playerPlayables.Runner.Tick;
+            doneReload = false;
+        }
+
+        if (!playerPlayables.HasStateAuthority)
+            playerPlayables.inventory.SecondaryWeapon.SoundController.PlayReload();
+    }
+
+    public override void Exit()
+    {
+        base.Exit();
+
+        if (playerPlayables.HasInputAuthority)
+            playerPlayables.HideReloadProgress();
     }
 
     public override void NetworkUpdate()
     {
         base.NetworkUpdate();
 
-        if (playerPlayables.TickRateAnimation >= reloadtimer && !doneReload)
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.AuthoritiveAniamtionTick : playerMovement.AnimationTick);
+
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
+
+        if (playerPlayables.HasInputAuthority)
+        {
+            playerPlayables.SetReloadProgress(Mathf.Clamp01(elapsedTicks / animationLength));
+        }
+
+        if (elapsedTicks >= finishStartTick && !doneReload)
         {
             int ammoNeeded = 10 - playerPlayables.inventory.SecondaryWeapon.Supplies; // How much ammo is needed to fill the magazine
             int ammoToLoad = Mathf.Min(ammoNeeded, playerPlayables.inventory.RifleMagazine); // Take only what's available
 
             playerPlayables.inventory.SecondaryWeapon.Supplies += ammoToLoad;
             playerPlayables.inventory.RifleMagazine -= ammoToLoad;
+
+            doneReload = true;
         }
 
         playerMovement.WeaponSwitcher();
@@ -66,6 +102,12 @@ public class PlayerUpperRifleReload : UpperNoAimState
 
     private void WeaponsChecker()
     {
+        int currentTick = playerPlayables.Runner.Tick;
+        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.AuthoritiveAniamtionTick : playerMovement.AnimationTick);
+
+        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
+
         if (playerPlayables.inventory.WeaponIndex == 1)
         {
             if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
@@ -110,7 +152,7 @@ public class PlayerUpperRifleReload : UpperNoAimState
         }
         else if (playerPlayables.inventory.WeaponIndex == 3)
         {
-            if (playerPlayables.TickRateAnimation >= timer)
+            if (elapsedTicks >= finishStartTick)
             {
                 if (playerPlayables.inventory.SecondaryWeaponID() == "003")
                 {

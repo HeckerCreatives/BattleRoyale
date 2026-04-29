@@ -10,5 +10,20 @@ public class RifleReloadState : PlayerOnGround
     {
     }
 
+    public override void NetworkUpdate()
+    {
+        if (playerPlayables.healthV2.IsDead)
+        { playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.DeathPlayable); return; }
 
+        if (!characterController.IsGrounded)
+        { playablesChanger.ChangeState(playerPlayables.lowerBodyMovement.FallingPlayable); return; }
+
+        bool isMoving = playerMovement.XMovement != 0f || playerMovement.YMovement != 0f;
+        var next = isMoving
+            ? (AnimationPlayable)playerPlayables.lowerBodyMovement.RifleAimMovePlayable
+            : playerPlayables.lowerBodyMovement.RifleAimIdlePlayable;
+
+        if (playablesChanger.CurrentState != next)
+            playablesChanger.ChangeState(next);
+    }
 }

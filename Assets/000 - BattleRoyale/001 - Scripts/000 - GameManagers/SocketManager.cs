@@ -141,12 +141,6 @@ public class SocketManager : MonoBehaviour
         }
     }
 
-    public bool IsOnGame
-    {
-        get => isOnGame;
-        set => isOnGame = value;
-    }
-
     // ============================
 
     [SerializeField] private UserData userData;
@@ -171,7 +165,6 @@ public class SocketManager : MonoBehaviour
     [SerializeField] private int playerAfricaCountServer;
     [SerializeField] private int playerAmericaEastCountServer;
     [SerializeField] private int playerAmericaWestCountServer;
-    [SerializeField] private bool isOnGame;
     [SerializeField] private int retryReconnect;
 
     //  ===========================
@@ -184,15 +177,18 @@ public class SocketManager : MonoBehaviour
 
     public Action DisconnectAction;
 
+    private bool _handlersRegistered = false;
+    private bool _isReconnecting = false;
+    private bool _intentionalLogout = false;
+
+    private const int MaxReconnectAttempts = 5;
+
     //  ===========================
 
-    private void OnApplicationFocus(bool focus)
+    private void OnApplicationPause(bool paused)
     {
-        if (focus)
-        {
-            if (ConnectionStatus == "Disconnected")
-                Reconnect();
-        }
+        if (!paused && ConnectionStatus == "Disconnected")
+            Reconnect();
     }
 
     public void InitializeSocket()
@@ -238,96 +234,100 @@ public class SocketManager : MonoBehaviour
         Debug.Log("Socket Connected to server");
         ConnectionStatus = "Connected";
 
-        // Handle "ping" event
-        Socket.On("ping", async (response) =>
+        GameManager.Instance.AddJob(() =>
         {
-            await Task.Delay(5000);
-            // Respond with "pong" after 5 seconds
-            long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            EmitEvent("pong", timestamp);
-            missedPingCount = 0;
-            // Start or reset the timeout timer
-            RestartPingTimeout();
+            retryReconnect = 0;
+            _isReconnecting = false;
+            GameManager.Instance.NoBGLoading.SetActive(false);
         });
 
-        Socket.On("playercount", (response) =>
+        // Register handlers only once — re-registering on reconnect accumulates duplicates
+        if (!_handlersRegistered)
         {
-            GameManager.Instance.AddJob(() =>
+            _handlersRegistered = true;
+
+            Socket.On("ping", async (response) =>
             {
-                Debug.Log("player count change");
-                PlayerCountServer = response.GetValue<int>();
+                await Task.Delay(5000);
+                long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                EmitEvent("pong", timestamp);
+                missedPingCount = 0;
+                RestartPingTimeout();
             });
-        });
 
-
-        Socket.On("asiacount", (response) =>
-        {
-            GameManager.Instance.AddJob(() =>
+            Socket.On("playercount", (response) =>
             {
-                Debug.Log("Change asia user count");
-                PlayerAsiaCountServer = response.GetValue<int>();
-            });
-        });
-
-        Socket.On("uaecount", (response) =>
-        {
-            GameManager.Instance.AddJob(() =>
-            {
-                Debug.Log("Change asia uae count");
-                PlayerUAECountServer = response.GetValue<int>();
-            });
-        });
-
-        Socket.On("americawestcount", (response) =>
-        {
-            GameManager.Instance.AddJob(() =>
-            {
-                PlayerAmericaWestCountServer = response.GetValue<int>();
-            });
-        });
-
-        Socket.On("americacount", (response) =>
-        {
-            GameManager.Instance.AddJob(() =>
-            {
-                PlayerAmericaEastCountServer = response.GetValue<int>();
-            });
-        });
-
-        Socket.On("africacount", (response) =>
-        {
-            GameManager.Instance.AddJob(() =>
-            {
-                PlayerAfricaCountServer = response.GetValue<int>();
-            });
-        });
-
-        Socket.On("selectedservercount", (response) =>
-        {
-            GameManager.Instance.AddJob(() =>
-            {
-                if (response.GetValue<string>() != "")
+                GameManager.Instance.AddJob(() =>
                 {
-                    Dictionary<string, int> tempservercount = JsonConvert.DeserializeObject<Dictionary<string, int>>(response.GetValue<string>());
-
-                    PlayerAsiaCountServer = tempservercount["asia"];
-                    PlayerAfricaCountServer = tempservercount["za"];
-                    PlayerUAECountServer = tempservercount["uae"];
-                    PlayerAmericaEastCountServer = tempservercount["us"];
-                    //PlayerAmericaWestCountServer = tempservercount["usw"];
-                }
-
+                    Debug.Log("player count change");
+                    PlayerCountServer = response.GetValue<int>();
+                });
             });
-        });
 
+            Socket.On("asiacount", (response) =>
+            {
+                GameManager.Instance.AddJob(() =>
+                {
+                    Debug.Log("Change asia user count");
+                    PlayerAsiaCountServer = response.GetValue<int>();
+                });
+            });
 
+            Socket.On("uaecount", (response) =>
+            {
+                GameManager.Instance.AddJob(() =>
+                {
+                    Debug.Log("Change asia uae count");
+                    PlayerUAECountServer = response.GetValue<int>();
+                });
+            });
+
+            Socket.On("americawestcount", (response) =>
+            {
+                GameManager.Instance.AddJob(() =>
+                {
+                    PlayerAmericaWestCountServer = response.GetValue<int>();
+                });
+            });
+
+            Socket.On("americacount", (response) =>
+            {
+                GameManager.Instance.AddJob(() =>
+                {
+                    PlayerAmericaEastCountServer = response.GetValue<int>();
+                });
+            });
+
+            Socket.On("africacount", (response) =>
+            {
+                GameManager.Instance.AddJob(() =>
+                {
+                    PlayerAfricaCountServer = response.GetValue<int>();
+                });
+            });
+
+            Socket.On("selectedservercount", (response) =>
+            {
+                GameManager.Instance.AddJob(() =>
+                {
+                    if (response.GetValue<string>() != "")
+                    {
+                        Dictionary<string, int> tempservercount = JsonConvert.DeserializeObject<Dictionary<string, int>>(response.GetValue<string>());
+                        PlayerAsiaCountServer = tempservercount["asia"];
+                        PlayerAfricaCountServer = tempservercount["za"];
+                        PlayerUAECountServer = tempservercount["uae"];
+                        PlayerAmericaEastCountServer = tempservercount["us"];
+                    }
+                });
+            });
+        }
+
+        // Always re-emit login on connect/reconnect to re-authenticate with backend
         EmitEvent("login", JsonConvert.SerializeObject(new Dictionary<string, string>
         {
             { "userid", userData.Username },
             { "region", userData.SelectedServer }
         }));
-
-        //EmitEvent("login", userData.Username);
     }
 
     private void RestartPingTimeout()
@@ -378,58 +378,116 @@ public class SocketManager : MonoBehaviour
 
     private void SocketDisconnected(object sender, string e)
     {
-        Debug.Log("Socket Disconnected to server");
+        Debug.Log("Socket Disconnected from server");
         CancelPingTimeout();
+        ConnectionStatus = "Disconnected";
 
-        if (!IsOnGame)
+        Debug.Log($"INTENTIONAL LOGOUT? {_intentionalLogout}");
+        if (_intentionalLogout)
         {
-            GameManager.Instance.AddJob(() =>
-            {
-                EmitEvent("disconnect", null);
-                GameManager.Instance.NoBGLoading.SetActive(false);
-                ConnectionStatus = "Disconnected";
-                DisconnectAction?.Invoke();
-
-                if (!isOnLogin)
-                    sceneController.CurrentScene = "Login";
-
-                userData.ResetLogin();
-                Socket = null;
-            });
+            _intentionalLogout = false;
+            return;
         }
-        else
+
+        GameManager.Instance.AddJob(() =>
         {
-            GameManager.Instance.AddJob(() =>
-            {
-                EmitEvent("disconnect", null);
-                ConnectionStatus = "Disconnected";
-                Socket = null;
-            });
+            GameManager.Instance.NoBGLoading.SetActive(true);
+        });
+
+        StartAutoReconnect();
+    }
+
+    public void LogoutAndDisconnect()
+    {
+        _intentionalLogout = true;
+        if (Socket != null)
+        {
+            Socket.Disconnect();
+            Socket = null;
+        }
+        ConnectionStatus = "Disconnected";
+    }
+
+    private void StartAutoReconnect()
+    {
+        if (_isReconnecting) return;
+        _isReconnecting = true;
+        retryReconnect = 0;
+        GameManager.Instance.AddJob(AttemptReconnect);
+    }
+
+    private async void AttemptReconnect()
+    {
+        if (ConnectionStatus == "Connected")
+        {
+            _isReconnecting = false;
+            return;
+        }
+
+        if (retryReconnect >= MaxReconnectAttempts)
+        {
+            OnReconnectFailed();
+            return;
+        }
+
+        retryReconnect++;
+        int delayMs = Mathf.Min(2000 * retryReconnect, 16000);
+        Debug.LogWarning($"[Socket] Reconnect attempt {retryReconnect}/{MaxReconnectAttempts} in {delayMs}ms...");
+
+        await Task.Delay(delayMs);
+
+        if (ConnectionStatus == "Connected")
+        {
+            _isReconnecting = false;
+            return;
+        }
+
+        try
+        {
+            if (Socket != null)
+                Socket.Connect();
+            else
+                GameManager.Instance.AddJob(InitializeSocket);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"[Socket] Reconnect attempt {retryReconnect} failed: {ex.Message}");
+            AttemptReconnect();
         }
     }
 
-    private async void Reconnect()
+    private void OnReconnectFailed()
     {
-        try
-        {
-            Socket.Connect();
-        }
-        catch(Exception e)
-        {
-            Debug.Log($"ERROR RECONNECTING: {e.ToString()}");
+        Debug.LogError("[Socket] Max reconnect attempts reached. Giving up.");
+        _isReconnecting = false;
 
-            await Task.Delay(1000);
-
+        GameManager.Instance.AddJob(() =>
+        {
+            GameManager.Instance.NoBGLoading.SetActive(false);
             ConnectionStatus = "Disconnected";
             DisconnectAction?.Invoke();
-            sceneController.CurrentScene = "Login";
+            if (!isOnLogin)
+                sceneController.CurrentScene = "Login";
             userData.ResetLogin();
             Socket = null;
-        }
+        });
+    }
+
+    private void Reconnect()
+    {
+        if (ConnectionStatus == "Connected") return;
+
+        GameManager.Instance.AddJob(() =>
+        {
+            GameManager.Instance.NoBGLoading.SetActive(true);
+        });
+
+        StartAutoReconnect();
     }
 
     public void EmitEvent(string eventname, object data)
     {
+        if (Socket == null) return;
         Socket.Emit(eventname, data);
     }
 }

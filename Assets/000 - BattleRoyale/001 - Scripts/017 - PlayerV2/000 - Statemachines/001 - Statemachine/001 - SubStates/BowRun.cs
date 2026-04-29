@@ -23,7 +23,13 @@ public class BowRun : PlayerOnGround
 
         playedStep1 = false;
         playedStep2 = false;
-        lastNormalizedTime = 0.0;
+
+        lastNormalizedTime = animationLength > 0f
+            ? (animationClipPlayable.GetTime() / animationLength) % 1.0
+            : 0.0;
+
+        if (lastNormalizedTime >= 0.35) playedStep1 = true;
+        if (lastNormalizedTime >= 0.85) playedStep2 = true;
     }
 
     public override void Exit()
@@ -49,8 +55,6 @@ public class BowRun : PlayerOnGround
         playerMovement.MoveCharacter();
 
         var nextState = GetNextLowerRunState();
-
-        HandleFootsteps();
 
         if (nextState != null && playablesChanger.CurrentState != nextState)
         {
@@ -113,8 +117,8 @@ public class BowRun : PlayerOnGround
         if (playerMovement.IsBlocking)
             return lower.BlockPlayable;
 
-        if (playerMovement.Attacking)
-            return lower.Punch1Playable;
+        if (playerMovement.Attacking && playerPlayables.inventory.BowAmmo() > 0)
+            return lower.BowShootingMovePlayable;
 
         if (playerMovement.IsHealing)
             return lower.HealPlayable;
@@ -137,6 +141,7 @@ public class BowRun : PlayerOnGround
         var inventory = playerPlayables.inventory;
 
         bool isMoving = playerMovement.XMovement != 0f || playerMovement.YMovement != 0f;
+        bool isSprint = playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f;
 
         switch (inventory.WeaponIndex)
         {
@@ -187,7 +192,7 @@ public class BowRun : PlayerOnGround
                             if (!isMoving)
                                 return lower.BowIdlePlayable;
 
-                            if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
+                            if (isSprint)
                                 return lower.BowSprintPlayable;
 
                             return null;

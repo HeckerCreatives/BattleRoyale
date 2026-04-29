@@ -173,6 +173,7 @@ public class PlayerMovementV2 : NetworkBehaviour
     [field: SerializeField][Networked] public int GettingUpStartTick { get; set; }
     [field: SerializeField][Networked] public int JumpAttackStartTick { get; set; }
     [field: SerializeField][Networked] public int StopSprintStartTick { get; set; }
+    [field: SerializeField][Networked] public int AuthoritiveAniamtionTick { get; set; }
 
     //  =======================
 
@@ -385,8 +386,8 @@ public class PlayerMovementV2 : NetworkBehaviour
 
         foreach (RaycastResult result in raycastResults)
         {
-            // Ignore minimap or decorative UI
-            if (result.gameObject.CompareTag("NonBlockingUI")) continue;
+            if (result.gameObject.CompareTag("NonBlockingUI"))
+                return false;
 
             return true;
         }
@@ -573,7 +574,7 @@ public class PlayerMovementV2 : NetworkBehaviour
         float moveSpeedValue = IsSprint ? SprintSpeed : MoveSpeed;
         Vector3 targetMoveDirection = Vector3.zero;
 
-        if (MoveDir.sqrMagnitude > 0.01f && !Punching && !Swording)
+        if (MoveDir.sqrMagnitude > 0.01f && !Punching && !Swording && !CurrentlyAttacking)
         {
             MoveDir.Normalize();
 
@@ -666,16 +667,17 @@ public class PlayerMovementV2 : NetworkBehaviour
     {
         MoveDir = PlayerLookDirection();
 
-        if (MoveDir.sqrMagnitude > 0.01f && !IsRoll)
+        if (MoveDir.sqrMagnitude > 0.01f && !IsRoll && !CurrentlyAttacking)
         {
-            // Normalize to prevent sprinting from affecting rotation
             MoveDir.Normalize();
-
-            // Optional: Smooth rotation
             Quaternion targetRotation = Quaternion.LookRotation(MoveDir);
             mainCharObj.rotation = targetRotation;
         }
+    }
 
+    public void RotateToAim()
+    {
+        mainCharObj.rotation = Quaternion.Euler(0f, cameraRotation._cinemachineTargetYaw, 0f);
     }
 
     public Vector3 PlayerLookDirection()

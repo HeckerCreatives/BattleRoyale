@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,6 +18,7 @@ public class InventoryConsumableItem : MonoBehaviour
 
     [Header("DEBUGGER")]
     [SerializeField] private MarketItems items;
+    [SerializeField] private LobbyQuestController lobbyQuest;
     [SerializeField] private int itemCount;
 
     private void OnEnable()
@@ -37,9 +39,10 @@ public class InventoryConsumableItem : MonoBehaviour
             itemImage.gameObject.SetActive(false);
     }
 
-    public void InitializeItem(MarketItems item, float itemCount)
+    public void InitializeItem(MarketItems item, float itemCount, LobbyQuestController lobbyQuest)
     {
         items = item;
+        this.lobbyQuest = lobbyQuest;
 
         if (itemCount > 1)
         {
@@ -83,8 +86,10 @@ public class InventoryConsumableItem : MonoBehaviour
             {
                 { "itemid", tempitem.ItemID },
                 { "quantity", 1 }
-            }, false, (response) =>
+            }, true, async (response) =>
             {
+                bool doneProcess = false;
+
                 if (tempuser.PlayerInventory[tempitem.ItemID].quantity <= 1)
                 {
                     tempuser.PlayerInventory.Remove(tempitem.ItemID);
@@ -119,6 +124,10 @@ public class InventoryConsumableItem : MonoBehaviour
                     tempuser.GameDetails.energy += tempitem.Consumable;
                     userData.EnergyChangeFireEvent();
                 }
+
+                StartCoroutine(lobbyQuest.RefreshQuestAfterClaim(false, false, () => doneProcess = true));
+
+                while (!doneProcess) await Task.Yield();
 
                 GameManager.Instance.NotificationController.ShowCongratsOk($"You have successfully used {tempitem.ItemName}", null);
 

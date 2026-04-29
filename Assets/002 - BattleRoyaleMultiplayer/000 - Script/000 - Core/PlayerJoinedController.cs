@@ -37,7 +37,7 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [Space]
     [SerializeField] private NetworkObject healObj;
     [SerializeField] private NetworkObject armorObj;
-    [SerializeField] private NetworkObject ammoRifleObj;
+    [SerializeField] private NetworkObject rifleAmmoObj;
 
     [Header("DEBUGGER")]
     [SerializeField] private List<Transform> spawnWaitingAreaPositions;
@@ -352,17 +352,19 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
                     if (inv.Armor != null) inv.Armor.DropArmor();
 
-                    if (inv.BowMagazine > 0)
+                    if (inv.BowMagazine > 0) inv.MagazineContainer.DropWeapon();
+
+                    if (inv.RifleMagazine > 0)
                     {
-                        Runner.Spawn(healObj, inv.transform.position, Quaternion.identity, null, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                        Runner.Spawn(rifleAmmoObj, inv.transform.position, Quaternion.identity, PlayerRef.None, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
                         {
-                            obj.GetComponent<MagazineContainerItem>().InitializeOnStart(inv.transform.position, Quaternion.identity, inv.BowMagazine);
+                            obj.GetComponent<AmmoRifleWeaponItem>().InitializeOnStart(transform.position, Quaternion.identity, inv.RifleMagazine);
                         });
                     }
 
                     if (inv.HealCount > 0)
                     {
-                        Runner.Spawn(healObj, inv.transform.position, Quaternion.identity, null, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                        Runner.Spawn(healObj, inv.transform.position, Quaternion.identity, PlayerRef.None, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
                         {
                             obj.GetComponent<HealWeaponItem>().InitializeItem(inv.transform.position, Quaternion.identity, inv.HealCount);
                         });
@@ -370,7 +372,7 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
                     if (inv.ArmorRepairCount > 0)
                     {
-                        Runner.Spawn(armorObj, inv.transform.position, Quaternion.identity, null, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                        Runner.Spawn(armorObj, inv.transform.position, Quaternion.identity, PlayerRef.None, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
                         {
                             obj.GetComponent<RepairWeaponItem>().InitializeItem(inv.transform.position, Quaternion.identity, inv.HealCount);
                         });

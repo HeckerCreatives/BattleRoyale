@@ -20,8 +20,8 @@ public class DedicatedServerManager : MonoBehaviour
 
     public NetworkObject serverManager;
 
-    [Space]
-    public PoolObjectProvider poolObjectProvider;
+    //[Space]
+    //public PoolObjectProvider poolObjectProvider;
 
     [Space]
     [SerializeField] private NetworkRunner serverNetworkRunnerPrefab;
@@ -135,7 +135,7 @@ public class DedicatedServerManager : MonoBehaviour
 
         await networkRunner.StartGame(new StartGameArgs()
         {
-            ObjectProvider = poolObjectProvider,
+            //ObjectProvider = poolObjectProvider,
             SessionName = sessionname,
             GameMode = GameMode.Server,
             IsVisible = false,
@@ -159,7 +159,7 @@ public class DedicatedServerManager : MonoBehaviour
                 obj.GetComponent<WeaponCratesSpawnerController>().CreateSpawnLocations = createSpawnLocations;
                 obj.GetComponent<PlayerJoinedController>().SpawnWaitingAreaPositions = spawnWaitingAreaPositions;
 
-                poolObjectProvider.SetMaxPoolCount(100);
+                //poolObjectProvider.SetMaxPoolCount(100);
 
                 obj.GetComponent<KillNotifServerController>().SpawnNotifUI();
 

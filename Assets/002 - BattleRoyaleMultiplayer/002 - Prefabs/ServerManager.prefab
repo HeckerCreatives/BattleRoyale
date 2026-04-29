@@ -506,10 +506,13 @@ MonoBehaviour:
   - ruleName: MeleeWeapons
     enabled: 1
     prefabs:
-    - {fileID: -6896107499734453323, guid: 7fe4a221ff2f2d64181e56c9913c850c, type: 3}
-    - {fileID: 7258497585221354807, guid: 796b17788ddec0e4995ac5a523ff0d95, type: 3}
+    - {fileID: 4679708936063509814, guid: 6638e230b887a0f49bd3cc6f0bbe601d, type: 3}
+    - {fileID: 1043908921218631207, guid: cee2d7bc9f407804c930f7715c81de07, type: 3}
     spawnCount: 100
     maxAttempts: 1000
+    scaleSpawnCountByPlayers: 1
+    maxPlayersForScaling: 30
+    minSpawnCount: 15
     groundLayerMask:
       serializedVersion: 2
       m_Bits: 4194368
@@ -550,6 +553,9 @@ MonoBehaviour:
     - {fileID: 5711290807954466664, guid: ae5a4c3d7c9e15e4eb5f70b12af2b0c4, type: 3}
     spawnCount: 100
     maxAttempts: 1000
+    scaleSpawnCountByPlayers: 1
+    maxPlayersForScaling: 30
+    minSpawnCount: 20
     groundLayerMask:
       serializedVersion: 2
       m_Bits: 4194368
@@ -590,6 +596,9 @@ MonoBehaviour:
     - {fileID: 1825424966074417164, guid: 91b9eccfad1c41b488dc8bbeccc98658, type: 3}
     spawnCount: 100
     maxAttempts: 1000
+    scaleSpawnCountByPlayers: 1
+    maxPlayersForScaling: 30
+    minSpawnCount: 20
     groundLayerMask:
       serializedVersion: 2
       m_Bits: 4194368
@@ -630,6 +639,9 @@ MonoBehaviour:
     - {fileID: 6532378168594835381, guid: 65ccb52dc659295418336d2214a9d509, type: 3}
     spawnCount: 100
     maxAttempts: 1000
+    scaleSpawnCountByPlayers: 1
+    maxPlayersForScaling: 30
+    minSpawnCount: 20
     groundLayerMask:
       serializedVersion: 2
       m_Bits: 4194368
@@ -670,6 +682,9 @@ MonoBehaviour:
     - {fileID: 6014757930188030952, guid: d00cc93c49e4df54c8af7e4bbd0197bc, type: 3}
     spawnCount: 100
     maxAttempts: 1000
+    scaleSpawnCountByPlayers: 1
+    maxPlayersForScaling: 30
+    minSpawnCount: 10
     groundLayerMask:
       serializedVersion: 2
       m_Bits: 4194368
@@ -694,6 +709,92 @@ MonoBehaviour:
     sampleRayStartHeight: 2
     sampleRayDistance: 10
     rotationOffsetEuler: {x: 0, y: 0, z: 90}
+    minSlope: 0
+    maxSlope: 30
+    minSpacing: 1
+    useHeightLimit: 0
+    minHeight: 1.98
+    maxHeight: 2.82
+    rayStartHeight: 50
+    rayDistance: 200
+    yOffset: 0.05
+    parentFolderName: SpawnTest
+  - ruleName: Rifle
+    enabled: 1
+    prefabs:
+    - {fileID: 1629684833027117724, guid: 36405756e9a4e2a47ab1798ce24a4f58, type: 3}
+    spawnCount: 100
+    maxAttempts: 1000
+    scaleSpawnCountByPlayers: 1
+    maxPlayersForScaling: 30
+    minSpawnCount: 10
+    groundLayerMask:
+      serializedVersion: 2
+      m_Bits: 4194368
+    allowedTags:
+    - ForestArea
+    - DesertArea
+    - MaliArea
+    - TunisiaArea
+    - LalibelaArea
+    randomScaleRange: {x: 1, y: 1}
+    randomYRotation: 1
+    alignToSurfaceNormal: 1
+    surfaceNormalDirection: {x: 0, y: 0, z: 1}
+    useRandomAxisRotation: 0
+    randomRotationAxis: 1
+    randomRotationMin: 0
+    randomRotationMax: 360
+    useThreePointSurfaceAlignment: 1
+    objectLengthAxis: 2
+    backSampleDistance: 0.5
+    frontSampleDistance: 0.5
+    sampleRayStartHeight: 2
+    sampleRayDistance: 10
+    rotationOffsetEuler: {x: 0, y: 0, z: 90}
+    minSlope: 0
+    maxSlope: 30
+    minSpacing: 1
+    useHeightLimit: 0
+    minHeight: 1.98
+    maxHeight: 2.82
+    rayStartHeight: 50
+    rayDistance: 200
+    yOffset: 0.05
+    parentFolderName: SpawnTest
+  - ruleName: RifleAmmo
+    enabled: 1
+    prefabs:
+    - {fileID: 8284634702788986114, guid: 0efef0621ad0d474eb15e7b1dbdc2def, type: 3}
+    spawnCount: 100
+    maxAttempts: 1000
+    scaleSpawnCountByPlayers: 1
+    maxPlayersForScaling: 30
+    minSpawnCount: 20
+    groundLayerMask:
+      serializedVersion: 2
+      m_Bits: 4194368
+    allowedTags:
+    - ForestArea
+    - DesertArea
+    - MaliArea
+    - TunisiaArea
+    - LalibelaArea
+    randomScaleRange: {x: 1, y: 1}
+    randomYRotation: 1
+    alignToSurfaceNormal: 1
+    surfaceNormalDirection: {x: 0, y: 1, z: 0}
+    useRandomAxisRotation: 0
+    randomRotationAxis: 1
+    randomRotationMin: 0
+    randomRotationMax: 360
+    useThreePointSurfaceAlignment: 1
+    objectLengthAxis: 2
+    backSampleDistance: 0.5
+    frontSampleDistance: 0.5
+    sampleRayStartHeight: 2
+    sampleRayDistance: 10
+    rotationOffsetEuler: {x: -90, y: 0, z: 90}
     minSlope: 0
     maxSlope: 30
     minSpacing: 1

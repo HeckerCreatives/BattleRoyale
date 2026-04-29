@@ -30,7 +30,7 @@ public class UpperWithAimState : UpperBodyAnimations
     public override void NetworkUpdate()
     {
         base.NetworkUpdate();
-        playerPlayables.cameraRotation.HandleCameraAimInput();
+        //playerPlayables.cameraRotation.HandleCameraAimInput();
         playerPlayables.SetLookAtWeight(1f);
     }
 }

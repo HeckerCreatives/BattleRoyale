@@ -24,35 +24,15 @@ public class AmmoRifleWeaponItem : NetworkBehaviour, IPickupItem
 
     public override void Render()
     {
-        if (HasStateAuthority) return;
-
-        PickupPositionClients();
-    }
-
-    public override void FixedUpdateNetwork()
-    {
-        if (IsPickedUp) return;
-
-        // If dropped, keep the position/rotation as-is (or update if needed)
         transform.position = Position;
-        transform.rotation = Quaternion.Euler(dropRotation);
+        transform.rotation = Rotation;
     }
 
-    private void PickupPositionClients()
+    public void InitializeOnStart(Vector3 position, Quaternion rotation, int supplies)
     {
-        if (IsPickedUp) return;
-
-        // If dropped, keep the position/rotation as-is (or update if needed)
-        transform.position = Position;
-        transform.rotation = Quaternion.Euler(dropRotation);
-    }
-
-    public void InitializeItem(Vector3 position, int supplies)
-    {
-        IsPickedUp = false;
-
         Supplies = supplies;
         Position = position;
+        Rotation = rotation;
 
         Object.RemoveInputAuthority();
     }

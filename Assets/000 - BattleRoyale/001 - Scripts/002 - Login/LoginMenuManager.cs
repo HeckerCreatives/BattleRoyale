@@ -136,7 +136,7 @@ public class LoginMenuManager : MonoBehaviour
         GameManager.Instance.NotificationController.ShowConfirmation("Are you sure you want to logout?", async () =>
         {
             userData.ResetLogin();
-            GameManager.Instance.SocketMngr.Socket.Disconnect();
+            GameManager.Instance.SocketMngr.LogoutAndDisconnect();
             ResetMenu();
         }, null);
     }

@@ -1,154 +1,95 @@
-using Fusion;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using static Fusion.NetworkBehaviour;
 
-public class ArrowController : NetworkBehaviour
+public class ArrowController : MonoBehaviour
 {
-    [SerializeField] private GameObject arrowObject;
-
-    [Space]
-    [SerializeField] private float bulletSpeed;
-    [SerializeField] private LayerMask environmentLayers;
-    [SerializeField] private LayerMask playerCollisionLayers;
-
-    [Space]
     [SerializeField] private AudioSource bulletSource;
     [SerializeField] private AudioClip flybyClip;
     [SerializeField] private AudioClip hitClip;
     [SerializeField] private AudioClip bodyHitClip;
 
-    [field: Space]
-    [field: SerializeField][Networked] public NetworkObject firedByNO { get; set; }
-    [field: SerializeField][Networked] public PlayerRef firedByPlayerRef { get; set; }
-    [field: SerializeField][Networked] public string firedByPlayerUName { get; set; }
-    [field: SerializeField][Networked] public Vector3 TargetPos { get; set; }
-    [field: SerializeField][Networked] public Vector3 TargetPoint { get; set; }
-    [field: SerializeField][Networked] public NetworkObject StartPos { get; set; }
-    [field: SerializeField][Networked] public Vector3 HitEffectRotation { get; set; }
-    [field: SerializeField][Networked] public Vector3 Rotation { get; set; }
-    [field: SerializeField][Networked] public bool CanTravel { get; set; }
-    [field: SerializeField][Networked] public int PoolIndex { get; set; }
-    [field: SerializeField][Networked] public bool Hit { get; set; }
-    [field: SerializeField][Networked] public BulletObjectPool Pooler { get; set; }
+    private Vector3 _startPos;
+    private Vector3 _targetPos;
+    private float _travelTime = 0.1f;
+    private float _elapsedTime;
+    private bool _travelling;
+    private bool _bodyHit;
+    private bool _hitSomething;
 
-
-    private float travelTime = 0.1f; // Bullet should reach the target in 0.1 seconds
-    private float elapsedTime = 0f;
-
-    private ChangeDetector _changeDetector;
-
-    //  =======================
-
-    public LagCompensatedHit TargetObj;
-
-    //  =======================
-
-    public override void Spawned()
+    public void Fire(Transform muzzle, Vector3 targetPos, bool bodyHit = false, bool hitSomething = false)
     {
-        _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+        CancelInvoke(nameof(Deactivate));
+        _targetPos = targetPos;
+        _elapsedTime = 0f;
+        _travelling = true;
+        _bodyHit = bodyHit;
+        _hitSomething = hitSomething;
+
+        // detach from any parent so camera/player rotation doesn't drag the arrow
+        transform.SetParent(null);
+
+        // position and rotate BEFORE activating so it never appears at the wrong spot
+        Vector3 startPos = muzzle.position;
+        _startPos = startPos;
+
+        Vector3 dir = targetPos - startPos;
+        transform.position = startPos;
+        if (dir.sqrMagnitude > 0.001f)
+            transform.rotation = Quaternion.LookRotation(dir.normalized, Vector3.up);
+
+        gameObject.SetActive(true);
+
+        if (bulletSource != null && flybyClip != null)
+            bulletSource.PlayOneShot(flybyClip);
     }
 
-    private void OnEnable()
+    public void FireFromPosition(Vector3 startPos, Vector3 targetPos, bool hitSomething = true)
     {
-        if (Runner == null) return;
+        CancelInvoke(nameof(Deactivate));
+        _startPos = startPos;
+        _targetPos = targetPos;
+        _elapsedTime = 0f;
+        _travelling = true;
+        _bodyHit = false;
+        _hitSomething = hitSomething;
 
-        transform.position = StartPos.transform.position;
-        transform.rotation = Quaternion.LookRotation(Rotation, Vector3.up);
-    }
+        transform.SetParent(null);
 
-    public override void Render()
-    {
-        foreach (var change in _changeDetector.DetectChanges(this))
-        {
-            switch (change)
-            {
-                case nameof(Hit):
-                    if (HasStateAuthority) return;
+        Vector3 dir = targetPos - startPos;
+        transform.position = startPos;
+        if (dir.sqrMagnitude > 0.001f)
+            transform.rotation = Quaternion.LookRotation(dir.normalized, Vector3.up);
 
-                    if (!Hit) return;
+        gameObject.SetActive(true);
 
-                    //hitEffectObj.SetActive(true);
-
-                    arrowObject.SetActive(false);
-
-                    if (TargetObj.Hitbox != null)
-                        bulletSource.PlayOneShot(bodyHitClip);
-                    else
-                        bulletSource.PlayOneShot(hitClip);
-
-                    break;
-                case nameof(CanTravel):
-                    if (HasStateAuthority) return;
-
-                    if (!CanTravel) return;
-
-                    bulletSource.PlayOneShot(flybyClip);
-                    break;
-            }
-        }
-    }
-
-    public void Fire(NetworkObject startPos, Vector3 rotation, LagCompensatedHit targetObj)
-    {
-        transform.position = startPos.transform.position;
-        StartPos = startPos;
-        TargetPoint = targetObj.Point;
-        TargetPos = targetObj.GameObject.transform.position;
-        Rotation = rotation;
-        TargetObj = targetObj;
-        CanTravel = true;
+        if (bulletSource != null && flybyClip != null)
+            bulletSource.PlayOneShot(flybyClip);
     }
 
     private void Update()
     {
-        if (CanTravel)
+        if (!_travelling) return;
+
+        _elapsedTime += Time.deltaTime;
+        float t = Mathf.Clamp01(_elapsedTime / _travelTime);
+
+        transform.position = Vector3.Lerp(_startPos, _targetPos, t);
+
+        if (t >= 1f)
         {
-            elapsedTime += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsedTime / travelTime); // Normalize to 0-1 range
+            _travelling = false;
 
-            transform.position = Vector3.Lerp(StartPos.transform.position, TargetPoint, t);
-        }
-    }
-
-    public override void FixedUpdateNetwork()
-    {
-        if (!HasStateAuthority) return;
-
-        if (!CanTravel) return;
-
-        if (transform.position != TargetPoint) return;
-
-        if (Hit) return;
-
-        Hit = true;
-
-        if ((1 << TargetObj.GameObject.layer) == playerCollisionLayers)
-        {
-            if (Vector3.Distance(TargetObj.Point, TargetPos) <= 1f)
+            if (_hitSomething)
             {
-                HitEffectRotation = TargetObj.Normal;
-
-                transform.position = TargetObj.Point;
-
-                Invoke(nameof(DestroyObject), 3f);
+                if (bulletSource != null)
+                    bulletSource.PlayOneShot(_bodyHit ? bodyHitClip : hitClip);
+                Invoke(nameof(Deactivate), 3f);
             }
             else
             {
-                Invoke(nameof(DestroyObject), 3f);
+                gameObject.SetActive(false);
             }
-        }
-        else
-        {
-            Invoke(nameof(DestroyObject), 3f);
         }
     }
 
-    private void DestroyObject()
-    {
-        CanTravel = false;
-        Hit = false;
-        Pooler.DisableArrow(PoolIndex);
-    }
+    private void Deactivate() => gameObject.SetActive(false);
 }

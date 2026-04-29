@@ -55,6 +55,8 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
     [SerializeField] private GameObject footstepSFX;
     [SerializeField] private GameObject punchSFX;
     [SerializeField] private GameObject cameraProxy;
+    [SerializeField] private GameObject[] localArrowPool;
+    [SerializeField] private GameObject[] localBulletPool;
 
     [Header("DEBUGGER")]
     [SerializeField] private bool isStateAuthority;
@@ -68,7 +70,6 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
 
     private void OnDisable()
     {
-        GameManager.Instance.SocketMngr.IsOnGame = false;
     }
 
     private void OnDestroy()
@@ -84,6 +85,12 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         Destroy(playerSpawnLocCam);
         Destroy(target.gameObject);
         Destroy(cameraProxy.gameObject);
+
+        foreach (var temp in localArrowPool)
+            Destroy(temp.gameObject);
+
+        foreach (var temp in localBulletPool)
+            Destroy(temp.gameObject);
     }
 
     public async void OnEnable()
@@ -103,8 +110,6 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         if (!HasInputAuthority) return;
 
         isInputAuthority = true;
-
-        GameManager.Instance.SocketMngr.IsOnGame = true;
 
         GameManager.Instance.SceneController.AddActionLoadinList(InitializePlayer());
         GameManager.Instance.SceneController.AddActionLoadinList(gameSettingController.SetVolumeSlidersOnStart());
@@ -126,6 +131,12 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
         playerVcam.transform.parent = null;
         playerAimVCam.transform.parent = null;
         cameraProxy.transform.parent = null;
+
+        foreach (var temp in localArrowPool)
+            temp.transform.parent = null;
+
+        foreach (var temp in localBulletPool)
+            temp.transform.parent = null;
 
         MultiplayerServerManager.Instance.OnCurrentStateChange += StateChange;
     }
@@ -177,10 +188,19 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
 
         if (!HasInputAuthority) return;
 
-        GameManager.Instance.NotificationController.ShowConfirmation("Quit now and lose all XP, points, and 2 energy.", () =>
+        GameManager.Instance.NotificationController.ShowConfirmation("Quit now and lose all XP, points, and 2 energy.", async () =>
         {
+            GameManager.Instance.NoBGLoading.SetActive(true);
+
             RPC_Removeplayer(false);
-            Runner.Shutdown();
+
+            if (PlayerPhotonReconnect.Instance != null)
+                PlayerPhotonReconnect.Instance.isPlayer = false;
+
+            await Runner.Shutdown();
+
+            GameManager.Instance.SceneController.GetActionLoadingList.Clear();
+            GameManager.Instance.SceneController.ActionPass = false;
             GameManager.Instance.SceneController.CurrentScene = "Lobby";
         }, null);
     }
@@ -197,12 +217,17 @@ public class PlayerOwnObjectEnabler : NetworkBehaviour
 
         RPC_Removeplayer(true);
 
+        if (PlayerPhotonReconnect.Instance != null)
+            PlayerPhotonReconnect.Instance.isPlayer = false;
+
         await Task.Delay(2000);
 
         GameManager.Instance.NoBGLoading.SetActive(false);
 
         await Runner.Shutdown();
 
+        GameManager.Instance.SceneController.GetActionLoadingList.Clear();
+        GameManager.Instance.SceneController.ActionPass = false;
         GameManager.Instance.SceneController.CurrentScene = "Lobby";
     }
 }

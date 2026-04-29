@@ -25,7 +25,14 @@ public class RunState : PlayerOnGround
 
         playedStep1 = false;
         playedStep2 = false;
-        lastNormalizedTime = 0.0;
+
+        // Seed from the actual clip time so we don't re-trigger sounds mid-stride.
+        lastNormalizedTime = animationLength > 0f
+            ? (animationClipPlayable.GetTime() / animationLength) % 1.0
+            : 0.0;
+
+        if (lastNormalizedTime >= 0.35) playedStep1 = true;
+        if (lastNormalizedTime >= 0.85) playedStep2 = true;
     }
 
     public override void Exit()
@@ -51,8 +58,6 @@ public class RunState : PlayerOnGround
         playerMovement.MoveCharacter();
 
         var nextState = GetNextLowerRunState();
-
-        HandleFootsteps();
 
         if (nextState != null && playablesChanger.CurrentState != nextState)
         {

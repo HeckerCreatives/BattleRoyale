@@ -33,7 +33,7 @@ public class WeaponCratesSpawnerController : NetworkBehaviour
             "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", "armor", // 10%
             //"rifle ammo", "rifle ammo", "rifle ammo", "rifle ammo", // 
             //"bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", "bow ammo", // 10%
-            //"trap", "trap", "trap", "trap", "trap", "trap", "trap", "trap", "trap", "trap", // 10%
+            "trap", "trap", "trap", "trap", "trap", "trap", "trap", "trap", "trap", "trap", // 10%
         };
 
 

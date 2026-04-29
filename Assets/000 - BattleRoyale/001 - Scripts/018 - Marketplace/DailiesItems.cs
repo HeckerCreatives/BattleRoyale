@@ -9,6 +9,7 @@ public class DailiesItems : MonoBehaviour
 
     [SerializeField] private MarketItems items;
     [SerializeField] private UserData userData;
+    [SerializeField] private LobbyQuestController lobbyController;
 
     [Space]
     [SerializeField] private float imageSizeIcon = 0.2f;
@@ -96,6 +97,7 @@ public class DailiesItems : MonoBehaviour
                 isClaimed = true;
                 userData.GameDetails.energy += items.Consumable;
                 userData.EnergyChangeFireEvent();
+                StartCoroutine(lobbyController.RefreshQuestAfterClaim(false, false, () => GameManager.Instance.NoBGLoading.SetActive(false)));
             }
         });
     }

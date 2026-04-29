@@ -10,7 +10,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
-using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 public class PlayerCameraRotation : NetworkBehaviour
 {
@@ -59,13 +59,18 @@ public class PlayerCameraRotation : NetworkBehaviour
     [SerializeField] private Transform aimTF;
     [SerializeField] private LayerMask aimLayerMask;
     [SerializeField] private LayerMask aimBotEnemyMask;
-    [SerializeField] private float AimDistance;
+    [SerializeField] public float AimDistance;
     [SerializeField] private float CameraAngleOverride;
-    [SerializeField] private float aimAssistAngleRadius = 5f;
-    [SerializeField] private float aimAssistStrength = 5f;       // Pull speed
-    [SerializeField] private float magnetismDuration = 0.5f;     // Seconds aim assist lasts
+    [SerializeField] private float aimAssistRadius = 8f;           // cone half-angle in degrees
+    [Range(0f, 0.95f)][SerializeField] private float slowdownStrength = 0.5f;   // input reduction when on target
+    [SerializeField] private float magnetStrength = 10f;           // degrees/sec pull toward enemy
+    [SerializeField] private float bodyHeight = 1.8f;              // player capsule height for body-segment detection
+    [SerializeField][Range(0f, 1f)] private float magnetBodyFraction = 0.65f;  // 0=feet 1=head, 0.65≈chest
     [SerializeField] private float impactDistance;
     [SerializeField] private Vector3 originalImpactOffset;
+
+    [Space]
+    [SerializeField] private Image crosshairImg;
 
     [field: Header("Parameters")]
     [field: SerializeField][Networked] public float Sensitivity { get; private set; }
@@ -79,9 +84,76 @@ public class PlayerCameraRotation : NetworkBehaviour
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float CurrentSensitivity { get; private set; }
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float CurrentAdsSensitivity { get; private set; }
 
-    private float magnetismTimer = 0f;
-    private Transform magnetismTarget;
     private bool followProxyInitialized = false;
+
+    // Gizmo state — populated every tick by GetCameraRaycastTarget
+    private Vector3 _gizmoCastOrigin;
+    private Vector3 _gizmoCastDir;
+    private bool _gizmoHadTarget;
+    private Vector3 _gizmoTargetPos;
+
+    // Last enemy locked by aim assist — used by FireArrow to correct 3rd-person parallax
+    public Transform AimAssistTarget { get; private set; }
+
+    private Transform _prevAimAssistTarget;
+    private Vector3   _prevAimAssistEnemyPos;
+
+    private bool _crosshairEnemyActive;
+    private bool _crosshairDamageFlashing;
+
+    public Vector3 GetAimAssistChestPosition()
+    {
+        if (AimAssistTarget == null) return Vector3.zero;
+        return AimAssistTarget.position + Vector3.up * (bodyHeight * magnetBodyFraction);
+    }
+
+    private void UpdateCrosshairColor(bool hasEnemy)
+    {
+        if (crosshairImg == null) return;
+        if (_crosshairDamageFlashing)
+        {
+            _crosshairEnemyActive = hasEnemy;
+            return;
+        }
+        if (hasEnemy == _crosshairEnemyActive) return;
+        _crosshairEnemyActive = hasEnemy;
+
+        LeanTween.cancel(crosshairImg.gameObject);
+        Color target = hasEnemy ? Color.green : Color.white;
+        LeanTween.value(crosshairImg.gameObject,
+            (Color c) => { if (crosshairImg) crosshairImg.color = c; },
+            crosshairImg.color, target, 0.2f);
+    }
+
+    public void FlashDamageCrosshair()
+    {
+        if (crosshairImg == null) return;
+        LeanTween.cancel(crosshairImg.gameObject);
+        _crosshairDamageFlashing = true;
+
+        LeanTween.value(crosshairImg.gameObject,
+            (Color c) => { if (crosshairImg) crosshairImg.color = c; },
+            crosshairImg.color, Color.red, 0.1f)
+            .setOnComplete(() =>
+            {
+                Color revertTo = _crosshairEnemyActive ? Color.green : Color.white;
+                LeanTween.value(crosshairImg.gameObject,
+                    (Color c) => { if (crosshairImg) crosshairImg.color = c; },
+                    Color.red, revertTo, 0.25f)
+                    .setOnComplete(() => { _crosshairDamageFlashing = false; });
+            });
+    }
+
+    public void ExitBowAimCrosshair()
+    {
+        _crosshairEnemyActive = false;
+        if (_crosshairDamageFlashing) return;
+        if (crosshairImg == null) return;
+        LeanTween.cancel(crosshairImg.gameObject);
+        LeanTween.value(crosshairImg.gameObject,
+            (Color c) => { if (crosshairImg) crosshairImg.color = c; },
+            crosshairImg.color, Color.white, 0.2f);
+    }
 
     public override void Spawned()
     {
@@ -182,41 +254,10 @@ public class PlayerCameraRotation : NetworkBehaviour
     {
         if (GetInput<MyInput>(out var input) == false) return;
 
-        bool hasInput = input.LookDirection.sqrMagnitude >= _threshold;
+        float sensitivity = movement.Aiming ? CurrentAdsSensitivity : CurrentSensitivity;
 
-        // Only check for target if aiming and not strongly moving the camera
-        if (movement.CurrentlyAttacking)
-        {
-            if (magnetismTimer <= 0f) // Only refresh target if no active assist
-            {
-                var targetEnemy = GetCameraRaycastTarget(input);
-                if (targetEnemy != null)
-                {
-                    magnetismTarget = targetEnemy;
-                    magnetismTimer = magnetismDuration;
-                }
-            }
-        }
-        else
-            magnetismTarget = null;
-
-        // Apply look input
-        _cinemachineTargetYaw += input.LookDirection.x * Runner.DeltaTime * (movement.Aiming ? CurrentAdsSensitivity : CurrentSensitivity);
-        _cinemachineTargetPitch += -input.LookDirection.y * Runner.DeltaTime * (movement.Aiming ? CurrentAdsSensitivity : CurrentSensitivity);
-
-        // Apply magnetism pull
-        if (magnetismTarget != null && magnetismTimer > 0f)
-        {
-            Vector3 dirToTarget = (magnetismTarget.position - Camera.main.transform.position).normalized;
-            Quaternion targetRot = Quaternion.LookRotation(dirToTarget, Vector3.up);
-            Vector3 targetAngles = targetRot.eulerAngles;
-
-            _cinemachineTargetYaw = Mathf.LerpAngle(_cinemachineTargetYaw, targetAngles.y, aimAssistStrength * Runner.DeltaTime);
-            _cinemachineTargetPitch = Mathf.LerpAngle(_cinemachineTargetPitch, targetAngles.x, aimAssistStrength * Runner.DeltaTime);
-
-            magnetismTimer -= Runner.DeltaTime;
-            if (magnetismTimer <= 0f) magnetismTarget = null;
-        }
+        _cinemachineTargetYaw   += input.LookDirection.x  * Runner.DeltaTime * sensitivity;
+        _cinemachineTargetPitch += -input.LookDirection.y * Runner.DeltaTime * sensitivity;
 
         // Clamp angles
         _cinemachineTargetYaw = ClampAngle(_cinemachineTargetYaw, float.MinValue, float.MaxValue);
@@ -413,22 +454,148 @@ public class PlayerCameraRotation : NetworkBehaviour
     }
 
 
-    private Transform GetCameraRaycastTarget(MyInput input)
+    public void HandleCameraAimInputBow()
     {
-        Ray ray = new Ray(input.CameraHitOrigin, input.CameraHitDirection);
+        if (!GetInput<MyInput>(out var input)) return;
 
-        if (Physics.SphereCast(ray, aimAssistAngleRadius, out RaycastHit hit, AimDistance, aimBotEnemyMask))
+        Vector3 origin = movement.CameraHitOrigin;
+        Vector3 dir    = movement.CameraHitDirection;
+
+        if (dir.sqrMagnitude < 0.001f)
         {
-            Debug.Log(hit.collider.gameObject.name);
-            if (hit.collider.CompareTag("Player") || hit.collider.CompareTag("Bot"))
-            {
-                if (hit.collider.gameObject == gameObject) // Ignore self
-                    return null;
-
-                return hit.collider.transform;
-            }
+            origin = transform.position + Vector3.up * targetHeight;
+            dir    = Quaternion.Euler(_cinemachineTargetPitch, _cinemachineTargetYaw, 0f) * Vector3.forward;
         }
-        return null;
+        dir = dir.normalized;
+
+        float sensitivity = movement.Aiming ? CurrentAdsSensitivity : CurrentSensitivity;
+
+        Transform enemy = FindEnemyInCone(origin, dir);
+
+        UpdateCrosshairColor(enemy != null);
+
+        float speedMul = (enemy != null && (input.LookDirection.x != 0f || input.LookDirection.y != 0f))
+            ? 1f - slowdownStrength
+            : 1f;
+
+        _cinemachineTargetYaw   += input.LookDirection.x  * Runner.DeltaTime * sensitivity * speedMul;
+        _cinemachineTargetPitch += -input.LookDirection.y * Runner.DeltaTime * sensitivity * speedMul;
+
+        if (enemy != null)
+        {
+            Vector3 currentDir   = Quaternion.Euler(_cinemachineTargetPitch, _cinemachineTargetYaw, 0f) * Vector3.forward;
+            Vector3 camRight     = Vector3.Cross(Vector3.up, currentDir).normalized;
+            Vector3 camUp        = Vector3.Cross(currentDir, camRight).normalized;
+            Vector3 magnetTarget = enemy.position + Vector3.up * (bodyHeight * magnetBodyFraction);
+            Vector3 toTarget     = (magnetTarget - origin).normalized;
+            float   step         = magnetStrength * Runner.DeltaTime;
+
+            // Horizontal: fixed chest-point pull. magnetTarget is a stable world position
+            // so yaw corrections converge monotonically with no feedback loop.
+            // The player can still aim anywhere on the body vertically — this only
+            // compensates for the enemy strafing left/right.
+            float angleX = Mathf.Asin(Mathf.Clamp(Vector3.Dot(toTarget, camRight), -1f, 1f)) * Mathf.Rad2Deg;
+            _cinemachineTargetYaw += Mathf.Clamp(angleX, -step, step);
+
+            // Vertical: velocity-based using enemy root position.
+            // Only fires when the enemy actually moves up/down (jumping, knockback).
+            // No correction on the first tick of locking (_prevAimAssistTarget guard)
+            // prevents a spike from comparing against an uninitialized position.
+            if (_prevAimAssistTarget == enemy)
+            {
+                float enemyDeltaY = enemy.position.y - _prevAimAssistEnemyPos.y;
+                if (Mathf.Abs(enemyDeltaY) > 0.001f)
+                {
+                    float distToEnemy = Mathf.Max(0.01f, Vector3.Distance(origin, magnetTarget));
+                    float angleY      = -Mathf.Atan2(enemyDeltaY, distToEnemy) * Mathf.Rad2Deg;
+                    _cinemachineTargetPitch += Mathf.Clamp(angleY, -step, step);
+                }
+            }
+
+            _prevAimAssistTarget  = enemy;
+            _prevAimAssistEnemyPos = enemy.position;
+        }
+        else
+        {
+            _prevAimAssistTarget = null;
+        }
+
+        _cinemachineTargetYaw   = ClampAngle(_cinemachineTargetYaw,   float.MinValue, float.MaxValue);
+        _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp,    TopClamp);
+
+        // Always face aim direction — this function is only called from bow aim upper body states
+        playerObj.rotation = Quaternion.Euler(0f, _cinemachineTargetYaw, 0f);
+
+        target.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch, _cinemachineTargetYaw, 0f);
+
+        Vector3 aimDir    = Quaternion.Euler(_cinemachineTargetPitch, _cinemachineTargetYaw, 0f) * Vector3.forward;
+        Vector3 camOrigin = transform.position + Vector3.up * targetHeight;
+        aimTF.position    = camOrigin + aimDir * targetDistance;
+        aimTF.rotation    = Quaternion.Euler(_cinemachineTargetPitch, _cinemachineTargetYaw + CameraAngleOverride, 0f);
+    }
+
+    private Transform FindEnemyInCone(Vector3 origin, Vector3 dir)
+    {
+        _gizmoCastOrigin = origin;
+        _gizmoCastDir    = dir;
+        _gizmoHadTarget  = false;
+        _gizmoTargetPos  = Vector3.zero;
+
+        float cosThreshold = Mathf.Cos(aimAssistRadius * Mathf.Deg2Rad);
+        float rangeSq      = AimDistance * AimDistance;
+
+        Transform bestTarget   = null;
+        float     bestCosAngle = cosThreshold;
+
+        foreach (PlayerHealthV2 health in PlayerHealthV2.All)
+        {
+            if (health.IsDead) continue;
+            if (health.Object == null || health.Object == Object) continue;
+
+            Vector3 feet    = health.transform.position;
+            Vector3 head    = health.transform.position + Vector3.up * bodyHeight;
+            Vector3 closest = ClosestPointOnSegmentToRay(origin, dir, feet, head);
+
+            if ((closest - origin).sqrMagnitude > rangeSq) continue;
+
+            float cosAngle = Vector3.Dot(dir, (closest - origin).normalized);
+            if (cosAngle <= bestCosAngle) continue;
+
+            // Reject enemies behind walls — line-of-sight check toward closest visible point
+            Vector3 toEnemy = closest - origin;
+            if (Physics.Raycast(origin, toEnemy.normalized, toEnemy.magnitude, aimLayerMask))
+                continue;
+
+            bestCosAngle = cosAngle;
+            bestTarget   = health.transform;
+        }
+
+        AimAssistTarget = bestTarget;
+
+        if (bestTarget != null)
+        {
+            _gizmoHadTarget = true;
+            _gizmoTargetPos = bestTarget.position + Vector3.up * (bodyHeight * 0.5f);
+        }
+
+        return bestTarget;
+    }
+
+    private static Vector3 ClosestPointOnSegmentToRay(Vector3 rayOrigin, Vector3 rayDir, Vector3 segA, Vector3 segB)
+    {
+        Vector3 d = segB - segA;
+        Vector3 w = segA - rayOrigin;
+
+        float a = Vector3.Dot(d, d);
+        if (a < 0.0001f) return segA;
+
+        float b     = Vector3.Dot(d, rayDir);
+        float c     = Vector3.Dot(d, w);
+        float e     = Vector3.Dot(rayDir, w);
+        float denom = a - b * b;
+
+        float t = Mathf.Abs(denom) < 0.0001f ? 0f : Mathf.Clamp01((b * e - c) / denom);
+        return segA + d * t;
     }
 
     //private void CameraHeight()
@@ -445,24 +612,40 @@ public class PlayerCameraRotation : NetworkBehaviour
         return Mathf.Clamp(lfAngle, lfMin, lfMax);
     }
 
-    private void OnDrawGizmosSelected()
+    private void OnDrawGizmos()
     {
-        // If you want to see gizmos in Play Mode, ensure you pass the current input
-        if (GetInput<MyInput>(out var input) == false) return;
+        if (!Application.isPlaying)     return;
+        if (_gizmoCastDir == Vector3.zero) return;
 
-        // SphereCast parameters
-        Vector3 origin = input.CameraHitOrigin;
-        Vector3 direction = input.CameraHitDirection.normalized;
+        Vector3 origin   = _gizmoCastOrigin;
+        Vector3 dir      = _gizmoCastDir;
+        Vector3 endPoint = origin + dir * AimDistance;
 
-        Gizmos.color = Color.yellow;
+        if (_gizmoHadTarget)
+        {
+            // Green: aim cone line to target
+            Gizmos.color = Color.green;
+            Gizmos.DrawLine(origin, _gizmoTargetPos);
+            Gizmos.DrawWireSphere(_gizmoTargetPos, 0.25f);
+        }
+        else
+        {
+            // Yellow: full cone length, no target
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawLine(origin, endPoint);
+        }
 
-        // Draw the cast line
-        Gizmos.DrawLine(origin, origin + direction * AimDistance);
+        // Draw aim cone edges (8 rays)
+        Gizmos.color = _gizmoHadTarget ? new Color(0f, 1f, 0f, 0.3f) : new Color(1f, 1f, 0f, 0.3f);
+        Vector3 perp = Mathf.Abs(Vector3.Dot(dir, Vector3.up)) < 0.99f
+            ? Vector3.Cross(dir, Vector3.up).normalized
+            : Vector3.Cross(dir, Vector3.right).normalized;
 
-        // Draw start sphere
-        Gizmos.DrawWireSphere(origin, aimAssistAngleRadius);
-
-        // Draw end sphere
-        Gizmos.DrawWireSphere(origin + direction * AimDistance, aimAssistAngleRadius);
+        for (int i = 0; i < 8; i++)
+        {
+            Quaternion rot     = Quaternion.AngleAxis(i * 45f, dir);
+            Vector3    edge    = Quaternion.AngleAxis(aimAssistRadius, rot * perp) * dir;
+            Gizmos.DrawLine(origin, origin + edge * AimDistance);
+        }
     }
 }

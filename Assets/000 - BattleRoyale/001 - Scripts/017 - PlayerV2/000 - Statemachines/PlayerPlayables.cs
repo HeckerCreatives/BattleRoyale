@@ -1,20 +1,22 @@
 ﻿using Cinemachine;
 using Fusion;
 using Fusion.Addons.SimpleKCC;
-using NUnit.Framework;
-using System;
 using System.Collections;
-using System.Linq;
-using Unity.Jobs;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Animations;
-using UnityEngine.Animations.Rigging;
 using UnityEngine.Playables;
-using UnityEngine.Rendering.PostProcessing;
-using static Fusion.Sockets.NetBitBuffer;
-using static MainCorePlayable;
-using static UnityEngine.Rendering.PostProcessing.PostProcessResources;
+using UnityEngine.UI;
 
+public enum Ground
+{
+    DIRT,
+    WOOD,
+    STONE,
+    WATER,
+    TERRAIN,
+    GRASS
+}
 public class PlayerPlayables : NetworkBehaviour
 {
     private const int RECONCILE_DELAY_TICKS = 10;
@@ -39,6 +41,7 @@ public class PlayerPlayables : NetworkBehaviour
     [SerializeField] private Transform playerObj;
     [SerializeField] private Transform bone;
     [SerializeField] private Transform target;
+    [SerializeField] private Vector3 boneRotationCorrection;
     [SerializeField] private float maxPitchUp = 25f;
     [SerializeField] private float maxPitchDown = 20f;
     [SerializeField] private bool enableRoll = false;
@@ -53,9 +56,11 @@ public class PlayerPlayables : NetworkBehaviour
     public PlayerHealthV2 healthV2;
     public PlayerUpperMovement upperBodyMovement;
     public PlayerBasicMovement lowerBodyMovement;
-    public NetworkObject bullets;
-    public NetworkObject arrows;
     public Transform muzzlePoint;
+    [SerializeField] private ArrowController[] localArrowPool;
+    [SerializeField] private BulletController[] localBulletPool;
+    [SerializeField] private LayerMask arrowRaycastMask;
+    [SerializeField] private PlayerNetworkLoader networkLoader;
 
     [Space]
     [SerializeField] private AvatarMask upperBodyMask;
@@ -82,6 +87,18 @@ public class PlayerPlayables : NetworkBehaviour
     [SerializeField] private AudioClip jumpClip;
     [SerializeField] private AudioClip rollClip;
 
+    [Space]
+    [SerializeField] private Image crosshairImg;
+    [SerializeField] private Image animationProgress;
+    [SerializeField] private TextMeshProUGUI status;
+
+    [Space]
+    [SerializeField] private CanvasGroup hitsPanelCG;
+    [SerializeField] private TextMeshProUGUI hitsTextTMP;
+
+    [Space]
+    [SerializeField] private HitIndicatorController[] hitIndicatorPool;
+    
     [field: Space]
     [field: SerializeField] public ParticleSystem[] SwordSlashes { get; private set; }
     [field: SerializeField] public ParticleSystem SwordImpact { get; private set; }
@@ -119,6 +136,15 @@ public class PlayerPlayables : NetworkBehaviour
     [Networked][field: SerializeField] public bool FinalAttack { get; set; }
     [Networked][field: SerializeField] public Ground CurrentGround { get; set; }
 
+    [Networked] public int ArrowFiredTick { get; set; }
+    [Networked] public Vector3 ArrowStart { get; set; }
+    [Networked] public Vector3 ArrowTarget { get; set; }
+    [Networked] public int BulletFiredTick { get; set; }
+    [Networked] public Vector3 BulletStart { get; set; }
+    [Networked] public Vector3 BulletTarget { get; set; }
+    [Networked] public Vector3 FireRayDbgOrigin { get; set; }
+    [Networked] public Vector3 FireRayDbgDir { get; set; }
+
     //  =======================
 
     public PlayableGraph playableGraph;
@@ -135,6 +161,13 @@ public class PlayerPlayables : NetworkBehaviour
     private ChangeDetector _changeDetector;
 
     private Vector3 rollAxisLocal;
+    private Vector3 _currentPitchAxisLocal = Vector3.forward;
+    private int _localArrowIndex;
+    private int _lastArrowSpawnTick = -1;
+    private int _localBulletIndex;
+    private int _lastBulletSpawnTick = -1;
+    private int _comboCount;
+    private int _hitIndicatorIndex;
 
     int FovChanger;
 
@@ -213,6 +246,16 @@ public class PlayerPlayables : NetworkBehaviour
                         _lowerMismatchStartTick = Runner.Tick;
                     }
 
+                    break;
+
+                case nameof(ArrowFiredTick):
+                    if (!HasInputAuthority)
+                        SpawnLocalArrowAtPosition(ArrowStart, ArrowTarget);
+                    break;
+
+                case nameof(BulletFiredTick):
+                    if (!HasInputAuthority)
+                        SpawnLocalBulletAtPosition(BulletStart, BulletTarget);
                     break;
             }
         }
@@ -449,11 +492,53 @@ public class PlayerPlayables : NetworkBehaviour
         if (Runner == null) return;
 
         var currentJob = lookAtPlayable.GetJobData<LookAtJobBoneIK>();
-        currentJob.weight = newWeight; // Smooth transition
-        currentJob.pitchAxisLocal = Vector3.forward;
+        currentJob.pitchAxisLocal = GetPitchAxisForCurrentState();
+        currentJob.weight = newWeight;
         currentJob.pitchAxisSign = -1;
         currentJob.pitchDeg = -cameraRotation._cinemachineTargetPitch;
+        currentJob.rotationCorrection = boneRotationCorrection;
         lookAtPlayable.SetJobData(currentJob);
+    }
+
+    private Vector3 GetPitchAxisForCurrentState()
+    {
+        var upperState = upperBodyChanger?.CurrentState;
+        var lowerState = lowerBodyChanger?.CurrentState;
+
+        bool isBowState = IsBowState(upperState) || IsBowState(lowerState);
+
+        if (isBowState)
+        {
+            _currentPitchAxisLocal = Vector3.forward;
+            return _currentPitchAxisLocal;
+        }
+
+        bool isRifleState = IsRifleState(upperState) || IsRifleState(lowerState);
+
+        if (isRifleState)
+        {
+            _currentPitchAxisLocal = Vector3.right;
+            return _currentPitchAxisLocal;
+        }
+
+        return _currentPitchAxisLocal;
+    }
+
+    private static bool IsBowState(object state)
+    {
+        return state is
+            PlayerUpperBowIdle or PlayerUpperBowRun or PlayerUpperBowSprint or
+            PlayerUpperBowDrawArrow or PlayerUpperBowCharge or PlayerUpperBowDraw or PlayerUpperBowShot or
+            BowIdle or BowRun or BowSprint or BowDrawArrow or BowCharge or BowShot or BowDrawIdle or BowShootingMove;
+    }
+
+    private static bool IsRifleState(object state)
+    {
+        return state is
+            PlayerUpperRifleIdle or PlayerUpperRifleRun or PlayerUpperRifleSprint or
+            PlayerUpperRifleShoot or PlayerUpperRifleCocking or PlayerUpperRifleReload or PlayerUpperRifleAim or
+            RifleIdleState or RifleRunState or RifleSprintState or RifleSShootState or
+            RifleCockingState or RifleReloadState or RifleAimIdle or RifleAimMove;
     }
 
     public void SetPunchRotation(float newWeight)
@@ -475,12 +560,159 @@ public class PlayerPlayables : NetworkBehaviour
 
     public void SetAnimationLowerTick() => PlayableLowerBodyAnimationTick = Runner.Tick;
 
-    public void SpawnBullets(Vector3 startPos, LagCompensatedHit hit, bool isRifle, float additionalTimer = 5f)
+    public void ShowReloadProgress()
     {
-        Runner.Spawn(bullets, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+        animationProgress.gameObject.SetActive(true);
+        animationProgress.fillAmount = 0f;
+        status.gameObject.SetActive(true);
+    }
+
+    public void HideReloadProgress()
+    {
+        animationProgress.gameObject.SetActive(false);
+        status.gameObject.SetActive(false);
+    }
+
+    public void SetReloadProgress(float value)
+    {
+        animationProgress.fillAmount = value;
+    }
+
+    public void FireBullet()
+    {
+        if (HasStateAuthority)
         {
-            obj.GetComponent<BulletController>().Fire((isRifle ? muzzlePoint.position : startPos), hit, additionalTimer);
-        });
+            if (BulletFiredTick == Runner.Tick) return;
+
+            Ray ray = new Ray(playerMovementV2.CameraHitOrigin, playerMovementV2.CameraHitDirection);
+
+            Vector3 aimChest = cameraRotation.GetAimAssistChestPosition();
+            if (aimChest != Vector3.zero)
+            {
+                Vector3 corrected = (aimChest - ray.origin).normalized;
+                if (Vector3.Angle(ray.direction, corrected) < 25f)
+                    ray = new Ray(ray.origin, corrected);
+            }
+
+            Vector3 shooterCenter = transform.position + Vector3.up;
+            float projDist = Mathf.Max(0f, Vector3.Dot(shooterCenter - ray.origin, ray.direction));
+            Vector3 rayStart = ray.origin + ray.direction * (projDist + 1f);
+
+            LagCompensatedHit bulletHit = new LagCompensatedHit();
+
+            float aimRange = cameraRotation.AimDistance;
+            Vector3 muzzlePos = muzzlePoint != null ? muzzlePoint.position : transform.position;
+            Vector3 targetPos = muzzlePos + ray.direction * aimRange;
+            bool bodyHit = false;
+            bool hitSomething = false;
+
+            int safetyLimit = 10;
+
+            while (safetyLimit-- > 0)
+            {
+                if (!Runner.LagCompensation.Raycast(rayStart, ray.direction, 999f, Object.InputAuthority, out bulletHit, arrowRaycastMask, HitOptions.IncludePhysX))
+                    break;
+
+                NetworkObject hitObj = bulletHit.Hitbox?.Root.Object;
+                if (hitObj != null && hitObj.InputAuthority == Object.InputAuthority)
+                {
+                    rayStart = bulletHit.Point + ray.direction * 0.5f;
+                    continue;
+                }
+
+                if (Vector3.Distance(muzzlePos, bulletHit.Point) <= aimRange)
+                {
+                    targetPos = bulletHit.Point;
+                    hitSomething = true;
+
+                    if (bulletHit.Hitbox != null)
+                    {
+                        var enemyHealth = bulletHit.Hitbox.Root.GetBehaviour<PlayerHealthV2>();
+                        if (enemyHealth != null)
+                        {
+                            string tag = bulletHit.Hitbox.tag;
+                            float damage = tag switch
+                            {
+                                "Head"    => 60f,
+                                "Body"    => 45f,
+                                "Thigh"   => 35f,
+                                "Shin"    => 30f,
+                                "Foot"    => 25f,
+                                "Arm"     => 40f,
+                                "Forearm" => 30f,
+                                _         => 0f
+                            };
+                            enemyHealth.ApplyDamage(damage, networkLoader != null ? networkLoader.Username : "", Object);
+                            bodyHit = true;
+                        }
+                    }
+                }
+                break;
+            }
+
+            inventory.SecondaryWeapon.Supplies = Mathf.Max(0, inventory.SecondaryWeapon.Supplies - 1);
+
+            BulletStart = muzzlePos;
+            BulletTarget = targetPos;
+            BulletFiredTick = Runner.Tick;
+
+            if (HasInputAuthority)
+            {
+                SpawnLocalBullet(muzzlePoint, muzzlePos, targetPos, bodyHit, hitSomething);
+                if (bodyHit)
+                    cameraRotation.FlashDamageCrosshair();
+            }
+            else if (bodyHit)
+                RPC_NotifyBulletHit();
+        }
+        else if (HasInputAuthority)
+        {
+            Ray ray = new Ray(playerMovementV2.CameraHitOrigin, playerMovementV2.CameraHitDirection);
+            float aimRange = cameraRotation.AimDistance;
+            Vector3 muzzlePos = muzzlePoint != null ? muzzlePoint.position : transform.position;
+            Vector3 targetPos = muzzlePos + ray.direction * aimRange;
+
+            bool hitSomething = Physics.Raycast(ray, out RaycastHit physicsHit, aimRange, arrowRaycastMask);
+            if (hitSomething)
+                targetPos = physicsHit.point;
+
+            SpawnLocalBullet(muzzlePoint, muzzlePos, targetPos, false, hitSomething);
+        }
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority)]
+    private void RPC_NotifyBulletHit()
+    {
+        cameraRotation.FlashDamageCrosshair();
+    }
+
+    private void SpawnLocalBullet(Transform muzzle, Vector3 fallbackStart, Vector3 target, bool bodyHit, bool hitSomething)
+    {
+        if (localBulletPool == null || localBulletPool.Length == 0) return;
+
+        int tick = Runner != null ? Runner.Tick : -1;
+        if (tick == _lastBulletSpawnTick) return;
+        _lastBulletSpawnTick = tick;
+
+        var bullet = localBulletPool[_localBulletIndex];
+        _localBulletIndex = (_localBulletIndex + 1) % localBulletPool.Length;
+
+        if (muzzle != null)
+        {
+            bullet.Fire(muzzle, target, bodyHit, hitSomething);
+            return;
+        }
+
+        bullet.FireFromPosition(fallbackStart, target, bodyHit, hitSomething);
+    }
+
+    private void SpawnLocalBulletAtPosition(Vector3 start, Vector3 target)
+    {
+        if (localBulletPool == null || localBulletPool.Length == 0) return;
+
+        var bullet = localBulletPool[_localBulletIndex];
+        _localBulletIndex = (_localBulletIndex + 1) % localBulletPool.Length;
+        bullet.FireFromPosition(start, target, false, true);
     }
 
     public void CameraShaker(float amplitude)
@@ -503,7 +735,166 @@ public class PlayerPlayables : NetworkBehaviour
         CameraShaker(0f);
     }
 
-    public void SpawnArrows() => Runner.Spawn(arrows);
+    public void FireArrow()
+    {
+        Transform bowMuzzle = inventory.SecondaryWeapon?.ImpactPoint?.transform;
+
+        if (HasStateAuthority)
+        {
+            if (ArrowFiredTick == Runner.Tick) return;
+
+            Ray ray = new Ray(playerMovementV2.CameraHitOrigin, playerMovementV2.CameraHitDirection);
+
+            // Correct for 3rd-person parallax: if aim assist had a lock, aim through the enemy's chest
+            Vector3 aimChest = cameraRotation.GetAimAssistChestPosition();
+            if (aimChest != Vector3.zero)
+            {
+                Vector3 corrected = (aimChest - ray.origin).normalized;
+                if (Vector3.Angle(ray.direction, corrected) < 25f)
+                    ray = new Ray(ray.origin, corrected);
+            }
+
+            // Start past the shooter's own hitboxes without changing the ray direction.
+            // Project the shooter's center onto the ray and advance 1m beyond it.
+            Vector3 shooterCenter = transform.position + Vector3.up;
+            float   projDist      = Mathf.Max(0f, Vector3.Dot(shooterCenter - ray.origin, ray.direction));
+            Vector3 rayStart      = ray.origin + ray.direction * (projDist + 1f);
+
+            FireRayDbgOrigin = rayStart;
+            FireRayDbgDir    = ray.direction;
+
+            LagCompensatedHit arrowHit = new LagCompensatedHit();
+
+            float aimRange   = cameraRotation.AimDistance;
+            Vector3 arrowOrigin = bowMuzzle != null ? bowMuzzle.position : transform.position;
+            Vector3 targetPos   = arrowOrigin + ray.direction * aimRange;
+            bool bodyHit = false;
+            bool hitSomething = false;
+
+            int safetyLimit = 10;
+
+            while (safetyLimit-- > 0)
+            {
+                if (!Runner.LagCompensation.Raycast(rayStart, ray.direction, 999f, Object.InputAuthority, out arrowHit, arrowRaycastMask, HitOptions.IncludePhysX))
+                    break;
+
+                NetworkObject hitObj = arrowHit.Hitbox?.Root.Object;
+                if (hitObj != null && hitObj.InputAuthority == Object.InputAuthority)
+                {
+                    // Skip shooter's own hitboxes — advance 0.5m to clear thick box colliders
+                    rayStart = arrowHit.Point + ray.direction * 0.5f;
+                    continue;
+                }
+
+                float distToHit = Vector3.Distance(arrowOrigin, arrowHit.Point);
+
+                if (distToHit <= aimRange)
+                {
+                    targetPos = arrowHit.Point;
+                    hitSomething = true;
+
+                    if (arrowHit.Hitbox != null)
+                    {
+                        var enemyHealth = arrowHit.Hitbox.Root.GetBehaviour<PlayerHealthV2>();
+                        if (enemyHealth != null)
+                        {
+                            string tag = arrowHit.Hitbox.tag;
+                            float damage = tag switch
+                            {
+                                "Head"     => 75f,
+                                "Body"     => 55f,
+                                "Thigh"    => 45f,
+                                "Shin"     => 40f,
+                                "Foot"     => 35f,
+                                "Arm"      => 50f,
+                                "Forearm"  => 40f,
+                                _          => 0f
+                            };
+                            enemyHealth.ApplyDamage(damage, networkLoader != null ? networkLoader.Username : "", Object);
+                            bodyHit = true;
+                        }
+                    }
+                }
+                // Beyond aimRange: arrow stops at range limit, no damage applied
+                break;
+            }
+
+            ArrowStart = arrowOrigin;
+            ArrowTarget = targetPos;
+            ArrowFiredTick = Runner.Tick;
+
+            inventory.ReduceBowAmmo();
+
+            if (HasInputAuthority)
+            {
+                SpawnLocalArrow(bowMuzzle, targetPos, bodyHit, hitSomething);
+                if (bodyHit)
+                    cameraRotation.FlashDamageCrosshair();
+            }
+            else if (bodyHit)
+                RPC_NotifyArrowHit();
+        }
+        else if (HasInputAuthority)
+        {
+            Ray ray = new Ray(playerMovementV2.CameraHitOrigin, playerMovementV2.CameraHitDirection);
+            float aimRange   = cameraRotation.AimDistance;
+            Vector3 arrowOrigin = bowMuzzle != null ? bowMuzzle.position : transform.position;
+            Vector3 targetPos   = arrowOrigin + ray.direction * aimRange;
+
+            bool hitSomething = Physics.Raycast(ray, out RaycastHit physicsHit, aimRange, arrowRaycastMask);
+            if (hitSomething)
+                targetPos = physicsHit.point;
+
+            SpawnLocalArrow(bowMuzzle, targetPos, false, hitSomething);
+        }
+    }
+
+    [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority)]
+    private void RPC_NotifyArrowHit()
+    {
+        cameraRotation.FlashDamageCrosshair();
+    }
+
+    public void RegisterComboHit(Vector3 enemyPosition)
+    {
+        if (!HasInputAuthority) return;
+        if (hitIndicatorPool == null || hitIndicatorPool.Length == 0) return;
+
+        _comboCount++;
+        string label = $"COMBO x {_comboCount}";
+
+        var indicator = hitIndicatorPool[_hitIndicatorIndex];
+        _hitIndicatorIndex = (_hitIndicatorIndex + 1) % hitIndicatorPool.Length;
+        indicator.Show(enemyPosition, label);
+
+        CancelInvoke(nameof(ResetCombo));
+        Invoke(nameof(ResetCombo), 2f);
+    }
+
+    private void ResetCombo() => _comboCount = 0;
+
+    private void SpawnLocalArrow(Transform muzzle, Vector3 target, bool bodyHit, bool hitSomething)
+    {
+        if (localArrowPool == null || localArrowPool.Length == 0) return;
+        if (muzzle == null) return;
+
+        int tick = Runner != null ? Runner.Tick : -1;
+        if (tick == _lastArrowSpawnTick) return;
+        _lastArrowSpawnTick = tick;
+
+        var arrow = localArrowPool[_localArrowIndex];
+        _localArrowIndex = (_localArrowIndex + 1) % localArrowPool.Length;
+        arrow.Fire(muzzle, target, bodyHit, hitSomething);
+    }
+
+    private void SpawnLocalArrowAtPosition(Vector3 start, Vector3 target)
+    {
+        if (localArrowPool == null || localArrowPool.Length == 0) return;
+
+        var arrow = localArrowPool[_localArrowIndex];
+        _localArrowIndex = (_localArrowIndex + 1) % localArrowPool.Length;
+        arrow.FireFromPosition(start, target);
+    }
 
     public void PlayJumpSoundEffect()
     {
@@ -537,13 +928,13 @@ public class PlayerPlayables : NetworkBehaviour
     {
         if (HasStateAuthority) return;
 
-        if (CurrentGround == MainCorePlayable.Ground.DIRT)
+        if (CurrentGround == Ground.DIRT)
             footstepSource.PlayOneShot(GetClip(dirtClip));
-        else if (CurrentGround == MainCorePlayable.Ground.STONE)
+        else if (CurrentGround == Ground.STONE)
             footstepSource.PlayOneShot(GetClip(stoneClip));
-        else if (CurrentGround == MainCorePlayable.Ground.WOOD)
+        else if (CurrentGround == Ground.WOOD)
             footstepSource.PlayOneShot(GetClip(woodClip));
-        else if (CurrentGround == MainCorePlayable.Ground.GRASS)
+        else if (CurrentGround == Ground.GRASS)
             footstepSource.PlayOneShot(GetClip(grassClip));
     }
 
@@ -557,6 +948,26 @@ public class PlayerPlayables : NetworkBehaviour
         previousClip = selectedClip;
         return selectedClip;
     }
+
+    private void OnDrawGizmos()
+    {
+        if (!Application.isPlaying) return;
+        if (Runner == null) return;
+        if (FireRayDbgDir == Vector3.zero) return;
+
+        // Only show for ~2 seconds after the last shot (40 ticks at 20Hz)
+        int ticksSinceFire = Runner.Tick - ArrowFiredTick;
+        if (ticksSinceFire > 40 || ticksSinceFire < 0) return;
+
+        // SA fire ray — magenta line from origin in direction
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawLine(FireRayDbgOrigin, FireRayDbgOrigin + FireRayDbgDir * 50f);
+        Gizmos.DrawWireSphere(FireRayDbgOrigin, 0.05f);
+
+        // Hit point
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(ArrowTarget, 0.15f);
+    }
 }
 
 public struct LookAtJobBoneIK : IAnimationJob
@@ -564,9 +975,11 @@ public struct LookAtJobBoneIK : IAnimationJob
     public TransformStreamHandle bone;
     public float weight;
 
-    public float pitchDeg;         // feed from _cinemachineTargetPitch
-    public Vector3 pitchAxisLocal; // Vector3.forward or Vector3.right
-    public float pitchAxisSign;    // +1 or -1
+    public float pitchDeg;
+    public Vector3 pitchAxisLocal;
+    public float pitchAxisSign;
+
+    public Vector3 rotationCorrection;
 
     public void ProcessRootMotion(AnimationStream stream) { }
 
@@ -578,7 +991,8 @@ public struct LookAtJobBoneIK : IAnimationJob
         Quaternion baseLocal = bone.GetRotation(stream);
 
         Quaternion pitchDelta = Quaternion.AngleAxis(pitchDeg * pitchAxisSign, pitchAxisLocal);
-        bone.SetRotation(stream, baseLocal * Quaternion.Slerp(Quaternion.identity, pitchDelta, weight));
+        Quaternion correction = Quaternion.Euler(rotationCorrection);
+        bone.SetRotation(stream, baseLocal * Quaternion.Slerp(Quaternion.identity, pitchDelta, weight) * correction);
     }
 }
 

@@ -9,94 +9,114 @@ public class PlayerUpperRifleSprint : UpperNoAimState
     public PlayerUpperRifleSprint(SimpleKCC characterController, UpperBodyChanger playablesChanger, PlayerMovementV2 playerMovement, PlayerPlayables playerPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay, bool canAnimateUpper) : base(characterController, playablesChanger, playerMovement, playerPlayables, mixerAnimations, animations, mixers, animationname, mixername, animationLength, animationClipPlayable, oncePlay, canAnimateUpper)
     {
     }
-    public override void NetworkLocalUpdate()
-    {
-        base.NetworkLocalUpdate();
-    }
-
     public override void NetworkUpdate()
     {
         base.NetworkUpdate();
-        WeaponsChecker();
-        Animation();
+
+        var nextState = GetNextUpperSprintState();
+
+        if (nextState != null && playablesChanger.CurrentState != nextState)
+        {
+            playablesChanger.ChangeState(nextState);
+        }
     }
 
-    private void Animation()
+    private UpperBodyAnimations GetNextUpperSprintState()
     {
-        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 50f)
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RollPlayables);
+        var upper = playerPlayables.upperBodyMovement;
+        var health = playerPlayables.healthV2;
 
-        if (playerPlayables.healthV2.IsDead)
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
-
-        if (!characterController.IsGrounded)
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleFallingPlayable);
+        // Priority states first
+        if (health.IsDead)
+            return upper.DeathPlayable;
 
         if (playerMovement.IsJumping)
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleJumpPlayable);
+            return upper.JumpPlayable;
+
+        if (!characterController.IsGrounded)
+            return upper.FallingPlayables;
 
         if (playerMovement.IsBlocking)
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearBlockPlayable);
+            return upper.BlockPlayable;
 
         if (playerMovement.IsHealing)
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HealPlayable);
+            return upper.HealPlayable;
 
         if (playerMovement.IsRepairing)
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RepairPlayable);
+            return upper.RepairPlayable;
 
         if (playerMovement.IsTrapping)
-        {
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.TrapPlayable);
-        }
+            return upper.TrapPlayable;
+
+        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
+            return upper.RollPlayables;
+
+        return GetUpperSprintLocomotionState();
     }
 
-    private void WeaponsChecker()
+    private UpperBodyAnimations GetUpperSprintLocomotionState()
     {
-        if (playerPlayables.stamina.Stamina > 0f)
-        {
-            if (playerPlayables.inventory.WeaponIndex == 1)
-            {
-                if (playerMovement.MoveDirection != Vector3.zero)
-                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SprintPlayables);
-            }
-            else if (playerPlayables.inventory.WeaponIndex == 2)
-            {
-                if (playerPlayables.inventory.PrimaryWeaponID() == "001")
-                {
-                    if (playerMovement.MoveDirection != Vector3.zero)
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordSprint);
-                }
-                else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
-                {
-                    if (playerMovement.MoveDirection != Vector3.zero)
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearSprintPlayable);
-                }
-            }
-            else if (playerPlayables.inventory.WeaponIndex == 3)
-            {
-                if (playerPlayables.inventory.SecondaryWeaponID() == "004")
-                {
-                    if (playerMovement.MoveDirection != Vector3.zero)
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowSprintPlayable);
-                }
-            }
+        var upper = playerPlayables.upperBodyMovement;
+        var inventory = playerPlayables.inventory;
 
-            if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
-            {
-                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleIdle);
-            }
-            else if (!playerMovement.IsSprint)
-            {
-                if (playerMovement.MoveDirection != Vector3.zero)
-                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleRunPlayable);
-            }
-        }
-        else
+        bool isMoving = playerMovement.XMovement != 0f || playerMovement.YMovement != 0f;
+        bool canSprint = playerMovement.IsSprint && playerPlayables.stamina.Stamina > 0f;
+
+        if (!isMoving)
+            return upper.BowIdlePlayable;
+
+        switch (inventory.WeaponIndex)
         {
-            if (playerMovement.MoveDirection == Vector3.zero)
-                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleIdle);
-            else
-                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleRunPlayable);
+            case 1:
+                {
+                    return upper.SprintPlayables;
+                }
+
+            case 2:
+                {
+                    string primaryId = inventory.PrimaryWeaponID();
+
+                    if (canSprint)
+                    {
+                        if (primaryId == "001")
+                            return upper.SwordSprint;
+
+                        if (primaryId == "002")
+                            return upper.SpearSprintPlayable;
+                    }
+
+                    if (primaryId == "001")
+                        return upper.SwordRunPlayable;
+
+                    if (primaryId == "002")
+                        return upper.SpearRunPlayable;
+
+                    break;
+                }
+
+            case 3:
+                {
+                    string secondaryId = inventory.SecondaryWeaponID();
+
+                    if (canSprint)
+                    {
+                        if (secondaryId == "003")
+                            return upper.RifleSprintPlayable;
+
+                        if (secondaryId == "004")
+                            return upper.BowSprintPlayable;
+                    }
+
+                    if (secondaryId == "003")
+                        return upper.RifleRunPlayable;
+
+                    if (secondaryId == "004")
+                        return upper.BowRunPlayable;
+
+                    break;
+                }
         }
+
+        return null;
     }
 }

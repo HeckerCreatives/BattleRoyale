@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TMPro;
@@ -64,6 +65,73 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         userData.ResetLogin();
+    }
+
+    private DateTime _pausedAt;
+    private const double GameSessionCheckThresholdSeconds = 30.0;
+
+    private void OnApplicationPause(bool paused)
+    {
+        if (paused)
+        {
+            _pausedAt = DateTime.UtcNow;
+        }
+        else
+        {
+            double elapsed = (DateTime.UtcNow - _pausedAt).TotalSeconds;
+            if (PlayerPhotonReconnect.Instance != null && PlayerPhotonReconnect.Instance.isPlayer && elapsed >= GameSessionCheckThresholdSeconds)
+            {
+                NoBGLoading.SetActive(true); // Show immediately; coroutine will hide after check
+                StartCoroutine(CheckGameSessionOnResume());
+            }
+        }
+    }
+
+    private IEnumerator CheckGameSessionOnResume()
+    {
+        // Flush any queued AddJobs (socket disconnect/reconnect-failed) that may call
+        // NoBGLoading.SetActive(false), then re-assert the loading screen.
+        yield return null;
+        NoBGLoading.SetActive(true);
+
+        // Give Photon a moment to report its current connection state after resume.
+        yield return new WaitForSecondsRealtime(2f);
+
+        bool photonReconnecting = PlayerPhotonReconnect.Instance != null && PlayerPhotonReconnect.Instance.IsReconnecting;
+        var runner = NetworkRunner.Instances.FirstOrDefault();
+
+        if (!photonReconnecting && (runner == null || !runner.IsRunning))
+        {
+            SceneController.GetActionLoadingList.Clear();
+            NoBGLoading.SetActive(false);
+            NotificationController.ShowError("You were disconnected from the game.", null);
+            SceneController.CurrentScene = "Lobby";
+            yield break;
+        }
+
+        if (MultiplayerServerManager.Instance != null &&
+            MultiplayerServerManager.Instance.CurrentGameState == GameState.DONE)
+        {
+            if (runner != null && runner.IsRunning)
+            {
+                // Wait for Fusion to fully shut down before loading a new scene,
+                // otherwise Fusion's own scene manager races with SceneController.
+                var shutdownTask = runner.Shutdown();
+                yield return new WaitUntil(() => shutdownTask.IsCompleted);
+            }
+            // Clear any stale game-loading actions that were never flushed
+            // (happens when the player minimized mid-MultiplayerLoading coroutine).
+            SceneController.GetActionLoadingList.Clear();
+            NoBGLoading.SetActive(false);
+            NotificationController.ShowError("The game ended while you were away.", null);
+            SceneController.CurrentScene = "Lobby";
+            yield break;
+        }
+
+        // If Photon is reconnecting, leave NoBGLoading visible — PlayerPhotonReconnect
+        // will hide it when the attempt succeeds or fails.
+        if (!photonReconnecting)
+            NoBGLoading.SetActive(false);
     }
 
     IEnumerator FPSTruth()

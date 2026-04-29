@@ -62,8 +62,6 @@ public class SpearSprintState : PlayerOnGround
 
         playerMovement.MoveCharacter();
 
-        HandleFootsteps();
-
         var nextState = GetNextState();
 
         if (nextState != null && playablesChanger.CurrentState != nextState)

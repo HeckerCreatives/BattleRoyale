@@ -10,6 +10,8 @@ using UnityEngine.UI;
 
 public class PlayerHealthV2 : NetworkBehaviour
 {
+    public static readonly List<PlayerHealthV2> All = new();
+
     [SerializeField] private UserData userData;
     [SerializeField] private PlayerGameStats playerGameStats;
     [SerializeField] private Volume postProcessing;
@@ -21,6 +23,7 @@ public class PlayerHealthV2 : NetworkBehaviour
     [Space]
     [SerializeField] private NetworkObject healObj;
     [SerializeField] private NetworkObject repairObj;
+    [SerializeField] private NetworkObject rifleAmmoObj;
 
     [Space]
     [SerializeField] private float startingHealth;
@@ -78,6 +81,7 @@ public class PlayerHealthV2 : NetworkBehaviour
 
     public override void Spawned()
     {
+        All.Add(this);
         CurrentHealth = startingHealth;
 
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
@@ -87,6 +91,11 @@ public class PlayerHealthV2 : NetworkBehaviour
 
         healthSlider.value = CurrentHealth / 100;
         ArmorUI();
+    }
+
+    public override void Despawned(NetworkRunner runner, bool hasState)
+    {
+        All.Remove(this);
     }
 
     public override void Render()
@@ -400,6 +409,12 @@ public class PlayerHealthV2 : NetworkBehaviour
             inventory.PrimaryWeapon = null;
         }
 
+        if (inventory.SecondaryWeapon != null)
+        {
+            inventory.SecondaryWeapon.DropWeapon();
+            inventory.SecondaryWeapon = null;
+        }
+
         if (inventory.Armor != null)
         {
             inventory.Armor.DropArmor();
@@ -421,6 +436,20 @@ public class PlayerHealthV2 : NetworkBehaviour
                 obj.GetComponent<RepairWeaponItem>().InitializeItem(transform.position, Quaternion.identity, inventory.HealCount);
             });
         }
+
+        if (inventory.BowMagazine > 0)
+        {
+            inventory.MagazineContainer.DropWeapon();
+            inventory.MagazineContainer = null;
+        }
+
+        if (inventory.RifleMagazine > 0)
+        {
+            Runner.Spawn(rifleAmmoObj, transform.position, Quaternion.identity, null, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+            {
+                obj.GetComponent<AmmoRifleWeaponItem>().InitializeOnStart(transform.position, Quaternion.identity, inventory.RifleMagazine);
+            });
+        }
     }
 
     public void FallDamae()
@@ -431,7 +460,7 @@ public class PlayerHealthV2 : NetworkBehaviour
 
         if (invincible.IsInvincible) return;
 
-        FallDamage++;
+        FallDamage = Runner.Tick;
 
         if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;
 

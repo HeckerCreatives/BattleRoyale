@@ -34,9 +34,9 @@ public class FallingState : AnimationPlayable
 
     public override void NetworkUpdate()
     {
-        playerMovement.MoveCharacter();
         playerMovement.Jumping = false;
         playerMovement.Falling();
+        playerMovement.MoveCharacter();
 
         var nextState = GetNextState();
 
@@ -91,8 +91,7 @@ public class FallingState : AnimationPlayable
             return GetGroundedState();
         }
 
-        // Still airborne
-        return GetAirborneState();
+        return null;
     }
 
     private AnimationPlayable GetGroundedState()
@@ -156,17 +155,6 @@ public class FallingState : AnimationPlayable
 
                 return playerPlayables.lowerBodyMovement.BowRunPlayable;
             }
-        }
-
-        return null;
-    }
-
-    private AnimationPlayable GetAirborneState()
-    {
-        if (playerPlayables.inventory.WeaponIndex == 3)
-        {
-            if (playerPlayables.inventory.SecondaryWeaponID() == "003")
-                return playerPlayables.lowerBodyMovement.RifleFallingPlayable;
         }
 
         return null;

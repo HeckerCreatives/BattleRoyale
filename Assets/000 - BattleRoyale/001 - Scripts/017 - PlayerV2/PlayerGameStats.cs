@@ -153,9 +153,9 @@ public class PlayerGameStats : NetworkBehaviour
 
     private string GetPingColor(int ping)
     {
-        if (ping <= 80) return "#2E7D32";   // Dark Green
-        if (ping <= 150) return "#B28704";  // Dark Yellow
-        return "#8B0000";                   // Dark Red
+        if (ping <= 80) return "green";   // Dark Green
+        if (ping <= 150) return "orange";  // Dark Yellow
+        return "red";                   // Dark Red
     }
 
     public override void Render()
@@ -467,6 +467,7 @@ public class PlayerGameStats : NetworkBehaviour
     private void ShowWinner_UI()
     {
         if (!HasInputAuthority) return;
+        if (playerhealth.IsDead) return;
         if (winMessageObj.activeInHierarchy) return;
         if (IsDoneShowingGameOver) return;
 
@@ -526,6 +527,7 @@ public class PlayerGameStats : NetworkBehaviour
     private void ShowWinnerOnAllPlayerQuit_UI()
     {
         if (!HasInputAuthority) return;
+        if (playerhealth.IsDead) return;
         if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;
         if (PlayerJoinedController.Instance.RemainingPlayers.Count > 1 || BotSpawnerController.Instance.Bots.Count > 0) return;
         if (winMessageObj.activeInHierarchy) return;
@@ -597,8 +599,7 @@ public class PlayerGameStats : NetworkBehaviour
             canQuit = false;
             gameStatusTimer.text = $"Returning to lobby in 0..";
 
-            Runner.Shutdown();
-            GameManager.Instance.SceneController.CurrentScene = "Lobby";
+            ownObjectEnabler.ReturnToMenuBtn();
         }
     }
 }

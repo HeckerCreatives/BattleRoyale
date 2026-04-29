@@ -59,6 +59,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
     [Networked][field: SerializeField] public bool IsEquipped { get; set; }
     [Networked][field: SerializeField] public bool IsBot { get; set; }
     [Networked][field: SerializeField] public int Hitted { get; set; }
+    [Networked] public Vector3 HittedPosition { get; set; }
     [Networked][field: SerializeField] public NetworkObject CurrentPlayer { get; set; }
     [Networked][field: SerializeField] public PlayerOwnObjectEnabler PlayerCore { get; set; }
     [Networked][field: SerializeField] public Botdata BotData { get; set; }
@@ -99,6 +100,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                     if (ShakerCoroutine != null) StopCoroutine(ShakerCoroutine);
 
                     ShakerCoroutine = StartCoroutine(Shaker());
+                    PlayerCore.CurrentPlayerPlayables.RegisterComboHit(HittedPosition);
 
                     break;
             }
@@ -360,9 +362,14 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                     if (tempplayables.playerMovementV2.Rolling) return;
 
 
-                    if (isFinalHit) tempplayables.StaggerAnimation();
+                    if (isFinalHit)
+                    {
+                        tempplayables.ChangeCamera(false);
+                        tempplayables.StaggerAnimation();
+                    }
                     else
                     {
+                        tempplayables.ChangeCamera(false);
                         tempplayables.HitAnimation();
                         hitObject.GetComponent<SimpleKCC>().Move(CurrentPlayer.GetComponent<PlayerMovementV2>().MainCharObj.forward * 100f);
                     }
@@ -372,6 +379,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                     healthV2.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username.ToString(), CurrentPlayer);
 
                     Hitted = Runner.Tick;
+                    HittedPosition = hitbox.transform.root.position + Vector3.up * 1.2f;
                 }
             }
         }

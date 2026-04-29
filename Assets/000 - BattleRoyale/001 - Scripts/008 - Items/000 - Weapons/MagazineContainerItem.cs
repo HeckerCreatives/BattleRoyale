@@ -95,6 +95,16 @@ public class MagazineContainerItem : NetworkBehaviour, IPickupItem
 
     public void DropWeapon()
     {
-        Runner.Despawn(Object);
+        IsPickedUp = false;
+        transform.parent = null;
+
+        Position = CurrentPlayer.transform.position + new Vector3(0f, 0.1f, 0f);
+        Rotation = Quaternion.identity;
+
+        CurrentPlayer.GetComponent<PlayerInventoryV2>().SecondaryWeapon = null;
+
+        CurrentPlayer = null;
+        PlayerCore = null;
+        Object.RemoveInputAuthority();
     }
 }

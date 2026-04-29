@@ -48,7 +48,7 @@ public class BowIdle : PlayerOnGround
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             return playerPlayables.lowerBodyMovement.RollPlayable;
 
-        if (playerMovement.Attacking)
+        if (playerMovement.Attacking && playerPlayables.inventory.BowAmmo() > 0)
             return playerPlayables.lowerBodyMovement.BowDrawIdlePlayable;
 
         if (!characterController.IsGrounded)

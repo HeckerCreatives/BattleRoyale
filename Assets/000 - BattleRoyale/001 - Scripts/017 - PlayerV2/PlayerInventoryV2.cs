@@ -174,6 +174,16 @@ public class PlayerInventoryV2 : NetworkBehaviour
 
     #region INVENTORY
 
+    public int BowAmmo() => SecondaryWeapon.Supplies + BowMagazine;
+
+    public void ReduceBowAmmo()
+    {
+        if (SecondaryWeapon.Supplies > 0)
+            SecondaryWeapon.Supplies -= 1;
+        else if (BowMagazine > 0)
+            BowMagazine -= 1;
+    }
+
     public void SpawnTrap()
     {
         TrapCount -= 1;
@@ -421,6 +431,18 @@ public class PlayerInventoryV2 : NetworkBehaviour
 
                     secondarytempweapon.RPC_PickupSecondaryWeapon(tempobject, secondarytempweapon.Supplies);
                     break;
+                case "005":
+
+                    AmmoRifleWeaponItem tempammo = weapon.gameObject.GetComponent<AmmoRifleWeaponItem>();
+
+                    tempammo.RPC_PickupAmmoRifle(tempobject);
+                    break;
+                case "006":
+
+                    MagazineContainerItem tempbowammo = weapon.gameObject.GetComponent<MagazineContainerItem>();
+
+                    tempbowammo.RPC_PickupMagazineContainer(tempobject);
+                    break;
                 case "007":
 
                     ArmorItem temparmor = weapon.GetComponent<ArmorItem>();
@@ -439,18 +461,6 @@ public class PlayerInventoryV2 : NetworkBehaviour
                     RepairWeaponItem temprepair = weapon.GetComponent<RepairWeaponItem>();
 
                     temprepair.RPC_PickupRepair(tempobject);
-                    break;
-                case "010":
-
-                    AmmoRifleWeaponItem tempammo = weapon.gameObject.GetComponent<AmmoRifleWeaponItem>();
-
-                    tempammo.RPC_PickupAmmoRifle(tempobject);
-                    break;
-                case "006":
-
-                    MagazineContainerItem tempbowammo = weapon.gameObject.GetComponent<MagazineContainerItem>();
-
-                    tempbowammo.RPC_PickupMagazineContainer(tempobject);
                     break;
             }
         });

@@ -19,14 +19,16 @@ public class SpearJumpAttack : AnimationPlayable
 
         groundedSinceTick = -1;
 
+        if (playerPlayables.HasInputAuthority)
+            playerMovement.AnimationTick = playerPlayables.Runner.Tick;
+
+
         if (!playerPlayables.HasStateAuthority) return;
 
         playerMovement.JumpAttackStartTick = playerPlayables.Runner.Tick;
-
-        if (!playerPlayables.HasStateAuthority) return;
-
         playerPlayables.healthV2.FallDamageValue = 0;
         playerMovement.IsJumping = false;
+        playerMovement.Jumping = false;
     }
 
     public override void Exit()
@@ -39,6 +41,7 @@ public class SpearJumpAttack : AnimationPlayable
 
         playerMovement.IsFalling = false;
         playerMovement.JumpImpulse = 0;
+        playerMovement.Jumping = false;
     }
 
     public override void NetworkUpdate()

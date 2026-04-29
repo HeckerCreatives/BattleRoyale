@@ -1,3 +1,4 @@
+using Cinemachine;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
@@ -8,10 +9,13 @@ using UnityEngine;
 
 public enum InventoryTab
 {
-    HAIRSTYLES,
-    SKINS,
-    WEAPONS,
-    USABLEITEMS
+    USABLEITEMS,
+    FULLSET,
+    GLOVES,
+    UPPERBODY,
+    LOWERBODY,
+    WEAPON,
+    FOOT
 }
 
 public class InventoryController : MonoBehaviour
@@ -40,11 +44,15 @@ public class InventoryController : MonoBehaviour
 
     [SerializeField] private UserData userData;
     [SerializeField] private LobbyController lobbyController;
+    [SerializeField] private CinemachineVirtualCamera inventoryVCam;
+    [SerializeField] private CinemachineVirtualCamera lobbyVCam;
 
     [Space]
     [SerializeField] private TextMeshProUGUI points;
     [SerializeField] private TextMeshProUGUI coins;
     [SerializeField] private GameObject InventoryObj;
+    [SerializeField] private GameObject LobbyObj;
+    [SerializeField] private GameObject PlayObj;
 
     [Header("DEBUGGER")]
     [SerializeField] private InventoryTab currentInventoryObjTab;
@@ -76,8 +84,21 @@ public class InventoryController : MonoBehaviour
     {
         points.text = userData.GameDetails.leaderboard.ToString("n0");
         coins.text = userData.GameDetails.coins.ToString("n4");
-        CurrentInventoryTab = InventoryTab.HAIRSTYLES;
+        CurrentInventoryTab = InventoryTab.USABLEITEMS;
+        inventoryVCam.m_Priority = 11;
+        lobbyVCam.m_Priority = 0;
         InventoryObj.SetActive(true);
+        LobbyObj.SetActive(false);
+        PlayObj.SetActive(false);
+    }
+
+    public void CloseInventory()
+    {
+        lobbyVCam.m_Priority = 11;
+        inventoryVCam.m_Priority = 0;
+        InventoryObj.SetActive(false);
+        LobbyObj.SetActive(true);
+        PlayObj.SetActive(true);
     }
 
     public IEnumerator GetInventory()
@@ -86,6 +107,7 @@ public class InventoryController : MonoBehaviour
         {
             try
             {
+                Debug.Log(response.ToString());
                 Dictionary<string, Inventory> tempinventory = JsonConvert.DeserializeObject<Dictionary<string, Inventory>>(response.ToString());
 
                 userData.PlayerInventory = tempinventory;

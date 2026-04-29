@@ -34,8 +34,15 @@ public class MeshMapScatterTool : NetworkBehaviour
         public NetworkObject[] prefabs;
 
         [Header("Spawn Count")]
+        [Tooltip("Spawn count at max players (see scaling settings below).")]
         public int spawnCount = 100;
         public int maxAttempts = 3000;
+
+        [Header("Spawn Count Scaling (by Player Count)")]
+        public bool scaleSpawnCountByPlayers = true;
+        [Min(1)] public int maxPlayersForScaling = 30;
+        [Tooltip("Minimum spawn count when player count is 0 (or very low).")]
+        [Min(0)] public int minSpawnCount = 0;
 
         [Header("Allowed Surface")]
         public LayerMask groundLayerMask;
@@ -139,6 +146,8 @@ public class MeshMapScatterTool : NetworkBehaviour
         _debugHitPoints.Clear();
         Random.InitState(randomSeed);
 
+        int playerCount = GetCurrentPlayerCount();
+
         foreach (var rule in rules)
         {
             if (!rule.enabled)
@@ -155,8 +164,9 @@ public class MeshMapScatterTool : NetworkBehaviour
             int spawned = 0;
             int attempts = 0;
             List<Vector3> localPositions = new List<Vector3>();
+            int effectiveSpawnCount = GetEffectiveSpawnCount(rule, playerCount);
 
-            while (spawned < rule.spawnCount && attempts < rule.maxAttempts)
+            while (spawned < effectiveSpawnCount && attempts < rule.maxAttempts)
             {
                 attempts++;
 
@@ -254,6 +264,11 @@ public class MeshMapScatterTool : NetworkBehaviour
                     int tempammot = Random.Range(1, 11);
                     bowammo.InitializeOnStart(finalPosition, rotation, tempammot);
                 }
+                if (ammo != null)
+                {
+                    int tempammot = Random.Range(1, 11);
+                    ammo.InitializeOnStart(finalPosition, rotation, tempammot);
+                }
 
                 localPositions.Add(spawnPosition);
                 spawned++;
@@ -261,12 +276,40 @@ public class MeshMapScatterTool : NetworkBehaviour
                 await Task.Yield();
             }
 
-            Debug.Log($"Rule '{rule.ruleName}' spawned {spawned}/{rule.spawnCount} after {attempts} attempts.");
+            Debug.Log($"Rule '{rule.ruleName}' spawned {spawned}/{effectiveSpawnCount} (players={playerCount}) after {attempts} attempts.");
 
             await Task.Yield();
         }
 
         doneInitialize = true;
+    }
+
+    private int GetCurrentPlayerCount()
+    {
+        if (Runner == null || !Runner.IsRunning)
+            return 0;
+
+        int count = 0;
+        foreach (var _ in Runner.ActivePlayers)
+            count++;
+
+        return count;
+    }
+
+    private int GetEffectiveSpawnCount(ScatterRule rule, int playerCount)
+    {
+        if (rule == null)
+            return 0;
+
+        int maxPlayers = Mathf.Max(1, rule.maxPlayersForScaling);
+        int targetMax = Mathf.Max(0, rule.spawnCount);
+
+        if (!rule.scaleSpawnCountByPlayers)
+            return targetMax;
+
+        float t = Mathf.Clamp01(playerCount / (float)maxPlayers);
+        int target = Mathf.RoundToInt(Mathf.Lerp(rule.minSpawnCount, targetMax, t));
+        return Mathf.Clamp(target, 0, targetMax);
     }
 
     private bool TryGetThreePointRotation(
