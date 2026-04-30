@@ -174,6 +174,7 @@ public class PlayerMovementV2 : NetworkBehaviour
     [field: SerializeField][Networked] public int JumpAttackStartTick { get; set; }
     [field: SerializeField][Networked] public int StopSprintStartTick { get; set; }
     [field: SerializeField][Networked] public int AuthoritiveAniamtionTick { get; set; }
+    [field: SerializeField][Networked] public int ShootReleasedTick { get; set; }
 
     //  =======================
 
@@ -567,7 +568,7 @@ public class PlayerMovementV2 : NetworkBehaviour
         MoveDirection = lastRollDirection * attackMoveSpeed * Runner.DeltaTime;
     }
 
-    private void HandleNormalMovement()
+    public void HandleNormalMovement()
     {
         MoveDir = PlayerLookDirection();
 
@@ -782,16 +783,17 @@ public class PlayerMovementV2 : NetworkBehaviour
 
     private void Shoot()
     {
-        if (controllerInput.HoldInputButtons.WasPressed(PreviousButtons, HoldInputButtons.Shoot))
+        bool isHeld = controllerInput.HoldInputButtons.WasPressed(PreviousButtons, HoldInputButtons.Shoot);
+
+        if (isHeld)
         {
             if (Attacking) return;
-
             Attacking = true;
         }
         else
         {
             if (!Attacking) return;
-
+            ShootReleasedTick = Runner.Tick;
             Attacking = false;
         }
     }

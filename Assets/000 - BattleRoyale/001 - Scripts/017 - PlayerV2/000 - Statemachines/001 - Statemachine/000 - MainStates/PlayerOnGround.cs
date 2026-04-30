@@ -22,4 +22,11 @@ public class PlayerOnGround : AnimationPlayable
             || current == upper.RifleCockingPlayable
             || current == upper.RifleReloadPlayable;
     }
+
+    protected bool IsUpperBodyCockingOrReloading()
+    {
+        var upper = playerPlayables.upperBodyMovement;
+        var current = playerPlayables.upperBodyChanger.CurrentState;
+        return current == upper.RifleCockingPlayable || current == upper.RifleReloadPlayable;
+    }
 }

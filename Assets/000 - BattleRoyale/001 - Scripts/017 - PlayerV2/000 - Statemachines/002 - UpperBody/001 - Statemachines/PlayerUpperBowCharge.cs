@@ -20,6 +20,8 @@ public class PlayerUpperBowCharge : UpperWithAimState
 
     public override void NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         playerPlayables.cameraRotation.HandleCameraAimInputBow();
 
         var nextState = GetNextLowerBodyState();

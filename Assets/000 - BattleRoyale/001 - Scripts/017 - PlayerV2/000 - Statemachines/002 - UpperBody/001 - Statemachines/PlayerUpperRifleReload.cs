@@ -52,21 +52,20 @@ public class PlayerUpperRifleReload : UpperNoAimState
     {
         base.NetworkUpdate();
 
-        int currentTick = playerPlayables.Runner.Tick;
-        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.AuthoritiveAniamtionTick : playerMovement.AnimationTick);
+        int startTick = playerPlayables.HasStateAuthority ? playerMovement.AuthoritiveAniamtionTick : playerMovement.AnimationTick;
+        int elapsedTicks = playerPlayables.Runner.Tick - startTick;
 
-        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
+        int totalPunchTicks = Mathf.CeilToInt(animationLength / playerPlayables.Runner.DeltaTime);
+        int doneReloadTick = Mathf.CeilToInt(totalPunchTicks * 0.7f);
         int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
 
         if (playerPlayables.HasInputAuthority)
-        {
-            playerPlayables.SetReloadProgress(Mathf.Clamp01(elapsedTicks / animationLength));
-        }
+            playerPlayables.SetReloadProgress(Mathf.Clamp01((float)elapsedTicks / totalPunchTicks));
 
-        if (elapsedTicks >= finishStartTick && !doneReload)
+        if (elapsedTicks >= doneReloadTick && !doneReload)
         {
-            int ammoNeeded = 10 - playerPlayables.inventory.SecondaryWeapon.Supplies; // How much ammo is needed to fill the magazine
-            int ammoToLoad = Mathf.Min(ammoNeeded, playerPlayables.inventory.RifleMagazine); // Take only what's available
+            int ammoNeeded = 10 - playerPlayables.inventory.SecondaryWeapon.Supplies;
+            int ammoToLoad = Mathf.Min(ammoNeeded, playerPlayables.inventory.RifleMagazine);
 
             playerPlayables.inventory.SecondaryWeapon.Supplies += ammoToLoad;
             playerPlayables.inventory.RifleMagazine -= ammoToLoad;
@@ -75,120 +74,89 @@ public class PlayerUpperRifleReload : UpperNoAimState
         }
 
         playerMovement.WeaponSwitcher();
-        WeaponsChecker();
-        Animation();
+
+        var nextState = GetNextUpperBodyState(elapsedTicks, finishStartTick);
+
+        if (nextState != null && playablesChanger.CurrentState != nextState)
+            playablesChanger.ChangeState(nextState);
     }
 
-    private void Animation()
+    private UpperBodyAnimations GetNextUpperBodyState(int elapsedTicks, int finishStartTick)
     {
+        var upper = playerPlayables.upperBodyMovement;
+
         if (playerPlayables.healthV2.IsDead)
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.DeathPlayable);
+            return upper.DeathPlayable;
 
         if (!characterController.IsGrounded)
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleFallingPlayable);
+            return upper.RifleFallingPlayable;
 
         if (playerMovement.IsHealing)
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.HealPlayable);
+            return upper.HealPlayable;
 
         if (playerMovement.IsRepairing)
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RepairPlayable);
+            return upper.RepairPlayable;
 
         if (playerMovement.IsTrapping)
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.TrapPlayable);
+            return upper.TrapPlayable;
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
-            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RollPlayables);
+            return upper.RollPlayables;
+
+        return GetWeaponExitState(elapsedTicks, finishStartTick);
     }
 
-    private void WeaponsChecker()
+    private UpperBodyAnimations GetWeaponExitState(int elapsedTicks, int finishStartTick)
     {
-        int currentTick = playerPlayables.Runner.Tick;
-        int elapsedTicks = currentTick - (playerPlayables.HasStateAuthority ? playerMovement.AuthoritiveAniamtionTick : playerMovement.AnimationTick);
+        var upper = playerPlayables.upperBodyMovement;
+        var inventory = playerPlayables.inventory;
+        bool isMoving = playerMovement.XMovement != 0f || playerMovement.YMovement != 0f;
+        bool isSprint = playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f;
 
-        int totalPunchTicks = Mathf.CeilToInt((float)(animationLength / playerPlayables.Runner.DeltaTime));
-        int finishStartTick = Mathf.CeilToInt(totalPunchTicks * 0.9f);
-
-        if (playerPlayables.inventory.WeaponIndex == 1)
+        switch (inventory.WeaponIndex)
         {
-            if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
-            {
-                if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SprintPlayables);
+            case 1:
+                if (isMoving)
+                    return isSprint ? upper.SprintPlayables : upper.RunPlayables;
+                return upper.IdlePlayables;
 
-                else
-                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RunPlayables);
-            }
-            else
-                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.IdlePlayables);
+            case 2:
+                switch (inventory.PrimaryWeaponID())
+                {
+                    case "001":
+                        if (isMoving)
+                            return isSprint ? upper.SwordSprint : upper.SwordRunPlayable;
+                        return upper.SwordIdlePlayable;
+                    case "002":
+                        if (isMoving)
+                            return isSprint ? upper.SpearSprintPlayable : upper.SpearRunPlayable;
+                        return upper.SpearIdle;
+                }
+                break;
+
+            case 3:
+                switch (inventory.SecondaryWeaponID())
+                {
+                    case "003":
+                        if (elapsedTicks < finishStartTick)
+                            return null;
+
+                        if (playerMovement.Attacking && inventory.SecondaryWeapon.Supplies > 0)
+                            return upper.RifleAimPlayable;
+
+                        if (isMoving)
+                            return isSprint ? upper.RifleSprintPlayable : upper.RifleRunPlayable;
+
+                        return upper.RifleIdle;
+
+                    case "004":
+                        if (isMoving)
+                            return isSprint ? upper.BowSprintPlayable : upper.BowRunPlayable;
+                        return upper.BowIdlePlayable;
+                }
+                break;
         }
-        else if (playerPlayables.inventory.WeaponIndex == 2)
-        {
-            if (playerPlayables.inventory.PrimaryWeaponID() == "001")
-            {
-                if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
-                {
-                    if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordSprint);
 
-                    else
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordRunPlayable);
-                }
-                else
-                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SwordIdlePlayable);
-            }
-            else if (playerPlayables.inventory.PrimaryWeaponID() == "002")
-            {
-                if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
-                {
-                    if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearSprintPlayable);
-
-                    else
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearRunPlayable);
-                }
-                else
-                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.SpearIdle);
-            }
-        }
-        else if (playerPlayables.inventory.WeaponIndex == 3)
-        {
-            if (elapsedTicks >= finishStartTick)
-            {
-                if (playerPlayables.inventory.SecondaryWeaponID() == "003")
-                {
-                    if (!characterController.IsGrounded)
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleFallingPlayable);
-
-                    if (playerMovement.Attacking && playerPlayables.inventory.SecondaryWeapon.Supplies > 0)
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleShootPlayable);
-                    else
-                    {
-                        if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
-                        {
-                            if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleSprintPlayable);
-
-                            else
-                                playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleRunPlayable);
-                        }
-                        else
-                            playablesChanger.ChangeState(playerPlayables.upperBodyMovement.RifleIdle);
-                    }
-                }
-            }
-            else if (playerPlayables.inventory.SecondaryWeaponID() == "004")
-            {
-                if (playerMovement.XMovement != 0 || playerMovement.YMovement != 0)
-                {
-                    if (playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f)
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowSprintPlayable);
-
-                    else
-                        playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowRunPlayable);
-                }
-                else
-                    playablesChanger.ChangeState(playerPlayables.upperBodyMovement.BowIdlePlayable);
-            }
-        }
+        return null;
     }
 }

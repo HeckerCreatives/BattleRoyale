@@ -15,11 +15,19 @@ public class PlayerUpperRifleAim : UpperWithAimState
         base.Enter();
 
         if (playerPlayables.HasInputAuthority)
+        {
+            playerMovement.AnimationTick = playerPlayables.Runner.Tick;
             playerPlayables.ChangeCamera(true);
+        }
+
+        if (playerPlayables.HasStateAuthority)
+            playerMovement.AuthoritiveAniamtionTick = playerPlayables.Runner.Tick;
     }
 
     public override void NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         playerPlayables.cameraRotation.HandleCameraAimInputBow();
 
         var nextState = GetNextLowerBodyState();
@@ -64,7 +72,12 @@ public class PlayerUpperRifleAim : UpperWithAimState
             return playerPlayables.upperBodyMovement.RollPlayables;
         }
 
-        if (!playerMovement.Attacking)
+        // Only shoot if we actually confirmed holding the button
+        int aimStartTick = playerPlayables.HasStateAuthority
+            ? playerMovement.AuthoritiveAniamtionTick
+            : playerMovement.AnimationTick;
+
+        if (playerMovement.ShootReleasedTick > aimStartTick)
             return playerPlayables.upperBodyMovement.RifleShootPlayable;
 
         return null;

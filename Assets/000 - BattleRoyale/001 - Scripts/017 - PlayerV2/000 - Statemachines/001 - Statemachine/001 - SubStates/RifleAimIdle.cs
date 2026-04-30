@@ -14,8 +14,13 @@ public class RifleAimIdle : PlayerOnGround
     {
         base.NetworkUpdate();
 
-        playerMovement.MoveWithAim();
-        playerMovement.RotatePlayer();
+        if (IsUpperBodyCockingOrReloading())
+            playerMovement.MoveCharacter();
+        else
+        {
+            playerMovement.MoveWithAim();
+            playerMovement.RotatePlayer();
+        }
 
         var nextState = GetNextLowerBodyState();
 

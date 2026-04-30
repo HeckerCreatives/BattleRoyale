@@ -28,6 +28,9 @@ public class PlayerUpperRifleCocking : UpperNoAimState
 
         if (playerPlayables.HasStateAuthority)
             playerMovement.AuthoritiveAniamtionTick = playerPlayables.Runner.Tick;
+
+        if (!playerPlayables.HasStateAuthority)
+            playerPlayables.inventory.SecondaryWeapon.SoundController.PlayShootCooldown();
     }
 
     public override void NetworkUpdate()
@@ -40,6 +43,8 @@ public class PlayerUpperRifleCocking : UpperNoAimState
         {
             playablesChanger.ChangeState(nextState);
         }
+
+        playerMovement.WeaponSwitcher();
     }
 
     private UpperBodyAnimations GetNextLowerBodyState()
@@ -57,23 +62,69 @@ public class PlayerUpperRifleCocking : UpperNoAimState
         if (playerPlayables.healthV2.IsDead)
             return playerPlayables.upperBodyMovement.DeathPlayable;
 
-        if (elapsedTicks < finishStartTick)
-            return null;
+        if (playerMovement.IsHealing)
+            return playerPlayables.upperBodyMovement.HealPlayable;
 
-        if (playerMovement.Attacking && playerPlayables.inventory.SecondaryWeapon.Supplies > 0)
-            return playerPlayables.upperBodyMovement.RifleAimPlayable;
+        if (playerMovement.IsRepairing)
+            return playerPlayables.upperBodyMovement.RepairPlayable;
 
-        if (isMoving)
-        {
-            if (canSprint)
-                return playerPlayables.upperBodyMovement.RifleSprintPlayable;
-
-            return playerPlayables.upperBodyMovement.RifleRunPlayable;
-        }
-
-        if (canRoll)
+        if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
             return playerPlayables.upperBodyMovement.RollPlayables;
 
-        return playerPlayables.upperBodyMovement.RifleIdle;
+        return GetWeaponExitState(elapsedTicks, finishStartTick);
+    }
+
+    private UpperBodyAnimations GetWeaponExitState(int elapsedTicks, int finishStartTick)
+    {
+        var upper = playerPlayables.upperBodyMovement;
+        var inventory = playerPlayables.inventory;
+        bool isMoving = playerMovement.XMovement != 0f || playerMovement.YMovement != 0f;
+        bool isSprint = playerMovement.IsSprint && playerPlayables.stamina.Stamina >= 10f;
+
+        switch (inventory.WeaponIndex)
+        {
+            case 1:
+                if (isMoving)
+                    return isSprint ? upper.SprintPlayables : upper.RunPlayables;
+                return upper.IdlePlayables;
+
+            case 2:
+                switch (inventory.PrimaryWeaponID())
+                {
+                    case "001":
+                        if (isMoving)
+                            return isSprint ? upper.SwordSprint : upper.SwordRunPlayable;
+                        return upper.SwordIdlePlayable;
+                    case "002":
+                        if (isMoving)
+                            return isSprint ? upper.SpearSprintPlayable : upper.SpearRunPlayable;
+                        return upper.SpearIdle;
+                }
+                break;
+
+            case 3:
+                switch (inventory.SecondaryWeaponID())
+                {
+                    case "003":
+                        if (elapsedTicks < finishStartTick)
+                            return null;
+
+                        if (playerMovement.Attacking && inventory.SecondaryWeapon.Supplies > 0)
+                            return upper.RifleAimPlayable;
+
+                        if (isMoving)
+                            return isSprint ? upper.RifleSprintPlayable : upper.RifleRunPlayable;
+
+                        return upper.RifleIdle;
+
+                    case "004":
+                        if (isMoving)
+                            return isSprint ? upper.BowSprintPlayable : upper.BowRunPlayable;
+                        return upper.BowIdlePlayable;
+                }
+                break;
+        }
+
+        return null;
     }
 }

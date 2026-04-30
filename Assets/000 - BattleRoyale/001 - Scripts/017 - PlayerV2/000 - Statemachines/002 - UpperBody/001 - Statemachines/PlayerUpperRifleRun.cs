@@ -97,7 +97,7 @@ public class PlayerUpperRifleRun : UpperNoAimState
                     {
                         if (inventory.SecondaryWeaponID() == "003")
                         {
-                            if (playerMovement.Reloading && playerPlayables.inventory.RifleMagazine > 0)
+                            if (playerMovement.Reloading && playerPlayables.inventory.RifleMagazine > 0 && playerPlayables.inventory.SecondaryWeapon.Supplies < 10)
                                 return upper.RifleReloadPlayable;
 
                             return upper.RifleIdle;
@@ -116,7 +116,7 @@ public class PlayerUpperRifleRun : UpperNoAimState
 
                         if (inventory.SecondaryWeaponID() == "003")
                         {
-                            if (playerMovement.Reloading && playerPlayables.inventory.RifleMagazine > 0)
+                            if (playerMovement.Reloading && playerPlayables.inventory.RifleMagazine > 0 && playerPlayables.inventory.SecondaryWeapon.Supplies < 10)
                                 return upper.RifleReloadPlayable;
 
                             if (playerMovement.Attacking && inventory.SecondaryWeapon.Supplies > 0)

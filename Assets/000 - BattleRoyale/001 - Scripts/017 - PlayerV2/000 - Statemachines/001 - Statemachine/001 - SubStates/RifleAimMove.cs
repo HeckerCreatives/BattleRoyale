@@ -48,8 +48,13 @@ public class RifleAimMove : PlayerOnGround
     {
         base.NetworkUpdate();
 
-        playerMovement.MoveWithAim();
-        playerMovement.RotateToAim();
+        if (IsUpperBodyCockingOrReloading())
+            playerMovement.MoveCharacter();
+        else
+        {
+            playerMovement.MoveWithAim();
+            playerMovement.RotateToAim();
+        }
 
         var nextState = GetNextLowerRunState();
 

@@ -56,7 +56,7 @@ public class PlayerPlayables : NetworkBehaviour
     public PlayerHealthV2 healthV2;
     public PlayerUpperMovement upperBodyMovement;
     public PlayerBasicMovement lowerBodyMovement;
-    public Transform muzzlePoint;
+    //public Transform muzzlePoint;
     [SerializeField] private ArrowController[] localArrowPool;
     [SerializeField] private BulletController[] localBulletPool;
     [SerializeField] private LayerMask arrowRaycastMask;
@@ -580,6 +580,8 @@ public class PlayerPlayables : NetworkBehaviour
 
     public void FireBullet()
     {
+        Transform rifleMuzzle = inventory.SecondaryWeapon?.ImpactPoint?.transform;
+
         if (HasStateAuthority)
         {
             if (BulletFiredTick == Runner.Tick) return;
@@ -601,7 +603,7 @@ public class PlayerPlayables : NetworkBehaviour
             LagCompensatedHit bulletHit = new LagCompensatedHit();
 
             float aimRange = cameraRotation.AimDistance;
-            Vector3 muzzlePos = muzzlePoint != null ? muzzlePoint.position : transform.position;
+            Vector3 muzzlePos = rifleMuzzle != null ? rifleMuzzle.position : transform.position;
             Vector3 targetPos = muzzlePos + ray.direction * aimRange;
             bool bodyHit = false;
             bool hitSomething = false;
@@ -658,7 +660,7 @@ public class PlayerPlayables : NetworkBehaviour
 
             if (HasInputAuthority)
             {
-                SpawnLocalBullet(muzzlePoint, muzzlePos, targetPos, bodyHit, hitSomething);
+                SpawnLocalBullet(rifleMuzzle, muzzlePos, targetPos, bodyHit, hitSomething);
                 if (bodyHit)
                     cameraRotation.FlashDamageCrosshair();
             }
@@ -669,14 +671,14 @@ public class PlayerPlayables : NetworkBehaviour
         {
             Ray ray = new Ray(playerMovementV2.CameraHitOrigin, playerMovementV2.CameraHitDirection);
             float aimRange = cameraRotation.AimDistance;
-            Vector3 muzzlePos = muzzlePoint != null ? muzzlePoint.position : transform.position;
+            Vector3 muzzlePos = inventory.SecondaryWeapon != null ? inventory.SecondaryWeapon.ImpactPoint.position : transform.position;
             Vector3 targetPos = muzzlePos + ray.direction * aimRange;
 
             bool hitSomething = Physics.Raycast(ray, out RaycastHit physicsHit, aimRange, arrowRaycastMask);
             if (hitSomething)
                 targetPos = physicsHit.point;
 
-            SpawnLocalBullet(muzzlePoint, muzzlePos, targetPos, false, hitSomething);
+            SpawnLocalBullet(rifleMuzzle, muzzlePos, targetPos, false, hitSomething);
         }
     }
 

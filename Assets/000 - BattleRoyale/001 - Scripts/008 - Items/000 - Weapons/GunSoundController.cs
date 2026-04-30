@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GunSoundController : NetworkBehaviour
+public class GunSoundController : MonoBehaviour
 {
     [SerializeField] private AudioSource gunSource;
     [SerializeField] private AudioSource reloadSource;

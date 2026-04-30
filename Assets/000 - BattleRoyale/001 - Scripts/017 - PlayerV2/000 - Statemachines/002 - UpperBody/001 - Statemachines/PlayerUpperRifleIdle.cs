@@ -84,7 +84,7 @@ public class PlayerUpperRifleIdle : UpperNoAimState
                 switch (inventory.SecondaryWeaponID())
                 {
                     case "003":
-                        if (playerMovement.Reloading && playerPlayables.inventory.RifleMagazine > 0)
+                        if (playerMovement.Reloading && playerPlayables.inventory.RifleMagazine > 0 && playerPlayables.inventory.SecondaryWeapon.Supplies < 10)
                             return upper.RifleReloadPlayable;
 
                         if (playerMovement.Attacking && inventory.SecondaryWeapon.Supplies > 0)

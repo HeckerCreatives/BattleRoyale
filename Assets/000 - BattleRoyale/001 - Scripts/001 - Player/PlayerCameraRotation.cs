@@ -42,6 +42,12 @@ public class PlayerCameraRotation : NetworkBehaviour
     [Tooltip("How quickly proxy catches up once target is outside deadzone.")]
     [SerializeField] private float followProxyCatchup = 8f;
 
+    [Header("Collision Smoothing")]
+    [Tooltip("The virtual camera that has the CinemachineCollider extension. Assign to eliminate collision wobble.")]
+    [SerializeField] private CinemachineVirtualCamera virtualCamera;
+    [Tooltip("How long (seconds) the CinemachineCollider blends when pushing/releasing the camera. 0.2-0.3 eliminates wobble.")]
+    [SerializeField] private float collisionSmoothingTime = 0.25f;
+
     [Header("Deadzone Guides (Screen)")]
     [SerializeField] private bool drawFollowProxyGuides = true;
     [SerializeField] private Color deadzoneFill = new(0f, 1f, 0f, 0.08f);
@@ -85,6 +91,7 @@ public class PlayerCameraRotation : NetworkBehaviour
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float CurrentAdsSensitivity { get; private set; }
 
     private bool followProxyInitialized = false;
+    private int _collisionHoldFrames = 0;
 
     // Gizmo state — populated every tick by GetCameraRaycastTarget
     private Vector3 _gizmoCastOrigin;
@@ -175,6 +182,7 @@ public class PlayerCameraRotation : NetworkBehaviour
         originalImpactOffset = impactPoint.position - playerObj.position;
 
         InitializeFollowProxy();
+        ApplyCollisionSmoothing();
     }
 
     private void OnDisable()
@@ -254,7 +262,7 @@ public class PlayerCameraRotation : NetworkBehaviour
     {
         if (GetInput<MyInput>(out var input) == false) return;
 
-        float sensitivity = movement.Aiming ? CurrentAdsSensitivity : CurrentSensitivity;
+        float sensitivity = CurrentAdsSensitivity;
 
         _cinemachineTargetYaw   += input.LookDirection.x  * Runner.DeltaTime * sensitivity;
         _cinemachineTargetPitch += -input.LookDirection.y * Runner.DeltaTime * sensitivity;
@@ -303,11 +311,17 @@ public class PlayerCameraRotation : NetworkBehaviour
             InitializeFollowProxy();
 
         Transform src = target.transform;
-
-        // Keep rotational behavior identical to your original target pivot.
         followProxy.rotation = src.rotation;
 
-        // Error measured in source-local space to mimic screen-like framing behavior.
+        if (IsCameraBeingPushedByCollider())
+        {
+            // Snap proxy to the real target so the arm root is stable.
+            // _collisionHoldFrames keeps us locked here for several frames after
+            // the collider stops pushing, preventing frame-by-frame flip oscillation.
+            followProxy.position = src.position;
+            return;
+        }
+
         Vector3 worldError = src.position - followProxy.position;
         Vector3 localError = Quaternion.Inverse(src.rotation) * worldError;
 
@@ -319,6 +333,32 @@ public class PlayerCameraRotation : NetworkBehaviour
 
         Vector3 worldCorrection = src.rotation * localCorrection;
         followProxy.position += worldCorrection * followProxyCatchup * Runner.DeltaTime;
+    }
+
+    private bool IsCameraBeingPushedByCollider()
+    {
+        if (virtualCamera == null) return false;
+
+        var state = virtualCamera.State;
+        bool activeNow = (state.RawPosition - state.FinalPosition).sqrMagnitude > 0.0025f;
+
+        if (activeNow)
+            _collisionHoldFrames = 8; // stay locked for 8 frames after last collision contact
+        else if (_collisionHoldFrames > 0)
+            _collisionHoldFrames--;
+
+        return _collisionHoldFrames > 0;
+    }
+
+    private void ApplyCollisionSmoothing()
+    {
+        if (virtualCamera == null) return;
+        var col = virtualCamera.GetComponent<CinemachineCollider>();
+        if (col == null) return;
+
+        col.m_SmoothingTime = collisionSmoothingTime;
+        col.m_DampingWhenOccluded = collisionSmoothingTime;
+        col.m_Damping = collisionSmoothingTime;
     }
 
     private static float ComputeDeadSoftCorrection(float error, float deadzone, float softzone)
@@ -468,7 +508,7 @@ public class PlayerCameraRotation : NetworkBehaviour
         }
         dir = dir.normalized;
 
-        float sensitivity = movement.Aiming ? CurrentAdsSensitivity : CurrentSensitivity;
+        float sensitivity = CurrentAdsSensitivity;
 
         Transform enemy = FindEnemyInCone(origin, dir);
 

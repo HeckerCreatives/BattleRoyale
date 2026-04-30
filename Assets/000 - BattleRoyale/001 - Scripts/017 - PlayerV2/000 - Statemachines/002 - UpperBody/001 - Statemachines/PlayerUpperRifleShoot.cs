@@ -32,6 +32,9 @@ public class PlayerUpperRifleShoot : UpperWithAimState
             playerMovement.AuthoritiveAniamtionTick = playerPlayables.Runner.Tick;
 
         playerPlayables.FireBullet();
+
+        if (!playerPlayables.HasStateAuthority)
+            playerPlayables.inventory.SecondaryWeapon.SoundController.PlayGunshot();
     }
 
     public override void Exit()
