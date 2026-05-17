@@ -689,6 +689,21 @@ public class LobbyController : MonoBehaviour
 
     public void ChangeMenuState(int index) => CurrentMenuState = (MENUSTATE)index;
 
+    private float lastRefreshTime = -10f;
+
+    // Hook this to a Refresh button's OnClick in the lobby. Asks the server for
+    // a fresh authoritative count snapshot; the existing selectedservercount
+    // handler applies it, which fires PlayerCountChange and updates the lobby's
+    // online count. Debounced so mashing can't spam emits (server is cheap —
+    // latest-wins per socket+event).
+    public void RefreshServerCounts()
+    {
+        if (Time.unscaledTime - lastRefreshTime < 2f) return;
+        lastRefreshTime = Time.unscaledTime;
+
+        GameManager.Instance.SocketMngr.EmitEvent("refreshservercount", null);
+    }
+
     public IEnumerator RefreshUserData(bool stayAliveLoadingAfter = false)
     {
         yield return StartCoroutine(GameManager.Instance.GetRequest("/usergamedetail/getusergamedetails", "", stayAliveLoadingAfter, (response) =>

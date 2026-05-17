@@ -31,50 +31,50 @@ public class BotTrapPlayable : BotAnimationPlayable
         canAction = false;
     }
 
-    public override void NetworkUpdate()
+    public override BotAnimationPlayable NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         if (!botController.IsGrounded)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.FallingPlayable);
-            return;
+            return botPlayables.BasicMovement.FallingPlayable;
         }
 
         if (botPlayables.GetBotData.IsHit)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.HitPlayable);
-            return;
+            return botPlayables.BasicMovement.HitPlayable;
         }
 
         if (botPlayables.GetBotData.IsStagger)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.StaggerPlayable);
-            return;
+            return botPlayables.BasicMovement.StaggerPlayable;
         }
 
         if (botPlayables.GetBotData.IsDead)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.DeathPlayable);
-            return;
+            return botPlayables.BasicMovement.DeathPlayable;
         }
 
         if (botPlayables.TickRateAnimation >= timer && canAction)
         {
-            MovePlayer();
+            return MovePlayer();
         }
-    }
 
-    private void MovePlayer()
+        return null;
+}
+
+    private BotAnimationPlayable MovePlayer()
     {
         if (botMovement.detectedTarget != null)
         {
             if (botPlayables.Inventroy.WeaponIndex == 1)
-                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.RunPlayable);
+                return botPlayables.BasicMovement.RunPlayable;
             else if (botPlayables.Inventroy.WeaponIndex == 2)
             {
                 if (botPlayables.Inventroy.GetPrimaryWeaponID() == "001")
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordRunPlayable);
+                    return botPlayables.BasicMovement.SwordRunPlayable;
                 else if (botPlayables.Inventroy.GetPrimaryWeaponID() == "002")
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearRun);
+                    return botPlayables.BasicMovement.SpearRun;
             }
         }
         else
@@ -85,15 +85,19 @@ public class BotTrapPlayable : BotAnimationPlayable
             {
                 botMovement.WanderTimer = TickTimer.CreateFromSeconds(botMovement.Runner, Random.Range(botMovement.MinWanderDelay, botMovement.MaxWanderDelay));
                 if (botPlayables.Inventroy.WeaponIndex == 1)
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.RunPlayable);
+                    return botPlayables.BasicMovement.RunPlayable;
                 else if (botPlayables.Inventroy.WeaponIndex == 2)
                 {
                     if (botPlayables.Inventroy.GetPrimaryWeaponID() == "001")
-                        botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordRunPlayable);
+                        return botPlayables.BasicMovement.SwordRunPlayable;
                     else if (botPlayables.Inventroy.GetPrimaryWeaponID() == "002")
-                        botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearRun);
+                        return botPlayables.BasicMovement.SpearRun;
                 }
             }
         }
-    }
+
+        return null;
 }
+}
+
+

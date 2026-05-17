@@ -50,7 +50,6 @@ public class ServerItem : MonoBehaviour
             case "tr": GameManager.Instance.SocketMngr.OnPlayerCountAfricaServerChange += AfricaChange; break;
             case "uae": GameManager.Instance.SocketMngr.OnPlayerCounUAEtServerChange += UAEChange; break;
             case "us": GameManager.Instance.SocketMngr.OnPlayerCountAmericaEastServerChange += USChange; break;
-            case "usw": GameManager.Instance.SocketMngr.OnPlayerCountAmericaWestServerChange += USWChange; break;
         }
 
         ChangeServerCount();
@@ -69,13 +68,7 @@ public class ServerItem : MonoBehaviour
             case "tr": GameManager.Instance.SocketMngr.OnPlayerCountAfricaServerChange -= AfricaChange; break;
             case "uae": GameManager.Instance.SocketMngr.OnPlayerCounUAEtServerChange -= UAEChange; break;
             case "us": GameManager.Instance.SocketMngr.OnPlayerCountAmericaEastServerChange -= USChange; break;
-            case "usw": GameManager.Instance.SocketMngr.OnPlayerCountAmericaWestServerChange -= USWChange; break;
         }
-    }
-
-    private void USWChange(object sender, EventArgs e)
-    {
-        ChangeServerCount();
     }
 
     private void USChange(object sender, EventArgs e)
@@ -119,7 +112,6 @@ public class ServerItem : MonoBehaviour
             case "tr": display = GameManager.Instance.SocketMngr.PlayerAfricaCountServer.ToString("n0"); break;
             case "uae": display = GameManager.Instance.SocketMngr.PlayerUAECountServer.ToString("n0"); break;
             case "us": display = GameManager.Instance.SocketMngr.PlayerAmericaEastCountServer.ToString("n0"); break;
-            case "usw": display = GameManager.Instance.SocketMngr.PlayerAmericaWestCountServer.ToString("n0"); break;
         }
         UnityEngine.Debug.Log($"DISPLAY {serverCode}  count {display}");
         if (userCount != null)

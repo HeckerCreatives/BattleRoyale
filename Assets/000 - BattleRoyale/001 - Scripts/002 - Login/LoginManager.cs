@@ -73,7 +73,7 @@ public class LoginManager : MonoBehaviour
     Dictionary<string, string> countryDictionary = new Dictionary<string, string>
         {
             { "Afghanistan", "AF" },
-            { "Åland Islands", "AX" },
+            { "ï¿½land Islands", "AX" },
             { "Albania", "AL" },
             { "Algeria", "DZ" },
             { "American Samoa", "AS" },
@@ -344,7 +344,6 @@ public class LoginManager : MonoBehaviour
         GameManager.Instance.SocketMngr.OnPlayerCountAfricaServerChange += AfricaChange;
         GameManager.Instance.SocketMngr.OnPlayerCounUAEtServerChange += UAEChange;
         GameManager.Instance.SocketMngr.OnPlayerCountAmericaEastServerChange += USChange;
-        GameManager.Instance.SocketMngr.OnPlayerCountAmericaWestServerChange += USWChange;
     }
 
     private void OnDisable()
@@ -355,7 +354,6 @@ public class LoginManager : MonoBehaviour
         GameManager.Instance.SocketMngr.OnPlayerCountAfricaServerChange -= AfricaChange;
         GameManager.Instance.SocketMngr.OnPlayerCounUAEtServerChange -= UAEChange;
         GameManager.Instance.SocketMngr.OnPlayerCountAmericaEastServerChange -= USChange;
-        GameManager.Instance.SocketMngr.OnPlayerCountAmericaWestServerChange -= USWChange;
     }
 
     private void AsiaChange(object sender, EventArgs e)
@@ -374,11 +372,6 @@ public class LoginManager : MonoBehaviour
     }
 
     private void USChange(object sender, EventArgs e)
-    {
-        CheckServerCount();
-    }
-
-    private void USWChange(object sender, EventArgs e)
     {
         CheckServerCount();
     }
@@ -535,7 +528,7 @@ public class LoginManager : MonoBehaviour
             try
             {
                 Dictionary<string, object> apiresponse = JsonConvert.DeserializeObject<Dictionary<string, object>>(apiRquest.downloadHandler.text);
-
+                Debug.Log(apiRquest.downloadHandler.text);
                 GameManager.Instance.NotificationController.ShowError($"{apiresponse["data"]}", null);
                 GameManager.Instance.NoBGLoading.SetActive(false);
             }
@@ -553,6 +546,20 @@ public class LoginManager : MonoBehaviour
         GameManager.Instance.SocketMngr.EmitEvent("selectregion", userData.SelectedServer);
 
         GameManager.Instance.SceneController.CurrentScene = "Lobby";
+    }
+
+    private float lastRefreshTime = -10f;
+
+    // Hook this to the Refresh button's OnClick. Asks the server for a fresh
+    // authoritative count snapshot; the existing selectedservercount handler
+    // applies it to the UI. Debounced so mashing the button can't spam emits
+    // (the server is cheap anyway â€” latest-wins per socket+event).
+    public void RefreshServerCounts()
+    {
+        if (Time.unscaledTime - lastRefreshTime < 2f) return;
+        lastRefreshTime = Time.unscaledTime;
+
+        GameManager.Instance.SocketMngr.EmitEvent("refreshservercount", null);
     }
 
     public void CheckSelectedServer()
@@ -589,8 +596,6 @@ public class LoginManager : MonoBehaviour
             selectedServerPlayersOnlineTMP.text = GameManager.Instance.SocketMngr.PlayerUAECountServer.ToString("n0");
         else if (userData.SelectedServer == "us")
             selectedServerPlayersOnlineTMP.text = GameManager.Instance.SocketMngr.PlayerAmericaEastCountServer.ToString("n0");
-        else if (userData.SelectedServer == "usw")
-            selectedServerPlayersOnlineTMP.text = GameManager.Instance.SocketMngr.PlayerAmericaWestCountServer.ToString("n0");
     }
 
     public void Register()
@@ -839,94 +844,10 @@ public class LoginManager : MonoBehaviour
 
     public async void GetAvailableRegions()
     {
-        //if (currentRunnerInstance != null)
-        //{
-        //    Destroy(currentRunnerInstance.gameObject);
-
-        //    currentRunnerInstance = null;
-        //}
-        //else
-        //{
-        //    currentRunnerInstance = Instantiate(instanceRunner);
-        //}
-
-        //var _tokenSource = new CancellationTokenSource();
-
-        //var regions = await NetworkRunner.GetAvailableRegions(cancellationToken: _tokenSource.Token);
-        //AvailableServers.Clear();
-
-        //foreach (var region in regions)
-        //{
-        //    if (region.RegionCode == "asia" || region.RegionCode == "za" || region.RegionCode == "uae" || region.RegionCode == "us" || region.RegionCode == "usw")
-        //    {
-        //        AvailableServers.Add(region.RegionCode, region.RegionPing);
-        //    }
-        //}
-
-        //CheckSelectedServer();
-        //Destroy(currentRunnerInstance.gameObject);
-
-        //currentRunnerInstance = null;
-
-        //loginObj.SetActive(false);
-        //selectedServer.SetActive(true);
 
         loginMenuManager.ChangeMenuState(6);
 
         GameManager.Instance.NoBGLoading.SetActive(false);
-    }
-
-    public async void RefreshAvailableRegions()
-    {
-        //loadingServerList.SetActive(true);
-        //serverList.SetActive(false);
-
-        //Debug.Log("Starting refreshing available regions");
-
-        //if (currentRunnerInstance != null)
-        //{
-        //    Debug.Log("waaat");
-
-        //    Destroy(currentRunnerInstance.gameObject);
-        //    Debug.Log("waaat 1");
-
-        //    currentRunnerInstance = null;
-        //    Debug.Log("waaat 2");
-        //}
-        //else
-        //{
-        //    Debug.Log("waaat 3");
-        //    currentRunnerInstance = Instantiate(instanceRunner);
-        //    Debug.Log("waaat4");
-        //}
-
-
-        //Debug.Log("Start refresh api call");
-
-        //var _tokenSource = new CancellationTokenSource();
-
-        //var regions = await NetworkRunner.GetAvailableRegions(cancellationToken: _tokenSource.Token);
-
-        //Debug.Log("Clearing Available Servers");
-
-        //AvailableServers.Clear();
-
-        //foreach (var region in regions)
-        //{
-        //    if (region.RegionCode == "asia" || region.RegionCode == "za" || region.RegionCode == "uae" || region.RegionCode == "us" || region.RegionCode == "usw")
-        //    {
-        //        AvailableServers.Add(region.RegionCode, region.RegionPing);
-        //    }
-        //}
-
-        //Destroy(currentRunnerInstance.gameObject);
-
-        //currentRunnerInstance = null;
-
-        //loadingServerList.SetActive(false);
-        //serverList.SetActive(true);
-
-        //Debug.Log("Done Refresh");
     }
 }
 

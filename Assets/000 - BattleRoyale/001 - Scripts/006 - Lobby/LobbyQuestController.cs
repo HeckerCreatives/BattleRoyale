@@ -38,9 +38,11 @@ public class LobbyQuestController : MonoBehaviour
 
     [SerializeField] private UserData userData;
     [SerializeField] private LobbyController lobbyController;
+    [SerializeField] private InventoryController inventoryController;
 
     [Header("Quest UI")]
     [SerializeField] private List<QuestItem> questItems;
+    [SerializeField] private List<MarketItems> rewardMarketItems;
 
     [Space]
     [SerializeField] private TextMeshProUGUI timerTMP;
@@ -124,6 +126,7 @@ public class LobbyQuestController : MonoBehaviour
         _isFetching = true;
         yield return StartCoroutine(GameManager.Instance.GetRequest("/quest/getquests", "", stayActiveLoading, (response) =>
         {
+            Debug.Log(response);
             try
             {
                 LobbyQuestResponse questResponse = JsonConvert.DeserializeObject<LobbyQuestResponse>(response.ToString());
@@ -181,7 +184,8 @@ public class LobbyQuestController : MonoBehaviour
                 questData.isClaimed,
                 questData.isCompleted,
                 OnClaimQuestPressed,
-                def?.rewards
+                def?.rewards,
+                rewardMarketItems
             );
 
             hasClaimable |= questItems[i].IsClaimable;
@@ -198,12 +202,15 @@ public class LobbyQuestController : MonoBehaviour
         StartCoroutine(ClaimQuestRoutine(questRecordId));
     }
 
-    public IEnumerator RefreshQuestAfterClaim(bool shouldRefreshPlayerData = true, bool stayAliveLoadingAfter = true, Action lastAction = null)
+    public IEnumerator RefreshQuestAfterClaim(bool shouldRefreshPlayerData = true, bool shouldRefreshInventory = true, bool stayAliveLoadingAfter = true, Action lastAction = null)
     {
         yield return StartCoroutine(FetchQuestDataRoutine(stayAliveLoadingAfter));
 
         if (shouldRefreshPlayerData)
             yield return StartCoroutine(lobbyController.RefreshUserData(stayAliveLoadingAfter));
+
+        if (shouldRefreshInventory)
+            yield return StartCoroutine(inventoryController.GetInventory(true));
 
         _isClaiming = false;
         lastAction?.Invoke();
@@ -222,7 +229,7 @@ public class LobbyQuestController : MonoBehaviour
 
         yield return StartCoroutine(GameManager.Instance.PostRequest("/quest/claimreward", "", body, true, (response) =>
         {
-            StartCoroutine(RefreshQuestAfterClaim(true, true, async () =>
+            StartCoroutine(RefreshQuestAfterClaim(true, true, true, async () =>
             {
                 var parts = new System.Text.StringBuilder();
 
@@ -236,9 +243,11 @@ public class LobbyQuestController : MonoBehaviour
                     {
                         if (rewards == null) continue;
 
-                        string label = QuestItem.RewardTypeLabels.TryGetValue(rewards.type ?? string.Empty, out string mapped)
-                            ? mapped
-                            : System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase((rewards.type ?? "Reward").ToLower());
+                        string label = questItems.Count > 0 && questItems[0] != null
+                            ? questItems[0].GetRewardLabel(rewards)
+                            : QuestItem.RewardTypeLabels.TryGetValue(rewards.type ?? string.Empty, out string mapped)
+                                ? mapped
+                                : System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase((rewards.type ?? "Reward").ToLower());
 
 
                         if (parts.Length > 0) parts.Append(", ");

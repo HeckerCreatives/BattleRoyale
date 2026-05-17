@@ -30,12 +30,14 @@ public class BotGettingUpPlayable : BotAnimationPlayable
         canAction = false;
     }
 
-    public override void NetworkUpdate()
+    public override BotAnimationPlayable NetworkUpdate()
     {
-        Animation();
-    }
+        base.NetworkUpdate();
 
-    private void Animation()
+        return Animation();
+}
+
+    private BotAnimationPlayable Animation()
     {
         //if (playerPlayables.healthV2.IsDead)
         //    playablesChanger.ChangeState(playerPlayables.basicMovement.DeathPlayable);
@@ -43,7 +45,7 @@ public class BotGettingUpPlayable : BotAnimationPlayable
         //if (!characterController.IsGrounded)
         //{
         //    playablesChanger.ChangeState(playerPlayables.basicMovement.FallingPlayable);
-        //    return;
+        //    return null;
         //}
 
         if (canAction)
@@ -54,33 +56,39 @@ public class BotGettingUpPlayable : BotAnimationPlayable
 
                 if (botPlayables.GetBotData.IsHit)
                 {
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.HitPlayable);
-                    return;
+                    return botPlayables.BasicMovement.HitPlayable;
                 }
 
                 if (botPlayables.GetBotData.IsStagger)
                 {
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.StaggerPlayable);
-                    return;
+                    return botPlayables.BasicMovement.StaggerPlayable;
                 }
 
-                ChangeDirection();
+                return ChangeDirection();
             }
         }
-    }
 
-    private void ChangeDirection()
+        return null;
+}
+
+    private BotAnimationPlayable ChangeDirection()
     {
         botMovement.PickNewWanderDirection();
 
         if (botPlayables.Inventroy.WeaponIndex == 1)
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.RunPlayable);
+            return botPlayables.BasicMovement.RunPlayable;
         else if (botPlayables.Inventroy.WeaponIndex == 2)
         {
             if (botPlayables.Inventroy.GetPrimaryWeaponID() == "001")
-                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordRunPlayable);
+                return botPlayables.BasicMovement.SwordRunPlayable;
             else if (botPlayables.Inventroy.GetPrimaryWeaponID() == "002")
-                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearRun);
+                return botPlayables.BasicMovement.SpearRun;
         }
-    }
+
+        return null;
 }
+}
+
+
+
+

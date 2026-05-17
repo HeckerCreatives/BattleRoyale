@@ -138,6 +138,7 @@ public class PlayerMovementV2 : NetworkBehaviour
     [field: SerializeField][Networked] public float YMovement { get; set; }
     [field: SerializeField][Networked] public Vector3 CameraHitOrigin { get; set; }
     [field: SerializeField][Networked] public Vector3 CameraHitDirection { get; set; }
+    [field: SerializeField][Networked] public Vector3 AimPoint { get; set; }
     [field: SerializeField][Networked] public bool IsSprint { get; set; }
     [field: SerializeField][Networked] public bool IsRoll { get; set; }
     [field: SerializeField][Networked] public bool Rolling { get; set; }
@@ -465,6 +466,7 @@ public class PlayerMovementV2 : NetworkBehaviour
 
         CameraHitOrigin = controllerInput.CameraHitOrigin;
         CameraHitDirection = controllerInput.CameraHitDirection;
+        AimPoint = controllerInput.AimPoint;
 
         Move();
         Sprint();

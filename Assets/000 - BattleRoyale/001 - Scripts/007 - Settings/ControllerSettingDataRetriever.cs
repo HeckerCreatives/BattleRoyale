@@ -54,8 +54,21 @@ public class ControllerSettingDataRetriever : MonoBehaviour
             return;
         }
 
-        uiRT.anchoredPosition = new Vector2(userData.ControlSetting[gameObject.name].localPositionX, userData.ControlSetting[gameObject.name].localPositionY);
-        uiRT.localScale = new Vector2(userData.ControlSetting[gameObject.name].sizeDeltaX, userData.ControlSetting[gameObject.name].sizeDeltaY);
+        float aspectRatio = (float)Screen.width / Screen.height;
+        float scaleFactor = Mathf.Clamp(aspectRatio / (19.5f / 9f), 0.5f, 1f);
+
+        // scale position too
+        uiRT.anchoredPosition = new Vector2(
+            userData.ControlSetting[gameObject.name].localPositionX * scaleFactor,
+            userData.ControlSetting[gameObject.name].localPositionY * scaleFactor
+        );
+
+        // scale size
+        uiRT.localScale = new Vector2(
+            userData.ControlSetting[gameObject.name].sizeDeltaX * scaleFactor,
+            userData.ControlSetting[gameObject.name].sizeDeltaY * scaleFactor
+        );
+
         uiImg.alpha = userData.ControlSetting[gameObject.name].opacity;
     }
 

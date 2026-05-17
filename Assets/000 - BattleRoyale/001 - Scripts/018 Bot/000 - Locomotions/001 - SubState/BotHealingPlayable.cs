@@ -39,8 +39,10 @@ public class BotHealingPlayable : BotAnimationPlayable
         canAction = false;
     }
 
-    public override void NetworkUpdate()
+    public override BotAnimationPlayable NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         if (!doneHeal && botPlayables.TickRateAnimation > healtimer)
         {
             botPlayables.GetBotData.HealHealth();
@@ -49,59 +51,66 @@ public class BotHealingPlayable : BotAnimationPlayable
 
         if (botPlayables.TickRateAnimation < healtimer)
         {
-            Animations();
-            MovePlayer();
+            return Animations();
+            return MovePlayer();
         }
 
         if (canAction && botPlayables.TickRateAnimation >= timer)
         {
 
-            Animations();
-            MovePlayer();
+            return Animations();
+            return MovePlayer();
         }
-    }
 
-    private void Animations()
+        return null;
+}
+
+    private BotAnimationPlayable Animations()
     {
         if (!botController.IsGrounded)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.FallingPlayable);
-            return;
+            return botPlayables.BasicMovement.FallingPlayable;
         }
 
         if (botPlayables.GetBotData.IsHit)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.HitPlayable);
-            return;
+            return botPlayables.BasicMovement.HitPlayable;
         }
 
         if (botPlayables.GetBotData.IsStagger)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.StaggerPlayable);
-            return;
+            return botPlayables.BasicMovement.StaggerPlayable;
         }
 
         if (botPlayables.GetBotData.IsDead)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.DeathPlayable);
-            return;
+            return botPlayables.BasicMovement.DeathPlayable;
         }
-    }
 
-    private void MovePlayer()
+        return null;
+}
+
+    private BotAnimationPlayable MovePlayer()
     {
         botMovement.DetectTarget();
 
         if (botMovement.detectedTarget != null)
         {
             if (botPlayables.Inventroy.WeaponIndex == 1)
-                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.RunPlayable);
+                return botPlayables.BasicMovement.RunPlayable;
             else if (botPlayables.Inventroy.WeaponIndex == 2)
             {
                 if (botPlayables.Inventroy.GetPrimaryWeaponID() == "001")
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordRunPlayable);
+                    return botPlayables.BasicMovement.SwordRunPlayable;
                 else if (botPlayables.Inventroy.GetPrimaryWeaponID() == "002")
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearRun);
+                    return botPlayables.BasicMovement.SpearRun;
+            }
+            else if (botPlayables.Inventroy.WeaponIndex == 3)
+            {
+                if (botPlayables.Inventroy.GetSecondaryWeaponID() == "003")
+                    return botPlayables.BasicMovement.RifleRunPlayable;
+                else if (botPlayables.Inventroy.GetSecondaryWeaponID() == "004")
+                    return botPlayables.BasicMovement.BowRunPlayable;
             }
         }
         else
@@ -112,15 +121,27 @@ public class BotHealingPlayable : BotAnimationPlayable
             {
                 botMovement.WanderTimer = TickTimer.CreateFromSeconds(botMovement.Runner, Random.Range(botMovement.MinWanderDelay, botMovement.MaxWanderDelay));
                 if (botPlayables.Inventroy.WeaponIndex == 1)
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.RunPlayable);
+                    return botPlayables.BasicMovement.RunPlayable;
                 else if (botPlayables.Inventroy.WeaponIndex == 2)
                 {
                     if (botPlayables.Inventroy.GetPrimaryWeaponID() == "001")
-                        botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordRunPlayable);
+                        return botPlayables.BasicMovement.SwordRunPlayable;
                     else if (botPlayables.Inventroy.GetPrimaryWeaponID() == "002")
-                        botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearRun);
+                        return botPlayables.BasicMovement.SpearRun;
+                }
+                else if (botPlayables.Inventroy.WeaponIndex == 3)
+                {
+                    if (botPlayables.Inventroy.GetSecondaryWeaponID() == "003")
+                        return botPlayables.BasicMovement.RifleRunPlayable;
+                    else if (botPlayables.Inventroy.GetSecondaryWeaponID() == "004")
+                        return botPlayables.BasicMovement.BowRunPlayable;
                 }
             }
         }
-    }
+
+        return null;
 }
+}
+
+
+

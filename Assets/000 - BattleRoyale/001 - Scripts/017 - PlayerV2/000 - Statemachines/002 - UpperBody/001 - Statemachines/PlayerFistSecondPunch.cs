@@ -23,18 +23,11 @@ public class PlayerFistSecondPunch : UpperNoAimState
     public override void Exit()
     {
         base.Exit();
-
-        playerPlayables.SetPunchRotation(0f);
     }
 
     public override void NetworkLocalUpdate()
     {
         base.NetworkLocalUpdate();
-
-        if (playerMovement.XMovement == 0 && playerMovement.YMovement == 0)
-            playerPlayables.SetPunchRotation(1f);
-        else
-            playerPlayables.SetPunchRotation(0f);
     }
 
     public override void NetworkUpdate()

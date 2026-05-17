@@ -97,7 +97,7 @@ public class DailiesItems : MonoBehaviour
                 isClaimed = true;
                 userData.GameDetails.energy += items.Consumable;
                 userData.EnergyChangeFireEvent();
-                StartCoroutine(lobbyController.RefreshQuestAfterClaim(false, false, () => GameManager.Instance.NoBGLoading.SetActive(false)));
+                StartCoroutine(lobbyController.RefreshQuestAfterClaim(false, false, false, () => GameManager.Instance.NoBGLoading.SetActive(false)));
             }
         });
     }

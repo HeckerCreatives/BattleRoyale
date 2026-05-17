@@ -113,7 +113,7 @@ public class TrapWeaponController : NetworkBehaviour
         for (int i = 0; i < hitCount; i++)
         {
             GameObject hitObject = _overlapBuffer[i].transform.root.gameObject;
-            if (hitObject == null || hitObject.tag != "Bot") continue;
+            if (hitObject == null || !hitObject.CompareTag("Bot")) continue;
 
             Botdata tempdata = hitObject.GetComponent<Botdata>();
             if (tempdata == null) continue;

@@ -72,10 +72,12 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
     Coroutine ShakerCoroutine;
 
     private ChangeDetector _changeDetector;
+    private BotPlayables _botPlayables;
 
     public override void Spawned()
     {
         _changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+        _botPlayables = GetComponentInParent<BotPlayables>();
     }
 
     public override void Render()
@@ -88,7 +90,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
 
     private void ChangeDetectorUpdate()
     {
-        if (!HasInputAuthority || HasStateAuthority) return;
+        if (!HasInputAuthority) return; // Combo indicator is local-player UI only.
 
 
         foreach (var change in _changeDetector.DetectChanges(this))
@@ -97,10 +99,13 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
             {
                 case nameof(Hitted):
 
-                    if (ShakerCoroutine != null) StopCoroutine(ShakerCoroutine);
+                    if (!IsBot && PlayerCore != null && PlayerCore.CurrentPlayerPlayables != null)
+                    {
+                        if (ShakerCoroutine != null) StopCoroutine(ShakerCoroutine);
 
-                    ShakerCoroutine = StartCoroutine(Shaker());
-                    PlayerCore.CurrentPlayerPlayables.RegisterComboHit(HittedPosition);
+                        ShakerCoroutine = StartCoroutine(Shaker());
+                        PlayerCore.CurrentPlayerPlayables.RegisterComboHit(HittedPosition);
+                    }
 
                     break;
             }
@@ -130,7 +135,9 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
             }
             else
             {
-                transform.parent = !IsBot ? WeaponID == "001" ? PlayerCore.Inventory.SwordBack : PlayerCore.Inventory.SpearBack : WeaponID == "001" ? BotData.Inventory.SwordBack : BotData.Inventory.SpearHand;
+                transform.parent = !IsBot
+                    ? WeaponID == "001" ? PlayerCore.Inventory.SwordBack : PlayerCore.Inventory.SpearBack
+                    : WeaponID == "001" ? BotData.Inventory.SwordBack : BotData.Inventory.SpearBack;
                 transform.localPosition = Vector3.zero;
                 transform.localRotation = Quaternion.identity;
             }
@@ -161,7 +168,9 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
             {
                 if (IsBot && BotData == null) return;
 
-                transform.parent = !IsBot ? WeaponID == "001" ? PlayerCore.Inventory.SwordBack : PlayerCore.Inventory.SpearBack : WeaponID == "001" ? BotData.Inventory.SwordBack : BotData.Inventory.SpearHand;
+                transform.parent = !IsBot
+                    ? WeaponID == "001" ? PlayerCore.Inventory.SwordBack : PlayerCore.Inventory.SpearBack
+                    : WeaponID == "001" ? BotData.Inventory.SwordBack : BotData.Inventory.SpearBack;
                 transform.localPosition = Vector3.zero;
                 transform.localRotation = Quaternion.identity;
             }
@@ -298,7 +307,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
 
             if (hitObject == CurrentPlayer) continue;
 
-            if (hitObject.tag == "Bot")
+            if (hitObject.CompareTag("Bot"))
             {
                 Botdata tempdata = hitObject.GetComponent<Botdata>();
 
@@ -327,14 +336,36 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                     if (isFinalHit) tempdata.IsStagger = true;
                     else tempdata.IsHit = true;
 
-                    tempdata.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username.ToString(), CurrentPlayer);
+                    var botKcc = hitObject.GetComponent<SimpleKCC>();
+                    if (botKcc != null && CurrentPlayer != null)
+                    {
+                        Vector3 knockDir = hitObject.transform.position - CurrentPlayer.transform.position;
+                        knockDir.y = 0f;
+                        if (knockDir.sqrMagnitude < 0.01f)
+                            knockDir = CurrentPlayer.transform.forward;
+                        knockDir.y = 0f;
+                        if (knockDir.sqrMagnitude > 0.001f)
+                        {
+                            knockDir = knockDir.normalized;
+                            botKcc.Move(knockDir * 100f);
+                            tempdata.HitKnockbackDir = knockDir;
+                        }
+                    }
 
-                    Hitted++;
+                    tempdata.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username.ToString(), CurrentPlayer);
+                    _botPlayables?.RPC_PlaySwordHit();
+
+                    // Drive the same combo indicator path used for player-vs-player:
+                    // the owning player's client listens for Hitted changes and shows a combo indicator at HittedPosition.
+                    Hitted = Runner != null ? Runner.Tick : (Hitted + 1);
+                    HittedPosition = hitbox.transform.root.position + Vector3.up * 1.2f;
                 }
             }
             else
             {
                 PlayerPlayables tempplayables = hitObject.GetComponent<PlayerPlayables>();
+                if (tempplayables == null)
+                    continue;
 
                 // Avoid duplicate hits
                 if (!hitEnemies.Contains(hitObject))
@@ -356,10 +387,12 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                     };
 
                     PlayerHealthV2 healthV2 = hitObject.GetComponent<PlayerHealthV2>();
+                    if (healthV2 == null || tempplayables.healthV2 == null)
+                        continue;
 
                     if (tempplayables.healthV2.IsStagger) return;
                     if (tempplayables.healthV2.IsGettingUp) return;
-                    if (tempplayables.playerMovementV2.Rolling) return;
+                    if (tempplayables.playerMovementV2 != null && tempplayables.playerMovementV2.Rolling) return;
 
 
                     if (isFinalHit)
@@ -371,12 +404,31 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                     {
                         tempplayables.ChangeCamera(false);
                         tempplayables.HitAnimation();
-                        hitObject.GetComponent<SimpleKCC>().Move(CurrentPlayer.GetComponent<PlayerMovementV2>().MainCharObj.forward * 100f);
+                        var victimKcc = hitObject.GetComponent<SimpleKCC>();
+                        if (victimKcc != null && CurrentPlayer != null)
+                        {
+                            Vector3 knockDir = hitObject.transform.position - CurrentPlayer.transform.position;
+                            knockDir.y = 0f;
+                            if (knockDir.sqrMagnitude < 0.01f)
+                            {
+                                // Fall back to attacker forward if we're perfectly overlapped.
+                                knockDir = CurrentPlayer.transform.forward;
+                                knockDir.y = 0f;
+                            }
+
+                            if (knockDir.sqrMagnitude > 0.001f)
+                                victimKcc.Move(knockDir.normalized * 100f);
+                        }
                     }
 
-                    tempplayables.RPC_PlaySwordHit();
+                    if (tempplayables != null) tempplayables.RPC_PlaySwordHit();
+                    else _botPlayables?.RPC_PlaySwordHit();
 
-                    healthV2.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username.ToString(), CurrentPlayer);
+                    string attackerName = isBot
+                        ? (BotData != null ? BotData.BotName : "BOT")
+                        : (PlayerCore != null ? PlayerCore.Username.ToString() : "PLAYER");
+
+                    healthV2.ApplyDamage(tempdamage, attackerName, CurrentPlayer);
 
                     Hitted = Runner.Tick;
                     HittedPosition = hitbox.transform.root.position + Vector3.up * 1.2f;

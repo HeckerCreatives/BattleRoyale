@@ -672,7 +672,6 @@ public class GameManager : MonoBehaviour
             case "tr": return "South Africa";
             case "uae": return "U.A.E.";
             case "us": return "USA";
-            case "usw": return "USA West";
             case "ussc": return "USA South Central";
             default: return $"Unknown Region ({code})";
         }
@@ -697,7 +696,6 @@ public class GameManager : MonoBehaviour
             case "tr": return "South Africa";
             case "uae": return "UAE";
             case "us": return "USA";
-            case "usw": return "USAWest";
             case "ussc": return "USASouthCentral";
             default: return $"Unknown Region ({code})";
         }
@@ -764,5 +762,18 @@ public static class CommandLineHelper
         }
 
         return result;
+    }
+}
+
+public static class DeviceDetector
+{
+    public static bool IsTablet()
+    {
+        float screenDPI = Screen.dpi;
+        float screenSize = Mathf.Sqrt(
+            Mathf.Pow(Screen.width / screenDPI, 2) +
+            Mathf.Pow(Screen.height / screenDPI, 2)
+        );
+        return screenSize >= 6.5f; // anything 6.5 inches and above = tablet
     }
 }

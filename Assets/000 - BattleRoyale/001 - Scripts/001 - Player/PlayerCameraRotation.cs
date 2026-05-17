@@ -19,6 +19,11 @@ public class PlayerCameraRotation : NetworkBehaviour
         get => target.transform;
     }
 
+    // Deterministic, networked-safe shot origin. Same pivot the aim math uses,
+    // derived purely from the player's networked transform — server and clients
+    // agree exactly, unlike the camera (local-only) or the animated muzzle.
+    public Vector3 ShooterOrigin => transform.position + Vector3.up * targetHeight;
+
     //  ==================
 
     [SerializeField] private Transform playerObj;
@@ -47,6 +52,16 @@ public class PlayerCameraRotation : NetworkBehaviour
     [SerializeField] private CinemachineVirtualCamera virtualCamera;
     [Tooltip("How long (seconds) the CinemachineCollider blends when pushing/releasing the camera. 0.2-0.3 eliminates wobble.")]
     [SerializeField] private float collisionSmoothingTime = 0.25f;
+    [Tooltip("Layers the collision probe tests against. Match this to the CinemachineCollider's Collide Against.")]
+    [SerializeField] private LayerMask collisionMask = ~0;
+    [Tooltip("Radius of the spherecast that anticipates camera collision (≈ collider camera radius).")]
+    [SerializeField] private float collisionProbeRadius = 0.2f;
+    [Tooltip("Extra distance added to the boom length when probing, so the deadzone yields slightly before contact.")]
+    [SerializeField] private float collisionProbeExtraDistance = 0.3f;
+    [Tooltip("Seconds to suppress the deadzone once an obstruction is detected (fast).")]
+    [SerializeField] private float blendAttack = 0.05f;
+    [Tooltip("Seconds to restore the deadzone after the obstruction clears (slow — avoids pop).")]
+    [SerializeField] private float blendRelease = 0.25f;
 
     [Header("Deadzone Guides (Screen)")]
     [SerializeField] private bool drawFollowProxyGuides = true;
@@ -91,7 +106,8 @@ public class PlayerCameraRotation : NetworkBehaviour
     [field: MyBox.ReadOnly][field: SerializeField][Networked] public float CurrentAdsSensitivity { get; private set; }
 
     private bool followProxyInitialized = false;
-    private int _collisionHoldFrames = 0;
+    private float _collisionBlend = 0f;
+    private Cinemachine3rdPersonFollow _tpf;
 
     // Gizmo state — populated every tick by GetCameraRaycastTarget
     private Vector3 _gizmoCastOrigin;
@@ -107,6 +123,11 @@ public class PlayerCameraRotation : NetworkBehaviour
 
     private bool _crosshairEnemyActive;
     private bool _crosshairDamageFlashing;
+
+    // Reusable aim-assist candidate buffer — struct elements + retained
+    // capacity, so FindEnemyInCone allocates nothing per tick.
+    private struct ConeCandidate { public Transform t; public Transform root; public float cos; public Vector3 losPoint; }
+    private readonly List<ConeCandidate> _coneCandidates = new();
 
     public Vector3 GetAimAssistChestPosition()
     {
@@ -255,7 +276,7 @@ public class PlayerCameraRotation : NetworkBehaviour
         _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
 
         target.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch, _cinemachineTargetYaw, 0.0f);
-        UpdateFollowProxy();
+        // Proxy is advanced once per render frame in LateUpdate (single clock).
     }
 
     public void HandleCameraAimInput()
@@ -310,18 +331,25 @@ public class PlayerCameraRotation : NetworkBehaviour
         if (!followProxyInitialized)
             InitializeFollowProxy();
 
+        // Render-rate clock: the proxy is purely visual smoothing, so it must
+        // advance on Time.deltaTime, not the network tick. (Driving it from two
+        // clocks was part of the old wobble.)
+        float dt = Time.deltaTime;
+        if (dt <= 0f) return;
+
         Transform src = target.transform;
         followProxy.rotation = src.rotation;
 
-        if (IsCameraBeingPushedByCollider())
-        {
-            // Snap proxy to the real target so the arm root is stable.
-            // _collisionHoldFrames keeps us locked here for several frames after
-            // the collider stops pushing, preventing frame-by-frame flip oscillation.
-            followProxy.position = src.position;
-            return;
-        }
+        // Independent collision anticipation — does NOT read virtualCamera.State,
+        // so there is no feedback loop with the CinemachineCollider. Spherecast
+        // the boom and ramp a 0..1 weight: fast attack, slow release.
+        float targetBlend = ProbeCameraObstruction(src) ? 1f : 0f;
+        float blendTime = targetBlend > _collisionBlend ? blendAttack : blendRelease;
+        _collisionBlend = blendTime > 0.0001f
+            ? Mathf.MoveTowards(_collisionBlend, targetBlend, dt / blendTime)
+            : targetBlend;
 
+        // Deadzone/softzone-smoothed candidate position.
         Vector3 worldError = src.position - followProxy.position;
         Vector3 localError = Quaternion.Inverse(src.rotation) * worldError;
 
@@ -332,22 +360,38 @@ public class PlayerCameraRotation : NetworkBehaviour
         );
 
         Vector3 worldCorrection = src.rotation * localCorrection;
-        followProxy.position += worldCorrection * followProxyCatchup * Runner.DeltaTime;
+        Vector3 smoothed = followProxy.position + worldCorrection * followProxyCatchup * dt;
+
+        // Continuous blend between the deadzone result and a rigid lock to the
+        // real target. Near a wall the proxy tightens so the collider has a
+        // stable, non-lagging pivot; in the open it's full deadzone. No snap,
+        // so no pop on engage/disengage.
+        followProxy.position = Vector3.Lerp(smoothed, src.position, _collisionBlend);
     }
 
-    private bool IsCameraBeingPushedByCollider()
+    // Anticipates a camera-boom obstruction independently of the collider's
+    // output. Approximates the 3rd Person Follow rig: pivot + shoulder/arm
+    // offset, cast back along the view boom.
+    private bool ProbeCameraObstruction(Transform src)
     {
-        if (virtualCamera == null) return false;
+        if (collisionMask.value == 0) return false;
 
-        var state = virtualCamera.State;
-        bool activeNow = (state.RawPosition - state.FinalPosition).sqrMagnitude > 0.0025f;
+        if (_tpf == null && virtualCamera != null)
+            _tpf = virtualCamera.GetCinemachineComponent<Cinemachine3rdPersonFollow>();
 
-        if (activeNow)
-            _collisionHoldFrames = 8; // stay locked for 8 frames after last collision contact
-        else if (_collisionHoldFrames > 0)
-            _collisionHoldFrames--;
+        float boom = (_tpf != null ? _tpf.CameraDistance : targetDistance) + collisionProbeExtraDistance;
 
-        return _collisionHoldFrames > 0;
+        Vector3 pivot = src.position;
+        if (_tpf != null)
+        {
+            Vector3 so = _tpf.ShoulderOffset;
+            pivot += src.rotation * new Vector3(so.x, so.y + _tpf.VerticalArmLength, so.z);
+        }
+
+        Vector3 dir = -(src.rotation * Vector3.forward);
+
+        return Physics.SphereCast(pivot, collisionProbeRadius, dir, out _, boom,
+                                  collisionMask, QueryTriggerInteraction.Ignore);
     }
 
     private void ApplyCollisionSmoothing()
@@ -378,6 +422,10 @@ public class PlayerCameraRotation : NetworkBehaviour
         return signedExcess * t;
     }
 
+#if UNITY_EDITOR
+    // Debug-only deadzone/softzone visualization. OnGUI is invoked several
+    // times per frame; stripping it from builds removes that cost entirely
+    // (the in-method flag guard doesn't avoid the per-frame invocation).
     private static Texture2D _whiteTex;
 
     private void OnGUI()
@@ -481,6 +529,7 @@ public class PlayerCameraRotation : NetworkBehaviour
         // Right
         GUI.DrawTexture(new Rect(rect.xMax - t, rect.y, t, rect.height), _whiteTex);
     }
+#endif
 
     public void SetMuzzlePosition()
     {
@@ -512,7 +561,11 @@ public class PlayerCameraRotation : NetworkBehaviour
 
         Transform enemy = FindEnemyInCone(origin, dir);
 
-        UpdateCrosshairColor(enemy != null);
+        // Crosshair is local-only HUD. FindEnemyInCone still runs on the State
+        // Authority for the authoritative aim-assist magnet / chest snap, but
+        // the colour change must only touch the local player's reticle.
+        if (HasInputAuthority)
+            UpdateCrosshairColor(enemy != null);
 
         float speedMul = (enemy != null && (input.LookDirection.x != 0f || input.LookDirection.y != 0f))
             ? 1f - slowdownStrength
@@ -584,30 +637,73 @@ public class PlayerCameraRotation : NetworkBehaviour
         float cosThreshold = Mathf.Cos(aimAssistRadius * Mathf.Deg2Rad);
         float rangeSq      = AimDistance * AimDistance;
 
-        Transform bestTarget   = null;
-        float     bestCosAngle = cosThreshold;
+        // Pass 1: collect everything in range + cone. No raycasts here.
+        // All detection gates (CanReadNetworkedState→IsValid, IsDead, self-skip)
+        // are unchanged, so this finds exactly the same candidates as before.
+        _coneCandidates.Clear();
 
         foreach (PlayerHealthV2 health in PlayerHealthV2.All)
         {
+            if (!CanReadNetworkedState(health)) continue;
             if (health.IsDead) continue;
             if (health.Object == null || health.Object == Object) continue;
 
             Vector3 feet    = health.transform.position;
-            Vector3 head    = health.transform.position + Vector3.up * bodyHeight;
+            Vector3 head    = feet + Vector3.up * bodyHeight;
             Vector3 closest = ClosestPointOnSegmentToRay(origin, dir, feet, head);
 
             if ((closest - origin).sqrMagnitude > rangeSq) continue;
 
             float cosAngle = Vector3.Dot(dir, (closest - origin).normalized);
-            if (cosAngle <= bestCosAngle) continue;
+            if (cosAngle <= cosThreshold) continue;
 
-            // Reject enemies behind walls — line-of-sight check toward closest visible point
-            Vector3 toEnemy = closest - origin;
-            if (Physics.Raycast(origin, toEnemy.normalized, toEnemy.magnitude, aimLayerMask))
-                continue;
+            _coneCandidates.Add(new ConeCandidate {
+                t = health.transform, root = health.transform.root, cos = cosAngle,
+                losPoint = feet + Vector3.up * (bodyHeight * magnetBodyFraction) });
+        }
 
-            bestCosAngle = cosAngle;
-            bestTarget   = health.transform;
+        foreach (Botdata bot in Botdata.All)
+        {
+            if (!CanReadNetworkedState(bot)) continue;
+            if (bot.IsDead) continue;
+
+            Vector3 feet    = bot.transform.position;
+            Vector3 head    = feet + Vector3.up * bodyHeight;
+            Vector3 closest = ClosestPointOnSegmentToRay(origin, dir, feet, head);
+
+            if ((closest - origin).sqrMagnitude > rangeSq) continue;
+
+            float cosAngle = Vector3.Dot(dir, (closest - origin).normalized);
+            if (cosAngle <= cosThreshold) continue;
+
+            _coneCandidates.Add(new ConeCandidate {
+                t = bot.transform, root = bot.transform.root, cos = cosAngle,
+                losPoint = feet + Vector3.up * (bodyHeight * magnetBodyFraction) });
+        }
+
+        // Pass 2: LOS-check only the angularly-best candidate; fall back to the
+        // next-best only if occluded. Same result as the old per-candidate loop
+        // (argmax cone angle among LOS-clear) but ~1 raycast in the common case.
+        // Chest-point LOS + IsOccluded root-check are kept exactly as-is, so
+        // detection — and therefore the crosshair colour — is unchanged.
+        Transform bestTarget = null;
+        while (_coneCandidates.Count > 0)
+        {
+            int bestIdx = 0;
+            for (int i = 1; i < _coneCandidates.Count; i++)
+                if (_coneCandidates[i].cos > _coneCandidates[bestIdx].cos)
+                    bestIdx = i;
+
+            ConeCandidate c = _coneCandidates[bestIdx];
+            if (!IsOccluded(origin, c.losPoint - origin, c.root))
+            {
+                bestTarget = c.t;
+                break;
+            }
+
+            int last = _coneCandidates.Count - 1;
+            _coneCandidates[bestIdx] = _coneCandidates[last];
+            _coneCandidates.RemoveAt(last);
         }
 
         AimAssistTarget = bestTarget;
@@ -619,6 +715,33 @@ public class PlayerCameraRotation : NetworkBehaviour
         }
 
         return bestTarget;
+    }
+
+    // Occluded only if a real blocker (root != the candidate) is in the way.
+    // Hitting the candidate's own colliders is not occlusion, so this works
+    // regardless of which layers players/bots sit on (no mask self-exclusion).
+    private bool IsOccluded(Vector3 origin, Vector3 toEnemy, Transform candidateRoot)
+    {
+        float dist = toEnemy.magnitude;
+        if (dist <= 0.01f) return false;
+
+        if (Physics.Raycast(origin, toEnemy / dist, out RaycastHit losHit, dist,
+                            aimLayerMask, QueryTriggerInteraction.Ignore))
+            return losHit.collider.transform.root != candidateRoot;
+
+        return false;
+    }
+
+    private static bool CanReadNetworkedState(NetworkBehaviour behaviour)
+    {
+        if (behaviour == null) return false;
+        if (behaviour.Object == null) return false;
+        // IsValid only — NOT IsInSimulation. On a client, bots/other players
+        // are proxies (interpolated, not simulated), so requiring
+        // IsInSimulation rejected every target and the local crosshair/aim
+        // assist never saw anyone. Reading a valid proxy's transform and
+        // networked IsDead is safe.
+        return behaviour.Object.IsValid;
     }
 
     private static Vector3 ClosestPointOnSegmentToRay(Vector3 rayOrigin, Vector3 rayDir, Vector3 segA, Vector3 segB)

@@ -413,7 +413,7 @@ public class PlayerUpperMovement : NetworkBehaviour
                 continue;
             }
 
-            if (hitObject.tag == "Bot")
+            if (hitObject.CompareTag("Bot"))
             {
                 Botdata tempdata = hitObject.GetComponent<Botdata>();
 
@@ -443,6 +443,8 @@ public class PlayerUpperMovement : NetworkBehaviour
                     else tempdata.IsHit = true;
 
                     tempdata.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username.ToString(), Object);
+                    Hitted = Runner.Tick;
+                    HittedPosition = hitbox.transform.root.position + Vector3.up * 1.2f;
                 }
             }
             else
@@ -525,7 +527,7 @@ public class PlayerUpperMovement : NetworkBehaviour
                 continue;
             }
 
-            if (hitObject.tag == "Bot")
+            if (hitObject.CompareTag("Bot"))
             {
                 Botdata tempdata = hitObject.GetComponent<Botdata>();
 
@@ -554,6 +556,8 @@ public class PlayerUpperMovement : NetworkBehaviour
                     tempdata.IsHit = true;
 
                     tempdata.ApplyDamage(tempdamage, playerOwnObjectEnabler.Username.ToString(), Object);
+                    Hitted = Runner.Tick;
+                    HittedPosition = hitbox.transform.root.position + Vector3.up * 1.2f;
                 }
             }
             else

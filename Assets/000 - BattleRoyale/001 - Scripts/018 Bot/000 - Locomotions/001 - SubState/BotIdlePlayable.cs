@@ -18,84 +18,119 @@ public class BotIdlePlayable : BotAnimationPlayable
         botMovement.PickNewWanderDirection();
     }
 
-    public override void NetworkUpdate()
+    public override BotAnimationPlayable NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         if (!botController.IsGrounded)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.FallingPlayable);
-            return;
+            return botPlayables.BasicMovement.FallingPlayable;
         }
 
         if (botPlayables.GetBotData.IsHit)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.HitPlayable);
-            return;
+            return botPlayables.BasicMovement.HitPlayable;
         }
 
         if (botPlayables.GetBotData.IsStagger)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.StaggerPlayable);
-            return;
+            return botPlayables.BasicMovement.StaggerPlayable;
         }
 
         if (botPlayables.GetBotData.IsDead)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.DeathPlayable);
-            return;
+            return botPlayables.BasicMovement.DeathPlayable;
         }
 
 
         if (botPlayables.GetBotData.Inventory.HealCount > 0 && botPlayables.GetBotData.CurrentHealth < 100)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.HealingPlayable);
-            return;
+            return botPlayables.BasicMovement.HealingPlayable;
         }
 
         if (botPlayables.GetBotData.Inventory.RepairCount > 0 && botPlayables.GetBotData.Inventory.Armor != null)
         {
             if (botPlayables.GetBotData.Inventory.Armor.Supplies < 100)
             {
-                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.RepairArmorPlayable);
-                return;
+                return botPlayables.BasicMovement.RepairArmorPlayable;
             }
         }
 
-        MovePlayer();
-    }
+        return MovePlayer();
+}
 
-    private void MovePlayer()
+    private BotAnimationPlayable MovePlayer()
     {
         botMovement.DetectTarget();
+        botMovement.EvaluateCombatLoadout();
 
         if (botMovement.detectedTarget != null)
         {
             if (botPlayables.Inventroy.WeaponIndex == 1)
-                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.RunPlayable);
+                return botPlayables.BasicMovement.RunPlayable;
             else if (botPlayables.Inventroy.WeaponIndex == 2)
             {
                 if (botPlayables.Inventroy.GetPrimaryWeaponID() == "001")
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordRunPlayable);
+                    return botPlayables.BasicMovement.SwordRunPlayable;
                 else if (botPlayables.Inventroy.GetPrimaryWeaponID() == "002")
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearRun);
+                    return botPlayables.BasicMovement.SpearRun;
+            }
+            else if (botPlayables.Inventroy.WeaponIndex == 3)
+            {
+                if (botPlayables.Inventroy.SecondaryWeapon != null && botPlayables.Inventroy.SecondaryWeapon.IsRifle)
+                    return botPlayables.BasicMovement.RifleRunPlayable;
+                else if (botPlayables.Inventroy.SecondaryWeapon != null && !botPlayables.Inventroy.SecondaryWeapon.IsRifle)
+                    return botPlayables.BasicMovement.BowRunPlayable;
             }
         }
         else
         {
+            if (botMovement.TryRunLootBehaviour())
+            {
+                if (botPlayables.Inventroy.WeaponIndex == 1)
+                    return botPlayables.BasicMovement.RunPlayable;
+                if (botPlayables.Inventroy.WeaponIndex == 2)
+                    return botPlayables.Inventroy.GetPrimaryWeaponID() == "001"
+                        ? botPlayables.BasicMovement.SwordRunPlayable
+                        : botPlayables.BasicMovement.SpearRun;
+                if (botPlayables.Inventroy.WeaponIndex == 3)
+                    return botPlayables.Inventroy.SecondaryWeapon != null && botPlayables.Inventroy.SecondaryWeapon.IsRifle
+                        ? botPlayables.BasicMovement.RifleRunPlayable
+                        : botPlayables.BasicMovement.BowRunPlayable;
+            }
+
+            if (botMovement.TryStrategicIdleBehaviour())
+            {
+                botController.Move(Vector3.zero, 0f);
+                return null;
+            }
+
             botController.Move(Vector3.zero, 0f);
 
             if (botMovement.IdleBeforeWanderTimer.Expired(botMovement.Runner))
             {
                 botMovement.WanderTimer = TickTimer.CreateFromSeconds(botMovement.Runner, Random.Range(botMovement.MinWanderDelay, botMovement.MaxWanderDelay));
                 if (botPlayables.Inventroy.WeaponIndex == 1)
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.RunPlayable);
+                    return botPlayables.BasicMovement.RunPlayable;
                 else if (botPlayables.Inventroy.WeaponIndex == 2)
                 {
                     if (botPlayables.Inventroy.GetPrimaryWeaponID() == "001")
-                        botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordRunPlayable);
+                        return botPlayables.BasicMovement.SwordRunPlayable;
                     else if (botPlayables.Inventroy.GetPrimaryWeaponID() == "002")
-                        botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearRun);
+                        return botPlayables.BasicMovement.SpearRun;
+                }
+                else if (botPlayables.Inventroy.WeaponIndex == 3)
+                {
+                    if (botPlayables.Inventroy.SecondaryWeapon != null && botPlayables.Inventroy.SecondaryWeapon.IsRifle)
+                        return botPlayables.BasicMovement.RifleRunPlayable;
+                    else if (botPlayables.Inventroy.SecondaryWeapon != null && !botPlayables.Inventroy.SecondaryWeapon.IsRifle)
+                        return botPlayables.BasicMovement.BowRunPlayable;
                 }
             }
         }
-    }
+
+        return null;
 }
+}
+
+

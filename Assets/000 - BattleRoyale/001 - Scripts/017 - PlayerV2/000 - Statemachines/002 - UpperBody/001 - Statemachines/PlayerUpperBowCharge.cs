@@ -36,8 +36,10 @@ public class PlayerUpperBowCharge : UpperWithAimState
     {
         base.Exit();
 
-        if (playerPlayables.HasInputAuthority)
-            playerPlayables.ChangeCamera(false);
+        if (!playerPlayables.HasInputAuthority) return;
+
+        playerPlayables.ChangeCamera(false);
+        playerPlayables.cameraRotation.ExitBowAimCrosshair();
     }
 
     private UpperBodyAnimations GetNextLowerBodyState()

@@ -1,5 +1,4 @@
 using Fusion.Addons.SimpleKCC;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Animations;
@@ -15,7 +14,9 @@ public class BotAnimationPlayable
     List<string> animations;
     List<string> mixers;
 
-    private Coroutine _weightBlendRoutine;
+    // When true, Enter/Exit do not touch lower-body mixer weights — managed exclusively
+    // by BotPlayables.UpdateLowerBodyLocomotionOverride().
+    protected bool skipLowerBodyBlend = false;
 
     //  ======================
 
@@ -29,13 +30,8 @@ public class BotAnimationPlayable
 
     //  ======================
 
-    private MonoBehaviour coroutineHost; // host to start coroutine
-
-    //  ======================
-
     public BotAnimationPlayable(MonoBehaviour host, SimpleKCC botController, BotPlayableChanger botPlayablesChanger, BotMovementController botMovement, BotPlayables botPlayables, AnimationMixerPlayable mixerAnimations, List<string> animations, List<string> mixers, string animationname, string mixername, float animationLength, AnimationClipPlayable animationClipPlayable, bool oncePlay)
     {
-        coroutineHost = host;
         this.botController = botController;
         this.botPlayablesChanger = botPlayablesChanger;
         this.botMovement = botMovement;
@@ -63,10 +59,15 @@ public class BotAnimationPlayable
         if (oncePlay)
             animationClipPlayable.Play();
 
-        int mixerIndex = mixers.IndexOf(mixername);
         int animIndex = animations.IndexOf(animationname);
+        if (animIndex < 0)
+        {
+            Debug.LogWarning($"[BotAnimationPlayable] Animation '{animationname}' was not found in animationnames list.");
+            return;
+        }
 
-        StartWeightBlend(animIndex, 1f, botPlayables.enterSpeed);
+        if (!skipLowerBodyBlend)
+            mixerPlayable.SetInputWeight(animIndex, 1f);
 
         if (botPlayables.HasInputAuthority || botPlayables.HasStateAuthority)
         {
@@ -80,51 +81,14 @@ public class BotAnimationPlayable
 
     public virtual void Exit()
     {
-        int mixerIndex = mixers.IndexOf(mixername);
+        if (skipLowerBodyBlend) return;
+
         int animIndex = animations.IndexOf(animationname);
-
-        StartWeightBlend(animIndex, 0f, botPlayables.exitSpeed);
-    }
-
-    ////public virtual void LogicUpdate()
-    ////{
-    ////    if (playerPlayables.HasInputAuthority || playerPlayables.HasStateAuthority) return;
-    ////}
-
-    public virtual void NetworkUpdate() { }
-
-    private void StartWeightBlend(int animIndex, float targetWeight, float duration)
-    {
-        if (coroutineHost == null)
-        {
-            mixerPlayable.SetInputWeight(animIndex, targetWeight);
+        if (animIndex < 0)
             return;
-        }
 
-        if (_weightBlendRoutine != null)
-            coroutineHost.StopCoroutine(_weightBlendRoutine);
-
-        _weightBlendRoutine = coroutineHost.StartCoroutine(BlendWeight(animIndex, targetWeight, duration));
+        mixerPlayable.SetInputWeight(animIndex, 0f);
     }
 
-    private IEnumerator BlendWeight(int animIndex, float targetWeight, float duration)
-    {
-        float startWeight = mixerPlayable.GetInputWeight(animIndex);
-
-        if (duration <= 0f)
-        {
-            mixerPlayable.SetInputWeight(animIndex, targetWeight);
-            yield break;
-        }
-
-        float t = 0f;
-        while (t < 1f)
-        {
-            t += Time.deltaTime / duration;
-            mixerPlayable.SetInputWeight(animIndex, Mathf.Lerp(startWeight, targetWeight, Mathf.Clamp01(t)));
-            yield return null;
-        }
-
-        mixerPlayable.SetInputWeight(animIndex, targetWeight);
-    }
+    public virtual BotAnimationPlayable NetworkUpdate() { return null; }
 }

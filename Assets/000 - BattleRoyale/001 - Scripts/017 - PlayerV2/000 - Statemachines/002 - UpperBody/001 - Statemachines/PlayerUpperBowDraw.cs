@@ -30,8 +30,10 @@ public class PlayerUpperBowDraw : UpperWithAimState
     {
         base.Exit();
 
-        if (playerPlayables.HasInputAuthority)
-            playerPlayables.ChangeCamera(false);
+        if (!playerPlayables.HasInputAuthority) return;
+
+        playerPlayables.ChangeCamera(false);
+        playerPlayables.cameraRotation.ExitBowAimCrosshair();
     }
 
     public override void NetworkUpdate()

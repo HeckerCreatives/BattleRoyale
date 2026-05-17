@@ -43,6 +43,7 @@ public class InventoryConsumableItem : MonoBehaviour
     {
         items = item;
         this.lobbyQuest = lobbyQuest;
+        this.itemCount = Convert.ToInt32(itemCount);
 
         if (itemCount > 1)
         {
@@ -98,6 +99,7 @@ public class InventoryConsumableItem : MonoBehaviour
                 else
                 {
                     tempuser.PlayerInventory[tempitem.ItemID].quantity -= 1;
+                    itemCount--;
 
                     if (itemCount > 1)
                     {
@@ -125,7 +127,7 @@ public class InventoryConsumableItem : MonoBehaviour
                     userData.EnergyChangeFireEvent();
                 }
 
-                StartCoroutine(lobbyQuest.RefreshQuestAfterClaim(false, false, () => doneProcess = true));
+                StartCoroutine(lobbyQuest.RefreshQuestAfterClaim(false, false, false, () => doneProcess = true));
 
                 while (!doneProcess) await Task.Yield();
 
@@ -156,6 +158,7 @@ public class InventoryConsumableItem : MonoBehaviour
                 else
                 {
                     tempuser.PlayerInventory[tempitem.ItemID].quantity -= 1;
+                    itemCount--;
 
                     if (itemCount > 1)
                     {

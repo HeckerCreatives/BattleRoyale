@@ -34,6 +34,9 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
     [Space]
     [SerializeField] private NetworkObject playerObj;
 
+    [Header("BOTS (dedicated server)")]
+    [SerializeField] private NetworkObject botPrefab;
+
     [Space]
     [SerializeField] private NetworkObject healObj;
     [SerializeField] private NetworkObject armorObj;
@@ -47,8 +50,7 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
     [Networked, Capacity(30)] public NetworkDictionary<string, NetworkObject> Players => default;
     [Networked, Capacity(30)] public NetworkDictionary<string, NetworkObject> RemainingPlayers => default;
-
-
+    [Networked, Capacity(50)] public NetworkDictionary<int, NetworkObject> Bots => default;
 
     public Dictionary<string, PlayerOwnObjectEnabler> ConnectedPlayers = new Dictionary<string, PlayerOwnObjectEnabler>();
 
@@ -80,12 +82,11 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
             switch (change)
             {
                 case nameof(RemainingPlayers):
-                case nameof(BotSpawnerController.Instance.Bots):
+                case nameof(Bots):
 
                     if (HasStateAuthority)
                     {
-                        if (RemainingPlayers.Count <= 1 && BotSpawnerController.Instance.Bots.Count <= 0 && MultiplayerServerManager.Instance.CurrentGameState == GameState.ARENA)
-                            MultiplayerServerManager.Instance.CurrentGameState = GameState.DONE;
+                        TrySetGameStateDoneIfNoHumansLeft();
                     }
 
                     PlayerCountChange?.Invoke(this, EventArgs.Empty);
@@ -94,27 +95,88 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
         }
     }
 
+    private void TrySetGameStateDoneIfNoHumansLeft()
+    {
+        if (!HasStateAuthority) return;
+        if (MultiplayerServerManager.Instance == null) return;
+        if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;
+
+        // End the match once only bots remain, or one/no human remains with no bots alive.
+        bool onlyBotsRemaining = RemainingPlayers.Count <= 0 && Bots.Count > 0;
+        bool normalLastStanding = RemainingPlayers.Count <= 1 && Bots.Count <= 0;
+
+        if (onlyBotsRemaining || normalLastStanding)
+            MultiplayerServerManager.Instance.CurrentGameState = GameState.DONE;
+    }
+
     public async void SpawnPlayers(string playerdata)
+    {
+        await SpawnMatchPopulationAsync(playerdata, "[]");
+    }
+
+    public async void SpawnMatchPopulation(string playerCostumeJson, string botCostumeJson)
+    {
+        await SpawnMatchPopulationAsync(playerCostumeJson, botCostumeJson);
+    }
+
+    public void RemoveBot(int botIndex)
+    {
+        if (!HasStateAuthority) return;
+        Bots.Remove(botIndex);
+    }
+
+    private async Task SpawnMatchPopulationAsync(string playerCostumeJson, string botCostumeJson)
     {
         while (!Runner)
             await Task.Yield();
 
-        Debug.Log($"SPAWNING PLAYERS WITH DATAS {playerdata}");
+        Debug.Log($"SPAWNING MATCH POPULATION | players JSON len {playerCostumeJson?.Length ?? 0}, bot JSON len {botCostumeJson?.Length ?? 0}");
 
-        List<PlayerSpawnData> tempdata = JsonConvert.DeserializeObject<List<PlayerSpawnData>>(playerdata);
+        List<PlayerSpawnData> tempdata = null;
+        try
+        {
+            tempdata = JsonConvert.DeserializeObject<List<PlayerSpawnData>>(playerCostumeJson);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"playercostumedata parse failed, using debug fallback: {ex.Message}");
+        }
+
+        if (tempdata == null || tempdata.Count == 0)
+        {
+            tempdata = new List<PlayerSpawnData>
+            {
+                new PlayerSpawnData
+                {
+                    username = "DEBUG_Player",
+                    ownerId = "debug-local",
+                    _id = "debug-local",
+                    avatarid = 0,
+                    hairstyle = 0,
+                    haircolor = 0,
+                    clothingcolor = 0,
+                    skincolor = 0
+                }
+            };
+        }
 
         int spawnpos = 0;
 
         foreach (var data in tempdata)
         {
-            NetworkObject playerCharacter = Runner.Spawn(playerObj, spawnWaitingAreaPositions[spawnpos].position, Quaternion.identity, PlayerRef.None, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+            int pos = spawnpos;
+            string resolvedUserId = !string.IsNullOrEmpty(data.ownerId)
+                ? data.ownerId
+                : !string.IsNullOrEmpty(data._id) ? data._id : data.username;
+
+            NetworkObject playerCharacter = Runner.Spawn(playerObj, spawnWaitingAreaPositions[pos].position, Quaternion.identity, PlayerRef.None, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
             {
-                obj.GetComponent<SimpleKCC>().SetPosition(spawnWaitingAreaPositions[spawnpos].position);
+                obj.GetComponent<SimpleKCC>().SetPosition(spawnWaitingAreaPositions[pos].position);
 
                 PlayerOwnObjectEnabler core = obj.GetComponent<PlayerOwnObjectEnabler>();
 
                 core.Username = data.username;
-                core.UserID = data.ownerId;
+                core.UserID = resolvedUserId;
             });
 
             Debug.Log($"Does server have input authority to {data.username}? {playerCharacter.HasInputAuthority}");
@@ -142,6 +204,58 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
             await Task.Yield();
         }
+
+        List<BotSpawnData> botList = null;
+        try
+        {
+            botList = JsonConvert.DeserializeObject<List<BotSpawnData>>(string.IsNullOrWhiteSpace(botCostumeJson) ? "[]" : botCostumeJson);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"botcostumedata parse failed, spawning no bots: {ex.Message}");
+            botList = new List<BotSpawnData>();
+        }
+
+        botList ??= new List<BotSpawnData>();
+        int botCount = botList.Count;
+
+        if (botCount > 0)
+        {
+            if (botPrefab == null)
+            {
+                Debug.LogError("Bot prefab is not assigned on PlayerJoinedController; skipping bot spawn.");
+            }
+            else
+            {
+                for (int i = 0; i < botCount; i++)
+                {
+                    int slot = spawnpos + i;
+                    Transform tr = spawnWaitingAreaPositions[slot % spawnWaitingAreaPositions.Count];
+                    BotSpawnData bd = botList[i];
+                    int botIndex = i;
+
+                    NetworkObject botCharacter = Runner.Spawn(botPrefab, tr.position, Quaternion.identity, PlayerRef.None, onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                    {
+                        var kcc = obj.GetComponent<SimpleKCC>();
+                        if (kcc != null)
+                            kcc.SetPosition(tr.position);
+
+                        Botdata botdata = obj.GetComponent<Botdata>();
+                        BotInventory inv = obj.GetComponent<BotInventory>();
+                        string name = !string.IsNullOrEmpty(bd.username) ? bd.username : $"BOT_{botIndex}";
+                        botdata.BotName = name;
+                        botdata.BotIndex = botIndex;
+                        inv.ApplyCostumeFromMatchData(bd.hairstyle, bd.haircolor, bd.clothingcolor, bd.skincolor);
+                        inv.WeaponIndex = 1;
+                    });
+
+                    Bots.Add(botIndex, botCharacter);
+
+                    await Task.Yield();
+                }
+            }
+        }
+
         doneSetupPlayers = true;
     }
 
@@ -177,7 +291,7 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
 
         if (!TryGetPlayerRefFromUsername(username, out PlayerRef playerRef))
         {
-            Debug.LogWarning($"Cannot remove player — username not found: {username}");
+            Debug.LogWarning($"Cannot remove player â€” username not found: {username}");
             return;
         }
 
@@ -263,6 +377,8 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
                     if (MultiplayerServerManager.Instance.CurrentGameState != GameState.DONE)
                         MultiplayerServerManager.Instance.CurrentGameState = GameState.DONE;
                 }
+
+                TrySetGameStateDoneIfNoHumansLeft();
             }
             else
                 core.Object.AssignInputAuthority(Runner.LocalPlayer);
@@ -388,6 +504,8 @@ public class PlayerJoinedController : NetworkBehaviour, IPlayerJoined, IPlayerLe
                     if (MultiplayerServerManager.Instance.CurrentGameState != GameState.DONE)
                         MultiplayerServerManager.Instance.CurrentGameState = GameState.DONE;
                 }
+
+                TrySetGameStateDoneIfNoHumansLeft();
             }
             //else
             //    core.Object.AssignInputAuthority(PlayerRef.None);

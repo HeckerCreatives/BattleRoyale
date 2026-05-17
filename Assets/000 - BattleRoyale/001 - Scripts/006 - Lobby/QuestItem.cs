@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System;
 using System.Text;
+using Newtonsoft.Json;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -34,6 +35,7 @@ public class QuestItem : MonoBehaviour
     {
         public string type;
         public int amount;
+        public string itemid;
     }
 
     public static readonly Dictionary<string, string> RewardTypeLabels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -42,7 +44,11 @@ public class QuestItem : MonoBehaviour
         { "exp",         "Experience"         },
     };
 
+    [Header("Reward Item Lookup")]
+    [SerializeField] private List<MarketItems> rewardMarketItems;
+
     private Dictionary<string, Sprite> _questTypeSpriteCache;
+    private Dictionary<string, MarketItems> _marketItemCache;
     private string _questRecordId;
     private Action<string> _onClaimPressed;
     private List<QuestReward> _rewards;
@@ -88,12 +94,28 @@ public class QuestItem : MonoBehaviour
         bool isClaimed,
         bool isCompleted,
         Action<string> onClaimPressed,
-        List<QuestReward> rewards = null)
+        List<QuestReward> rewards = null,
+        List<MarketItems> marketItems = null)
     {
         _questRecordId = questRecordId;
         _onClaimPressed = onClaimPressed;
         _rewards = rewards;
-        Debug.Log(title);
+
+        // Rebuild cache from passed list (takes priority over Inspector field)
+        if (marketItems != null)
+        {
+            _marketItemCache = new Dictionary<string, MarketItems>(marketItems.Count, StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < marketItems.Count; i++)
+            {
+                var mi = marketItems[i];
+                if (mi != null && !string.IsNullOrWhiteSpace(mi.ItemID))
+                    _marketItemCache[mi.ItemID] = mi;
+            }
+        }
+        else
+        {
+            _marketItemCache = null; // will lazy-build from Inspector field on first use
+        }
         if (titleTMP != null) titleTMP.text = title;
         if (descriptionTMP != null) descriptionTMP.text = description;
         ApplyQuestTypeLogo(questType);
@@ -191,16 +213,44 @@ public class QuestItem : MonoBehaviour
         {
             var r = _rewards[i];
             if (r == null) continue;
-
-            string label = RewardTypeLabels.TryGetValue(r.type ?? string.Empty, out string mapped)
-                ? mapped
-                : System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase((r.type ?? "Reward").ToLower());
-
             if (parts.Length > 0) parts.Append(", ");
-            parts.Append("<color=#00FF00>").Append(label).Append(" x ").Append(r.amount).Append("</color>");
+            parts.Append("<color=#00FF00>").Append(GetRewardLabel(r)).Append(" x ").Append(r.amount).Append("</color>");
         }
 
         GameManager.Instance.NotificationController.ShowError($"You will get {parts} after you completed the challenge");
+    }
+
+    public string GetRewardLabel(QuestReward r)
+    {
+        if (r == null) return "Reward";
+
+        if (RewardTypeLabels.TryGetValue(r.type ?? string.Empty, out string mapped))
+            return mapped;
+
+        if (!string.IsNullOrWhiteSpace(r.itemid))
+        {
+            BuildMarketItemCacheIfNeeded();
+            if (_marketItemCache != null && _marketItemCache.TryGetValue(r.itemid, out MarketItems item))
+                return item.ItemName;
+        }
+
+        return System.Globalization.CultureInfo.InvariantCulture.TextInfo
+            .ToTitleCase((r.type ?? "Reward").ToLower());
+    }
+
+    private void BuildMarketItemCacheIfNeeded()
+    {
+        if (_marketItemCache != null) return;
+
+        _marketItemCache = new Dictionary<string, MarketItems>(StringComparer.OrdinalIgnoreCase);
+        if (rewardMarketItems == null) return;
+
+        for (int i = 0; i < rewardMarketItems.Count; i++)
+        {
+            var item = rewardMarketItems[i];
+            if (item != null && !string.IsNullOrWhiteSpace(item.ItemID))
+                _marketItemCache[item.ItemID] = item;
+        }
     }
 
     private void ApplyClaimVisualState()

@@ -38,6 +38,10 @@ public struct MyInput : INetworkInput
     public Vector2 LookDirection;
     public Vector3 CameraHitOrigin;
     public Vector3 CameraHitDirection;
+    // World point under the crosshair, resolved client-side from the real
+    // camera after Cinemachine updates. The server can't see the camera, so
+    // this is the authoritative aim target shipped via the input contract.
+    public Vector3 AimPoint;
 }
 
 public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, IBeforeUpdate
@@ -70,6 +74,11 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
     [SerializeField] private Vector3 ScreenCenterPoint;
     [SerializeField] private Vector3 CameraHitOrigin;
     [SerializeField] private Vector3 CameraHitDirection;
+    [SerializeField] private Vector3 AimPoint;
+    [Tooltip("Layers the crosshair aim-point resolve raycasts against (environment + enemies). If 0, falls back to a far point along the camera ray.")]
+    [SerializeField] private LayerMask aimResolveMask;
+    [Tooltip("Max distance to resolve the crosshair world point.")]
+    [SerializeField] private float aimResolveRange = 999f;
 
     //  =========================
 
@@ -166,14 +175,40 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
 
     public override void FixedUpdateNetwork()
     {
-        //Vector2 screenCenter = new Vector2((Screen.width - 1) * 0.5f, (Screen.height - 1) * 0.5f);
+    }
 
-        if (Camera.main != null)
-        {
-            cameraRay = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
-            CameraHitOrigin = cameraRay.origin;
-            CameraHitDirection = cameraRay.direction;
-        }
+    // Sample the camera AFTER Cinemachine's Brain has moved it this frame.
+    // Sampling in BeforeUpdate/FixedUpdateNetwork (pre-Brain) shipped a
+    // one-frame-stale aim, so shots lagged the visible crosshair when turning.
+    private void LateUpdate()
+    {
+        UpdateCameraRay();
+    }
+
+    private void UpdateCameraRay()
+    {
+        Camera cam = null;
+        if (GameManager.Instance != null && GameManager.Instance.Camera != null)
+            cam = GameManager.Instance.Camera;
+        else if (Camera.main != null)
+            cam = Camera.main;
+
+        if (cam == null)
+            return;
+
+        cameraRay = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
+        CameraHitOrigin = cameraRay.origin;
+        CameraHitDirection = cameraRay.direction;
+
+        // Resolve the world point the crosshair is over. Only the firing path
+        // consumes AimPoint, so the (potentially long) raycast is gated to
+        // aiming/shooting — no per-frame raycast while just walking around.
+        // Otherwise fall back to a cheap far point along the camera ray.
+        if ((Aim || Shoot) && aimResolveMask.value != 0 &&
+            Physics.Raycast(cameraRay, out RaycastHit aimHit, aimResolveRange, aimResolveMask, QueryTriggerInteraction.Ignore))
+            AimPoint = aimHit.point;
+        else
+            AimPoint = cameraRay.origin + cameraRay.direction * aimResolveRange;
     }
 
     #region LOCAL INPUTS
@@ -333,10 +368,13 @@ public class GameplayController : SimulationBehaviour, INetworkRunnerCallbacks, 
         }
         // Iterate over all touches
 
+        // Camera ray / aim point are sampled in LateUpdate (post-Cinemachine);
+        // here we just package the freshest cached values into the input.
         myInput.MovementDirection.Set(MovementDirection.x, MovementDirection.y);
         myInput.LookDirection.Set(LookDirection.x, LookDirection.y);
         myInput.CameraHitOrigin.Set(CameraHitOrigin.x, CameraHitOrigin.y, CameraHitOrigin.z);
         myInput.CameraHitDirection.Set(CameraHitDirection.x, CameraHitDirection.y, CameraHitDirection.z);
+        myInput.AimPoint.Set(AimPoint.x, AimPoint.y, AimPoint.z);
         myInput.Buttons.Set(InputButton.Jump, Jump);
         myInput.Buttons.Set(InputButton.Aim, Aim);
         myInput.Buttons.Set(InputButton.SwitchHands, SwitchHands);

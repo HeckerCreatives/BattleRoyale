@@ -26,11 +26,13 @@ public class BotFallingPlayable : BotAnimationPlayable
 
     }
 
-    public override void NetworkUpdate()
+    public override BotAnimationPlayable NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         FallDamage();
-        Animation();
-    }
+        return Animation();
+}
 
     private void FallDamage()
     {
@@ -40,43 +42,56 @@ public class BotFallingPlayable : BotAnimationPlayable
         }
     }
 
-    private void Animation()
+    private BotAnimationPlayable Animation()
     {
         MoveBot();
 
         if (botPlayables.GetBotData.IsDead)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.DeathPlayable);
-            return;
+            return botPlayables.BasicMovement.DeathPlayable;
         }
 
         if (botController.IsGrounded)
         {
-            //playerMovement.JumpImpulse = 0;
-
             if (fallDamage > 0)
                 botPlayables.GetBotData.FallDamage(fallDamage);
 
             if (botPlayables.GetBotData.IsDead)
             {
-                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.DeathPlayable);
-                return;
+                return botPlayables.BasicMovement.DeathPlayable;
             }
 
-            if (botPlayables.Inventroy.WeaponIndex == 1)
-                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.IdlePlayable);
-            else if (botPlayables.Inventroy.WeaponIndex == 2)
+            int weaponIndex = botPlayables.Inventroy.WeaponIndex;
+
+            if (weaponIndex == 2)
             {
-                if (botPlayables.Inventroy.GetPrimaryWeaponID() == "001")
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordIdlePlayable);
-                else if (botPlayables.Inventroy.GetPrimaryWeaponID() == "002")
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearIdle);
+                string priId = botPlayables.Inventroy.GetPrimaryWeaponID();
+                if (priId == "001") return botPlayables.BasicMovement.SwordIdlePlayable;
+                if (priId == "002") return botPlayables.BasicMovement.SpearIdle;
+                return botPlayables.BasicMovement.IdlePlayable;
             }
+
+            if (weaponIndex == 3)
+            {
+                string secId = botPlayables.Inventroy.GetSecondaryWeaponID();
+                if (secId == "003") return botPlayables.BasicMovement.RifleIdlePlayable;
+                if (secId == "004") return botPlayables.BasicMovement.BowIdlePlayable;
+                return botPlayables.BasicMovement.IdlePlayable;
+            }
+
+            // WeaponIndex == 1 or unknown — fall back to bare-hand idle
+            return botPlayables.BasicMovement.IdlePlayable;
         }
-    }
+
+        return null;
+}
 
     private void MoveBot()
     {
-        botMovement.MoveInDirection();
+        // Don't run wander/navmesh logic mid-air — let gravity pull the bot down cleanly.
+        botController.Move(Vector3.zero, 0f);
     }
 }
+
+
+

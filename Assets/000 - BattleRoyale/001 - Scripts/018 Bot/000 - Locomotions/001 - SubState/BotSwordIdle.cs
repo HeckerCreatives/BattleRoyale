@@ -11,58 +11,62 @@ public class BotSwordIdle : BotAnimationPlayable
     {
     }
 
-    public override void NetworkUpdate()
+    public override BotAnimationPlayable NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         if (!botController.IsGrounded)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.FallingPlayable);
-            return;
+            return botPlayables.BasicMovement.FallingPlayable;
         }
 
         if (botPlayables.GetBotData.IsHit)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.HitPlayable);
-            return;
+            return botPlayables.BasicMovement.HitPlayable;
         }
 
         if (botPlayables.GetBotData.IsStagger)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.StaggerPlayable);
-            return;
+            return botPlayables.BasicMovement.StaggerPlayable;
         }
 
         if (botPlayables.GetBotData.IsDead)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.DeathPlayable);
-            return;
+            return botPlayables.BasicMovement.DeathPlayable;
         }
 
 
         if (botPlayables.GetBotData.Inventory.HealCount > 0 && botPlayables.GetBotData.CurrentHealth < 100)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.HealingPlayable);
-            return;
+            return botPlayables.BasicMovement.HealingPlayable;
         }
 
         if (botPlayables.GetBotData.Inventory.RepairCount > 0 && botPlayables.GetBotData.Inventory.Armor != null)
         {
             if (botPlayables.GetBotData.Inventory.Armor.Supplies < 100)
             {
-                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.RepairArmorPlayable);
-                return;
+                return botPlayables.BasicMovement.RepairArmorPlayable;
             }
         }
 
-        MovePlayer();
-    }
+        return MovePlayer();
+}
 
-    private void MovePlayer()
+    private BotAnimationPlayable MovePlayer()
     {
         botMovement.DetectTarget();
 
+        if (botPlayables.Inventroy.WeaponIndex == 3)
+        {
+            if (botPlayables.Inventroy.GetSecondaryWeaponID() == "003")
+                return botPlayables.BasicMovement.RifleIdlePlayable;
+            else if (botPlayables.Inventroy.GetSecondaryWeaponID() == "004")
+                return botPlayables.BasicMovement.BowIdlePlayable;
+        }
+
         if (botMovement.detectedTarget != null)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordRunPlayable);
+            return botPlayables.BasicMovement.SwordRunPlayable;
         }
         else
         {
@@ -72,8 +76,13 @@ public class BotSwordIdle : BotAnimationPlayable
             {
                 botMovement.WanderTimer = TickTimer.CreateFromSeconds(botMovement.Runner, Random.Range(botMovement.MinWanderDelay, botMovement.MaxWanderDelay));
 
-                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SwordRunPlayable);
+                return botPlayables.BasicMovement.SwordRunPlayable;
             }
         }
-    }
+
+        return null;
 }
+}
+
+
+

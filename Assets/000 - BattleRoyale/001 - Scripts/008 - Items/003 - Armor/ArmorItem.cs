@@ -116,7 +116,7 @@ public class ArmorItem : NetworkBehaviour, IPickupItem
 
         Position = CurrentPlayer.transform.position + new Vector3(0f, 0.1f, 0f);
 
-        if (CurrentPlayer.tag == "Bot")
+        if (CurrentPlayer.CompareTag("Bot"))
             CurrentPlayer.GetComponent<BotInventory>().Armor = null;
         else
             CurrentPlayer.GetComponent<PlayerInventoryV2>().Armor = null;

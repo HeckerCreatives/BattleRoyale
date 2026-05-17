@@ -43,7 +43,7 @@ public class ClientMatchmakingController : MonoBehaviour
     {
         add
         {
-            if (ServerChange == null || ServerChange.GetInvocationList().Contains(value))
+            if (ServerChange == null || !ServerChange.GetInvocationList().Contains(value))
                 ServerChange += value;
         }
         remove { ServerChange -= value; }
@@ -146,6 +146,7 @@ public class ClientMatchmakingController : MonoBehaviour
     [ReadOnly][SerializeField] private float currentTime;
     [ReadOnly][SerializeField] private bool findingMatch;
     [ReadOnly][SerializeField] private bool matchFound;
+    private bool findMatchQueued;
     [ReadOnly][SerializeField] int minutesFindMatch;
     [ReadOnly][SerializeField] int secondsFindMatch;
     [SerializeField] private List<string> serverSelected;
@@ -165,6 +166,7 @@ public class ClientMatchmakingController : MonoBehaviour
     CreateTicketResponse ticketResponse;
 
     Coroutine matching;
+    Coroutine findMatchRetry;
 
     int playLT, enteringMatchTMPLT, enteringMatchFlash;
 
@@ -195,6 +197,9 @@ public class ClientMatchmakingController : MonoBehaviour
                 List<WaitingRoomData> tempdata = JsonConvert.DeserializeObject<List<WaitingRoomData>>(response.ToString());
 
                 if (tempdata == null) return;
+
+                if (!string.IsNullOrEmpty(tempdata[0].messageId))
+                    GameManager.Instance.SocketMngr.EmitEvent("ack", new { eventName = "reconnectexist", messageId = tempdata[0].messageId });
 
                 reconToWaiting = true;
 
@@ -244,6 +249,15 @@ public class ClientMatchmakingController : MonoBehaviour
         {
             GameManager.Instance.AddJob(() =>
             {
+                List<WaitingRoomData> tempdata = JsonConvert.DeserializeObject<List<WaitingRoomData>>(response.ToString());
+                if (tempdata != null && tempdata.Count > 0 && !string.IsNullOrEmpty(tempdata[0].messageId))
+                    GameManager.Instance.SocketMngr.EmitEvent("ack", new { eventName = "enteringmatch", messageId = tempdata[0].messageId });
+
+                // Player already cancelled — ACK above stops server retries, but
+                // don't drag them into a match they left.
+                if (!findingMatch && !inWaitingRoom && !reconToWaiting)
+                    return;
+
                 StartCoroutine(EnteringMatchTimer());
             });
         });
@@ -255,6 +269,13 @@ public class ClientMatchmakingController : MonoBehaviour
                 List<WaitingRoomData> tempdata = JsonConvert.DeserializeObject<List<WaitingRoomData>>(response.ToString());
 
                 GameManager.Instance.SocketMngr.EmitEvent("ack", new { eventName = "matchstatuschanged", messageId = tempdata[0].messageId });
+
+                // Player already cancelled — ACK above stops server retries, but
+                // a stale retry must not re-open the waiting room or re-spend energy.
+                if (!findingMatch && !inWaitingRoom && !reconToWaiting)
+                    return;
+
+                findMatchQueued = true;
 
                 Debug.Log($"Match Status: {response}");
 
@@ -716,16 +737,36 @@ public class ClientMatchmakingController : MonoBehaviour
 
             yield return new WaitForSecondsRealtime(rand);
 
-            GameManager.Instance.SocketMngr.EmitEvent("findmatch", JsonConvert.SerializeObject(new Dictionary<string, string>
+            findMatchQueued = false;
+
+            string findMatchPayload = JsonConvert.SerializeObject(new Dictionary<string, string>
             {
                 { "avatarid", userData.AvatarID }
-            }));
+            });
+
+            GameManager.Instance.SocketMngr.EmitEvent("findmatch", findMatchPayload);
+
+            if (findMatchRetry != null) StopCoroutine(findMatchRetry);
+            findMatchRetry = StartCoroutine(RetryFindMatch(findMatchPayload));
         }
         else
         {
             currentRunnerInstance = Instantiate(instanceRunner);
             roomname = "testing";
             StartMatchFinding();
+        }
+    }
+
+    private IEnumerator RetryFindMatch(string payload)
+    {
+        int retries = 0;
+        while (!findMatchQueued && retries < 5)
+        {
+            yield return new WaitForSecondsRealtime(8f);
+            if (findMatchQueued || !findingMatch) yield break;
+            retries++;
+            Debug.Log($"[Matchmaking] Retrying findmatch (attempt {retries})");
+            GameManager.Instance.SocketMngr.EmitEvent("findmatch", payload);
         }
     }
 
@@ -838,6 +879,13 @@ public class ClientMatchmakingController : MonoBehaviour
     public void CancelFindingMatch()
     {
         if (matching != null) StopCoroutine(matching);
+        if (findMatchRetry != null) StopCoroutine(findMatchRetry);
+
+        // Tell the server to drop us from the matchmaking queue. Without this
+        // the region server keeps us queued and processMatchQueue() still
+        // places us into a room — the client would then receive the found-room
+        // event for a match it already left.
+        GameManager.Instance.SocketMngr.EmitEvent("cancelfindmatch", null);
 
         currentTime = 0;
 
@@ -1012,4 +1060,5 @@ public class WaitingRoomPlayerData
 {
     public string username;
     public string avatarid;
+    public bool isBot;
 }

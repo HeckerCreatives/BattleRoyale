@@ -1,6 +1,8 @@
-﻿using Fusion;
+using Fusion;
 using Fusion.Photon.Realtime;
 using Fusion.Sockets;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -122,14 +124,39 @@ public class DedicatedServerManager : MonoBehaviour
         else
             appSettings = BuildCustomAppSetting("asia");
 
-        if (args.TryGetValue("playercostumedata", out string playercostumedata))
-        {
+        // Full lobby = 30: 1 human + 29 bots when both costume CLI args are omitted.
+        const int debugFullLobbySlots = 30;
+        string playercostumedata;
+        if (args.TryGetValue("playercostumedata", out playercostumedata) && !string.IsNullOrWhiteSpace(playercostumedata))
             Debug.Log(playercostumedata);
+        else
+            playercostumedata = BuildDebugPlayerCostumeJson(1);
+
+        int realPlayerCount = TryCountPlayersFromCostumeJson(playercostumedata);
+        if (realPlayerCount <= 0)
+            realPlayerCount = 1;
+
+        int fallbackBotCount = Mathf.Max(0, debugFullLobbySlots - realPlayerCount);
+
+        string botcostumedata;
+        if (args.TryGetValue("botcostumedata", out botcostumedata) && !string.IsNullOrWhiteSpace(botcostumedata))
+        {
+            try
+            {
+                var parsed = JsonConvert.DeserializeObject<List<BotSpawnData>>(botcostumedata);
+                if (parsed == null)
+                    botcostumedata = BuildDeterministicBotCostumeJson(fallbackBotCount);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"botcostumedata invalid; using deterministic fill ({fallbackBotCount}). {ex.Message}");
+                botcostumedata = BuildDeterministicBotCostumeJson(fallbackBotCount);
+            }
         }
         else
-        {
-            playercostumedata = "[{\"_id\":\"69a78ec0e4e0229d2556a284\",\"username\":\"STRONGWARRIOR53\",\"ownerId\":\"69a78ec0e4e0229d2556a284\",\"hairstyle\":0,\"haircolor\":0,\"clothingcolor\":0,\"skincolor\":0}]";
-        }
+            botcostumedata = BuildDeterministicBotCostumeJson(fallbackBotCount);
+
+        int botSpawnCount = TryCountBotsFromCostumeJson(botcostumedata);
 
         Debug.Log($"STARTING REGION: {appSettings.FixedRegion}");
 
@@ -175,8 +202,8 @@ public class DedicatedServerManager : MonoBehaviour
                 Debug.Log($"Set Safe Zone");
                 obj.GetComponent<SafeZoneServerController>().SetSafeZoneArea();
 
-                Debug.Log($"SpawningPLayers");
-                obj.GetComponent<PlayerJoinedController>().SpawnPlayers(playercostumedata);
+                Debug.Log($"Spawning players ({realPlayerCount}) and bots ({botSpawnCount}) from botcostumedata length");
+                obj.GetComponent<PlayerJoinedController>().SpawnMatchPopulation(playercostumedata, botcostumedata);
             });
 
             MultiplayerServerManager tempmanager = temprunner.GetComponent<MultiplayerServerManager>();
@@ -207,5 +234,96 @@ public class DedicatedServerManager : MonoBehaviour
 
             Debug.Log("ALL PLAYERS CAN NOW JOIN");
         }
+    }
+
+    private static int TryCountPlayersFromCostumeJson(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return 0;
+        try
+        {
+            var list = JsonConvert.DeserializeObject<List<PlayerSpawnData>>(json);
+            return list?.Count ?? 0;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    private static int TryCountBotsFromCostumeJson(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return 0;
+        try
+        {
+            var list = JsonConvert.DeserializeObject<List<BotSpawnData>>(json);
+            return list?.Count ?? 0;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    /// <summary>Stable bot rows for local / headless debug (same seed pattern every run).</summary>
+    private static string BuildDeterministicBotCostumeJson(int count)
+    {
+        count = Mathf.Max(0, count);
+        var list = new List<BotSpawnData>();
+        for (int i = 0; i < count; i++)
+        {
+            list.Add(new BotSpawnData
+            {
+                username = $"BOT_debug_{i:00}",
+                avatarid = (i * 3) % 8,
+                hairstyle = i % 5,
+                haircolor = i % 4,
+                clothingcolor = i % 6,
+                skincolor = i % 4
+            });
+        }
+
+        return JsonConvert.SerializeObject(list);
+    }
+
+    /// <summary>
+    /// Debug humans when <c>-playercostumedata</c> is omitted. Use <paramref name="humanCount"/> = 1 for one <c>DEBUG_Player</c> + 29 bots (30 total).
+    /// Use a higher count only for stress tests (spawns that many player prefabs).
+    /// </summary>
+    private static string BuildDebugPlayerCostumeJson(int humanCount)
+    {
+        humanCount = Mathf.Max(1, humanCount);
+        var list = new List<PlayerSpawnData>();
+        for (int i = 0; i < humanCount; i++)
+        {
+            if (humanCount == 1)
+            {
+                list.Add(new PlayerSpawnData
+                {
+                    _id = "debug-local",
+                    username = "DEBUG_Player",
+                    ownerId = "debug-local",
+                    avatarid = 0,
+                    hairstyle = 0,
+                    haircolor = 0,
+                    clothingcolor = 0,
+                    skincolor = 0
+                });
+                break;
+            }
+
+            list.Add(new PlayerSpawnData
+            {
+                _id = $"debug-local-{i}",
+                username = $"DEBUG_Player_{i:00}",
+                ownerId = $"debug-local-{i}",
+                avatarid = (i * 2) % 8,
+                hairstyle = i % 5,
+                haircolor = i % 4,
+                clothingcolor = i % 6,
+                skincolor = i % 4
+            });
+        }
+
+        return JsonConvert.SerializeObject(list);
     }
 }

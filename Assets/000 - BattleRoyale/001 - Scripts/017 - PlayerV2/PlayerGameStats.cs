@@ -1,4 +1,4 @@
-﻿using Fusion;
+using Fusion;
 using Newtonsoft.Json;
 using System;
 using System.Collections;
@@ -264,7 +264,7 @@ public class PlayerGameStats : NetworkBehaviour
 
     private void GameStats()
     {
-        PlayerCount.text = $"{(PlayerJoinedController.Instance.RemainingPlayers.Count + BotSpawnerController.Instance.Bots.Count):n0} / 30";
+        PlayerCount.text = $"{(PlayerJoinedController.Instance.RemainingPlayers.Count + PlayerJoinedController.Instance.Bots.Count):n0} / 30";
         killCountTMP.text = $"{KillCount:n0}";
         playtimeTMP.text = $"Playtime: {GameManager.Instance.GetMinuteSecondsTime(playtime)}";
     }
@@ -284,7 +284,7 @@ public class PlayerGameStats : NetworkBehaviour
         IsDoneShowingGameOver = true;
 
         usernameResultTMP.text = userData.Username;
-        int botsCount = BotSpawnerController.Instance.Bots.Count;
+        int botsCount = PlayerJoinedController.Instance.Bots.Count;
         int rank = PlayerPlacement + botsCount;
 
         playerCountResultTMP.text =
@@ -350,7 +350,7 @@ public class PlayerGameStats : NetworkBehaviour
         if (ResultsSent || ResultsSending) return; // ✅ hard guard
         ResultsSending = true;
 
-        int botsCount = BotSpawnerController.Instance.Bots.Count;
+        int botsCount = PlayerJoinedController.Instance.Bots.Count;
         int rank = (rankOverride != -1)
             ? rankOverride
             : (PlayerPlacement + botsCount);
@@ -437,7 +437,7 @@ public class PlayerGameStats : NetworkBehaviour
         if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;
         if (playerhealth.IsDead) return;
 
-        if (PlayerJoinedController.Instance.RemainingPlayers.Count > 1 || BotSpawnerController.Instance.Bots.Count > 0) return;
+        if (PlayerJoinedController.Instance.RemainingPlayers.Count > 1 || PlayerJoinedController.Instance.Bots.Count > 0) return;
 
         TrySendResultsOnce("All players quit (server winner)", isWinner: ownObjectEnabler.Removing ? false : true, rankOverride: 1);
     }
@@ -480,7 +480,7 @@ public class PlayerGameStats : NetworkBehaviour
             rankResultTMP.text = "1";
             killCountResultTMP.text = KillCount.ToString();
 
-            float rankpointLB = ((100 - (PlayerPlacement + BotSpawnerController.Instance.Bots.Count) + 1) / 100f) * 20f;
+            float rankpointLB = ((100 - (PlayerPlacement + PlayerJoinedController.Instance.Bots.Count) + 1) / 100f) * 20f;
             rankpointLB = Convert.ToInt32(rankpointLB);
 
             float killpointLB = KillCount * 100f;
@@ -529,7 +529,7 @@ public class PlayerGameStats : NetworkBehaviour
         if (!HasInputAuthority) return;
         if (playerhealth.IsDead) return;
         if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;
-        if (PlayerJoinedController.Instance.RemainingPlayers.Count > 1 || BotSpawnerController.Instance.Bots.Count > 0) return;
+        if (PlayerJoinedController.Instance.RemainingPlayers.Count > 1 || PlayerJoinedController.Instance.Bots.Count > 0) return;
         if (winMessageObj.activeInHierarchy) return;
         if (IsDoneShowingGameOver) return;
 
@@ -540,7 +540,7 @@ public class PlayerGameStats : NetworkBehaviour
         rankResultTMP.text = "1";
         killCountResultTMP.text = KillCount.ToString();
 
-        float rankpointLB = ((100 - (PlayerPlacement + BotSpawnerController.Instance.Bots.Count) + 1) / 100f) * 20f;
+        float rankpointLB = ((100 - (PlayerPlacement + PlayerJoinedController.Instance.Bots.Count) + 1) / 100f) * 20f;
         rankpointLB = Convert.ToInt32(rankpointLB);
 
         float killpointLB = KillCount * 100f;

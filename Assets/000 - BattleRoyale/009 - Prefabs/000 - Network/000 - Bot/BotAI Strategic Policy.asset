@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01509ada7ca2f7d44b1985e89d4d19f7, type: 3}
+  m_Name: BotAI Strategic Policy
+  m_EditorClassIdentifier: 
+  nonArenaPlanIntervalTicks: 120
+  campHoldSkipReplanTicks: 20
+  basePlanIntervalTicks: 36
+  planIntervalIndexJitterMod: 40
+  lowHpRecoverThreshold: 38
+  recoverDisengageDistance: 14
+  recoverDisengageMinAwaySqrMag: 2
+  lootRoamCentroidBlend: 0.22
+  lootRoamJitterHalfExtent: 26
+  minActorsToConsiderCamp: 2
+  campChanceBase: 0.18
+  campChancePersonalityScale: 0.38
+  zoneClosingCampChanceMultiplier: 0.4
+  campFallbackCentroidBlend: 0.35
+  campRingRadiusScale: 0.55
+  campHoldDurationBaseTicks: 72
+  campHoldDurationIndexJitterMod: 100
+  campTangentialWobbleIndexMod: 9
+  campTangentialWobbleStep: 1.4
+  campArrivalDistance: 5
+  huntBlendBase: 0.32
+  huntBlendPersonalityScale: 0.42
+  zoneClosingHuntBlendAdd: 0.14
+  huntWaypointNoiseHalfExtent: 18
+  rotateAfterHuntChance: 0.22
+  focusClampSafeRadiusScale: 0.9

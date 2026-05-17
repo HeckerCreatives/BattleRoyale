@@ -43,8 +43,10 @@ public class BotSpearAttackOne : BotAnimationPlayable
         canAction = false;
     }
 
-    public override void NetworkUpdate()
+    public override BotAnimationPlayable NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         if (botPlayables.TickRateAnimation >= damageWindowStart && botPlayables.TickRateAnimation <= damageWindowEnd)
         {
             if (!hasResetHitEnemies)
@@ -53,59 +55,58 @@ public class BotSpearAttackOne : BotAnimationPlayable
                 hasResetHitEnemies = true;
             }
 
-            if (botPlayables.Inventroy.PrimaryWeapon == null) return;
+            if (botPlayables.Inventroy.PrimaryWeapon == null) return null;
 
             botPlayables.Inventroy.PrimaryWeapon.DamagePlayer(false, true);
         }
 
         if (botPlayables.TickRateAnimation >= moveTimer && botPlayables.TickRateAnimation <= stopMoveTimer)
         {
-            botController.Move(botController.TransformDirection * 0.75f, 0f);
+            botMovement.TryLungeForward(0.75f);
         }
 
-        CheckAnimations();
-    }
+        return CheckAnimations();
+}
 
-    private void CheckAnimations()
+    private BotAnimationPlayable CheckAnimations()
     {
         if (!botController.IsGrounded)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.FallingPlayable);
-            return;
+            return botPlayables.BasicMovement.FallingPlayable;
         }
 
         if (botPlayables.GetBotData.IsDead)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.DeathPlayable);
-            return;
+            return botPlayables.BasicMovement.DeathPlayable;
         }
 
         if (botPlayables.GetBotData.IsHit)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.HitPlayable);
-            return;
+            return botPlayables.BasicMovement.HitPlayable;
         }
 
         if (botPlayables.GetBotData.IsStagger)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.StaggerPlayable);
-            return;
+            return botPlayables.BasicMovement.StaggerPlayable;
         }
 
         if (botPlayables.TickRateAnimation >= timer && canAction)
         {
-            if (botMovement.CanSwordAttack())
-            {
-                if (botPlayables.TickRateAnimation >= nextPuncDelay)
-                    botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearAttackThree);
-                //botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearAttackThree);
+            if (botPlayables.TickRateAnimation < nextPuncDelay)
+                return null;
 
-                return;
-            }
+            if (botMovement.CanSpearAttack())
+                return botPlayables.BasicMovement.SpearAttackTwo;
 
             botMovement.PickNewWanderDirection();
             botMovement.WanderTimer = TickTimer.CreateFromSeconds(botMovement.Runner, Random.Range(botMovement.MinWanderDelay, botMovement.MaxWanderDelay));
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearRun);
+            return botPlayables.BasicMovement.SpearRun;
         }
-    }
+
+        return null;
 }
+}
+
+
+
+

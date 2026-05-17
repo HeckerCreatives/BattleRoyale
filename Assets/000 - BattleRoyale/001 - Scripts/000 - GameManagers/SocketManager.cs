@@ -8,6 +8,7 @@ using SocketIOClient.Newtonsoft.Json;
 using TMPro;
 using UnityEngine.UI;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
@@ -121,26 +122,6 @@ public class SocketManager : MonoBehaviour
         }
     }
 
-    private event EventHandler PlayerCountAmericaWestServerChange;
-    public event EventHandler OnPlayerCountAmericaWestServerChange
-    {
-        add
-        {
-            if (PlayerCountAmericaWestServerChange == null || !PlayerCountAmericaWestServerChange.GetInvocationList().Contains(value))
-                PlayerCountAmericaWestServerChange += value;
-        }
-        remove { PlayerCountAmericaWestServerChange -= value; }
-    }
-    public int PlayerAmericaWestCountServer
-    {
-        get => playerAmericaWestCountServer;
-        set
-        {
-            playerAmericaWestCountServer = value;
-            PlayerCountAmericaWestServerChange?.Invoke(this, EventArgs.Empty);
-        }
-    }
-
     // ============================
 
     [SerializeField] private UserData userData;
@@ -164,7 +145,6 @@ public class SocketManager : MonoBehaviour
     [SerializeField] private int playerUAECountServer;
     [SerializeField] private int playerAfricaCountServer;
     [SerializeField] private int playerAmericaEastCountServer;
-    [SerializeField] private int playerAmericaWestCountServer;
     [SerializeField] private int retryReconnect;
 
     //  ===========================
@@ -202,6 +182,14 @@ public class SocketManager : MonoBehaviour
 
             try
             {
+                // Fresh socket instance — its event handlers are registered in
+                // SocketConnected, gated by _handlersRegistered. That flag is
+                // never reset elsewhere, so after a logout (Socket = null) the
+                // new instance would skip registration and never receive
+                // playercount/region counts. Reset it here only; plain
+                // reconnects reuse the existing Socket and skip InitializeSocket,
+                // so they still avoid duplicate handlers.
+                _handlersRegistered = false;
 
                 Socket = new SocketIOUnity(uri, new SocketIOOptions
                 {
@@ -234,6 +222,11 @@ public class SocketManager : MonoBehaviour
         Debug.Log("Socket Connected to server");
         ConnectionStatus = "Connected";
 
+        // Captured before the AddJob below resets these. A reconnect gives us a
+        // new socket id, so the region server is still relaying room events to
+        // the dead one — we must re-run the reconnect handshake to re-register.
+        bool wasReconnect = _isReconnecting || retryReconnect > 0;
+
         GameManager.Instance.AddJob(() =>
         {
             retryReconnect = 0;
@@ -246,9 +239,10 @@ public class SocketManager : MonoBehaviour
         {
             _handlersRegistered = true;
 
-            Socket.On("ping", async (response) =>
+            Socket.On("ping", (response) =>
             {
-                await Task.Delay(5000);
+                // Respond immediately. A delay here eats the server's pong
+                // timeout budget and causes false force-disconnects on spikes.
                 long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 EmitEvent("pong", timestamp);
                 missedPingCount = 0;
@@ -257,67 +251,76 @@ public class SocketManager : MonoBehaviour
 
             Socket.On("playercount", (response) =>
             {
+                int c = ReadCountAndAck(response, "playercount");
                 GameManager.Instance.AddJob(() =>
                 {
                     Debug.Log("player count change");
-                    PlayerCountServer = response.GetValue<int>();
+                    PlayerCountServer = c;
                 });
             });
 
             Socket.On("asiacount", (response) =>
             {
+                int c = ReadCountAndAck(response, "asiacount");
                 GameManager.Instance.AddJob(() =>
                 {
                     Debug.Log("Change asia user count");
-                    PlayerAsiaCountServer = response.GetValue<int>();
+                    PlayerAsiaCountServer = c;
                 });
             });
 
             Socket.On("uaecount", (response) =>
             {
+                int c = ReadCountAndAck(response, "uaecount");
                 GameManager.Instance.AddJob(() =>
                 {
                     Debug.Log("Change asia uae count");
-                    PlayerUAECountServer = response.GetValue<int>();
-                });
-            });
-
-            Socket.On("americawestcount", (response) =>
-            {
-                GameManager.Instance.AddJob(() =>
-                {
-                    PlayerAmericaWestCountServer = response.GetValue<int>();
+                    PlayerUAECountServer = c;
                 });
             });
 
             Socket.On("americacount", (response) =>
             {
+                int c = ReadCountAndAck(response, "americacount");
                 GameManager.Instance.AddJob(() =>
                 {
-                    PlayerAmericaEastCountServer = response.GetValue<int>();
+                    PlayerAmericaEastCountServer = c;
                 });
             });
 
             Socket.On("africacount", (response) =>
             {
+                int c = ReadCountAndAck(response, "africacount");
                 GameManager.Instance.AddJob(() =>
                 {
-                    PlayerAfricaCountServer = response.GetValue<int>();
+                    PlayerAfricaCountServer = c;
                 });
             });
 
             Socket.On("selectedservercount", (response) =>
             {
+                // Now a reliable object payload: { asia, za, uae, us, messageId }
+                JObject obj = response.GetValue<JObject>();
+                string messageId = obj.Value<string>("messageId");
+                if (!string.IsNullOrEmpty(messageId))
+                    EmitEvent("ack", new { eventName = "selectedservercount", messageId });
+
+                int total = obj.Value<int>("total");
+                int asia = obj.Value<int>("asia");
+                int za   = obj.Value<int>("za");
+                int uae  = obj.Value<int>("uae");
+                int us   = obj.Value<int>("us");
+
                 GameManager.Instance.AddJob(() =>
                 {
-                    if (response.GetValue<string>() != "")
-                    {
-                        Dictionary<string, int> tempservercount = JsonConvert.DeserializeObject<Dictionary<string, int>>(response.GetValue<string>());
-                        PlayerAsiaCountServer = tempservercount["asia"];
-                        PlayerAfricaCountServer = tempservercount["za"];
-                        PlayerUAECountServer = tempservercount["uae"];
-                        PlayerAmericaEastCountServer = tempservercount["us"];
-                    }
+                    // Authoritative snapshot — covers the global total too so
+                    // the server-selection screen never depends on a
+                    // best-effort playercount delta.
+                    PlayerCountServer = total;
+                    PlayerAsiaCountServer = asia;
+                    PlayerAfricaCountServer = za;
+                    PlayerUAECountServer = uae;
+                    PlayerAmericaEastCountServer = us;
                 });
             });
         }
@@ -328,6 +331,13 @@ public class SocketManager : MonoBehaviour
             { "userid", userData.Username },
             { "region", userData.SelectedServer }
         }));
+
+        // On reconnect, re-run the reconnect handshake. The region server replies
+        // reconnectexist (re-registers our new socket id + restores the waiting
+        // room) or reconnectfail (harmless if we weren't in a room). Login alone
+        // does not re-sync room membership, so lobby events would otherwise stop.
+        if (wasReconnect)
+            EmitEvent("needtoreconnect", null);
     }
 
     private void RestartPingTimeout()
@@ -483,6 +493,21 @@ public class SocketManager : MonoBehaviour
         });
 
         StartAutoReconnect();
+    }
+
+    // Count deltas are best-effort: an object { count } with no messageId, so
+    // no ACK is sent (nothing to retry — authoritative correctness comes from
+    // the reliable selectedservercount snapshot on login/selectregion). The
+    // messageId branch is kept defensively: if a count is ever sent reliably
+    // again it still gets ACKed. ACK (when present) goes off the main thread;
+    // only the value assignment is marshalled back via AddJob by callers.
+    private int ReadCountAndAck(SocketIOResponse response, string eventName)
+    {
+        JObject obj = response.GetValue<JObject>();
+        string messageId = obj.Value<string>("messageId");
+        if (!string.IsNullOrEmpty(messageId))
+            EmitEvent("ack", new { eventName, messageId });
+        return obj.Value<int>("count");
     }
 
     public void EmitEvent(string eventname, object data)

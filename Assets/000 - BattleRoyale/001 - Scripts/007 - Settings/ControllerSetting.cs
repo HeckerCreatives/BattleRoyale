@@ -76,6 +76,11 @@ public class ControllerSetting : Fusion.Behaviour
         OnSelectedUIRTChange += UIChange;
     }
 
+    private void OnEnable()
+    {
+        CheckSliders();
+    }
+
     private async void OnDisable()
     {
         if (insideGame)
@@ -96,14 +101,14 @@ public class ControllerSetting : Fusion.Behaviour
 
     private void CheckSliders()
     {
-        if (selectedUIImg == null) opacitySlider.enabled = false;
-        else opacitySlider.enabled = true;
+        if (selectedUIImg == null) opacitySlider.interactable = false;
+        else opacitySlider.interactable = true;
 
-        if (selectedUIRT == null) sizeSlider.enabled = false;
+        if (selectedUIRT == null) sizeSlider.interactable = false;
         else
         {
-            if (selectedUIRT.GetComponent<SettingsControlGameplayController>().canChangeSize) sizeSlider.enabled = true;
-            else sizeSlider.enabled = false;
+            if (selectedUIRT.GetComponent<SettingsControlGameplayController>().canChangeSize) sizeSlider.interactable = true;
+            else sizeSlider.interactable = false;
         }
     }
 
@@ -121,14 +126,18 @@ public class ControllerSetting : Fusion.Behaviour
     {
         float newSize = Mathf.Lerp(minXSize, maxXSize, sizeSlider.value);
         float ratio = initialWidth / initialHeight;
-        selectedUIRT.localScale = new Vector2(newSize * ratio, newSize); // Resize the UI element maintaining aspect ratio
+
+        if (selectedUIRT != null)
+            selectedUIRT.localScale = new Vector2(newSize * ratio, newSize); // Resize the UI element maintaining aspect ratio
     }
 
     public void OnOpacitySliderChange()
     {
         float newOpacity = Mathf.Lerp(minOpacity, maxOpacity, opacitySlider.value);
         float elementColor = (newOpacity - minOpacity) / (maxOpacity - minOpacity) * (1f - 0f) + 0f;
-        SelectedUIImg.alpha = elementColor;
+
+        if (SelectedUIImg != null)
+            SelectedUIImg.alpha = elementColor;
     }
 
     public void ClearUIValues()

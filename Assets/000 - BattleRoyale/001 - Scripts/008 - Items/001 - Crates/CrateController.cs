@@ -24,6 +24,66 @@ public class CrateController : NetworkBehaviour
         }
     }
 
+    public void PickupItemForBot(string itemkey, Botdata bot)
+    {
+        if (!HasStateAuthority) return;
+        if (!Weapons.ContainsKey(itemkey)) return;
+
+        var inv = bot.Inventory;
+        NetworkObject tempweapon;
+
+        switch (itemkey)
+        {
+            case "001":
+            case "002":
+                tempweapon = weaponSpawnData.GetItemObject(itemkey);
+                Runner.Spawn(tempweapon, Vector3.zero, Quaternion.identity, PlayerRef.None, onBeforeSpawned: (runner, obj) =>
+                {
+                    obj.GetComponent<PrimaryWeaponItem>().InitializeItem(bot.Object, true, () => Weapons.Remove(itemkey));
+                });
+                break;
+            case "003":
+            case "004":
+                tempweapon = weaponSpawnData.GetItemObject(itemkey);
+                Runner.Spawn(tempweapon, Vector3.zero, Quaternion.identity, PlayerRef.None, onBeforeSpawned: (runner, obj) =>
+                {
+                    obj.GetComponent<SecondaryWeaponItem>().InitializeItem(bot.Object, Weapons[itemkey], true, () => Weapons.Remove(itemkey));
+                    inv.SwitchToSecondary();
+                });
+                break;
+            case "005":
+                inv.RifleMagazine = System.Math.Min(inv.RifleMagazine + Weapons[itemkey], 999);
+                Weapons.Remove(itemkey);
+                break;
+            case "006":
+                inv.BowMagazine = System.Math.Min(inv.BowMagazine + Weapons[itemkey], 999);
+                Weapons.Remove(itemkey);
+                break;
+            case "007":
+                tempweapon = weaponSpawnData.GetItemObject(itemkey);
+                Runner.Spawn(tempweapon, Vector3.zero, Quaternion.identity, PlayerRef.None, onBeforeSpawned: (runner, obj) =>
+                {
+                    obj.GetComponent<ArmorItem>().InitializeItem(bot.Object, inv.ArmorBack, false, true, () => Weapons.Remove(itemkey));
+                });
+                break;
+            case "008":
+                if (inv.HealCount >= 4) return;
+                inv.HealCount++;
+                Weapons.Remove(itemkey);
+                break;
+            case "009":
+                if (inv.RepairCount >= 4) return;
+                inv.RepairCount++;
+                Weapons.Remove(itemkey);
+                break;
+            case "010":
+                if (inv.TrapCount >= 4) return;
+                inv.TrapCount++;
+                Weapons.Remove(itemkey);
+                break;
+        }
+    }
+
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     public void RPC_RemoveItem(NetworkString<_4> itemkey, PlayerInventoryV2 player)
     {

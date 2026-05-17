@@ -101,9 +101,9 @@ public class InventoryController : MonoBehaviour
         PlayObj.SetActive(true);
     }
 
-    public IEnumerator GetInventory()
+    public IEnumerator GetInventory(bool loaderStayAlive = false)
     {
-        yield return StartCoroutine(GameManager.Instance.GetRequest("/marketplace/inventory", "", false, (response) =>
+        yield return StartCoroutine(GameManager.Instance.GetRequest("/marketplace/inventory", "", loaderStayAlive, (response) =>
         {
             try
             {

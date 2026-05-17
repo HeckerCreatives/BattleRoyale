@@ -15,7 +15,6 @@ GameObject:
   - component: {fileID: 4812494338444341753}
   - component: {fileID: 7863920190444468710}
   - component: {fileID: 2046543979837632740}
-  - component: {fileID: 7547791150730725687}
   - component: {fileID: 6931032213872811362}
   - component: {fileID: 3659552662626323006}
   - component: {fileID: 1955493956064559302}
@@ -71,7 +70,6 @@ MonoBehaviour:
   safeZoneServerController: {fileID: 4812494338444341753}
   playerJoinedController: {fileID: 7863920190444468710}
   socketServer: {fileID: 2046543979837632740}
-  botSpawnerController: {fileID: 7547791150730725687}
   killNotifServerController: {fileID: 6931032213872811362}
   spawnBattleAreaPositions:
   - {fileID: 0}
@@ -232,10 +230,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerObj: {fileID: 4931854838695321654, guid: 6ee04c1ee952dee48b45d97fca21e4ae,
     type: 3}
+  botPrefab: {fileID: 3158526975555532608, guid: 2b70214474ae41d4fad0262d11ff401e,
+    type: 3}
   healObj: {fileID: 5711290807954466664, guid: ae5a4c3d7c9e15e4eb5f70b12af2b0c4, type: 3}
   armorObj: {fileID: 1825424966074417164, guid: 91b9eccfad1c41b488dc8bbeccc98658,
     type: 3}
-  ammoRifleObj: {fileID: 8284634702788986114, guid: 0efef0621ad0d474eb15e7b1dbdc2def,
+  rifleAmmoObj: {fileID: 8284634702788986114, guid: 0efef0621ad0d474eb15e7b1dbdc2def,
     type: 3}
   spawnWaitingAreaPositions: []
   doneSetupPlayers: 0
@@ -252,225 +252,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dddef8347cfd21940b31d77a4f09c320, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &7547791150730725687
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4720992259611821993}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e444c6fb9e7a16a4b950b860ed237576, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxBot: 0
-  botPrefab: {fileID: 3158526975555532608, guid: 2b70214474ae41d4fad0262d11ff401e,
-    type: 3}
-  botSpawnPoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  swordItem: {fileID: 1251601267454481847, guid: 7fe4a221ff2f2d64181e56c9913c850c,
-    type: 3}
-  spearItem: {fileID: 8190455501384522856, guid: 796b17788ddec0e4995ac5a523ff0d95,
-    type: 3}
-  armorItem: {fileID: 4096039779875312679, guid: da592623b76ee774aa4085ef781ca09b,
-    type: 3}
-  cbsbotnames:
-  - kelboogle
-  - Boomboomyehey
-  - Joe Mama
-  - The Real
-  - Alex
-  - Darilyo
-  - Alexanderrr
-  - ganielleDOTexe
-  - Hebe Handsome
-  - crazychixx
-  - bellemona
-  botnames:
-  - BitBuddie
-  - SirTalksALot
-  - BlipBlop
-  - MissExecute
-  - CaptainQuirk
-  - BotlyMcBotface
-  - ChatChum
-  - NannyByte
-  - GlitchyWitch
-  - TaskToto
-  - MechaMilo
-  - ProntoPal
-  - WobbleBot
-  - Zapsterino
-  - ByteyBoi
-  - ClippyBot3000
-  - CircuitSis
-  - Dude.exe
-  - DottieBot
-  - CodeSnacc
-  - FunkyFirmware
-  - BuddyBoot
-  - ChatNugget
-  - Quirk.exe
-  - SnarkBot
-  - AutoBoi
-  - RoboChatter
-  - CaffeinateMe
-  - Pesto.exe
-  - HiccupBot
-  - Dorkatron
-  - SassCircuit
-  - GiggleLoop
-  - Spamuel
-  - BanterBot
-  - CaptainClick
-  - BinaryBabe
-  - BotOnTheRocks
-  - FrydayBot
-  - NibletBot
-  - Sassynator
-  - MechMimi
-  - Peppy.exe
-  - BoopBeep
-  - ByteSnax
-  - LazyLoop
-  - MuffinBot
-  - Yawn.exe
-  - CheekyBits
-  - RoboNoob
-  - BugsyBot
-  - LiloBot
-  - ToastyCore
-  - NekoNode
-  - GooberBot
-  - CrashPal
-  - SillyChip
-  - DonutBot
-  - Drifty.exe
-  - Perky.exe
-  - CuddleBit
-  - NapsterBot
-  - HappySudo
-  - MechaMocha
-  - QuirkyByte
-  - SnipSnip.exe
-  - DotDotBot
-  - RoboTeehee
-  - CodeSprout
-  - PeekoBot
-  - Wink.exe
-  - BashBuddy
-  - TinkerTock
-  - Botwink
-  - Purrtocol
-  - FrankieFirmware
-  - LolaLogic
-  - ElBotto
-  - QuinnBot
-  - JazzyBytes
-  - Tobi.exe
-  - Buglet
-  - RebootRicky
-  - MechaMittens
-  - GrinBot
-  - MoeBot
-  - PixelPunk
-  - TaterBot
-  - TwinkleChip
-  - ChuckleUnit
-  - FuzzyLogic
-  - ByteBella
-  - AutoAmy
-  - NannyNode
-  - FlipScript
-  - PingPongBot
-  - LolliBot
-  - Bloopette
-  - RikkaBot
-  - DitzBot
-  - ZappyZoe
-  - KikiKernel
-  - HappyCrank
-  - BlinkieBot
-  - ToastBot
-  - Nibble.exe
-  - RollyBot
-  - Chill.exe
-  - MintyBot
-  - SassyBoot
-  - HonkBot
-  - CooCoo.exe
-  - Chipette
-  - NuggieBot
-  - FroyoBot
-  - BeepBae
-  - Clunkie
-  - PikaBot
-  - PopPopBot
-  - BananaBot
-  - SudoSis
-  - Gloop.exe
-  - OllieBot
-  - WidgetWoo
-  - DotFace
-  - MechaWink
-  - SparkNeko
-  - CrankyBot
-  - SprinkleBit
-  - ByteBopper
-  - Cookie.exe
-  - FluffyBot
-  - RoboSniff
-  - ScootBot
-  - BlinkyBelle
-  - MrScrambles
-  - PoppyProtocol
-  - JellyBot
-  - ZuzuBot
-  - Fizz.exe
-  - GiddyCore
-  - BunnyBytes
-  - MechaToast
-  - DashieBot
-  - QuokkaBot
-  - HappyPatch
-  - Cheek.exe
-  - CuppyBot
-  - FloofCircuit
-  - Meowdule
-  spawnBotIndex: 0
-  botNameIndex: 0
-  doneCBSBotNames: 0
 --- !u!114 &6931032213872811362
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -829,7 +610,6 @@ MonoBehaviour:
   - {fileID: 4478443141726677364}
   - {fileID: 4812494338444341753}
   - {fileID: 7863920190444468710}
-  - {fileID: 7547791150730725687}
   - {fileID: 6931032213872811362}
   - {fileID: 3659552662626323006}
   ForceRemoteRenderTimeframe: 0

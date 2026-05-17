@@ -373,7 +373,7 @@ public class PlayerHealthV2 : NetworkBehaviour
         {
             CurrentHealth = (byte)Mathf.Max(0, CurrentHealth - remainingDamage);
 
-            if (nobject.tag == "Player")
+            if (nobject.CompareTag("Player"))
                 nobject.GetComponent<PlayerGameStats>().HitPoints += remainingDamage;
         }
 
@@ -385,7 +385,7 @@ public class PlayerHealthV2 : NetworkBehaviour
 
             if (IsDead)
             {
-                if (nobject.tag == "Player")
+                if (nobject.CompareTag("Player"))
                     nobject.GetComponent<PlayerGameStats>().KillCount++;
 
                 playerGameStats.PlayerPlacement = PlayerJoinedController.Instance.RemainingPlayers.Count;

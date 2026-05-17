@@ -14,6 +14,16 @@ public class BotPlayableChanger
 
     public void ChangeState(BotAnimationPlayable currentState)
     {
+        if (currentState == null || CurrentState == currentState)
+            return;
+
+        if (CurrentState == null)
+        {
+            CurrentState = currentState;
+            CurrentState.Enter();
+            return;
+        }
+
         CurrentState.Exit();
         CurrentState = currentState;
         CurrentState.Enter();

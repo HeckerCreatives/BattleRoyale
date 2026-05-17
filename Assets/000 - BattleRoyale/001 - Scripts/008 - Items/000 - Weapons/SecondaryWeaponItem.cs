@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
 {
+    public bool IsRifle => isRifle;
     public string WeaponID
     {
         get => weaponID;
@@ -67,18 +68,9 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
 
         if (IsPickedUp)
         {
-            if (IsEquipped)
+            if (TryGetSecondaryCarryParent(out Transform carry))
             {
-                transform.SetParent(WeaponID == "003"
-                    ? PlayerCore.Inventory.RifleHand
-                    : PlayerCore.Inventory.BowHand, false);
-                transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
-            }
-            else
-            {
-                transform.SetParent(WeaponID == "003"
-                    ? PlayerCore.Inventory.RifleBack
-                    : PlayerCore.Inventory.BowBack, false);
+                transform.SetParent(carry, false);
                 transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
             }
         }
@@ -96,18 +88,9 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
         // Only the simulation should update the authoritative state
         if (IsPickedUp)
         {
-            if (IsEquipped)
+            if (TryGetSecondaryCarryParent(out Transform carry))
             {
-                transform.SetParent(WeaponID == "003"
-                    ? PlayerCore.Inventory.RifleHand
-                    : PlayerCore.Inventory.BowHand, false);
-                transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
-            }
-            else
-            {
-                transform.SetParent(WeaponID == "003"
-                    ? PlayerCore.Inventory.RifleBack
-                    : PlayerCore.Inventory.BowBack, false);
+                transform.SetParent(carry, false);
                 transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
             }
         }
@@ -118,6 +101,51 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
             transform.position = Position;
             transform.rotation = Rotation != Quaternion.identity ? Rotation : Quaternion.Euler(dropRotation);
         }
+    }
+
+    /// <summary>Hand/back socket for players (<see cref="PlayerCore"/>) or bots (<see cref="BotData"/> + <see cref="BotInventory"/>).</summary>
+    private bool TryGetSecondaryCarryParent(out Transform parent)
+    {
+        parent = null;
+
+        if (BotData != null)
+        {
+            if (CurrentPlayer == null) return false;
+            BotInventory inv = CurrentPlayer.GetComponent<BotInventory>();
+            if (inv == null) return false;
+
+            if (IsRifle)
+            {
+                parent = IsEquipped ? inv.RifleHand : inv.RifleBack != null ? inv.RifleBack : inv.RifleHand;
+            }
+            else
+            {
+                parent = IsEquipped ? inv.BowHand : inv.BowBack != null ? inv.BowBack : inv.BowHand;
+            }
+
+            return parent != null;
+        }
+
+        if (PlayerCore == null || PlayerCore.Inventory == null) return false;
+
+        if (IsRifle)
+        {
+            parent = IsEquipped
+                ? PlayerCore.Inventory.RifleHand
+                : PlayerCore.Inventory.RifleBack != null
+                    ? PlayerCore.Inventory.RifleBack
+                    : PlayerCore.Inventory.RifleHand;
+        }
+        else
+        {
+            parent = IsEquipped
+                ? PlayerCore.Inventory.BowHand
+                : PlayerCore.Inventory.BowBack != null
+                    ? PlayerCore.Inventory.BowBack
+                    : PlayerCore.Inventory.BowHand;
+        }
+
+        return parent != null;
     }
 
     public void InitializeItemOnSpawn(Vector3 position, Quaternion rotation, int supplies = 0)

@@ -49,10 +49,6 @@ public class PlayerPlayables : NetworkBehaviour
     [SerializeField] private float maxRoll = 12f;
 
     [Space]
-    [SerializeField] private Transform bonePunchRot;
-    [SerializeField] private Vector3 punchrotationfix;
-
-    [Space]
     public PlayerHealthV2 healthV2;
     public PlayerUpperMovement upperBodyMovement;
     public PlayerBasicMovement lowerBodyMovement;
@@ -154,7 +150,6 @@ public class PlayerPlayables : NetworkBehaviour
     private AnimationPlayable _pendingLowerState;
     public AnimationLayerMixerPlayable finalMixer;
     public AnimationScriptPlayable lookAtPlayable;
-    public AnimationScriptPlayable punchFixRotation;
     public LookAtJobBoneIK job { get; set; }
     LagCompensatedHit hit = new LagCompensatedHit();
 
@@ -207,12 +202,7 @@ public class PlayerPlayables : NetworkBehaviour
         }
     }
 
-    public void PunchRotFix()
-    {
-        bonePunchRot.localRotation *= Quaternion.Euler(punchrotationfix);
-    }
-
-    public override void Render()
+public override void Render()
     {
         if (lowerBodyChanger.CurrentState == null || upperBodyChanger.CurrentState == null) return;
         if (HasStateAuthority) return;
@@ -407,24 +397,8 @@ public class PlayerPlayables : NetworkBehaviour
         lookAtPlayable.ConnectInput(0, finalMixer, 0);
         lookAtPlayable.SetInputWeight(0, 1f);
 
-        PunchBoneFixJob punchJob = new PunchBoneFixJob
-        {
-            bone = playerAnimator.BindStreamTransform(bone),
-            weight = 0f,
-            correctionEulerLocal = Vector3.zero
-        };
-
-        punchFixRotation = AnimationScriptPlayable.Create(playableGraph, punchJob);
-        punchFixRotation.SetInputCount(1);
-
-        // Chain it AFTER lookAtPlayable, not directly to finalMixer
-        punchFixRotation.ConnectInput(0, lookAtPlayable, 0);
-        punchFixRotation.SetInputWeight(0, 1f);
-
         var playableOutput = AnimationPlayableOutput.Create(playableGraph, "Animation", playerAnimator);
-
-        // Output should use only the LAST playable in the chain
-        playableOutput.SetSourcePlayable(punchFixRotation);
+        playableOutput.SetSourcePlayable(lookAtPlayable);
 
         playableGraph.Play();
     }
@@ -541,22 +515,7 @@ public class PlayerPlayables : NetworkBehaviour
             RifleCockingState or RifleReloadState or RifleAimIdle or RifleAimMove;
     }
 
-    public void SetPunchRotation(float newWeight)
-    {
-        if (!punchFixRotation.IsValid())
-        {
-            return;
-        }
-
-        if (Runner == null) return;
-
-        var jobData = punchFixRotation.GetJobData<PunchBoneFixJob>();
-        jobData.weight = newWeight;
-        jobData.correctionEulerLocal = punchrotationfix;
-        punchFixRotation.SetJobData(jobData);
-    }
-
-    public void SetAnimationUpperTick() => PlayableUpperBodyAnimationTick = Runner.Tick;
+public void SetAnimationUpperTick() => PlayableUpperBodyAnimationTick = Runner.Tick;
 
     public void SetAnimationLowerTick() => PlayableLowerBodyAnimationTick = Runner.Tick;
 
@@ -586,19 +545,24 @@ public class PlayerPlayables : NetworkBehaviour
         {
             if (BulletFiredTick == Runner.Tick) return;
 
-            Ray ray = new Ray(playerMovementV2.CameraHitOrigin, playerMovementV2.CameraHitDirection);
+            string killerName = networkLoader != null && !string.IsNullOrWhiteSpace(networkLoader.Username)
+                ? networkLoader.Username
+                : (ownObjectEnabler != null ? ownObjectEnabler.Username.ToString() : "PLAYER");
 
+            Vector3 shooterOrigin = cameraRotation.ShooterOrigin;
+            Vector3 aimPoint = playerMovementV2.AimPoint;
+
+            // Aim-assist: snap to the locked enemy's chest if within tolerance.
             Vector3 aimChest = cameraRotation.GetAimAssistChestPosition();
-            if (aimChest != Vector3.zero)
-            {
-                Vector3 corrected = (aimChest - ray.origin).normalized;
-                if (Vector3.Angle(ray.direction, corrected) < 25f)
-                    ray = new Ray(ray.origin, corrected);
-            }
+            if (aimChest != Vector3.zero &&
+                Vector3.Angle(aimPoint - shooterOrigin, aimChest - shooterOrigin) < 25f)
+                aimPoint = aimChest;
 
-            Vector3 shooterCenter = transform.position + Vector3.up;
-            float projDist = Mathf.Max(0f, Vector3.Dot(shooterCenter - ray.origin, ray.direction));
-            Vector3 rayStart = ray.origin + ray.direction * (projDist + 1f);
+            // Authoritative shot: deterministic origin -> the crosshair world
+            // point the client resolved from the real camera. No camera needed
+            // server-side, and no 3rd-person over-the-shoulder parallax.
+            Ray ray = new Ray(shooterOrigin, (aimPoint - shooterOrigin).normalized);
+            Vector3 rayStart = shooterOrigin;
 
             LagCompensatedHit bulletHit = new LagCompensatedHit();
 
@@ -644,8 +608,29 @@ public class PlayerPlayables : NetworkBehaviour
                                 "Forearm" => 30f,
                                 _         => 0f
                             };
-                            enemyHealth.ApplyDamage(damage, networkLoader != null ? networkLoader.Username : "", Object);
+                            enemyHealth.ApplyDamage(damage, killerName, Object);
                             bodyHit = true;
+                        }
+                        else
+                        {
+                            var botHealth = bulletHit.Hitbox.Root.GetBehaviour<Botdata>();
+                            if (botHealth != null && !botHealth.IsDead)
+                            {
+                                string tag = bulletHit.Hitbox.tag;
+                                float damage = tag switch
+                                {
+                                    "Head"    => 60f,
+                                    "Body"    => 45f,
+                                    "Thigh"   => 35f,
+                                    "Shin"    => 30f,
+                                    "Foot"    => 25f,
+                                    "Arm"     => 40f,
+                                    "Forearm" => 30f,
+                                    _         => 0f
+                                };
+                                botHealth.ApplyDamage(damage, killerName, Object);
+                                bodyHit = true;
+                            }
                         }
                     }
                 }
@@ -669,14 +654,15 @@ public class PlayerPlayables : NetworkBehaviour
         }
         else if (HasInputAuthority)
         {
-            Ray ray = new Ray(playerMovementV2.CameraHitOrigin, playerMovementV2.CameraHitDirection);
-            float aimRange = cameraRotation.AimDistance;
+            // Visual prediction: spawn from the muzzle toward the same crosshair
+            // point, so the tracer matches the reticle (no parallax).
             Vector3 muzzlePos = inventory.SecondaryWeapon != null ? inventory.SecondaryWeapon.ImpactPoint.position : transform.position;
-            Vector3 targetPos = muzzlePos + ray.direction * aimRange;
+            Vector3 aimPoint = playerMovementV2.AimPoint;
+            Vector3 dir = (aimPoint - muzzlePos).normalized;
+            float dist = Vector3.Distance(muzzlePos, aimPoint);
 
-            bool hitSomething = Physics.Raycast(ray, out RaycastHit physicsHit, aimRange, arrowRaycastMask);
-            if (hitSomething)
-                targetPos = physicsHit.point;
+            bool hitSomething = Physics.Raycast(muzzlePos, dir, out RaycastHit physicsHit, dist, arrowRaycastMask);
+            Vector3 targetPos = hitSomething ? physicsHit.point : aimPoint;
 
             SpawnLocalBullet(rifleMuzzle, muzzlePos, targetPos, false, hitSomething);
         }
@@ -745,22 +731,24 @@ public class PlayerPlayables : NetworkBehaviour
         {
             if (ArrowFiredTick == Runner.Tick) return;
 
-            Ray ray = new Ray(playerMovementV2.CameraHitOrigin, playerMovementV2.CameraHitDirection);
+            string killerName = networkLoader != null && !string.IsNullOrWhiteSpace(networkLoader.Username)
+                ? networkLoader.Username
+                : (ownObjectEnabler != null ? ownObjectEnabler.Username.ToString() : "PLAYER");
 
-            // Correct for 3rd-person parallax: if aim assist had a lock, aim through the enemy's chest
+            Vector3 shooterOrigin = cameraRotation.ShooterOrigin;
+            Vector3 aimPoint = playerMovementV2.AimPoint;
+
+            // Aim-assist: snap to the locked enemy's chest if within tolerance.
             Vector3 aimChest = cameraRotation.GetAimAssistChestPosition();
-            if (aimChest != Vector3.zero)
-            {
-                Vector3 corrected = (aimChest - ray.origin).normalized;
-                if (Vector3.Angle(ray.direction, corrected) < 25f)
-                    ray = new Ray(ray.origin, corrected);
-            }
+            if (aimChest != Vector3.zero &&
+                Vector3.Angle(aimPoint - shooterOrigin, aimChest - shooterOrigin) < 25f)
+                aimPoint = aimChest;
 
-            // Start past the shooter's own hitboxes without changing the ray direction.
-            // Project the shooter's center onto the ray and advance 1m beyond it.
-            Vector3 shooterCenter = transform.position + Vector3.up;
-            float   projDist      = Mathf.Max(0f, Vector3.Dot(shooterCenter - ray.origin, ray.direction));
-            Vector3 rayStart      = ray.origin + ray.direction * (projDist + 1f);
+            // Authoritative shot: deterministic origin -> the crosshair world
+            // point the client resolved from the real camera. No camera needed
+            // server-side, and no 3rd-person over-the-shoulder parallax.
+            Ray ray = new Ray(shooterOrigin, (aimPoint - shooterOrigin).normalized);
+            Vector3 rayStart = shooterOrigin;
 
             FireRayDbgOrigin = rayStart;
             FireRayDbgDir    = ray.direction;
@@ -812,8 +800,29 @@ public class PlayerPlayables : NetworkBehaviour
                                 "Forearm"  => 40f,
                                 _          => 0f
                             };
-                            enemyHealth.ApplyDamage(damage, networkLoader != null ? networkLoader.Username : "", Object);
+                                enemyHealth.ApplyDamage(damage, killerName, Object);
                             bodyHit = true;
+                        }
+                        else
+                        {
+                            var botHealth = arrowHit.Hitbox.Root.GetBehaviour<Botdata>();
+                            if (botHealth != null && !botHealth.IsDead)
+                            {
+                                string tag = arrowHit.Hitbox.tag;
+                                float damage = tag switch
+                                {
+                                    "Head"    => 75f,
+                                    "Body"    => 55f,
+                                    "Thigh"   => 45f,
+                                    "Shin"    => 40f,
+                                    "Foot"    => 35f,
+                                    "Arm"     => 50f,
+                                    "Forearm" => 40f,
+                                    _         => 0f
+                                };
+                                    botHealth.ApplyDamage(damage, killerName, Object);
+                                bodyHit = true;
+                            }
                         }
                     }
                 }
@@ -838,14 +847,15 @@ public class PlayerPlayables : NetworkBehaviour
         }
         else if (HasInputAuthority)
         {
-            Ray ray = new Ray(playerMovementV2.CameraHitOrigin, playerMovementV2.CameraHitDirection);
-            float aimRange   = cameraRotation.AimDistance;
+            // Visual prediction: spawn from the bow muzzle toward the same
+            // crosshair point so the arrow matches the reticle (no parallax).
             Vector3 arrowOrigin = bowMuzzle != null ? bowMuzzle.position : transform.position;
-            Vector3 targetPos   = arrowOrigin + ray.direction * aimRange;
+            Vector3 aimPoint = playerMovementV2.AimPoint;
+            Vector3 dir = (aimPoint - arrowOrigin).normalized;
+            float dist = Vector3.Distance(arrowOrigin, aimPoint);
 
-            bool hitSomething = Physics.Raycast(ray, out RaycastHit physicsHit, aimRange, arrowRaycastMask);
-            if (hitSomething)
-                targetPos = physicsHit.point;
+            bool hitSomething = Physics.Raycast(arrowOrigin, dir, out RaycastHit physicsHit, dist, arrowRaycastMask);
+            Vector3 targetPos = hitSomething ? physicsHit.point : aimPoint;
 
             SpawnLocalArrow(bowMuzzle, targetPos, false, hitSomething);
         }
@@ -918,11 +928,12 @@ public class PlayerPlayables : NetworkBehaviour
         {
             if (hit.GameObject == null) return;
 
-            if (hit.GameObject.tag == "BattleAreaStage" || hit.GameObject.tag == "WaitingAreaStage") CurrentGround = Ground.TERRAIN;
-            else if (hit.GameObject.tag == "Stone") CurrentGround = Ground.STONE;
-            else if (hit.GameObject.tag == "Dirt") CurrentGround = Ground.DIRT;
-            else if (hit.GameObject.tag == "Wood") CurrentGround = Ground.WOOD;
-            else if (hit.GameObject.tag == "Grass") CurrentGround = Ground.GRASS;
+            GameObject g = hit.GameObject;
+            if (g.CompareTag("BattleAreaStage") || g.CompareTag("WaitingAreaStage")) CurrentGround = Ground.TERRAIN;
+            else if (g.CompareTag("Stone")) CurrentGround = Ground.STONE;
+            else if (g.CompareTag("Dirt")) CurrentGround = Ground.DIRT;
+            else if (g.CompareTag("Wood")) CurrentGround = Ground.WOOD;
+            else if (g.CompareTag("Grass")) CurrentGround = Ground.GRASS;
         }
     }
 
@@ -998,27 +1009,3 @@ public struct LookAtJobBoneIK : IAnimationJob
     }
 }
 
-public struct PunchBoneFixJob : IAnimationJob
-{
-    public TransformStreamHandle bone;
-    public float weight;
-
-    public Vector3 correctionEulerLocal;
-
-    public void ProcessRootMotion(AnimationStream stream) { }
-
-    public void ProcessAnimation(AnimationStream stream)
-    {
-        if (!bone.IsValid(stream)) return;
-
-        Quaternion animatedLocal = bone.GetLocalRotation(stream);
-
-        Quaternion correction = Quaternion.Slerp(
-            Quaternion.identity,
-            Quaternion.Euler(correctionEulerLocal),
-            weight
-        );
-
-        bone.SetLocalRotation(stream, animatedLocal * correction);
-    }
-}

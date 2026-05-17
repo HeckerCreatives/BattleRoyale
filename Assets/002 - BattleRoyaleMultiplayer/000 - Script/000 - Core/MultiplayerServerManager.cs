@@ -82,7 +82,6 @@ public class MultiplayerServerManager : NetworkBehaviour
     public SafeZoneServerController safeZoneServerController;
     public PlayerJoinedController playerJoinedController;
     public SocketServerController socketServer;
-    public BotSpawnerController botSpawnerController;
     public KillNotifServerController killNotifServerController;
 
 
@@ -132,9 +131,6 @@ public class MultiplayerServerManager : NetworkBehaviour
 
         for (int a = 0; a < soundsObjs.Count; a++)
             soundsObjs[a].SetActive(false);
-
-        await botSpawnerController.CBSBotNames.Shuffle();
-        await botSpawnerController.BotNames.Shuffle();
 
         developerConsole.doShow = true;
     }
@@ -375,12 +371,44 @@ public class RemovePlayerData
 [System.Serializable]
 public class PlayerSpawnData
 {
-    public string _id;
-    public string username;      // ? flat string now
-    public string avatarid;      // ? avatarid is at root level
-    public string ownerId;
-    public int hairstyle;
-    public int haircolor;
-    public int clothingcolor;
-    public int skincolor;
+    [JsonProperty("_id")] public string _id;
+    [JsonProperty("username")] public string username;
+    [JsonProperty("avatarid")] [JsonConverter(typeof(FlexibleIntJsonConverter))] public int avatarid;
+    [JsonProperty("ownerId")] public string ownerId;
+    [JsonProperty("hairstyle")] public int hairstyle;
+    [JsonProperty("haircolor")] public int haircolor;
+    [JsonProperty("clothingcolor")] public int clothingcolor;
+    [JsonProperty("skincolor")] public int skincolor;
+}
+
+[System.Serializable]
+public class BotSpawnData
+{
+    [JsonProperty("username")] public string username;
+    [JsonProperty("avatarid")] [JsonConverter(typeof(FlexibleIntJsonConverter))] public int avatarid;
+    [JsonProperty("hairstyle")] public int hairstyle;
+    [JsonProperty("haircolor")] public int haircolor;
+    [JsonProperty("clothingcolor")] public int clothingcolor;
+    [JsonProperty("skincolor")] public int skincolor;
+}
+
+public class FlexibleIntJsonConverter : JsonConverter<int>
+{
+    public override int ReadJson(JsonReader reader, Type objectType, int existingValue, bool hasExistingValue, JsonSerializer serializer)
+    {
+        switch (reader.TokenType)
+        {
+            case JsonToken.Integer:
+            case JsonToken.Float:
+                return Convert.ToInt32(reader.Value);
+            case JsonToken.String:
+                return int.TryParse((string)reader.Value, out var i) ? i : 0;
+            case JsonToken.Null:
+                return 0;
+            default:
+                return 0;
+        }
+    }
+
+    public override void WriteJson(JsonWriter writer, int value, JsonSerializer serializer) => writer.WriteValue(value);
 }

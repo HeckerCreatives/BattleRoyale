@@ -20,64 +20,89 @@ public class BotSpearRun : BotAnimationPlayable
         randPlaceTrap = Random.Range(0, 101);
     }
 
-    public override void NetworkUpdate()
+    public override BotAnimationPlayable NetworkUpdate()
     {
+        base.NetworkUpdate();
+
         if (botPlayables.GetBotData.IsDead)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.DeathPlayable);
-            return;
+            return botPlayables.BasicMovement.DeathPlayable;
         }
 
         if (!botController.IsGrounded)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.FallingPlayable);
-            return;
+            return botPlayables.BasicMovement.FallingPlayable;
         }
 
         if (botPlayables.GetBotData.IsHit)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.HitPlayable);
-            return;
+            return botPlayables.BasicMovement.HitPlayable;
         }
 
         if (botPlayables.GetBotData.IsStagger)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.StaggerPlayable);
-            return;
+            return botPlayables.BasicMovement.StaggerPlayable;
         }
 
         if (botPlayables.Inventroy.TrapCount > 0 && randPlaceTrap <= 20)
         {
-            botPlayablesChanger.ChangeState(botPlayables.BasicMovement.TrapPlayable);
-            return;
+            return botPlayables.BasicMovement.TrapPlayable;
         }
 
-        MoveBot();
-    }
+        return MoveBot();
+}
 
-    private void MoveBot()
+    private BotAnimationPlayable MoveBot()
     {
         botMovement.DetectTarget();
+        botMovement.EvaluateCombatLoadout();
 
         if (botMovement.detectedTarget != null)
         {
+            if (botPlayables.Inventroy.WeaponIndex == 3)
+            {
+                if (botPlayables.Inventroy.GetSecondaryWeaponID() == "003")
+                    return botPlayables.BasicMovement.RifleRunPlayable;
+                if (botPlayables.Inventroy.GetSecondaryWeaponID() == "004")
+                    return botPlayables.BasicMovement.BowRunPlayable;
+            }
+
+            if (botMovement.TryEvadeEnemyMeleeStrike(botMovement.SpearMeleeEvadeRadius))
+                return null;
+
             botMovement.MoveToTarget();
 
-            if (botMovement.CanSwordAttack())
+            if (botMovement.CanSpearAttack())
             {
-                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearAttackOne);
+                if (!botMovement.CanInitiateMeleeAttack())
+                {
+                    // Cooldown not ready yet: avoid stare-off by orbiting instead of holding.
+                    botMovement.FaceTarget();
+                    botMovement.ApplyStrafePublic();
+                    return null;
+                }
+
+                botMovement.RegisterMeleeAttackCommitted();
+                return botPlayables.BasicMovement.SpearAttackOne;
             }
         }
         else
         {
+            if (botMovement.TryRunLootBehaviour())
+                return null;
+
             botMovement.MoveInDirection();
 
             if (botMovement.WanderTimer.Expired(botMovement.Runner))
             {
                 botMovement.IdleBeforeWanderTimer = TickTimer.CreateFromSeconds(botMovement.Runner, Random.Range(botMovement.MinWanderDelay, botMovement.MaxWanderDelay));
 
-                botPlayablesChanger.ChangeState(botPlayables.BasicMovement.SpearIdle);
+                return botPlayables.BasicMovement.SpearIdle;
             }
         }
-    }
+
+        return null;
 }
+}
+
+

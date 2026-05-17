@@ -35,6 +35,8 @@ public class AdsController : MonoBehaviour
 
         Debug.Log("LOAD REWARD ADS");
 
+        #if UNITY_EDITOR
+
         RewardedAd.Load("ca-app-pub-3940256099942544/5224354917", adRequest,
         (RewardedAd ad, LoadAdError error) =>
         {
@@ -47,8 +49,41 @@ public class AdsController : MonoBehaviour
 
             rewardedAd = ad;
             rewardAdsAvailable = true;
-            Debug.Log("REWARDS ADS AVAILABLE");
+            Debug.Log("REWARDS EDITOR ADS AVAILABLE");
         });
+
+#elif UNITY_ANDROID
+        RewardedAd.Load("ca-app-pub-7002238140224739/5485742495", adRequest,
+        (RewardedAd ad, LoadAdError error) =>
+        {
+            if (error != null || ad == null)
+            {
+                rewardAdsAvailable = false;
+                Debug.Log("REWARDS ADS NOT AVAILABLE");
+                return;
+            }
+
+            rewardedAd = ad;
+            rewardAdsAvailable = true;
+            Debug.Log("REWARDS ADNROID ADS AVAILABLE");
+        });
+#elif UNITY_IOS
+
+        RewardedAd.Load("ca-app-pub-7002238140224739/2392675299", adRequest,
+        (RewardedAd ad, LoadAdError error) =>
+        {
+            if (error != null || ad == null)
+            {
+                rewardAdsAvailable = false;
+                Debug.Log("REWARDS ADS NOT AVAILABLE");
+                return;
+            }
+
+            rewardedAd = ad;
+            rewardAdsAvailable = true;
+            Debug.Log("REWARDS IOS ADS AVAILABLE");
+        });
+#endif
     }
 
     public void ShowRewardAd(MarketItems item, string adsid, Action finalAction)
