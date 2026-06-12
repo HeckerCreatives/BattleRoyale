@@ -51,12 +51,16 @@ public class RepairWeaponItem : NetworkBehaviour, IPickupItem
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     public void RPC_PickupRepair(NetworkObject player)
     {
+        // Layer-1 race guard: a second RPC for the same item must no-op.
+        if (IsPickedUp) return;
+
         PlayerInventoryV2 tempPlayerinventory = player.gameObject.GetComponent<PlayerInventoryV2>();
 
         if (tempPlayerinventory == null) return;
 
         if (tempPlayerinventory.ArmorRepairCount >= 4) return;
 
+        IsPickedUp = true;
         tempPlayerinventory.ArmorRepairCount += Supplies;
 
         Runner.Despawn(Object);

@@ -17,9 +17,12 @@ public class PlayerUpperBowDraw : UpperWithAimState
         if (playerPlayables.HasInputAuthority)
         {
             playerMovement.AnimationTick = playerPlayables.Runner.Tick;
-            playerPlayables.ChangeCamera(true);
+            //playerPlayables.ChangeCamera(true); // AUTO-DISABLED shoulder zoom — uncomment to restore
         }
 
+        // Bow string: bend toward the pulling hand on every peer that runs
+        // this state's Enter. SetDrawn is null-safe and a no-op for rifles.
+        playerPlayables.inventory.SecondaryWeapon?.SetDrawn(true);
 
         if (!playerPlayables.HasStateAuthority) return;
 
@@ -30,9 +33,12 @@ public class PlayerUpperBowDraw : UpperWithAimState
     {
         base.Exit();
 
+        // Bow string returns to rest. Runs on every peer.
+        playerPlayables.inventory.SecondaryWeapon?.SetDrawn(false);
+
         if (!playerPlayables.HasInputAuthority) return;
 
-        playerPlayables.ChangeCamera(false);
+        //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
         playerPlayables.cameraRotation.ExitBowAimCrosshair();
     }
 
@@ -62,43 +68,43 @@ public class PlayerUpperBowDraw : UpperWithAimState
 
         if (playerPlayables.healthV2.IsDead)
         {
-            playerPlayables.ChangeCamera(false);
+            //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
             return playerPlayables.upperBodyMovement.DeathPlayable;
         }
 
         if (playerMovement.IsJumping)
         {
-            playerPlayables.ChangeCamera(false);
+            //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
             return playerPlayables.upperBodyMovement.JumpPlayable;
         }
 
         if (playerMovement.IsBlocking)
         {
-            playerPlayables.ChangeCamera(false);
+            //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
             return playerPlayables.upperBodyMovement.BlockPlayable;
         }
 
         if (playerMovement.IsHealing)
         {
-            playerPlayables.ChangeCamera(false);
+            //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
             return playerPlayables.upperBodyMovement.HealPlayable;
         }
 
         if (playerMovement.IsRepairing)
         {
-            playerPlayables.ChangeCamera(false);
+            //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
             return playerPlayables.upperBodyMovement.RepairPlayable;
         }
 
         if (playerMovement.IsTrapping)
         {
-            playerPlayables.ChangeCamera(false);
+            //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
             return playerPlayables.upperBodyMovement.TrapPlayable;
         }
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
         {
-            playerPlayables.ChangeCamera(false);
+            //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
             return playerPlayables.upperBodyMovement.RollPlayables;
         }
 

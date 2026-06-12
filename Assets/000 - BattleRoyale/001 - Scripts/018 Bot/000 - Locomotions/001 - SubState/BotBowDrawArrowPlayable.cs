@@ -19,6 +19,9 @@ public class BotBowDrawArrowPlayable : BotAnimationPlayable
 
         finishTimer = botPlayables.TickRateAnimation + (animationLength * 0.9f);
         canAction = true;
+
+        // Bow string: bend toward the pulling hand on every peer.
+        botPlayables.Inventroy.SecondaryWeapon?.SetDrawn(true);
     }
 
     public override void Exit()
@@ -26,6 +29,9 @@ public class BotBowDrawArrowPlayable : BotAnimationPlayable
         base.Exit();
 
         canAction = false;
+
+        // Bow string returns to rest. Runs on every peer.
+        botPlayables.Inventroy.SecondaryWeapon?.SetDrawn(false);
     }
 
     public override BotAnimationPlayable NetworkUpdate()

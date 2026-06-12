@@ -38,6 +38,7 @@ public class BotInventory : NetworkBehaviour
     public Transform RifleBack => rifleBack;
     public Transform BowHand => bowHand;
     public Transform BowBack => bowBack;
+    public Transform BowStringPullPoint => bowStringPullPoint;
 
     //  ================
 
@@ -62,6 +63,8 @@ public class BotInventory : NetworkBehaviour
     [SerializeField] private Transform rifleBack;
     [SerializeField] private Transform bowHand;
     [SerializeField] private Transform bowBack;
+    [Tooltip("Empty Transform parented to the left-hand bone where the bow string is gripped during draw. The equipped bow's BowStringFollower follows this each frame.")]
+    [SerializeField] private Transform bowStringPullPoint;
 
     [field: Header("DEBUGGER NETWORK")]
     [field: SerializeField][Networked] public NetworkBool IsSkinInitialized { get; set; }

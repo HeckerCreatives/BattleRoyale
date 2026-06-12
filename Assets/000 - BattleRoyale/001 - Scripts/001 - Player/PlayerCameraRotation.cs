@@ -123,6 +123,10 @@ public class PlayerCameraRotation : NetworkBehaviour
 
     private bool _crosshairEnemyActive;
     private bool _crosshairDamageFlashing;
+    private bool _crosshairBlocked;
+
+    [Tooltip("Crosshair tint while the character's body can't see the crosshair point — firing would hit your own cover.")]
+    [SerializeField] private Color blockedCrosshairColor = new Color(0.45f, 0.45f, 0.45f, 1f);
 
     // Reusable aim-assist candidate buffer — struct elements + retained
     // capacity, so FindEnemyInCone allocates nothing per tick.
@@ -135,22 +139,46 @@ public class PlayerCameraRotation : NetworkBehaviour
         return AimAssistTarget.position + Vector3.up * (bodyHeight * magnetBodyFraction);
     }
 
-    private void UpdateCrosshairColor(bool hasEnemy)
+    private void UpdateCrosshairColor(bool hasEnemy, bool blocked)
     {
         if (crosshairImg == null) return;
         if (_crosshairDamageFlashing)
         {
             _crosshairEnemyActive = hasEnemy;
+            _crosshairBlocked = blocked;
             return;
         }
-        if (hasEnemy == _crosshairEnemyActive) return;
+        if (hasEnemy == _crosshairEnemyActive && blocked == _crosshairBlocked) return;
         _crosshairEnemyActive = hasEnemy;
+        _crosshairBlocked = blocked;
 
         LeanTween.cancel(crosshairImg.gameObject);
-        Color target = hasEnemy ? Color.green : Color.white;
+        // Blocked wins over enemy-lock — the shot would hit cover regardless.
+        Color target = blocked ? blockedCrosshairColor : (hasEnemy ? Color.green : Color.white);
         LeanTween.value(crosshairImg.gameObject,
             (Color c) => { if (crosshairImg) crosshairImg.color = c; },
             crosshairImg.color, target, 0.2f);
+    }
+
+    // True when cover stands between the character's body and the point the
+    // crosshair rests on — i.e., firing right now would hit your own cover.
+    // Drives the grey "blocked" crosshair tint and mirrors the authoritative
+    // two-pass shot in PlayerPlayables. Uses aimLayerMask (world/cover layers
+    // only), so an enemy standing in between never reads as "blocked".
+    private bool IsShotBlockedByCover(Vector3 camOrigin, Vector3 camDir)
+    {
+        Vector3 point = Physics.Raycast(camOrigin, camDir, out RaycastHit camHit, AimDistance, aimLayerMask, QueryTriggerInteraction.Ignore)
+            ? camHit.point
+            : camOrigin + camDir * AimDistance;
+
+        Vector3 body = ShooterOrigin;
+        Vector3 to = point - body;
+        float dist = to.magnitude;
+        if (dist <= 0.5f) return false;
+
+        // Stop short of the target point so re-hitting the surface the
+        // crosshair rests on doesn't count; anything strictly nearer is cover.
+        return Physics.Raycast(body, to / dist, dist - 0.3f, aimLayerMask, QueryTriggerInteraction.Ignore);
     }
 
     public void FlashDamageCrosshair()
@@ -164,7 +192,7 @@ public class PlayerCameraRotation : NetworkBehaviour
             crosshairImg.color, Color.red, 0.1f)
             .setOnComplete(() =>
             {
-                Color revertTo = _crosshairEnemyActive ? Color.green : Color.white;
+                Color revertTo = _crosshairBlocked ? blockedCrosshairColor : (_crosshairEnemyActive ? Color.green : Color.white);
                 LeanTween.value(crosshairImg.gameObject,
                     (Color c) => { if (crosshairImg) crosshairImg.color = c; },
                     Color.red, revertTo, 0.25f)
@@ -175,6 +203,7 @@ public class PlayerCameraRotation : NetworkBehaviour
     public void ExitBowAimCrosshair()
     {
         _crosshairEnemyActive = false;
+        _crosshairBlocked = false;
         if (_crosshairDamageFlashing) return;
         if (crosshairImg == null) return;
         LeanTween.cancel(crosshairImg.gameObject);
@@ -564,8 +593,10 @@ public class PlayerCameraRotation : NetworkBehaviour
         // Crosshair is local-only HUD. FindEnemyInCone still runs on the State
         // Authority for the authoritative aim-assist magnet / chest snap, but
         // the colour change must only touch the local player's reticle.
+        // Grey = body LOS to the crosshair point is blocked by cover (the
+        // shot would impact your own cover — mirrors the two-pass fire).
         if (HasInputAuthority)
-            UpdateCrosshairColor(enemy != null);
+            UpdateCrosshairColor(enemy != null, IsShotBlockedByCover(origin, dir));
 
         float speedMul = (enemy != null && (input.LookDirection.x != 0f || input.LookDirection.y != 0f))
             ? 1f - slowdownStrength

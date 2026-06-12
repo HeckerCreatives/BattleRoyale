@@ -65,6 +65,8 @@ public class PlayerInventoryV2 : NetworkBehaviour
     [field: SerializeField] public Transform BowBack { get; set; }
     [field: SerializeField] public Transform BowHand { get; set; }
     [field: SerializeField] public Transform BowAmmoBack { get; set; }
+    [Tooltip("Empty Transform parented to the left-hand bone where the bow string is gripped during draw. The equipped bow's BowStringFollower follows this each frame.")]
+    [field: SerializeField] public Transform BowStringPullPoint { get; set; }
 
     [field: Header("DEBUGGER")]
     [field: SerializeField] public CrateController CrateObject { get; set; }
@@ -98,6 +100,18 @@ public class PlayerInventoryV2 : NetworkBehaviour
     private List<Collider> previousColliders = new List<Collider>();
 
     private Dictionary<string, int> _localCache = new Dictionary<string, int>();
+
+    [Header("AUTO LOOT")]
+    [Tooltip("Seconds between consecutive auto-loot attempts. Applies only to auto-loot; manual UI buttons are not throttled.")]
+    [SerializeField] private float autoLootCooldownSeconds = 0.5f;
+    [Tooltip("Per-item pickup SFX. Each entry maps an itemID (\"001\"..\"010\") to a clip. Played LOCAL-only (input authority) via AudioManager.PlaySFX whenever a pickup RPC is dispatched — covers both auto-loot and the manual UI button.")]
+    [SerializeField] private PickupSoundEntry[] pickupSounds;
+    private float _autoLootCooldown;
+    // In-flight tracking — both auto-loot and the manual UI button check these
+    // before firing an RPC, so the same item can't be looted twice in the
+    // small window before the server-side IsPickedUp state propagates back.
+    private readonly HashSet<string> _crateItemsInFlight = new HashSet<string>();
+    private readonly HashSet<NetworkObject> _scatteredItemsInFlight = new HashSet<NetworkObject>();
 
     private ChangeDetector _changeDetector;
 
@@ -148,6 +162,9 @@ public class PlayerInventoryV2 : NetworkBehaviour
     private void FixedUpdate()
     {
         CrateCollisionChecker();
+        // Auto-loot runs after proximity is current. Coexists with the UI
+        // buttons via shared in-flight sets and shared pickup RPCs.
+        TryAutoLoot();
     }
 
     
@@ -397,71 +414,27 @@ public class PlayerInventoryV2 : NetworkBehaviour
             if (isCrateItem)
             {
                 if (CrateObject == null) return;
-
                 if (itemID == "") return;
-
+                // Race guard: another loot path (or this same button mid-frame)
+                // has already dispatched this itemID — skip without re-firing.
+                if (_crateItemsInFlight.Contains(itemID)) return;
+                _crateItemsInFlight.Add(itemID);
                 CrateObject.RPC_RemoveItem(itemID, this);
-
+                PlayLocalPickupSound(itemID);
                 return;
             }
 
             var weapon = localNearbyWeapon.FirstOrDefault(w => w.GetComponent<IPickupItem>()?.WeaponID == itemID);
-
             if (weapon == null) return;
 
-            NetworkObject tempobject = Object;
+            NetworkObject weaponNetObj = weapon.GetComponent<NetworkObject>();
+            // Race guard: already in flight from auto-loot or a prior tap.
+            if (weaponNetObj != null && _scatteredItemsInFlight.Contains(weaponNetObj)) return;
 
-            weapon.TryGetComponent<PrimaryWeaponItem>(out PrimaryWeaponItem primarytempweapon);
-            weapon.TryGetComponent<SecondaryWeaponItem>(out SecondaryWeaponItem secondarytempweapon);
-
-
-            switch (itemID)
+            if (TryPickupScatteredByWeaponID(weapon, itemID))
             {
-                case "001":
-                case "002":
-
-                    if (primarytempweapon == null) break;
-
-                    primarytempweapon.RPC_PickupPrimaryWeapon(tempobject);
-                    break;
-                case "003":
-                case "004":
-
-                    if (secondarytempweapon == null) break;
-
-                    secondarytempweapon.RPC_PickupSecondaryWeapon(tempobject, secondarytempweapon.Supplies);
-                    break;
-                case "005":
-
-                    AmmoRifleWeaponItem tempammo = weapon.gameObject.GetComponent<AmmoRifleWeaponItem>();
-
-                    tempammo.RPC_PickupAmmoRifle(tempobject);
-                    break;
-                case "006":
-
-                    MagazineContainerItem tempbowammo = weapon.gameObject.GetComponent<MagazineContainerItem>();
-
-                    tempbowammo.RPC_PickupMagazineContainer(tempobject);
-                    break;
-                case "007":
-
-                    ArmorItem temparmor = weapon.GetComponent<ArmorItem>();
-
-                    temparmor.RPC_PickupArmor(tempobject, ArmorHand);
-
-                    break;
-                case "008":
-
-                    HealWeaponItem tempheal = weapon.GetComponent<HealWeaponItem>();
-
-                    tempheal.RPC_PickupHeal(tempobject);
-                    break;
-                case "009":
-
-                    RepairWeaponItem temprepair = weapon.GetComponent<RepairWeaponItem>();
-
-                    temprepair.RPC_PickupRepair(tempobject);
-                    break;
+                if (weaponNetObj != null) _scatteredItemsInFlight.Add(weaponNetObj);
+                PlayLocalPickupSound(itemID);
             }
         });
 
@@ -469,6 +442,170 @@ public class PlayerInventoryV2 : NetworkBehaviour
             itemSpritesData.GetItemListSprite(itemID),
             itemSpritesData.GetItemName(itemID),
             value.ToString());
+    }
+
+    // Shared between the manual UI button and the auto-loot pass. Fires the
+    // matching server-authoritative pickup RPC for the given world item.
+    // Returns true if an RPC was actually dispatched.
+    private bool TryPickupScatteredByWeaponID(GameObject weapon, string itemID)
+    {
+        if (weapon == null) return false;
+
+        NetworkObject self = Object;
+
+        switch (itemID)
+        {
+            case "001":
+            case "002":
+                if (!weapon.TryGetComponent(out PrimaryWeaponItem primary)) return false;
+                primary.RPC_PickupPrimaryWeapon(self);
+                return true;
+            case "003":
+            case "004":
+                if (!weapon.TryGetComponent(out SecondaryWeaponItem secondary)) return false;
+                secondary.RPC_PickupSecondaryWeapon(self, secondary.Supplies);
+                return true;
+            case "005":
+                if (!weapon.TryGetComponent(out AmmoRifleWeaponItem ammo)) return false;
+                ammo.RPC_PickupAmmoRifle(self);
+                return true;
+            case "006":
+                if (!weapon.TryGetComponent(out MagazineContainerItem bowAmmo)) return false;
+                bowAmmo.RPC_PickupMagazineContainer(self);
+                return true;
+            case "007":
+                if (!weapon.TryGetComponent(out ArmorItem armor)) return false;
+                armor.RPC_PickupArmor(self, ArmorHand);
+                return true;
+            case "008":
+                if (!weapon.TryGetComponent(out HealWeaponItem heal)) return false;
+                heal.RPC_PickupHeal(self);
+                return true;
+            case "009":
+                if (!weapon.TryGetComponent(out RepairWeaponItem repair)) return false;
+                repair.RPC_PickupRepair(self);
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    // Local-only pickup SFX. Routed through AudioManager.PlaySFX (which uses a
+    // single non-spatial sfxSource.PlayOneShot), so it never propagates to
+    // other peers. Gated by HasInputAuthority defensively — auto-loot and the
+    // UI button already only run on the local client, but the guard makes the
+    // local-only contract explicit at the call site.
+    private void PlayLocalPickupSound(string itemID)
+    {
+        if (!HasInputAuthority) return;
+        if (pickupSounds == null || pickupSounds.Length == 0) return;
+        if (GameManager.Instance == null || GameManager.Instance.AudioController == null) return;
+
+        for (int i = 0; i < pickupSounds.Length; i++)
+        {
+            if (pickupSounds[i].itemID == itemID && pickupSounds[i].clip != null)
+            {
+                GameManager.Instance.AudioController.PlaySFX(pickupSounds[i].clip);
+                return;
+            }
+        }
+    }
+
+    // Auto-loot pass: invoked once per FixedUpdate (gated by HasInputAuthority
+    // and a global 0.5 s cooldown). On each successful pass it dispatches
+    // exactly one pickup RPC — mirroring the UI button — and then waits the
+    // cooldown before trying again, giving a multi-item crate a deliberate
+    // rhythm of "loot → 0.5 s → loot → 0.5 s".
+    //
+    // Priority: slot-fillers (Primary / Secondary / Armor) → consumables
+    // (Heal / Repair / Trap) → ammo matching the equipped secondary. Within a
+    // bucket, the crate's contents are tried before scattered world items.
+    private void TryAutoLoot()
+    {
+        if (!HasInputAuthority) return;
+
+        if (_autoLootCooldown > 0f)
+        {
+            _autoLootCooldown -= Time.fixedDeltaTime;
+            if (_autoLootCooldown <= 0f)
+            {
+                _autoLootCooldown = 0f;
+                // Fresh dispatch each window — the networked dict has had
+                // time to reflect the previous RPC's mutation.
+                _crateItemsInFlight.Clear();
+            }
+            return;
+        }
+
+        if (CrateObject == null && localNearbyWeapon.Count == 0) return;
+
+        if (TryAutoLootByID("001")) return; // sword
+        if (TryAutoLootByID("002")) return; // spear
+        if (TryAutoLootByID("003")) return; // rifle
+        if (TryAutoLootByID("004")) return; // bow
+        if (TryAutoLootByID("007")) return; // armor
+        if (TryAutoLootByID("008")) return; // heal
+        if (TryAutoLootByID("009")) return; // repair
+        if (TryAutoLootByID("010")) return; // trap
+        if (TryAutoLootByID("005")) return; // rifle ammo (only if rifle equipped)
+        if (TryAutoLootByID("006")) return; // bow   ammo (only if bow   equipped)
+    }
+
+    private bool TryAutoLootByID(string itemID)
+    {
+        if (!IsEligibleForAutoLoot(itemID)) return false;
+
+        // 1. Crate
+        if (CrateObject != null
+            && !_crateItemsInFlight.Contains(itemID)
+            && CrateObject.Weapons.ContainsKey(itemID)
+            && CrateObject.Weapons[itemID] > 0)
+        {
+            _crateItemsInFlight.Add(itemID);
+            CrateObject.RPC_RemoveItem(itemID, this);
+            PlayLocalPickupSound(itemID);
+            _autoLootCooldown = autoLootCooldownSeconds;
+            return true;
+        }
+
+        // 2. Scattered world items
+        foreach (var weapon in localNearbyWeapon)
+        {
+            if (weapon == null) continue;
+            var pickup = weapon.GetComponent<IPickupItem>();
+            if (pickup == null || pickup.WeaponID != itemID || pickup.IsPickedUp) continue;
+
+            NetworkObject netObj = weapon.GetComponent<NetworkObject>();
+            if (netObj != null && _scatteredItemsInFlight.Contains(netObj)) continue;
+
+            if (TryPickupScatteredByWeaponID(weapon, itemID))
+            {
+                if (netObj != null) _scatteredItemsInFlight.Add(netObj);
+                PlayLocalPickupSound(itemID);
+                _autoLootCooldown = autoLootCooldownSeconds;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsEligibleForAutoLoot(string itemID)
+    {
+        switch (itemID)
+        {
+            case "001":
+            case "002": return PrimaryWeapon == null;          // primary slot empty
+            case "003":
+            case "004": return SecondaryWeapon == null;        // secondary slot empty
+            case "007": return Armor == null;                  // armor slot empty
+            case "008": return HealCount < 4;                  // server also caps; skip a doomed RPC
+            case "009": return ArmorRepairCount < 4;
+            case "010": return true;                           // trap always
+            case "005": return SecondaryWeapon != null && SecondaryWeapon.IsRifle;
+            case "006": return SecondaryWeapon != null && !SecondaryWeapon.IsRifle;
+            default:    return false;
+        }
     }
 
     private void CrateCollisionChecker()
@@ -547,6 +684,11 @@ public class PlayerInventoryV2 : NetworkBehaviour
 
     private void HandleWeaponExit(GameObject weapon)
     {
+        if (weapon != null)
+        {
+            NetworkObject netObj = weapon.GetComponent<NetworkObject>();
+            if (netObj != null) _scatteredItemsInFlight.Remove(netObj);
+        }
         localNearbyWeapon.Remove(weapon);
     }
 
@@ -557,6 +699,7 @@ public class PlayerInventoryV2 : NetworkBehaviour
         if (CrateObject == null) return;
 
         CrateObject = null;
+        _crateItemsInFlight.Clear();
     }
 
     public void OnDrawGizmos()
@@ -575,4 +718,12 @@ public interface IPickupItem
     string WeaponName { get; }
     bool IsPickedUp { get; }
     int Supplies { get; }
+}
+
+[System.Serializable]
+public struct PickupSoundEntry
+{
+    [Tooltip("Item ID: \"001\" sword, \"002\" spear, \"003\" rifle, \"004\" bow, \"005\" rifle ammo, \"006\" bow ammo, \"007\" armor, \"008\" heal, \"009\" repair, \"010\" trap.")]
+    public string itemID;
+    public AudioClip clip;
 }

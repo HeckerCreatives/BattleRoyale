@@ -25,7 +25,7 @@ public class PlayerUpperRifleShoot : UpperWithAimState
         if (playerPlayables.HasInputAuthority)
         {
             playerMovement.AnimationTick = playerPlayables.Runner.Tick;
-            playerPlayables.ChangeCamera(true);
+            //playerPlayables.ChangeCamera(true); // AUTO-DISABLED shoulder zoom — uncomment to restore
         }
 
         if (playerPlayables.HasStateAuthority)
@@ -43,7 +43,7 @@ public class PlayerUpperRifleShoot : UpperWithAimState
 
         if (!playerPlayables.HasInputAuthority) return;
 
-        playerPlayables.ChangeCamera(false);
+        //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
         playerPlayables.cameraRotation.ExitBowAimCrosshair();
     }
 

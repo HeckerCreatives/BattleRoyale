@@ -14,8 +14,11 @@ public class PlayerUpperBowCharge : UpperWithAimState
     {
         base.Enter();
 
-        if (playerPlayables.HasInputAuthority)
-            playerPlayables.ChangeCamera(true);
+        //if (playerPlayables.HasInputAuthority)                                       // AUTO-DISABLED shoulder zoom — uncomment to restore
+            //playerPlayables.ChangeCamera(true); // AUTO-DISABLED shoulder zoom — uncomment to restore
+
+        // Bow string: bend toward the pulling hand on every peer.
+        playerPlayables.inventory.SecondaryWeapon?.SetDrawn(true);
     }
 
     public override void NetworkUpdate()
@@ -36,9 +39,12 @@ public class PlayerUpperBowCharge : UpperWithAimState
     {
         base.Exit();
 
+        // Bow string returns to rest. Runs on every peer.
+        playerPlayables.inventory.SecondaryWeapon?.SetDrawn(false);
+
         if (!playerPlayables.HasInputAuthority) return;
 
-        playerPlayables.ChangeCamera(false);
+        //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
         playerPlayables.cameraRotation.ExitBowAimCrosshair();
     }
 
@@ -46,25 +52,25 @@ public class PlayerUpperBowCharge : UpperWithAimState
     {
         if (playerPlayables.healthV2.IsDead)
         {
-            playerPlayables.ChangeCamera(false);
+            //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
             return playerPlayables.upperBodyMovement.DeathPlayable;
         }
 
         if (playerMovement.IsHealing)
         {
-            playerPlayables.ChangeCamera(false);
+            //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
             return playerPlayables.upperBodyMovement.HealPlayable;
         }
 
         if (playerMovement.IsRepairing)
         {
-            playerPlayables.ChangeCamera(false);
+            //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
             return playerPlayables.upperBodyMovement.RepairPlayable;
         }
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
         {
-            playerPlayables.ChangeCamera(false);
+            //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
             return playerPlayables.upperBodyMovement.RollPlayables;
         }
 

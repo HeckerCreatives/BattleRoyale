@@ -256,6 +256,10 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     public void RPC_PickupPrimaryWeapon(NetworkObject player)
     {
+        // Layer-1 race guard: a second RPC for the same item must no-op.
+        // (InitializeItem sets IsPickedUp = true near the end.)
+        if (IsPickedUp) return;
+
         InitializeItem(player);
     }
 
@@ -352,7 +356,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                         }
                     }
 
-                    tempdata.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username.ToString(), CurrentPlayer);
+                    tempdata.ApplyDamage(tempdamage, isBot ? BotData.BotName : PlayerCore.Username.ToString(), CurrentPlayer, HitWeaponType.Primary);
                     _botPlayables?.RPC_PlaySwordHit();
 
                     // Drive the same combo indicator path used for player-vs-player:
@@ -428,7 +432,7 @@ public class PrimaryWeaponItem : NetworkBehaviour, IPickupItem
                         ? (BotData != null ? BotData.BotName : "BOT")
                         : (PlayerCore != null ? PlayerCore.Username.ToString() : "PLAYER");
 
-                    healthV2.ApplyDamage(tempdamage, attackerName, CurrentPlayer);
+                    healthV2.ApplyDamage(tempdamage, attackerName, CurrentPlayer, HitWeaponType.Primary);
 
                     Hitted = Runner.Tick;
                     HittedPosition = hitbox.transform.root.position + Vector3.up * 1.2f;

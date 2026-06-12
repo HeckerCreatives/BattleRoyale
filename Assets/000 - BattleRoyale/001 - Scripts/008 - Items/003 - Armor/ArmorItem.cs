@@ -105,6 +105,10 @@ public class ArmorItem : NetworkBehaviour, IPickupItem
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     public void RPC_PickupArmor(NetworkObject player, NetworkObject armorParent)
     {
+        // Layer-1 race guard: a second RPC for the same item must no-op.
+        // (InitializeItem sets IsPickedUp = true near the end.)
+        if (IsPickedUp) return;
+
         InitializeItem(player, armorParent);
     }
 

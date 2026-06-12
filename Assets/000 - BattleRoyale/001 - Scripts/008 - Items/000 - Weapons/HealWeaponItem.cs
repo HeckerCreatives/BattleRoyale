@@ -48,12 +48,16 @@ public class HealWeaponItem : NetworkBehaviour, IPickupItem
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     public void RPC_PickupHeal(NetworkObject player)
     {
+        // Layer-1 race guard: a second RPC for the same item must no-op.
+        if (IsPickedUp) return;
+
         PlayerInventoryV2 tempPlayerinventory = player.gameObject.GetComponent<PlayerInventoryV2>();
 
         if (tempPlayerinventory == null) return;
 
         if (tempPlayerinventory.HealCount >= 4) return;
 
+        IsPickedUp = true;
         tempPlayerinventory.HealCount += Supplies;
 
         Runner.Despawn(Object);

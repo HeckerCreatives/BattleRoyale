@@ -36,8 +36,40 @@ public class Botdata : NetworkBehaviour
     [SerializeField] private Transform impactFirstFistPoint;
     [SerializeField] private Transform impactSecondFistPoint;
 
+    [Header("AUDIO")]
+    [Tooltip("Spatial AudioSource on the bot rig — pain grunt + knockdown grunt play here. Heard by every peer except the StateAuthority (mirrors the player pattern).")]
+    [SerializeField] private AudioSource damageSource;
+    [Tooltip("Random pain grunt picked on each hit (avoids repeating the previous clip).")]
+    [SerializeField] private AudioClip[] gruntClips;
+    [Tooltip("Knockdown / stagger grunt — plays when IsStagger flips true.")]
+    [SerializeField] private AudioClip thumpGruntClip;
+
+    [Header("WEAPON IMPACT SOUNDS (heard when this bot is hit)")]
+    [Tooltip("Fist hits — bots have no fistSoundController, so the punch impact plays here.")]
+    [SerializeField] private AudioClip punchHitClip;
+    [Tooltip("Shared by sword + spear hits.")]
+    [SerializeField] private AudioClip primaryHitClip;
+    [Tooltip("Shared by rifle + bow hits.")]
+    [SerializeField] private AudioClip secondaryHitClip;
+    [Tooltip("Optional — trap damage impact. Silent if unassigned.")]
+    [SerializeField] private AudioClip trapHitClip;
+
+    [Header("FOOTSTEP AUDIO")]
+    [Tooltip("Spatial AudioSource the per-surface clips play on. Mirrors PlayerPlayables.footstepSource.")]
+    [SerializeField] private AudioSource footstepSource;
+    [Tooltip("Foot transform — origin of the ground-check raycast.")]
+    [SerializeField] private Transform groundDetector;
+    [Tooltip("Layers the ground raycast collides against. Match PlayerMovementV2/PlayerPlayables groundMask.")]
+    [SerializeField] private LayerMask groundMask;
+    [SerializeField] private AudioClip[] grassClip;
+    [SerializeField] private AudioClip[] dirtClip;
+    [SerializeField] private AudioClip[] stoneClip;
+    [SerializeField] private AudioClip[] woodClip;
+
     [Header("DEBUGGER")]
     [SerializeField] private int bloodIndex;
+    private AudioClip _previousGruntClip;
+    private AudioClip _previousFootstepClip;
 
     [field: Header("NETWORK DEBUGGER")]
     [field: SerializeField][Networked] public int BotIndex { get; set; }
@@ -45,6 +77,8 @@ public class Botdata : NetworkBehaviour
     [field: SerializeField][Networked] public float CurrentHealth { get; set; }
     [field: SerializeField][Networked] public bool IsDead { get; set; }
     [field: SerializeField][Networked] public int Hitted { get; set; }
+    // Written in the same tick as Hitted++ — snapshot carries weapon category.
+    [field: SerializeField][Networked] public int LastHitWeaponType { get; set; }
     [field: SerializeField][Networked] public bool IsHit { get; set; }
     [field: SerializeField][Networked] public bool IsStagger { get; set; }
     [field: SerializeField][Networked] public bool IsGettingUp { get; set; }
@@ -64,6 +98,10 @@ public class Botdata : NetworkBehaviour
     [Networked] public Vector3 ArrowStart { get; set; }
     [Networked] public Vector3 ArrowTarget { get; set; }
     [Networked] public Vector3 HitKnockbackDir { get; set; }
+    // Server-authoritative ground material under the bot, computed each tick
+    // by CheckGround(). Drives PlayFootstepSound's per-surface clip selection
+    // on every peer (so spatial footstep audio matches the surface).
+    [field: SerializeField][Networked] public Ground CurrentGround { get; set; }
 
     //  ======================
 
@@ -102,6 +140,11 @@ public class Botdata : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
+        // Compute the surface under the bot once per tick on the authority,
+        // then sync via the networked CurrentGround. Every peer reads the
+        // synced value when its animation event fires PlayFootstepSound.
+        if (HasStateAuthority) CheckGround();
+
         CircleDamage();
 
         if (IsDead && DeadTimer.Expired(Runner))
@@ -115,7 +158,18 @@ public class Botdata : NetworkBehaviour
             switch (change)
             {
                 case nameof(Hitted):
-                    if (!HasStateAuthority) DamageIndicator();
+                    if (!HasStateAuthority)
+                    {
+                        DamageIndicator();
+                        HitSoundEffects();
+                    }
+                    break;
+
+                case nameof(IsStagger):
+                    // Knockdown grunt only on the leading edge (entering stagger),
+                    // not when recovering.
+                    if (!HasStateAuthority && IsStagger)
+                        FallSoundEffects();
                     break;
 
                 case nameof(Healed):
@@ -151,6 +205,105 @@ public class Botdata : NetworkBehaviour
         bloodParticles[bloodIndex].Play();
     }
 
+    // Pain grunt — mirrors PlayerHealthV2.HitSoundEffects. Spatial via the
+    // bot's damageSource AudioSource, heard by every peer except the
+    // StateAuthority (who guards the audio call out of the case above).
+    private void HitSoundEffects()
+    {
+        if (damageSource == null) return;
+
+        AudioClip clip = PickRandomClipNoRepeat(gruntClips, ref _previousGruntClip);
+        if (clip != null) damageSource.PlayOneShot(clip);
+
+        // Weapon-category impact sound — mirrors PlayerHealthV2.HitSoundEffects.
+        AudioClip impact = LastHitWeaponType switch
+        {
+            HitWeaponType.Primary   => primaryHitClip,
+            HitWeaponType.Secondary => secondaryHitClip,
+            HitWeaponType.Trap      => trapHitClip,
+            _                       => punchHitClip, // HitWeaponType.Punch
+        };
+        if (impact != null) damageSource.PlayOneShot(impact);
+    }
+
+    // Knockdown grunt — mirrors PlayerHealthV2.FallSoundEffects (single thump
+    // clip). Called when IsStagger flips true.
+    private void FallSoundEffects()
+    {
+        if (damageSource == null || thumpGruntClip == null) return;
+
+        damageSource.PlayOneShot(thumpGruntClip);
+    }
+
+    // Server-only: raycast down from groundDetector and classify the surface
+    // by tag, writing the [Networked] CurrentGround. Every peer reads the
+    // synced value when its animation event calls PlayFootstepSound.
+    // Mirrors PlayerPlayables.CheckGround except it uses Object.StateAuthority
+    // for lag compensation (bots are server-driven, no input authority).
+    public void CheckGround()
+    {
+        if (groundDetector == null) return;
+
+        if (Runner.LagCompensation.Raycast(groundDetector.position, Vector3.down, 10f,
+                                           Object.StateAuthority, out LagCompensatedHit hit,
+                                           groundMask, HitOptions.IncludePhysX))
+        {
+            if (hit.GameObject == null) return;
+
+            GameObject g = hit.GameObject;
+            if (g.CompareTag("BattleAreaStage") || g.CompareTag("WaitingAreaStage")) CurrentGround = Ground.TERRAIN;
+            else if (g.CompareTag("Stone")) CurrentGround = Ground.STONE;
+            else if (g.CompareTag("Dirt"))  CurrentGround = Ground.DIRT;
+            else if (g.CompareTag("Wood"))  CurrentGround = Ground.WOOD;
+            else if (g.CompareTag("Grass")) CurrentGround = Ground.GRASS;
+        }
+    }
+
+    // Per-surface footstep — invoked from Animation Events on the bot's
+    // run/walk clips. Mirrors PlayerPlayables.PlayFootstepSound: the
+    // StateAuthority skips audio (server runs no audio), every other peer
+    // plays the clip spatially via footstepSource.
+    public void PlayFootstepSound()
+    {
+        if (HasStateAuthority) return;
+        if (footstepSource == null) return;
+
+        AudioClip[] clips = null;
+        switch (CurrentGround)
+        {
+            case Ground.DIRT:  clips = dirtClip;  break;
+            case Ground.STONE: clips = stoneClip; break;
+            case Ground.WOOD:  clips = woodClip;  break;
+            case Ground.GRASS: clips = grassClip; break;
+            // Ground.TERRAIN is intentionally silent — matches the player
+            // behavior in PlayerPlayables.PlayFootstepSound.
+        }
+
+        AudioClip clip = PickRandomClipNoRepeat(clips, ref _previousFootstepClip);
+        if (clip == null) return;
+
+        footstepSource.PlayOneShot(clip);
+    }
+
+    // Shared random-pick-with-no-immediate-repeat. Tries up to 3 times to
+    // avoid the previous clip in the same array (no-op if the array has only
+    // one entry). Tracks per-category via the ref parameter so grunts and
+    // footsteps each have their own "previous" memory.
+    private AudioClip PickRandomClipNoRepeat(AudioClip[] clips, ref AudioClip previous)
+    {
+        if (clips == null || clips.Length == 0) return null;
+        if (clips.Length == 1) return clips[0];
+
+        AudioClip pick = null;
+        for (int i = 0; i < 3; i++)
+        {
+            pick = clips[UnityEngine.Random.Range(0, clips.Length)];
+            if (pick != previous) break;
+        }
+        previous = pick;
+        return pick;
+    }
+
     private void CircleDamage()
     {
         if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;
@@ -181,10 +334,11 @@ public class Botdata : NetworkBehaviour
             HandleDeath("themselves", null, null);
     }
 
-    public void ApplyDamage(float damage, string killer, NetworkObject nobject)
+    public void ApplyDamage(float damage, string killer, NetworkObject nobject, int weaponType = HitWeaponType.Punch)
     {
         if (IsDead) return;
 
+        LastHitWeaponType = weaponType;
         Hitted++;
         DamageBy = nobject;
         DamageAwareness = TickTimer.CreateFromSeconds(Runner, 10f);
@@ -301,9 +455,9 @@ public class Botdata : NetworkBehaviour
                 };
 
                 if (hitObj.CompareTag("Player"))
-                    hitObj.GetComponent<PlayerHealthV2>()?.ApplyDamage(damage, BotName, Object);
+                    hitObj.GetComponent<PlayerHealthV2>()?.ApplyDamage(damage, BotName, Object, HitWeaponType.Secondary);
                 else if (hitObj.CompareTag("Bot"))
-                    hitObj.GetComponent<Botdata>()?.ApplyDamage(damage, BotName, Object);
+                    hitObj.GetComponent<Botdata>()?.ApplyDamage(damage, BotName, Object, HitWeaponType.Secondary);
             }
             break;
         }
@@ -360,9 +514,9 @@ public class Botdata : NetworkBehaviour
                 };
 
                 if (hitObj.CompareTag("Player"))
-                    hitObj.GetComponent<PlayerHealthV2>()?.ApplyDamage(damage, BotName, Object);
+                    hitObj.GetComponent<PlayerHealthV2>()?.ApplyDamage(damage, BotName, Object, HitWeaponType.Secondary);
                 else if (hitObj.CompareTag("Bot"))
-                    hitObj.GetComponent<Botdata>()?.ApplyDamage(damage, BotName, Object);
+                    hitObj.GetComponent<Botdata>()?.ApplyDamage(damage, BotName, Object, HitWeaponType.Secondary);
             }
             break;
         }

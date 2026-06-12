@@ -537,6 +537,132 @@ public void SetAnimationUpperTick() => PlayableUpperBodyAnimationTick = Runner.T
         animationProgress.fillAmount = value;
     }
 
+    // Builds the authoritative shot ray: the EXACT camera ray the crosshair
+    // represents (CameraHitOrigin/Direction — shipped via input, sampled
+    // post-Cinemachine in GameplayController.LateUpdate). Firing along this
+    // ray makes impacts land under the crosshair at EVERY depth — unlike the
+    // previous ShooterOrigin→AimPoint ray, which was only exact at AimPoint's
+    // own depth and drifted by the camera→head offset whenever the client-side
+    // aim-resolve raycast missed (unassigned mask, sky, moving targets).
+    //
+    // The cast start is advanced to the shooter's depth along the ray so
+    // geometry between the camera and the player can't absorb the shot; the
+    // shooter's own hitboxes are skipped by the cast loop's InputAuthority
+    // check. Aim-assist chest snap is applied to the ray direction here.
+    private void BuildShotRay(out Ray ray, out Vector3 rayStart)
+    {
+        Vector3 camOrigin = playerMovementV2.CameraHitOrigin;
+        Vector3 camDir    = playerMovementV2.CameraHitDirection;
+
+        // Fallback if no camera ray has arrived via input yet.
+        if (camDir.sqrMagnitude < 0.001f)
+        {
+            Vector3 origin = cameraRotation.ShooterOrigin;
+            ray = new Ray(origin, (playerMovementV2.AimPoint - origin).normalized);
+            rayStart = origin;
+            return;
+        }
+
+        camDir = camDir.normalized;
+
+        // Aim-assist: snap to the locked enemy's chest if within tolerance.
+        Vector3 aimChest = cameraRotation.GetAimAssistChestPosition();
+        if (aimChest != Vector3.zero && Vector3.Angle(camDir, aimChest - camOrigin) < 25f)
+            camDir = (aimChest - camOrigin).normalized;
+
+        ray = new Ray(camOrigin, camDir);
+
+        Vector3 shooterCenter = transform.position + Vector3.up;
+        float projDist = Mathf.Max(0f, Vector3.Dot(shooterCenter - camOrigin, camDir));
+        rayStart = camOrigin + camDir * projDist;
+    }
+
+    // PASS 1 of the two-pass shot: what world point is the crosshair on?
+    // Casts the exact camera ray (BuildShotRay) against lag-compensated
+    // hitboxes, skipping the shooter's own. PASS 2 (in FireBullet/FireArrow)
+    // then casts from the character's body toward this point — so a shot the
+    // body can't actually make impacts the cover in front of the player
+    // instead of sailing over it (third-person camera-peek exploit).
+    private Vector3 ResolveCrosshairPoint()
+    {
+        BuildShotRay(out Ray camRay, out Vector3 castStart);
+
+        LagCompensatedHit hit;
+        int safety = 10;
+        while (safety-- > 0)
+        {
+            if (!Runner.LagCompensation.Raycast(castStart, camRay.direction, 999f, Object.InputAuthority, out hit, arrowRaycastMask, HitOptions.IncludePhysX))
+                break;
+
+            NetworkObject hitObj = hit.Hitbox?.Root.Object;
+            if (hitObj != null && hitObj.InputAuthority == Object.InputAuthority)
+            {
+                castStart = hit.Point + camRay.direction * 0.5f;
+                continue;
+            }
+
+            return hit.Point;
+        }
+
+        return camRay.origin + camRay.direction * 999f;
+    }
+
+    // PASS 2 setup: ray from the character's body toward the crosshair point.
+    // LOS clear → converges exactly on the crosshair point (crosshair-exact).
+    // Cover in between → the existing cast loop hits the cover instead.
+    private void BuildBodyShotRay(out Ray ray, out Vector3 rayStart)
+    {
+        Vector3 crosshairPoint = ResolveCrosshairPoint();
+        Vector3 bodyOrigin = cameraRotation.ShooterOrigin;
+        Vector3 shotVec = crosshairPoint - bodyOrigin;
+
+        // Degenerate (crosshair point at the body itself) — fall back to the
+        // camera direction so we never normalize a zero vector.
+        if (shotVec.sqrMagnitude < 0.0001f)
+        {
+            BuildShotRay(out ray, out rayStart);
+            return;
+        }
+
+        ray = new Ray(bodyOrigin, shotVec.normalized);
+        rayStart = bodyOrigin;
+    }
+
+    // Local-visual mirror of the authoritative two-pass (plain PhysX, no lag
+    // comp): pass 1 finds the crosshair point along the camera ray, pass 2
+    // traces from the body toward it. Blocked → returns the impact on the
+    // cover; clear → returns the crosshair point. Both casts start ~1m
+    // forward so they can't clip the local player's own colliders.
+    private Vector3 ResolveVisualImpact(out bool hitSomething)
+    {
+        BuildShotRay(out Ray camRay, out Vector3 castStart);
+        castStart += camRay.direction * 1f;
+
+        float aimRange = cameraRotation.AimDistance;
+
+        bool camHitSomething = Physics.Raycast(castStart, camRay.direction, out RaycastHit camHit, aimRange, arrowRaycastMask);
+        Vector3 crosshairPoint = camHitSomething ? camHit.point : castStart + camRay.direction * aimRange;
+
+        Vector3 bodyOrigin = cameraRotation.ShooterOrigin;
+        Vector3 shotVec = crosshairPoint - bodyOrigin;
+        if (shotVec.sqrMagnitude < 0.0001f) { hitSomething = camHitSomething; return crosshairPoint; }
+
+        Vector3 shotDir = shotVec.normalized;
+        Vector3 bodyStart = bodyOrigin + shotDir * 1f;
+        // Stop just short of the crosshair point so re-hitting the surface it
+        // rests on doesn't read as cover; anything strictly nearer is cover.
+        float maxDist = shotVec.magnitude - 1.3f;
+
+        if (maxDist > 0.05f && Physics.Raycast(bodyStart, shotDir, out RaycastHit coverHit, maxDist, arrowRaycastMask))
+        {
+            hitSomething = true;
+            return coverHit.point;
+        }
+
+        hitSomething = camHitSomething;
+        return crosshairPoint;
+    }
+
     public void FireBullet()
     {
         Transform rifleMuzzle = inventory.SecondaryWeapon?.ImpactPoint?.transform;
@@ -549,20 +675,12 @@ public void SetAnimationUpperTick() => PlayableUpperBodyAnimationTick = Runner.T
                 ? networkLoader.Username
                 : (ownObjectEnabler != null ? ownObjectEnabler.Username.ToString() : "PLAYER");
 
-            Vector3 shooterOrigin = cameraRotation.ShooterOrigin;
-            Vector3 aimPoint = playerMovementV2.AimPoint;
-
-            // Aim-assist: snap to the locked enemy's chest if within tolerance.
-            Vector3 aimChest = cameraRotation.GetAimAssistChestPosition();
-            if (aimChest != Vector3.zero &&
-                Vector3.Angle(aimPoint - shooterOrigin, aimChest - shooterOrigin) < 25f)
-                aimPoint = aimChest;
-
-            // Authoritative shot: deterministic origin -> the crosshair world
-            // point the client resolved from the real camera. No camera needed
-            // server-side, and no 3rd-person over-the-shoulder parallax.
-            Ray ray = new Ray(shooterOrigin, (aimPoint - shooterOrigin).normalized);
-            Vector3 rayStart = shooterOrigin;
+            // Authoritative shot, two-pass: PASS 1 resolves the exact point
+            // under the crosshair along the camera ray; PASS 2 fires from the
+            // character's body toward it. Exposed → crosshair-exact hit;
+            // body behind cover → the bullet impacts the cover instead of
+            // sailing over it (camera-peek fix). See BuildBodyShotRay.
+            BuildBodyShotRay(out Ray ray, out Vector3 rayStart);
 
             LagCompensatedHit bulletHit = new LagCompensatedHit();
 
@@ -608,7 +726,7 @@ public void SetAnimationUpperTick() => PlayableUpperBodyAnimationTick = Runner.T
                                 "Forearm" => 30f,
                                 _         => 0f
                             };
-                            enemyHealth.ApplyDamage(damage, killerName, Object);
+                            enemyHealth.ApplyDamage(damage, killerName, Object, HitWeaponType.Secondary);
                             bodyHit = true;
                         }
                         else
@@ -628,7 +746,7 @@ public void SetAnimationUpperTick() => PlayableUpperBodyAnimationTick = Runner.T
                                     "Forearm" => 30f,
                                     _         => 0f
                                 };
-                                botHealth.ApplyDamage(damage, killerName, Object);
+                                botHealth.ApplyDamage(damage, killerName, Object, HitWeaponType.Secondary);
                                 bodyHit = true;
                             }
                         }
@@ -654,15 +772,11 @@ public void SetAnimationUpperTick() => PlayableUpperBodyAnimationTick = Runner.T
         }
         else if (HasInputAuthority)
         {
-            // Visual prediction: spawn from the muzzle toward the same crosshair
-            // point, so the tracer matches the reticle (no parallax).
+            // Visual prediction mirrors the authoritative two-pass: blocked
+            // shots visibly slam into your own cover; clear shots end under
+            // the reticle.
             Vector3 muzzlePos = inventory.SecondaryWeapon != null ? inventory.SecondaryWeapon.ImpactPoint.position : transform.position;
-            Vector3 aimPoint = playerMovementV2.AimPoint;
-            Vector3 dir = (aimPoint - muzzlePos).normalized;
-            float dist = Vector3.Distance(muzzlePos, aimPoint);
-
-            bool hitSomething = Physics.Raycast(muzzlePos, dir, out RaycastHit physicsHit, dist, arrowRaycastMask);
-            Vector3 targetPos = hitSomething ? physicsHit.point : aimPoint;
+            Vector3 targetPos = ResolveVisualImpact(out bool hitSomething);
 
             SpawnLocalBullet(rifleMuzzle, muzzlePos, targetPos, false, hitSomething);
         }
@@ -735,20 +849,12 @@ public void SetAnimationUpperTick() => PlayableUpperBodyAnimationTick = Runner.T
                 ? networkLoader.Username
                 : (ownObjectEnabler != null ? ownObjectEnabler.Username.ToString() : "PLAYER");
 
-            Vector3 shooterOrigin = cameraRotation.ShooterOrigin;
-            Vector3 aimPoint = playerMovementV2.AimPoint;
-
-            // Aim-assist: snap to the locked enemy's chest if within tolerance.
-            Vector3 aimChest = cameraRotation.GetAimAssistChestPosition();
-            if (aimChest != Vector3.zero &&
-                Vector3.Angle(aimPoint - shooterOrigin, aimChest - shooterOrigin) < 25f)
-                aimPoint = aimChest;
-
-            // Authoritative shot: deterministic origin -> the crosshair world
-            // point the client resolved from the real camera. No camera needed
-            // server-side, and no 3rd-person over-the-shoulder parallax.
-            Ray ray = new Ray(shooterOrigin, (aimPoint - shooterOrigin).normalized);
-            Vector3 rayStart = shooterOrigin;
+            // Authoritative shot, two-pass: PASS 1 resolves the exact point
+            // under the crosshair along the camera ray; PASS 2 fires from the
+            // character's body toward it. Exposed → crosshair-exact hit;
+            // body behind cover → the bullet impacts the cover instead of
+            // sailing over it (camera-peek fix). See BuildBodyShotRay.
+            BuildBodyShotRay(out Ray ray, out Vector3 rayStart);
 
             FireRayDbgOrigin = rayStart;
             FireRayDbgDir    = ray.direction;
@@ -800,7 +906,7 @@ public void SetAnimationUpperTick() => PlayableUpperBodyAnimationTick = Runner.T
                                 "Forearm"  => 40f,
                                 _          => 0f
                             };
-                                enemyHealth.ApplyDamage(damage, killerName, Object);
+                                enemyHealth.ApplyDamage(damage, killerName, Object, HitWeaponType.Secondary);
                             bodyHit = true;
                         }
                         else
@@ -820,7 +926,7 @@ public void SetAnimationUpperTick() => PlayableUpperBodyAnimationTick = Runner.T
                                     "Forearm" => 40f,
                                     _         => 0f
                                 };
-                                    botHealth.ApplyDamage(damage, killerName, Object);
+                                    botHealth.ApplyDamage(damage, killerName, Object, HitWeaponType.Secondary);
                                 bodyHit = true;
                             }
                         }
@@ -847,15 +953,10 @@ public void SetAnimationUpperTick() => PlayableUpperBodyAnimationTick = Runner.T
         }
         else if (HasInputAuthority)
         {
-            // Visual prediction: spawn from the bow muzzle toward the same
-            // crosshair point so the arrow matches the reticle (no parallax).
-            Vector3 arrowOrigin = bowMuzzle != null ? bowMuzzle.position : transform.position;
-            Vector3 aimPoint = playerMovementV2.AimPoint;
-            Vector3 dir = (aimPoint - arrowOrigin).normalized;
-            float dist = Vector3.Distance(arrowOrigin, aimPoint);
-
-            bool hitSomething = Physics.Raycast(arrowOrigin, dir, out RaycastHit physicsHit, dist, arrowRaycastMask);
-            Vector3 targetPos = hitSomething ? physicsHit.point : aimPoint;
+            // Visual prediction mirrors the authoritative two-pass: blocked
+            // shots visibly slam into your own cover; clear shots end under
+            // the reticle.
+            Vector3 targetPos = ResolveVisualImpact(out bool hitSomething);
 
             SpawnLocalArrow(bowMuzzle, targetPos, false, hitSomething);
         }
@@ -930,10 +1031,11 @@ public void SetAnimationUpperTick() => PlayableUpperBodyAnimationTick = Runner.T
 
             GameObject g = hit.GameObject;
             if (g.CompareTag("BattleAreaStage") || g.CompareTag("WaitingAreaStage")) CurrentGround = Ground.TERRAIN;
-            else if (g.CompareTag("Stone")) CurrentGround = Ground.STONE;
-            else if (g.CompareTag("Dirt")) CurrentGround = Ground.DIRT;
+            else if (g.CompareTag("TunisiaArea") || g.CompareTag("Stone")) CurrentGround = Ground.STONE;
+            else if (g.CompareTag("LalibelaArea") || g.CompareTag("MaliArea") || g.CompareTag("DesertArea")) CurrentGround = Ground.DIRT;
             else if (g.CompareTag("Wood")) CurrentGround = Ground.WOOD;
-            else if (g.CompareTag("Grass")) CurrentGround = Ground.GRASS;
+            else if (g.CompareTag("ForestArea")) CurrentGround = Ground.GRASS;
+            else CurrentGround = Ground.STONE;
         }
     }
 

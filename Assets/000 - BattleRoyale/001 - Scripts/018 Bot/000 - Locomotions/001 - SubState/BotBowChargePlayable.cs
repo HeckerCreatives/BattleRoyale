@@ -21,6 +21,9 @@ public class BotBowChargePlayable : BotAnimationPlayable
         chargeTimer = botPlayables.TickRateAnimation + Random.Range(0.15f, 0.5f);
         shotFired = false;
         canAction = true;
+
+        // Bow string: stay bent toward the pulling hand on every peer.
+        botPlayables.Inventroy.SecondaryWeapon?.SetDrawn(true);
     }
 
     public override void Exit()
@@ -29,6 +32,9 @@ public class BotBowChargePlayable : BotAnimationPlayable
 
         canAction = false;
         shotFired = false;
+
+        // Bow string returns to rest. Runs on every peer.
+        botPlayables.Inventroy.SecondaryWeapon?.SetDrawn(false);
     }
 
     public override BotAnimationPlayable NetworkUpdate()

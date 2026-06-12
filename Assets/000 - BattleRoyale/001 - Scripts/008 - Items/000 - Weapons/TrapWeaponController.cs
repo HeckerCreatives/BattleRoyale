@@ -103,7 +103,7 @@ public class TrapWeaponController : NetworkBehaviour
 
             CanDamage = false;
             CancelInvoke(nameof(DetectPlayer));
-            health.ApplyDamage(30f, SpawnedBy, health.Object);
+            health.ApplyDamage(30f, SpawnedBy, health.Object, HitWeaponType.Trap);
             Invoke(nameof(DespawnObject), 2f);
             CloseTrap = true;
             return;
@@ -122,7 +122,7 @@ public class TrapWeaponController : NetworkBehaviour
             CanDamage = false;
             CancelInvoke(nameof(DetectPlayer));
             tempdata.IsHit = true;
-            tempdata.ApplyDamage(30f, SpawnedBy, hitObject.GetComponent<NetworkObject>());
+            tempdata.ApplyDamage(30f, SpawnedBy, hitObject.GetComponent<NetworkObject>(), HitWeaponType.Trap);
             Invoke(nameof(DespawnObject), 2f);
             CloseTrap = true;
             return;

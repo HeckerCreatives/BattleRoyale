@@ -82,12 +82,19 @@ public class MagazineContainerItem : NetworkBehaviour, IPickupItem
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     public void RPC_PickupMagazineContainer(NetworkObject player)
     {
+        // Layer-1 race guard: a second RPC for the same item must no-op.
+        if (IsPickedUp) return;
+
         PlayerInventoryV2 tempPlayerinventory = player.GetComponent<PlayerInventoryV2>();
 
         if (tempPlayerinventory.MagazineContainer == null)
+        {
+            // InitializeItem sets IsPickedUp = true internally.
             InitializeItem(player);
+        }
         else
         {
+            IsPickedUp = true;
             tempPlayerinventory.BowMagazine += Supplies;
             Runner.Despawn(Object);
         }

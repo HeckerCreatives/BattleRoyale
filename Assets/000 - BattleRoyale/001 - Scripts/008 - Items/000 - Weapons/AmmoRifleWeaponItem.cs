@@ -41,10 +41,14 @@ public class AmmoRifleWeaponItem : NetworkBehaviour, IPickupItem
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     public void RPC_PickupAmmoRifle(NetworkObject player)
     {
+        // Layer-1 race guard: a second RPC for the same item must no-op.
+        if (IsPickedUp) return;
+
         PlayerInventoryV2 tempPlayerinventory = player.gameObject.GetComponent<PlayerInventoryV2>();
 
         if (tempPlayerinventory == null) return;
 
+        IsPickedUp = true;
         tempPlayerinventory.RifleMagazine += Supplies;
 
         Runner.Despawn(Object);

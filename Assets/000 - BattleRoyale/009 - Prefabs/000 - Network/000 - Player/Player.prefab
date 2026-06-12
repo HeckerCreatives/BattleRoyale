@@ -369988,6 +369988,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5483433039669137353}
+  - {fileID: 6046148217735136586}
   m_Father: {fileID: 2240548757364013395}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4296030996376681985
@@ -408699,6 +408700,37 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1 &5010619123206794319
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6046148217735136586}
+  m_Layer: 9
+  m_Name: BowString_PullPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6046148217735136586
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5010619123206794319}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4566729236661566421}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5032905313500600619
 GameObject:
   m_ObjectHideFlags: 0
@@ -730467,26 +730499,26 @@ MonoBehaviour:
   <WarpDrive>k__BackingField: {fileID: 1375663199777472315}
   footstepSource: {fileID: 4246598123511150886}
   grassClip:
-  - {fileID: 8300000, guid: 2e636772451246544aacc8377415a60b, type: 3}
-  - {fileID: 8300000, guid: fcd4ed36320afb845af13cbcb9a101ba, type: 3}
-  - {fileID: 8300000, guid: 2b82df644ef346b409dff6ab56a0ffbd, type: 3}
-  - {fileID: 8300000, guid: 70604f00b5a49e44d97c97992a164996, type: 3}
-  - {fileID: 8300000, guid: 23e2ffa4ed2be494689717e874a097b5, type: 3}
-  - {fileID: 8300000, guid: 26e21138e580cdc43a4ac889383b9969, type: 3}
+  - {fileID: 8300000, guid: 1567617fe70bf874ea7600fc08ac75de, type: 3}
+  - {fileID: 8300000, guid: b811e398c554f1d499c21eecd836870d, type: 3}
+  - {fileID: 8300000, guid: b23b1e817121bce49beb2698058821f1, type: 3}
+  - {fileID: 8300000, guid: 26a393a61162d3e4bbeac72b7e2c39f5, type: 3}
+  - {fileID: 8300000, guid: c0434788080bab04caf64284e30aaded, type: 3}
+  - {fileID: 8300000, guid: f0fe79abb854a0e438d48fb58cf74cc0, type: 3}
   dirtClip:
-  - {fileID: 8300000, guid: 6acb24ed7fb594e4ca862bc4caa9e5cb, type: 3}
-  - {fileID: 8300000, guid: 944a5f30a7785e84eb02d16d2be60bf2, type: 3}
-  - {fileID: 8300000, guid: 1487ae27783cbb942826460a25bd89f6, type: 3}
-  - {fileID: 8300000, guid: 63e4290f9d964424d9defd28b438e639, type: 3}
-  - {fileID: 8300000, guid: 0925f7208b545f74db801bfc55cdfc9a, type: 3}
-  - {fileID: 8300000, guid: 68173349391867b47b8437585a8aa2f3, type: 3}
+  - {fileID: 8300000, guid: b7bc02fd1d81cfc408c0f8bb3af389b3, type: 3}
+  - {fileID: 8300000, guid: f8d6372d8f36a8e4f9ad479190013110, type: 3}
+  - {fileID: 8300000, guid: 45555b614e2464b4c8bcc143a97c43a3, type: 3}
+  - {fileID: 8300000, guid: 8e702a630448a1a4f942144c099074c8, type: 3}
+  - {fileID: 8300000, guid: 329e1363c21c0c14a948b49dbecb610f, type: 3}
+  - {fileID: 8300000, guid: b3b8e5787c20e864cbc02f2fa9f519d4, type: 3}
   stoneClip:
-  - {fileID: 8300000, guid: 57b882cb97d76f54aa370c642eacaa57, type: 3}
-  - {fileID: 8300000, guid: d05fe2658a8ccbc42a90177a98798cae, type: 3}
-  - {fileID: 8300000, guid: eb305e19a0e20da4fbfebb827978b9ba, type: 3}
-  - {fileID: 8300000, guid: 79618cdef7087844fb955f8391de544a, type: 3}
-  - {fileID: 8300000, guid: 612432629804b3f4c96ce80a1b95399d, type: 3}
-  - {fileID: 8300000, guid: d8cbbbbe7f005b9479cc38f1c1e19d96, type: 3}
+  - {fileID: 8300000, guid: 178316972a3219d4ca947a59dc95358e, type: 3}
+  - {fileID: 8300000, guid: 3b3edf77f78f4c64fa8b7089c61e1fdb, type: 3}
+  - {fileID: 8300000, guid: 15ea21351bbeaec4a8800dab1fe89e42, type: 3}
+  - {fileID: 8300000, guid: f83f55fc2c8b0ea468bb539c427855cc, type: 3}
+  - {fileID: 8300000, guid: 4b011c10e70631c4facab33124592b72, type: 3}
+  - {fileID: 8300000, guid: 62949f2ecd6a32644aefb639dd327043, type: 3}
   woodClip:
   - {fileID: 8300000, guid: 724664b07beb00f44967dd2d7b8f845b, type: 3}
   - {fileID: 8300000, guid: 3905d8381e9837049bc0ecd485f4b954, type: 3}
@@ -730622,6 +730654,7 @@ MonoBehaviour:
   __cinemachineTargetPitch: 0
   _CurrentSensitivity: 0
   _CurrentAdsSensitivity: 0
+  blockedCrosshairColor: {r: 0.45, g: 0.45, b: 0.45, a: 1}
 --- !u!114 &1586033053454019259
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -730766,6 +730799,7 @@ MonoBehaviour:
   _YMovement: 0
   _CameraHitOrigin: {x: 0, y: 0, z: 0}
   _CameraHitDirection: {x: 0, y: 0, z: 0}
+  _AimPoint: {x: 0, y: 0, z: 0}
   _IsSprint: 0
   _IsRoll: 0
   _Rolling: 0
@@ -730863,16 +730897,25 @@ MonoBehaviour:
   healParticles: {fileID: 2925548158991661220}
   repairParticles: {fileID: 5911602147251603869}
   gruntClips:
-  - {fileID: 8300000, guid: ab48300f974ba5842ad2f248a579cbaf, type: 3}
-  - {fileID: 8300000, guid: 32f19eb9dde852f4f9b5c48a6de09278, type: 3}
+  - {fileID: 8300000, guid: 643378a6eff45a746be99b8c6b4cb2d6, type: 3}
+  - {fileID: 8300000, guid: e26fa9e3b86bb08448d9bcaca53ac1a9, type: 3}
+  - {fileID: 8300000, guid: 6f01ac14bd8bfb140a24ca4995b1848d, type: 3}
+  - {fileID: 8300000, guid: 950f09f9be7363e4893649371e9fc593, type: 3}
+  - {fileID: 8300000, guid: 265e3188f1442094fb59908e9bac65f2, type: 3}
+  - {fileID: 8300000, guid: a095732d1366e39479c3d18d2826f0f9, type: 3}
   thumpGruntClip: {fileID: 8300000, guid: ba96d04830f82a24481f7c7c3c170ff5, type: 3}
-  deathClip: {fileID: 8300000, guid: 25e5470178feed24293ab3b75d0d8a9c, type: 3}
+  deathClip: {fileID: 8300000, guid: a2f2ce221899ea245bdabf1a21c80c7e, type: 3}
   damageSource: {fileID: 4246598123511150886}
+  punchHitClip: {fileID: 8300000, guid: 3f235bcf32564c9488265a4e031240d8, type: 3}
+  primaryHitClip: {fileID: 8300000, guid: e4fc034d8f0184d4a86908378d4f5589, type: 3}
+  secondaryHitClip: {fileID: 8300000, guid: 74aba068fab3b084798fb4b86085fbe9, type: 3}
+  trapHitClip: {fileID: 8300000, guid: e4fc034d8f0184d4a86908378d4f5589, type: 3}
   bloodIndex: 0
   selectedClip: {fileID: 0}
   previousClip: {fileID: 0}
   _CurrentHealth: 0
   _Hitted: 0
+  _LastHitWeaponType: 0
   _IsStagger: 0
   _IsGettingUp: 0
   _DamagedSafeZone: 0
@@ -730988,6 +731031,7 @@ MonoBehaviour:
   <BowBack>k__BackingField: {fileID: 6723110763021553222}
   <BowHand>k__BackingField: {fileID: 5369764011072461450}
   <BowAmmoBack>k__BackingField: {fileID: 7053348302310606829}
+  <BowStringPullPoint>k__BackingField: {fileID: 6046148217735136586}
   <CrateObject>k__BackingField: {fileID: 0}
   <CrateObjectDetector>k__BackingField: {fileID: 0}
   localNearbyWeapon: []
@@ -731011,6 +731055,26 @@ MonoBehaviour:
   _SecondaryWeapon: {fileID: 0}
   _MagazineContainer: {fileID: 0}
   _Armor: {fileID: 0}
+  autoLootCooldownSeconds: 0.5
+  pickupSounds:
+  - itemID: 001
+    clip: {fileID: 8300000, guid: ee054c98697c63349868f8dca75b43c3, type: 3}
+  - itemID: 002
+    clip: {fileID: 8300000, guid: 981a7b783f56fd446bf4630de0761624, type: 3}
+  - itemID: 003
+    clip: {fileID: 8300000, guid: 01e3c7e311ff134459c08e84a870ae51, type: 3}
+  - itemID: 005
+    clip: {fileID: 8300000, guid: 692841e9f7b19e4419a49cb7942fc3ff, type: 3}
+  - itemID: 006
+    clip: {fileID: 8300000, guid: acbe317d2edbcab4991ada57e4b03d5d, type: 3}
+  - itemID: 007
+    clip: {fileID: 8300000, guid: 12c1542775976634aafb140de815e22a, type: 3}
+  - itemID: 008
+    clip: {fileID: 8300000, guid: 31638920226ecb14e959c67d723f4f9f, type: 3}
+  - itemID: 009
+    clip: {fileID: 8300000, guid: 9437bc72195a4bf459825f75eeea4aec, type: 3}
+  - itemID: 010
+    clip: {fileID: 8300000, guid: 9437bc72195a4bf459825f75eeea4aec, type: 3}
 --- !u!114 &2372114995720396245
 MonoBehaviour:
   m_ObjectHideFlags: 0

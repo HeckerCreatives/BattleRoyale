@@ -42,6 +42,9 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
     [SerializeField] private Vector3 handRotation;
     [SerializeField] private Vector3 dropRotation;
 
+    [Tooltip("Bow only. Drives the bow string LineRenderer each frame. Wired to the player's BowStringPullPoint on equip; cleared on drop. No-op for rifles.")]
+    [SerializeField] private BowStringFollower bowStringFollower;
+
     [field: Header("DAMAGE")]
     [Networked][field: SerializeField] public float Head { get; set; }
     [Networked][field: SerializeField] public float Body { get; set; }
@@ -191,6 +194,17 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
         else
             tempPlayerinventory.SecondaryWeapon = this;
 
+        // Bow string: wire the LineRenderer's middle point to the carrier's
+        // pulling-hand bone Transform (player or bot). No-op for rifles
+        // (bowStringFollower is null). Cleared in DropWeapon.
+        if (bowStringFollower != null)
+        {
+            if (isBot && tempBotinventory != null)
+                bowStringFollower.PullPoint = tempBotinventory.BowStringPullPoint;
+            else if (!isBot && tempPlayerinventory != null)
+                bowStringFollower.PullPoint = tempPlayerinventory.BowStringPullPoint;
+        }
+
         if (isBot)
         {
             Botdata tempbotdata = player.GetComponent<Botdata>();
@@ -229,6 +243,10 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
     public void RPC_PickupSecondaryWeapon(NetworkObject player, int supplies)
     {
+        // Layer-1 race guard: a second RPC for the same item must no-op.
+        // (InitializeItem sets IsPickedUp = true near the end.)
+        if (IsPickedUp) return;
+
         InitializeItem(player, supplies);
     }
 
@@ -246,9 +264,47 @@ public class SecondaryWeaponItem : NetworkBehaviour, IPickupItem
 
         IsEquipped = false;
 
+        // Bow string: detach from the player's hand bone so the string
+        // collapses back to its rest pose while the bow is on the ground.
+        if (bowStringFollower != null)
+        {
+            bowStringFollower.PullPoint = null;
+            bowStringFollower.IsDrawn = false;
+        }
+
         CurrentPlayer = null;
         PlayerCore = null;
         BotData = null;
         Object.RemoveInputAuthority();
+    }
+
+    // Called by the bow-aim upper-body state machines on Enter (true) and
+    // Exit (false). Safe to call on any secondary — no-op when this weapon
+    // isn't a bow (bowStringFollower is null on rifles).
+    //
+    // Also self-heals the PullPoint on remote peers: InitializeItem only
+    // runs on StateAuthority, so on proxies bowStringFollower.PullPoint
+    // would otherwise be null. We look it up from the networked CurrentPlayer
+    // the first time SetDrawn(true) fires.
+    public void SetDrawn(bool drawn)
+    {
+        if (bowStringFollower == null) return;
+
+        bowStringFollower.IsDrawn = drawn;
+
+        if (drawn && bowStringFollower.PullPoint == null && CurrentPlayer != null)
+        {
+            var playerInv = CurrentPlayer.GetComponent<PlayerInventoryV2>();
+            if (playerInv != null)
+            {
+                bowStringFollower.PullPoint = playerInv.BowStringPullPoint;
+            }
+            else
+            {
+                // Bot carrier — try BotInventory.
+                var botInv = CurrentPlayer.GetComponent<BotInventory>();
+                if (botInv != null) bowStringFollower.PullPoint = botInv.BowStringPullPoint;
+            }
+        }
     }
 }

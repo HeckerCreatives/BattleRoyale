@@ -25,8 +25,12 @@ public class PlayerUpperBowShot : UpperWithAimState
         if (playerPlayables.HasInputAuthority)
         {
             playerMovement.AnimationTick = playerPlayables.Runner.Tick;
-            playerPlayables.ChangeCamera(true);
+            //playerPlayables.ChangeCamera(true); // AUTO-DISABLED shoulder zoom — uncomment to restore
         }
+
+        // Bow string: still bent toward the hand during the release frame.
+        // (Exit flips it back to false when the player leaves bow aim.)
+        playerPlayables.inventory.SecondaryWeapon?.SetDrawn(true);
 
         if (playerPlayables.HasStateAuthority)
             playerMovement.AuthoritiveAniamtionTick = playerPlayables.Runner.Tick;
@@ -38,9 +42,12 @@ public class PlayerUpperBowShot : UpperWithAimState
     {
         base.Exit();
 
+        // Bow string returns to rest. Runs on every peer.
+        playerPlayables.inventory.SecondaryWeapon?.SetDrawn(false);
+
         if (!playerPlayables.HasInputAuthority) return;
 
-        playerPlayables.ChangeCamera(false);
+        //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
         playerPlayables.cameraRotation.ExitBowAimCrosshair();
     }
 

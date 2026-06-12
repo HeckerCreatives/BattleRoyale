@@ -8,6 +8,18 @@ using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
+// Weapon category that caused a hit — networked as an int alongside Hitted so
+// the victim (and every watching peer) plays the matching impact sound.
+// Primary weapons (sword/spear) share one sound, secondary (rifle/bow) share
+// one, punch keeps its own separate sound.
+public static class HitWeaponType
+{
+    public const int Punch     = 0; // default — fist attacks
+    public const int Primary   = 1; // sword "001" / spear "002"
+    public const int Secondary = 2; // rifle "003" / bow "004"
+    public const int Trap      = 3; // trap damage (optional clip, silent if unassigned)
+}
+
 public class PlayerHealthV2 : NetworkBehaviour
 {
     public static readonly List<PlayerHealthV2> All = new();
@@ -47,6 +59,16 @@ public class PlayerHealthV2 : NetworkBehaviour
     [SerializeField] private AudioClip deathClip;
     [SerializeField] private AudioSource damageSource;
 
+    [Header("WEAPON IMPACT SOUNDS (heard when this player is hit)")]
+    [Tooltip("Fist hits. If unassigned, falls back to fistSoundController.PlayHit().")]
+    [SerializeField] private AudioClip punchHitClip;
+    [Tooltip("Shared by sword + spear hits.")]
+    [SerializeField] private AudioClip primaryHitClip;
+    [Tooltip("Shared by rifle + bow hits.")]
+    [SerializeField] private AudioClip secondaryHitClip;
+    [Tooltip("Optional — trap damage impact. Silent if unassigned.")]
+    [SerializeField] private AudioClip trapHitClip;
+
     [Header("DEBUGGER")]
     [SerializeField] private int bloodIndex;
     [SerializeField] AudioClip selectedClip;
@@ -57,6 +79,9 @@ public class PlayerHealthV2 : NetworkBehaviour
     //[Networked][field: SerializeField] public bool IsHit { get; set; }
     //[Networked][field: SerializeField] public bool IsHitUpper { get; set; }
     [Networked][field: SerializeField] public int Hitted { get; set; }
+    // Written in the same tick as Hitted++, so when the Hitted change is
+    // detected on a peer, the snapshot already carries the weapon category.
+    [Networked][field: SerializeField] public int LastHitWeaponType { get; set; }
     [Networked][field: SerializeField] public bool IsStagger { get; set; }
     [Networked][field: SerializeField] public bool IsGettingUp { get; set; }
     [Networked][field: SerializeField] public bool DamagedSafeZone { get; set; }
@@ -201,7 +226,27 @@ public class PlayerHealthV2 : NetworkBehaviour
         if (HasStateAuthority) return;
 
         damageSource.PlayOneShot(GetClip(gruntClips));
-        playerPlayables.fistSoundController.PlayHit();
+
+        // Weapon-category impact sound. Primary (sword/spear) and secondary
+        // (rifle/bow) each share one clip; punch keeps its dedicated fist hit.
+        switch (LastHitWeaponType)
+        {
+            case HitWeaponType.Primary:
+                if (primaryHitClip != null) damageSource.PlayOneShot(primaryHitClip);
+                break;
+            case HitWeaponType.Secondary:
+                if (secondaryHitClip != null) damageSource.PlayOneShot(secondaryHitClip);
+                break;
+            case HitWeaponType.Trap:
+                if (trapHitClip != null) damageSource.PlayOneShot(trapHitClip);
+                break;
+            default: // HitWeaponType.Punch
+                if (punchHitClip != null)
+                    damageSource.PlayOneShot(punchHitClip);
+                else
+                    playerPlayables.fistSoundController.PlayHit(); // legacy fallback
+                break;
+        }
     }
 
     private void FallSoundEffects()
@@ -328,7 +373,7 @@ public class PlayerHealthV2 : NetworkBehaviour
         }
     }
 
-    public void ApplyDamage(float damage, string killer, NetworkObject nobject)
+    public void ApplyDamage(float damage, string killer, NetworkObject nobject, int weaponType = HitWeaponType.Punch)
     {
         if (!HasStateAuthority) return;
 
@@ -336,6 +381,7 @@ public class PlayerHealthV2 : NetworkBehaviour
 
         if (invincible.IsInvincible) return;
 
+        LastHitWeaponType = weaponType;
         Hitted++;
 
         if (MultiplayerServerManager.Instance.CurrentGameState != GameState.ARENA) return;

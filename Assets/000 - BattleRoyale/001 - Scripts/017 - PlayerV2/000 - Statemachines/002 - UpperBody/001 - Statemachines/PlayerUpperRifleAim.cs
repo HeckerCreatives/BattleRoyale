@@ -17,7 +17,7 @@ public class PlayerUpperRifleAim : UpperWithAimState
         if (playerPlayables.HasInputAuthority)
         {
             playerMovement.AnimationTick = playerPlayables.Runner.Tick;
-            playerPlayables.ChangeCamera(true);
+            //playerPlayables.ChangeCamera(true); // AUTO-DISABLED shoulder zoom — uncomment to restore
         }
 
         if (playerPlayables.HasStateAuthority)
@@ -44,7 +44,7 @@ public class PlayerUpperRifleAim : UpperWithAimState
 
         if (!playerPlayables.HasInputAuthority) return;
 
-        playerPlayables.ChangeCamera(false);
+        //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
         playerPlayables.cameraRotation.ExitBowAimCrosshair();
     }
 
@@ -52,25 +52,25 @@ public class PlayerUpperRifleAim : UpperWithAimState
     {
         if (playerPlayables.healthV2.IsDead)
         {
-            playerPlayables.ChangeCamera(false);
+            //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
             return playerPlayables.upperBodyMovement.DeathPlayable;
         }
 
         if (playerMovement.IsHealing)
         {
-            playerPlayables.ChangeCamera(false);
+            //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
             return playerPlayables.upperBodyMovement.HealPlayable;
         }
 
         if (playerMovement.IsRepairing)
         {
-            playerPlayables.ChangeCamera(false);
+            //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
             return playerPlayables.upperBodyMovement.RepairPlayable;
         }
 
         if (playerMovement.IsRoll && playerPlayables.stamina.Stamina >= 35f)
         {
-            playerPlayables.ChangeCamera(false);
+            //playerPlayables.ChangeCamera(false); // AUTO-DISABLED shoulder zoom — uncomment to restore
             return playerPlayables.upperBodyMovement.RollPlayables;
         }
 

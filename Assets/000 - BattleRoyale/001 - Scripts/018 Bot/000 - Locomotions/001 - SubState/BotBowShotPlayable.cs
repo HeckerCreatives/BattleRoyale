@@ -19,6 +19,10 @@ public class BotBowShotPlayable : BotAnimationPlayable
 
         timer = botPlayables.TickRateAnimation + (animationLength * 0.9f);
         canAction = true;
+
+        // Bow string: still bent toward the hand during the release frame.
+        // (Exit flips it back to false when leaving bow aim.)
+        botPlayables.Inventroy.SecondaryWeapon?.SetDrawn(true);
     }
 
     public override void Exit()
@@ -26,6 +30,9 @@ public class BotBowShotPlayable : BotAnimationPlayable
         base.Exit();
 
         canAction = false;
+
+        // Bow string returns to rest. Runs on every peer.
+        botPlayables.Inventroy.SecondaryWeapon?.SetDrawn(false);
     }
 
     public override BotAnimationPlayable NetworkUpdate()
